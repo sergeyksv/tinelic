@@ -1,0 +1,5 @@
+define({
+	"":"index",
+	"/page":"page"
+})
+

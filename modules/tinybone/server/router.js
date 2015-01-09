@@ -1,0 +1,1 @@
+var requirejs = require('requirejs');

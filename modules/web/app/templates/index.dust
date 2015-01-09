@@ -1,0 +1,2 @@
+{@view name="header"/}Hello world<br>
+<a href="page">Page!</a>
