@@ -15,36 +15,6 @@ requirejs.config({
 
 requirejs.define("dust",dust);
 
-// Make sure dust.helpers is an object before adding a new helper.
-if (!dust.helpers)
-    dust.helpers = {};
-
-var app = {
-	loadTemplates: function (names, cb) {
-		safe.each(names, function (name, cb) {
-			fs.readFile(path.resolve(__dirname, "./app/templates",name+".dust"), safe.sure(cb, function (template) {
-				dust.loadSource(dust.compile(template.toString(), name));
-				cb();
-			}))
-		},cb);
-	}
-}
-
-dust.helpers.view = function(chunk, context, bodies, params) {
-    return chunk.map(function(chunk) {
-		requirejs(['views/'+params.name], function (View) {
-			var view = new View(app);
-			app.loadTemplates(view.tpls?view.tpls:[params.name], function () {
-				view.render(function (err,text) {
-					chunk.end(text);
-				})
-			})
-		})
-    });
-};
-
-dust.config.whitespace = true;
-
 module.exports.init = function (ctx, cb) {
 	ctx.router.use(static(__dirname));
 	ctx.router.use(static(path.resolve(__dirname,"../.")));
@@ -58,12 +28,17 @@ module.exports.init = function (ctx, cb) {
 	requirejs(['routes'], function (routes) {
 		_.each(routes, function (v,k) {
 			ctx.router.get(k,function (req,res,next) {
-				requirejs(['routes/'+v],function (route) {
-					route.data(safe.sure(next,function (data) {
-						app.loadTemplates(['layout'], safe.sure(next, function () {
-							dust.render('layout',data, safe.sure(next, function (text) {
-								res.send(text)
-							}))
+				requirejs(['routes/'+v,'app'],function (route,app) {
+					route(safe.sure(next,function (route) {
+						var view = app.getView();
+						view.data = route.data || {};
+						var populateTplCtx = view.populateTplCtx;
+						view.populateTplCtx = function (ctx, cb) {
+							ctx = ctx.push({_t_main_view:route.view});
+							populateTplCtx.call(this,ctx,cb)
+						}
+						view.render(safe.sure(next, function (text) {
+							res.send(text)
 						}))
 					}))
 				},next)

@@ -22,54 +22,137 @@ requirejs.config({
 </head>
 <body>
 <div id="content">
-{@view name=view/}
+{@view name=_t_main_view /}
 </div>
 <script>
-requirejs(["routes","lodash","dust","safe"], function (routes,_,dust,safe) {
-if (!dust.helpers)
-    dust.helpers = {};
+requirejs(["routes","lodash","dust","safe","app"], function (routes,_,dust,safe,app) {
+/**
+ * URL Router
+ * @param {String} url, routing url.
+ *  e.g.: /user/:id, /user/:id([0-9]+), /user/:id.:format?
+ * @param {Boolean} [strict] strict mode, default is false.
+ *  if use strict mode, '/admin' will not match '/admin/'.
+ */
+function Router(url, strict) {
+  this.keys = null;
+  if (url instanceof RegExp) {
+    this.rex = url;
+    this.source = this.rex.source;
+    return;
+  }
 
-var app = {
-	loadTemplates: function (names, cb) {
-		safe.each(names, function (name, cb) {
-			requirejs(["dustjs/"+name], function (template) {
-				dust.loadSource(template);
-				cb();
-			},cb)
-		},cb);
-	}
+  var keys = [];
+  this.source = url;
+  url = url.replace(/\//g, '\\/') // '/' => '\/'
+  .replace(/\./g, '\\.?') // '.' => '\.?'
+  .replace(/\*/g, '.+'); // '*' => '.+'
+
+  // ':id' => ([^\/]+),
+  // ':id?' => ([^\/]*),
+  // ':id([0-9]+)' => ([0-9]+)+,
+  // ':id([0-9]+)?' => ([0-9]+)*
+  url = url.replace(/:(\w+)(?:\(([^\)]+)\))?(\?)?/g, function (all, name, rex, atLeastOne) {
+    keys.push(name);
+    if (!rex) {
+      rex = '[^\\/]' + (atLeastOne === '?' ? '*' : '+');
+    }
+    return '(' + rex + ')';
+  });
+  // /user/:id => /user, /user/123
+  url = url.replace(/\\\/\(\[\^\\\/\]\*\)/g, '(?:\\/(\\w*))?');
+  this.keys = keys;
+  var re = '^' + url;
+  if (!strict) {
+    re += '\\/?';
+  }
+  re += '$';
+  this.rex = new RegExp(re);
 }
 
-dust.helpers.view = function(chunk, context, bodies, params) {
-    return chunk.map(function(chunk) {
-		requirejs(['views/'+params.name], function (View) {
-			var view = new View(app);
-			app.loadTemplates(view.tpls?view.tpls:[params.name], function () {
-				view.render(function (err,text) {
-					chunk.end(text);
-				})
-			})
-		})
-    });
+/**
+ * Try to match given pathname, if match, return the match `params`.
+ *
+ * @param {String} pathname
+ * @return {Object|null} match `params` or null.
+ */
+Router.prototype.match = function (pathname) {
+  var m = this.rex.exec(pathname);
+  // console.log(this.rex, pathname, this.keys, m, this.source)
+  var match = null;
+  if (m) {
+    if (!this.keys) {
+      return m.slice(1);
+    }
+    match = {};
+    var keys = this.keys;
+    for (var i = 0, l = keys.length; i < l; i++) {
+      var value = m[i + 1];
+      if (value) {
+        match[keys[i]] = value;
+      }
+    }
+  }
+  return match;
 };
+
+var paths = [];
+_.each(routes, function (v,k) {
+	paths.push(new Router(k,false))
+})
+
+  function resolveUrl(/* ...urls */) {
+    var numUrls = arguments.length
+
+    if (numUrls === 0) {
+      throw new Error("resolveUrl requires at least one argument; got none.")
+    }
+
+    var base = document.createElement("base")
+    base.href = arguments[0]
+
+    if (numUrls === 1) {
+      return base.href
+    }
+
+    var head = document.getElementsByTagName("head")[0]
+    head.insertBefore(base, head.firstChild)
+
+    var a = document.createElement("a")
+    var resolved
+
+    for (var index = 1; index < numUrls; index++) {
+      a.href = arguments[index]
+      resolved = a.href
+      base.href = resolved
+    }
+
+    head.removeChild(base)
+
+    return resolved
+  }
 
 
 $("body").on("click","a", function (e) {
 	e.preventDefault();
 	$this = $(this);
-	var uri = $this.attr("href");
+	var uri = resolveUrl($this.attr("href"));
+	uri = uri.replace(window.location,"/");
 	function next (err) {
 		if (err) console.log(err);
 	}
-	_.each(routes, function (v,k) {
-		if (k=="/"+uri || (k.length==0 && uri==".")) {
-			requirejs(['routes/'+v],function (route) {
-				route.data(safe.sure(next,function (data) {
-					app.loadTemplates([data.view], safe.sure(next, function () {
-						dust.render(data.view,data, safe.sure(next, function (text) {
+	_.each(paths, function (p) {
+		var match = p.match(uri);
+		if (match) {
+			var v = routes[p.source];
+			requirejs(['routes/'+v,"app"],function (route,app) {
+				route(safe.sure(next,function (res) {
+					requirejs(['views/'+res.view], function (View) {
+						var view = new View(app);
+						view.data = res.data;
+						view.render(safe.sure(next, function (text) {
 							$("#content").html(text);
 						}))
-					}))
+					},next)
 				}))
 			})
 		}
