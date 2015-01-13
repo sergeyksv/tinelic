@@ -1,4 +1,7 @@
-{@view name="header_view" data="text"/}Hello world<br>
+{@view name="header_view" data="text"/}
+<div class="container">
+<div class="starter-template">
+Hello world<br>
 <a href="page">Page!</a>
 <br><br>
 <h3 id="etarget">Click on me!!!!</h3>
@@ -9,3 +12,5 @@
 	</tr>
 {/events}
 </table>
+</div>
+</div>

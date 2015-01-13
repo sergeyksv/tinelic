@@ -1,5 +1,5 @@
-define(['views/layout','module','safe','tinybone/router'],function (Layout,module,safe,Router) {
-	return {
+define(['views/layout','module','safe',"dust","tinybone/base","routes"],function (Layout,module,safe,dust,tb,routes) {
+	return tb.Application.extend({
 		getLocalPath:function () {
 			return module.uri.replace("app.js","");
 		},
@@ -10,11 +10,13 @@ define(['views/layout','module','safe','tinybone/router'],function (Layout,modul
 			if (err) console.log(err.stack);
 		},
 		init:function(wire, next) {
+			this.prefix = wire.prefix;
 			var self = this;
-			this.router = Router({
+			this.router = new tb.Router({
 				prefix:module.uri.replace("app/app.js",""),
 				render:function (route) { self.clientRender(route) },
-				errHandler:this.errHandler
+				errHandler:this.errHandler,
+				routes:routes
 			})
 			next || (next = this.errHandler);
 			this.mainView || (this.mainView = new Layout({app:this}));
@@ -41,5 +43,5 @@ define(['views/layout','module','safe','tinybone/router'],function (Layout,modul
 			},next)
 
 		}
-	}
+	})
 })

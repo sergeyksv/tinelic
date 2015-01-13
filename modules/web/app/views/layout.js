@@ -1,4 +1,5 @@
-define(['tinybone/view'],function (view,safe,dust) {
+define(['tinybone/base'],function (tb) {
+	var view = tb.View;
 	return view.extend({
 		id:"layout",
 		render:function (cb) {

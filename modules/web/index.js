@@ -28,10 +28,11 @@ module.exports.init = function (ctx, cb) {
 			res.send(dust.compile(template.toString(), name));
 		}))
 	})
-	requirejs(['routes'], function (routes) {
+	requirejs(['routes','app'], function (routes,App) {
+		var app = new App({prefix:"/web"});
 		_.each(routes, function (v,k) {
 			ctx.router.get(k,function (req,res,next) {
-				requirejs(['routes/'+v,'app'],function (route,app) {
+				requirejs(['routes/'+v],function (route) {
 					route(_.pick(req,["params","query"]), {
 						render:function (route) {
 							var view = app.getView();
@@ -50,6 +51,7 @@ module.exports.init = function (ctx, cb) {
 										wiredView.views.push(wv)
 									})
 								}
+								wv.prefix = app.prefix;
 								wireView(view,wv);
 
 								res.send(text.replace("_t_app_wire",JSON.stringify(wv)))
