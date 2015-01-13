@@ -131,26 +131,39 @@ _.each(routes, function (v,k) {
     return resolved
   }
 
+var wireApp = _t_app_wire;
+
+var mainView = app.getView();
+
+function next (err) {
+	if (err) console.log(err.stack);
+}
+
+mainView.bindWire(wireApp, null, null, safe.sure(next, function () {
+	mainView.postRender();
+}))
 
 $("body").on("click","a", function (e) {
 	e.preventDefault();
 	$this = $(this);
 	var uri = resolveUrl($this.attr("href"));
 	uri = uri.replace(window.location,"/");
-	function next (err) {
-		if (err) console.log(err);
-	}
+
 	_.each(paths, function (p) {
 		var match = p.match(uri);
 		if (match) {
 			var v = routes[p.source];
-			requirejs(['routes/'+v,"app"],function (route,app) {
+			requirejs(['routes/'+v],function (route) {
 				route(safe.sure(next,function (res) {
 					requirejs(['views/'+res.view], function (View) {
-						var view = new View(app);
+						var view = new View({app:app});
 						view.data = res.data;
 						view.render(safe.sure(next, function (text) {
+							mainView.removeChilds();
 							$("#content").html(text);
+							view.bindDom($("#content"));
+							mainView.addSubView({view:view, name:res.view, cid:view.cid, data:view.data})
+							view.postRender();
 						}))
 					},next)
 				}))

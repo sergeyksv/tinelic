@@ -22,6 +22,7 @@ module.exports.init = function (ctx, cb) {
 		var name = req.params.path;
 		name = name.replace(".js","");
 		fs.readFile(path.resolve(__dirname, "./app/templates",name+".dust"), safe.sure(next, function (template) {
+			res.set('Content-Type', 'application/javascript');
 			res.send(dust.compile(template.toString(), name));
 		}))
 	})
@@ -38,7 +39,17 @@ module.exports.init = function (ctx, cb) {
 							populateTplCtx.call(this,ctx,cb)
 						}
 						view.render(safe.sure(next, function (text) {
-							res.send(text)
+							var wv = {name:"app",data:route.data,views:[]};
+							function wireView(realView,wiredView) {
+								_.each(realView.views, function (view) {
+									var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
+									wireView(view.view,wv);
+									wiredView.views.push(wv)
+								})
+							}
+							wireView(view,wv);
+
+							res.send(text.replace("_t_app_wire",JSON.stringify(wv)))
 						}))
 					}))
 				},next)

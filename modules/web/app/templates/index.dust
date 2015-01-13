@@ -1,2 +1,4 @@
-{@view name="header"/}Hello world<br>
+{@view name="header" data="text"/}Hello world<br>
 <a href="page">Page!</a>
+<br><br>
+<h3 id="etarget">Click on me!!!!</h3>
