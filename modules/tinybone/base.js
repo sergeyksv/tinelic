@@ -715,8 +715,9 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                     if (match) {
                         history.pushState({}, "", url);
                         var v = self.routes[p.source];
-                        requirejs(['routes/' + v], function(route) {
-                            route({
+                        var rp = v.split("#");
+                        requirejs(['routes/' + rp[0]], function(route) {
+                            route[rp[1]]({
                                 params: match,
                                 query: getQueryStringAsObject()
                             }, {

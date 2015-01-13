@@ -1,5 +1,6 @@
 var _ = require("lodash")
 var safe = require("safe")
+var mongo = require("mongodb")
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -19,6 +20,10 @@ module.exports.init = function (ctx, cb) {
 				getEvents:function (t, p, cb) {
 					// dummy, just get it all out
 					sentry.find().toArray(cb)
+				},
+				getEvent:function (t, p, cb) {
+					// dummy, just get it all out
+					sentry.findOne({_id:new mongo.ObjectID(p._id)},cb);
 				}
 			}});
 		}))

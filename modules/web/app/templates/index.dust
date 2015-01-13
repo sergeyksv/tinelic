@@ -8,7 +8,7 @@ Hello world<br>
 <table>
 {#events}
 	<tr>
-		<td>{_id}</td>
+		<td><a href='{_t_prefix}/event/{_id}'>{_id}</a></td>
 	</tr>
 {/events}
 </table>

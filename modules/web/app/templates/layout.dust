@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="{_t_prefix}/css/style.css" rel="stylesheet">
-<title>Hey, wei!</title>
+<title>{title}</title>
 <script src="{_t_prefix}/js/require.js"></script>
 <script src="//code.jquery.com/jquery-2.1.3.js"></script>
 <script>
@@ -13,8 +13,9 @@ requirejs.config({
     baseUrl: "{_t_prefix}/app",
     paths:{
 		"tinybone":"../tinybone",
-		"lodash":"//cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash",
-		"dust":"//cdnjs.cloudflare.com/ajax/libs/dustjs-linkedin/2.5.1/dust-core"
+		"lodash":"../js/lodash",
+		"dust":"../js/dust",
+		"safe":"../js/safe"
 	},
 	shim: {
 		'dust': {

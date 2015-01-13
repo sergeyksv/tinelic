@@ -1,5 +1,6 @@
 define({
-	"":"index",
-	"/page":"page"
+	"":"main#index",
+	"/event/:id":"main#event",
+	"/page":"main#page"
 })
 

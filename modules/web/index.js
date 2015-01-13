@@ -32,8 +32,9 @@ module.exports.init = function (ctx, cb) {
 		var app = new App({prefix:"/web"});
 		_.each(routes, function (v,k) {
 			ctx.router.get(k,function (req,res,next) {
-				requirejs(['routes/'+v],function (route) {
-					route(_.pick(req,["params","query"]), {
+				var rp = v.split("#");
+				requirejs(['routes/'+rp[0]],function (route) {
+					route[rp[1]](_.pick(req,["params","query"]), {
 						render:function (route) {
 							var view = app.getView();
 							view.data = route.data || {};

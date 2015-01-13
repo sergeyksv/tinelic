@@ -34,6 +34,7 @@ define(['views/layout','module','safe',"dust","tinybone/base","routes"],function
 				var view = new View({app:self});
 				view.data = route.data;
 				view.render(safe.sure(next, function (text) {
+					document.title = route.data.title;
 					mainView.removeChilds();
 					$("#content").html(text);
 					view.bindDom($("#content"));
