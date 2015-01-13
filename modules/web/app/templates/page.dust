@@ -1,2 +1,2 @@
-{@view name="header"/}Hello Page<br>
+{@view name="header_view"/}Hello Page<br>
 <a href=".">Home!</a>

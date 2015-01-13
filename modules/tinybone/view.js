@@ -342,7 +342,7 @@ _.extend(View.prototype, Events, {
 			},cb)
 		} else {
 			safe.each(names, function (name, cb) {
-				requirejs(["dustjs/"+name], function (template) {
+				requirejs(["dustjs/"+name+"_tpl"], function (template) {
 					dust.loadSource(template);
 					cb();
 				},cb)

@@ -3,6 +3,7 @@ var tinyback = require('tinyback');
 var cfg = {
 	modules:[
 		{name:"mongo",object:tinyback.mongodb()},
+		{name:"restapi",object:tinyback.restapi()},
 		{name:"sentry",require:"./modules/sentryapi.js"},
 		{name:"web",require:"./modules/web"}
 	],

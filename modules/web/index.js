@@ -16,11 +16,12 @@ requirejs.config({
 requirejs.define("dust",dust);
 
 module.exports.init = function (ctx, cb) {
+	requirejs.define("backctx",ctx);
 	ctx.router.use(static(__dirname));
 	ctx.router.use(static(path.resolve(__dirname,"../.")));
 	ctx.router.get("/app/dustjs/:path", function (req, res, next) {
 		var name = req.params.path;
-		name = name.replace(".js","");
+		name = name.replace("_tpl.js","");
 		fs.readFile(path.resolve(__dirname, "./app/templates",name+".dust"), safe.sure(next, function (template) {
 			res.set('Content-Type', 'application/javascript');
 			res.send(dust.compile(template.toString(), name));

@@ -1,4 +1,11 @@
-{@view name="header" data="text"/}Hello world<br>
+{@view name="header_view" data="text"/}Hello world<br>
 <a href="page">Page!</a>
 <br><br>
 <h3 id="etarget">Click on me!!!!</h3>
+<table>
+{#events}
+	<tr>
+		<td>{_id}</td>
+	</tr>
+{/events}
+</table>

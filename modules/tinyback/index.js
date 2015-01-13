@@ -45,6 +45,26 @@ module.exports.createApp = function (cfg, cb) {
 	}))
 }
 
+module.exports.restapi = function () {
+	return {
+		init: function (ctx, cb) {
+			ctx.router.use("/:token/:module/:target",function (req, res, next) {
+				if (!ctx.api[req.params.module])
+					throw new Error("No api module available");
+				if (!ctx.api[req.params.module][req.params.target])
+					throw new Error("No function available");
+				ctx.api[req.params.module][req.params.target](req.params.token, req.query, safe.sure(next, function (result) {
+					res.json(result);
+				}))
+			})
+			cb(null, {
+				api: {
+				}
+			})
+		}
+	}
+}
+
 module.exports.mongodb = function () {
 	return {
 		init:function (ctx,cb) {

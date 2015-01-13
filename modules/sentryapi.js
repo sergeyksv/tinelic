@@ -15,7 +15,12 @@ module.exports.init = function (ctx, cb) {
 				})
 				res.send(buf, { 'Content-Type': 'image/gif' }, 200);
 			})
-			cb(null, {api:{}});
+			cb(null, {api:{
+				getEvents:function (t, p, cb) {
+					// dummy, just get it all out
+					sentry.find().toArray(cb)
+				}
+			}});
 		}))
 	}))
 }
