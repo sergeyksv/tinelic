@@ -31,28 +31,30 @@ module.exports.init = function (ctx, cb) {
 		_.each(routes, function (v,k) {
 			ctx.router.get(k,function (req,res,next) {
 				requirejs(['routes/'+v,'app'],function (route,app) {
-					route(safe.sure(next,function (route) {
-						var view = app.getView();
-						view.data = route.data || {};
-						var populateTplCtx = view.populateTplCtx;
-						view.populateTplCtx = function (ctx, cb) {
-							ctx = ctx.push({_t_main_view:route.view});
-							populateTplCtx.call(this,ctx,cb)
-						}
-						view.render(safe.sure(next, function (text) {
-							var wv = {name:"app",data:route.data,views:[]};
-							function wireView(realView,wiredView) {
-								_.each(realView.views, function (view) {
-									var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
-									wireView(view.view,wv);
-									wiredView.views.push(wv)
-								})
+					route(_.pick(req,["params","query"]), {
+						render:function (route) {
+							var view = app.getView();
+							view.data = route.data || {};
+							var populateTplCtx = view.populateTplCtx;
+							view.populateTplCtx = function (ctx, cb) {
+								ctx = ctx.push({_t_main_view:route.view,_t_prefix:"/web"});
+								populateTplCtx.call(this,ctx,cb)
 							}
-							wireView(view,wv);
+							view.render(safe.sure(next, function (text) {
+								var wv = {name:"app",data:route.data,views:[]};
+								function wireView(realView,wiredView) {
+									_.each(realView.views, function (view) {
+										var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
+										wireView(view.view,wv);
+										wiredView.views.push(wv)
+									})
+								}
+								wireView(view,wv);
 
-							res.send(text.replace("_t_app_wire",JSON.stringify(wv)))
-						}))
-					}))
+								res.send(text.replace("_t_app_wire",JSON.stringify(wv)))
+							}))
+						}
+					},next)
 				},next)
 			})
 		})
