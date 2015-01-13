@@ -5,6 +5,7 @@ var dust = require('dustjs-linkedin');
 var fs = require('fs');
 var path = require('path');
 var static = require('serve-static');
+var lessMiddleware = require('less-middleware');
 
 requirejs.config({
     baseUrl: __dirname+"/app",
@@ -17,8 +18,8 @@ requirejs.define("dust",dust);
 
 module.exports.init = function (ctx, cb) {
 	requirejs.define("backctx",ctx);
-	ctx.router.use(static(__dirname));
-	ctx.router.use(static(path.resolve(__dirname,"../.")));
+	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
+	ctx.router.use(static(__dirname+"/public"));
 	ctx.router.get("/app/dustjs/:path", function (req, res, next) {
 		var name = req.params.path;
 		name = name.replace("_tpl.js","");
