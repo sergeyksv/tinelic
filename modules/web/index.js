@@ -71,10 +71,10 @@ module.exports.init = function (ctx, cb) {
 				},next)
 			})
 		})
-		ctx.api.assets.getProject("public",{slug:"tinelic"}, safe.sure(cb, function (selfProj) {
+		ctx.api.assets.getProject("public",{slug:"tinelic-web"}, safe.sure(cb, function (selfProj) {
 			if (selfProj==null) {
-				ctx.api.assets.saveProject("public", {project:{name:"Tinelic"}}, safe.sure(cb, function (selfProj) {
-					self_id = selfProj._id;
+				ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id) {
+					self_id = selfProj_id;
 					cb(null,{api:{}})
 				}))
 			} else {

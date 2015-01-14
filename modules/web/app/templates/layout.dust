@@ -35,9 +35,10 @@
 	})
 
 	setTimeout(function () {
-		throw new Error("Test Error"+(new Date()).getDay());
+		if (_t_page.valueOf()%2)
+			throw new Error("Test Error"+(new Date()).getDay());
 	},1000);
-	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/sentry/api/{_t_self_id}', {
+	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
 			data._dtInit = _t_page;
 			data._dt = new Date();
@@ -62,6 +63,8 @@
 	})
 	define("backctx","/restapi/");
 })();
+if (_t_page.valueOf()%2)
+	throw new Error("Test Error1"+(new Date()).getDay());
 </script>
 </head>
 <body id="content">
