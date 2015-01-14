@@ -2,6 +2,7 @@ var _ = require("lodash")
 var safe = require("safe")
 var path = require("path");
 var express = require('express');
+var moment = require('moment');
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
@@ -65,10 +66,84 @@ module.exports.restapi = function () {
 	}
 }
 
+module.exports.prefixify = function () {
+	var translate = {
+		"_i_": function (pr) {
+			if (!isNaN(parseInt(pr)))
+				return parseInt(pr);
+		},
+		"_s_": function (pr) {
+			return pr.toString();
+		},
+		"_f_": function (pr) {
+			if (!isNaN(parseFloat(pr)))
+				return parseFloat(pr);
+		},
+		"_t_": function (pr) {
+		},
+		"_dt": function (pr) {
+			if (pr) {
+				var t = moment(pr);
+				if (t.isValid())
+					return t.toDate();
+			}
+		},
+		"_b_": function (pr) {
+			if (_.contains([true,"true",1,"1"], pr))
+				return 1;
+			if (_.contains([false,"false",0,"0",null,"null",""], pr))
+				return 0;
+		}
+	}
+
+	function datafix(obj,opts) {
+		var nobj = obj;
+		_.each(obj, function (v, k) {
+			if (_.isFunction(v))
+				return;
+
+			var prefix = null;
+			if (k.length > 2 && k[0] == "_")
+				prefix = k.substr(0,3);
+
+			if (prefix && translate[prefix]) {
+				var nv = undefined;
+				try { nv = translate[prefix](v); } catch (e) {};
+				if (_.isUndefined(nv)) {
+					if (opts && opts.strict)
+						throw new Error("Wrong field format: "+k)
+					delete nobj[k];
+				} else if (nv!==v)
+					nobj[k] = nv;
+			} else if (_.isObject(v) || _.isArray(v)) {
+				datafix(v,opts);
+			}
+		});
+		return nobj;
+	}
+
+	return {
+		init:function (ctx,cb) {
+			cb(null, {
+				api:{
+					datafix:datafix,
+					register:function (prefix, transform) {
+						translate[prefix]=transform;
+					}
+				}
+			})
+		}
+	}
+}
+
 module.exports.mongodb = function () {
 	return {
 		init:function (ctx,cb) {
 			var mongo = require("mongodb");
+			ctx.api.prefixify.register("_id",function (pr) {
+				return new mongo.ObjectID(pr.toString());
+			})
+
 			var dbcache = {};
 			cb(null, {
 				api:{

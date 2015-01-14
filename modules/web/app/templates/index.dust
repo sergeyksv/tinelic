@@ -1,16 +1,11 @@
 {@view name="header_view" data="text"/}
 <div class="container">
-<div class="starter-template">
-Hello world<br>
-<a href="page">Page!</a>
-<br><br>
-<h3 id="etarget">Click on me!!!!</h3>
-<table>
-{#events}
-	<tr>
-		<td><a href='{_t_prefix}/event/{_id}'>{_id}</a></td>
-	</tr>
-{/events}
-</table>
-</div>
+<h2>Projects</h2>
+<ul>
+{#projects}
+	<li><h3><a href='{_t_prefix}/project/{slug}'>{name}</a></h3> - {_id}</li>
+{/projects}
+</ul>
+<button class="do-newproject btn btn-default">Add new project</button>
+
 </div>

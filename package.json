@@ -3,19 +3,17 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
-    "dustjs-linkedin":"2.5.1",
-	"express":"~4.10.7",
-	"less-middleware":"~1.0.4",
-	"lodash":"~2.4.1",
-	"mongodb":"~1.4.28",
-	"requirejs":"~2.1.15",
-	"safe":"~0.2.1",
-	"serve-static":"~1.8.0"
+    "dustjs-linkedin": "2.5.1",
+    "express": "~4.10.7",
+    "less-middleware": "~1.0.4",
+    "lodash": "~2.4.1",
+    "moment": "~2.9.0",
+    "mongodb": "~1.4.28",
+    "requirejs": "~2.1.15",
+    "safe": "~0.2.1",
+    "serve-static": "~1.8.0"
   },
-  "devDependencies": {
-  },
-  "optionalDependencies": {
-  },
-  "scripts": {
-  }
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "scripts": {}
 }

@@ -2,8 +2,10 @@ var tinyback = require('tinyback');
 
 var cfg = {
 	modules:[
+		{name:"prefixify",object:tinyback.prefixify()},
 		{name:"mongo",object:tinyback.mongodb()},
 		{name:"restapi",object:tinyback.restapi()},
+		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"sentry",require:"./modules/sentryapi.js"},
 		{name:"web",require:"./modules/web"}
 	],

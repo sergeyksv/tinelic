@@ -15,13 +15,17 @@ requirejs.config({
 })
 
 requirejs.define("dust",dust);
+requirejs.define("highcharts",true);
+
+module.exports.deps = ['assets'];
 
 module.exports.init = function (ctx, cb) {
+	var self_id = null;
 	requirejs.define("backctx",ctx);
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
 	ctx.router.use(static(__dirname+"/public"));
-	ctx.router.get("/app/dustjs/:path", function (req, res, next) {
-		var name = req.params.path;
+	ctx.router.get("/app/dustjs*", function (req, res, next) {
+		var name = req.path.replace("/app/dustjs/","");
 		name = name.replace("_tpl.js","");
 		fs.readFile(path.resolve(__dirname, "./app/templates",name+".dust"), safe.sure(next, function (template) {
 			res.set('Content-Type', 'application/javascript');
@@ -40,7 +44,12 @@ module.exports.init = function (ctx, cb) {
 							view.data = route.data || {};
 							var populateTplCtx = view.populateTplCtx;
 							view.populateTplCtx = function (ctx, cb) {
-								ctx = ctx.push({_t_main_view:route.view,_t_prefix:"/web"});
+								ctx = ctx.push({_t_main_view:route.view,
+									_t_prefix:"/web",
+									_t_self_id:self_id,
+									_t_start:(new Date()).valueOf(),
+									_t_route:k
+								});
 								populateTplCtx.call(this,ctx,cb)
 							}
 							view.render(safe.sure(next, function (text) {
@@ -62,6 +71,16 @@ module.exports.init = function (ctx, cb) {
 				},next)
 			})
 		})
-		cb(null,{api:{}})
+		ctx.api.assets.getProject("public",{slug:"tinelic"}, safe.sure(cb, function (selfProj) {
+			if (selfProj==null) {
+				ctx.api.assets.saveProject("public", {project:{name:"Tinelic"}}, safe.sure(cb, function (selfProj) {
+					self_id = selfProj._id;
+					cb(null,{api:{}})
+				}))
+			} else {
+				self_id = selfProj._id;
+				cb(null,{api:{}})
+			}
+		}))
 	},cb)
 }

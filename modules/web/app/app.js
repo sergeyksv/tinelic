@@ -18,6 +18,9 @@ define(['views/layout','module','safe',"dust","tinybone/base","routes"],function
 				errHandler:this.errHandler,
 				routes:routes
 			})
+			this.router.on("start", function (route) {
+				self._pageLoad = {start:new Date(),route:route.route};
+			})
 			next || (next = this.errHandler);
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
@@ -26,6 +29,7 @@ define(['views/layout','module','safe',"dust","tinybone/base","routes"],function
 			}))
 		},
 		clientRender:function (route, next) {
+			this._pageLoad.data = new Date();
 			next || (next = this.errHandler);
 			var self = this;
 			this.mainView || (this.mainView = new Layout({app:this}));
@@ -40,6 +44,14 @@ define(['views/layout','module','safe',"dust","tinybone/base","routes"],function
 					view.bindDom($("#content"));
 					mainView.addSubView({view:view, name:route.view, cid:view.cid, data:view.data})
 					view.postRender();
+					self._pageLoad.dom = new Date();
+					var m = {
+						_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
+						_i_dt:self._pageLoad.dom.valueOf()-self._pageLoad.data.valueOf(),
+						_i_lt:0,
+						r:self._pageLoad.route
+					}
+					window._t_pageLoad(m);
 				}))
 			},next)
 

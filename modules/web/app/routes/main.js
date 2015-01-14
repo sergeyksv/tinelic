@@ -1,8 +1,8 @@
 define(["tinybone/backadapter", "safe"], function (api,safe) {
 	return {
 		index:function (req, res, next) {
-			api("sentry.getEvents","public", {}, safe.sure( next, function (events) {
-				res.render({view:'index_view',data:{events:events,title:"Index Page"}})
+			api("assets.getProjects","public", {}, safe.sure( next, function (projects) {
+				res.render({view:'index_view',data:{projects:projects,title:"Tinelic - Home"}})
 			}))
 		},
 		event:function (req, res, next) {
@@ -12,6 +12,13 @@ define(["tinybone/backadapter", "safe"], function (api,safe) {
 		},
 		page:function (req, res, next) {
 			res.render({view:'page_view',data:{title:"Page Page"}})
-		}
+		},
+		project:function (req, res, next) {
+			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( next, function (project) {
+				api("sentry.getPageViews","public",{}, safe.sure( next, function (views) {
+					res.render({view:'project/project_view',data:{views:views,project:project,title:"Project "+project.name}})
+				}))
+			}))
+		},
 	}
 })

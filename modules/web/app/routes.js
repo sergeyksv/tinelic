@@ -1,6 +1,7 @@
 define({
-	"":"main#index",
+	"/":"main#index",
 	"/event/:id":"main#event",
-	"/page":"main#page"
+	"/page":"main#page",
+	"/project/:slug":"main#project"
 })
 

@@ -1,4 +1,9 @@
 define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
+	var array = [];
+	var push = array.push;
+	var slice = array.slice;
+	var splice = array.splice;
+
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
         dust.helpers = {};
@@ -310,7 +315,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                 this.$el = parent.$el.find("#" + wire.cid);
                 if (this.$el.length != 1)
                     return safe.back(cb, new Error("View '" + wire.name + "' can't find its unique element"))
-                this.data = _.isString(wire.data) ? ctx.get(wire.data) : wire.data;
+                this.data = _.isString(wire.data) ? (wire.data=="."?ctx.get([],true):ctx.get(wire.data)) : wire.data;
             }
 
             safe.run(function(cb) {
@@ -648,7 +653,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
             for (var i = 0, l = keys.length; i < l; i++) {
                 var value = m[i + 1];
                 if (value) {
-                    match[keys[i]] = value;
+                    match[keys[i]] = decodeURIComponent(value);
                 }
             }
         }
@@ -713,6 +718,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                     if (match) return;
                     match = p.match(uri);
                     if (match) {
+						self.trigger("start",{route:p.source})
                         history.pushState({}, "", url);
                         var v = self.routes[p.source];
                         var rp = v.split("#");

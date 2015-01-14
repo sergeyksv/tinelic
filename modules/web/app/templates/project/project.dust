@@ -1,0 +1,6 @@
+{@view name="header_view"/}
+
+<div class="container">
+<h1>{project.name}</h1>
+<div id="pageviews" style="width:100%; height:400px;"></div>
+</div>
