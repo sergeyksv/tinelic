@@ -1,6 +1,20 @@
 {@view name="header_view"/}
 
 <div class="container">
-<h1>{project.name}</h1>
-<div id="pageviews" style="width:100%; height:400px;"></div>
+<div class="row">
+<div class="col-xs-9">
+<h3>Page Views</h3><hr>
+	<div id="pageviews" style="width:100%; height:400px;"></div>
+<h3>Page Time</h3><hr>
+	<div id="pagetime" style="width:100%; height:400px;"></div>
+</div>
+<div class="col-xs-3">
+<h3>Top Errors</h3><hr>
+{#errors}
+<a href='{_t_prefix}/event/{error._id}'><span class="badge text-danger">{stats.c}</span> - {error.message}</a>
+{error.culprit}
+<hr>
+{/errors}
+</div>
+</div>
 </div>

@@ -4,7 +4,13 @@
 <div class="starter-template">
 {#event}
 <h1>{message}</h1>
---- {_id}
+--- {_id} - {culprit}
+<br><br>
+<ul>
+{#stacktrace.frames}
+<li>{filename}:{colno}:{lineno}</li>
+{/stacktrace.frames}
+</ul>
 {/event}
 </div>
 </div>

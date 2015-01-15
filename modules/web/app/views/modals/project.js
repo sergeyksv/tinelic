@@ -20,7 +20,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe'],functio
 			var project = {
 				name:this.$("#name").val()
 			}
-			api("assets.saveProject","public",project, safe.sure(this.app.errHandler, function () {
+			api("assets.saveProject","public",{project:project}, safe.sure(this.app.errHandler, function () {
 				self.remove();
 				self.trigger("saved");
 			}))

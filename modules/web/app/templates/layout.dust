@@ -22,7 +22,7 @@
 			m._dt = new Date();
 			m._dtp = _t_page;
 			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
-			$.ajax("/sentry/browser/{_t_self_id}", {data:m})
+			$.ajax("/collect/browser/{_t_self_id}", {data:m})
 		}
 		_t_load = new Date();
 		var m = {
@@ -38,7 +38,7 @@
 		if (_t_page.valueOf()%2)
 			throw new Error("Test Error"+(new Date()).getDay());
 	},1000);
-	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/sentry/{_t_self_id}', {
+	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
 			data._dtInit = _t_page;
 			data._dt = new Date();

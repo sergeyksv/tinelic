@@ -6,7 +6,7 @@ var cfg = {
 		{name:"mongo",object:tinyback.mongodb()},
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
-		{name:"sentry",require:"./modules/sentryapi.js"},
+		{name:"collect",require:"./modules/collectapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
 	config:{

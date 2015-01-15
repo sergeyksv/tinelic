@@ -5,10 +5,22 @@ define(['tinybone/base','highcharts'],function (tb) {
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var rpm = [],load=[],err=[];
-			_.each(this.data.views, function (v) {
-				rpm.push([v._id*60000,v.value.c]);
-				load.push([v._id*60000,v.value.tt/1000]);
-				err.push([v._id*60000,100.0*v.value.e/v.value.c]);
+			var views = this.data.views;
+			views = _.sortBy(views, function (v) { return v._id; });
+			var flat = [],prev = null;
+			_.each(views, function (v) {
+				if (prev) {
+					for (var i=prev._id+1; i<v._id; i++) {
+						flat.push({_id:i,value:null})
+					}
+				}
+				prev = v;
+				flat.push(v);
+			})
+			_.each(flat, function (v) {
+				rpm.push([v._id*60000,v.value?v.value.c:0]);
+				load.push([v._id*60000,v.value?(v.value.tt/1000):0]);
+				err.push([v._id*60000,v.value?v.value.e:0]);
 			})
 
 			this.$('#pageviews').highcharts({
@@ -16,7 +28,7 @@ define(['tinybone/base','highcharts'],function (tb) {
 					type: 'spline'
 				},
 				title: {
-					text: 'Page Views per minute (rpm)'
+					text: ''
 				},
 				xAxis: {
 					type:'datetime',
@@ -28,14 +40,6 @@ define(['tinybone/base','highcharts'],function (tb) {
 						title: {
 							text: 'rpm'
 						}
-					},{
-						title: {
-							text: 's'
-						}
-					},{
-						title: {
-							text: '%'
-						}
 					}
 				],
 				series: [{
@@ -43,16 +47,38 @@ define(['tinybone/base','highcharts'],function (tb) {
 						yAxis:0,
 						data:rpm
 					},{
-						name: 'Time',
-						yAxis:1,
-						data:load
-					},{
 						name: 'Errors',
-						yAxis:2,
+						yAxis:0,
 						data:err
 					}
 				]
 			})
+			this.$('#pagetime').highcharts({
+				chart: {
+					type: 'spline'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: [{
+						title: {
+							text: 's'
+						}
+					}
+				],
+				series: [{
+						name: 'Time',
+						data:load
+					}
+				]
+			})
+
 		}
 	})
 })

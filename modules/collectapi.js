@@ -13,12 +13,25 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
-				db.collection("sentry",cb);
+				db.collection("events",safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({chash:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) },
+						function (cb) { col.ensureIndex({_idpv:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			},
 			function (cb) {
-				db.collection("pages", cb);
+				db.collection("pages",safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({chash:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			}
-		], safe.sure_spread(cb, function (sentry,pages) {
+		], safe.sure_spread(cb, function (events,pages) {
 			ctx.router.use("/browser/:project",function (req, res, next) {
 				var data = req.query;
 				data._idp=req.params.project;
@@ -35,7 +48,7 @@ module.exports.init = function (ctx, cb) {
 						// once after inserting page we need to link
 						// this page events that probably cread earlier
 						var _id = docs[0]._id;
-						sentry.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id}},safe.sure(cb, function (updates) {
+						events.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id}},safe.sure(cb, function (updates) {
 							if (updates)
 								pages.update({_id:_id},{$inc:{_i_err:updates}},cb);
 							else
@@ -48,7 +61,7 @@ module.exports.init = function (ctx, cb) {
 					res.send(buf, { 'Content-Type': 'image/gif' }, 200);
 				})
 			})
-			ctx.router.use("/api/:project",function (req, res, next) {
+			ctx.router.use("/sentry/api/:project",function (req, res, next) {
 				var data = JSON.parse(req.query.sentry_data);
 				data.project && (delete data.project);
 				data._idp = req.params.project;
@@ -64,7 +77,7 @@ module.exports.init = function (ctx, cb) {
 				safe.run(function (cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						page && (data._idpv = page._id);
-						sentry.insert(data, cb)
+						events.insert(data, cb)
 					}))
 				}, function (err) {
 					if (err)
@@ -75,11 +88,11 @@ module.exports.init = function (ctx, cb) {
 			cb(null, {api:{
 				getEvents:function (t, p, cb) {
 					// dummy, just get it all out
-					sentry.find().toArray(cb)
+					events.find().toArray(cb)
 				},
 				getEvent:function (t, p, cb) {
 					// dummy, just get it all out
-					sentry.findOne({_id:new mongo.ObjectID(p._id)},cb);
+					events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 				},
 				getPageViews:function (t, p, cb) {
 					pages.mapReduce(function () {
@@ -99,9 +112,45 @@ module.exports.init = function (ctx, cb) {
 							return r;
 						},
 						{
+							query: prefixify(p.filter),
 							out: {inline:1},
 						},
 						cb
+					)
+				},
+				getErrorStats:function (t, p, cb) {
+					events.mapReduce(function () {
+							emit(this.logger+this.platform+this.message,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
+						},
+						function (k, v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r)
+									r = v
+								else {
+									r.c+=v.c;
+									r._dtmin = Math.min(r._dtmin, v._dtmin);
+									r._dtmax = Math.min(r._dtmax, v._dtmax);
+									(r._dtmax==v._dtmax) && (r._id = v._id);
+								}
+							})
+							return r;
+						},
+						{
+							out: {inline:1},
+						},
+						safe.sure(cb, function (stats) {
+							stats = _.sortBy(stats, function (s) { return -1*s.value.c; } );
+							var ids = {};
+							_.each(stats, function (s) { ids[s.value._id]={stats:s.value}; } );
+							events.find({_id:{$in:_.map(_.keys(ids),function (id) { return new mongo.ObjectID(id)})}})
+								.toArray(safe.sure(cb, function (errors) {
+									_.each(errors, function (e) {
+										ids[e._id].error = e;
+									})
+									cb(null, _.values(ids));
+								}))
+						})
 					)
 				}
 			}});

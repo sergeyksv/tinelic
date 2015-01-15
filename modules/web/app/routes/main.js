@@ -6,7 +6,7 @@ define(["tinybone/backadapter", "safe"], function (api,safe) {
 			}))
 		},
 		event:function (req, res, next) {
-			api("sentry.getEvent","public", {_id:req.params.id}, safe.sure( next, function (event) {
+			api("collect.getEvent","public", {_id:req.params.id}, safe.sure( next, function (event) {
 				res.render({view:'event_view',data:{event:event,title:"Event "+event.message}})
 			}))
 		},
@@ -15,8 +15,10 @@ define(["tinybone/backadapter", "safe"], function (api,safe) {
 		},
 		project:function (req, res, next) {
 			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( next, function (project) {
-				api("sentry.getPageViews","public",{}, safe.sure( next, function (views) {
-					res.render({view:'project/project_view',data:{views:views,project:project,title:"Project "+project.name}})
+				api("collect.getPageViews","public",{filter:{_idp:project._id}}, safe.sure( next, function (views) {
+					api("collect.getErrorStats","public",{}, safe.sure( next, function (errors) {
+						res.render({view:'project/project_view',data:{errors:errors, views:views,project:project,title:"Project "+project.name}})
+					}))
 				}))
 			}))
 		},
