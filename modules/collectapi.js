@@ -37,12 +37,12 @@ module.exports.init = function (ctx, cb) {
 				data._idp=req.params.project;
 				data._dtr = new Date();
 				var md5sum = crypto.createHash('md5');
+				data = prefixify(data);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				data._i_err = 0;
-				data = prefixify(data);
 				safe.run(function (cb) {
 					pages.insert(data, safe.sure(cb, function (docs) {
 						// once after inserting page we need to link
