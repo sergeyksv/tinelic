@@ -1,5 +1,9 @@
 require('newrelic')
 var tinyback = require('tinyback');
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
+var path = require('path');
 
 var cfg = {
 	modules:[
@@ -28,5 +32,20 @@ tinyback.createApp(cfg, function (err, app) {
 		console.log(err.stack);
 		process.exit(0);
 	}
-	app.express.listen(3000);
+	try {
+		var options = {
+			key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
+			cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
+			ssl: true,
+			plain: false
+		}
+
+		var httpsServer = https.createServer(options, app.express);
+
+		httpsServer.listen(443)
+	} catch (e) {};
+
+	var httpServer = http.createServer(app.express);
+
+	httpServer.listen(80);
 })
