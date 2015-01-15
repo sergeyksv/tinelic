@@ -1,4 +1,4 @@
-define(["tinybone/backadapter", "safe"], function (api,safe) {
+define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 	return {
 		index:function (req, res, next) {
 			api("assets.getProjects","public", {}, safe.sure( next, function (projects) {
@@ -13,12 +13,17 @@ define(["tinybone/backadapter", "safe"], function (api,safe) {
 		page:function (req, res, next) {
 			res.render({view:'page_view',data:{title:"Page Page"}})
 		},
-		project:function (req, res, next) {
-			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( next, function (project) {
-				api("collect.getPageViews","public",{filter:{_idp:project._id}}, safe.sure( next, function (views) {
-					api("collect.getErrorStats","public",{}, safe.sure( next, function (errors) {
-						res.render({view:'project/project_view',data:{errors:errors, views:views,project:project,title:"Project "+project.name}})
-					}))
+		project:function (req, res, cb) {
+			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( cb, function (project) {
+				safe.parallel({
+					views: function (cb) {
+						api("collect.getPageViews","public",{filter:{_idp:project._id}}, cb);
+					},
+					errors: function (cb) {
+						api("collect.getErrorStats","public",{filter:{_idp:project._id}}, cb);
+					}
+				}, safe.sure(cb, function (r) {
+					res.render({view:'project/project_view',data:_.extend(r,{project:project,title:"Project "+project.name})})
 				}))
 			}))
 		},

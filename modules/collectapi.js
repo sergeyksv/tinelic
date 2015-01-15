@@ -137,6 +137,7 @@ module.exports.init = function (ctx, cb) {
 							return r;
 						},
 						{
+							query: prefixify(p.filter),
 							out: {inline:1},
 						},
 						safe.sure(cb, function (stats) {
