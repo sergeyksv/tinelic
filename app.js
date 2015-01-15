@@ -1,3 +1,4 @@
+require('newrelic')
 var tinyback = require('tinyback');
 
 var cfg = {
