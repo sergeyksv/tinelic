@@ -36,7 +36,8 @@ define(['tinybone/base','highcharts'],function (tb) {
 
 			this.$('#pageviews').highcharts({
 				chart: {
-					type: 'spline'
+					type: 'spline',
+					zoomType: 'x'
 				},
 				title: {
 					text: ''
@@ -90,7 +91,8 @@ define(['tinybone/base','highcharts'],function (tb) {
 			})
 			this.$('#pagetime').highcharts({
 				chart: {
-					type: 'spline'
+					type: 'spline',
+					zoomType: 'x'
 				},
 				title: {
 					text: ''
