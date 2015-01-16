@@ -14,7 +14,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			res.render({view:'page_view',data:{title:"Page Page"}})
 		},
 		project:function (req, res, cb) {
-			var quant = 15;
+			var quant = 10;
 			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( cb, function (project) {
 				safe.parallel({
 					views: function (cb) {

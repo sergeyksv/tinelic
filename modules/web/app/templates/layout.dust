@@ -70,6 +70,9 @@ if (_t_page.valueOf()%2)
 <body id="content">
 {@view name=_t_main_view /}
 <script>
-	requirejs(["app"], function (App) { (new App()).init(_t_app_wire); })</script>
+	$.getJSON("/web/app/wire/{_t_unique}", function (wire) {
+		requirejs(["app"], function (App) { (new App()).init(wire); })
+	})
+</script>
 </body>
 </html>

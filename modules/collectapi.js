@@ -32,7 +32,7 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		], safe.sure_spread(cb, function (events,pages) {
-			ctx.router.use("/browser/:project",function (req, res, next) {
+			ctx.router.get("/browser/:project",function (req, res, next) {
 				var data = req.query;
 				data._idp=req.params.project;
 				data._dtr = new Date();
@@ -60,10 +60,11 @@ module.exports.init = function (ctx, cb) {
 				}, function (err) {
 					if (err)
 						return console.log(err);
-					res.send(buf, { 'Content-Type': 'image/gif' }, 200);
+					res.set('Content-Type', 'image/gif');
+					res.send(buf);
 				})
 			})
-			ctx.router.use("/sentry/api/:project",function (req, res, next) {
+			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				var data = JSON.parse(req.query.sentry_data);
 				data.project && (delete data.project);
 				data._idp = req.params.project;
@@ -87,7 +88,8 @@ module.exports.init = function (ctx, cb) {
 				}, function (err) {
 					if (err)
 						return console.log(err);
-					res.send(buf, { 'Content-Type': 'image/gif' }, 200);
+					res.set('Content-Type', 'image/gif');
+					res.send(buf);
 				})
 			})
 			cb(null, {api:{

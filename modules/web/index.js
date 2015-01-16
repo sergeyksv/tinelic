@@ -19,6 +19,8 @@ requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets'];
 
+var wires = {};
+
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
 	requirejs.define("backctx",ctx);
@@ -32,6 +34,14 @@ module.exports.init = function (ctx, cb) {
 			res.send(dust.compile(template.toString(), name));
 		}))
 	})
+	ctx.router.get("/app/wire/:id", function (req, res, next) {
+		var wire = wires[req.params.id];
+		if (wire) {
+			delete wires[req.params.id];
+			res.json(wire);
+		} else
+			res.send(404)
+	})
 	requirejs(['routes','app'], function (routes,App) {
 		var app = new App({prefix:"/web"});
 		_.each(routes, function (v,k) {
@@ -43,12 +53,14 @@ module.exports.init = function (ctx, cb) {
 							var view = app.getView();
 							view.data = route.data || {};
 							var populateTplCtx = view.populateTplCtx;
+							var uniqueId = _.uniqueId("w")
 							view.populateTplCtx = function (ctx, cb) {
 								ctx = ctx.push({_t_main_view:route.view,
 									_t_prefix:"/web",
 									_t_self_id:self_id,
 									_t_start:(new Date()).valueOf(),
-									_t_route:k
+									_t_route:k,
+									_t_unique:uniqueId
 								});
 								populateTplCtx.call(this,ctx,cb)
 							}
@@ -62,9 +74,11 @@ module.exports.init = function (ctx, cb) {
 									})
 								}
 								wv.prefix = app.prefix;
+
+								wires[uniqueId]=wv;
 								wireView(view,wv);
 
-								res.send(text.replace("_t_app_wire",JSON.stringify(wv).replace(/\//g,"\\/")))
+								res.send(text)
 							}))
 						}
 					},next)

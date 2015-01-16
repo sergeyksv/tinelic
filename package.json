@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "dependencies": {
+    "compression": "^1.3.0",
     "dustjs-linkedin": "2.5.1",
     "express": "~4.10.7",
     "less-middleware": "~1.0.4",

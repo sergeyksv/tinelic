@@ -6,6 +6,7 @@ var moment = require('moment');
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
+	app.use(require("compression")());
 	var api = {};
 	var auto = {};
 	var registered = {};
@@ -49,7 +50,7 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.use("/:token/:module/:target",function (req, res, next) {
+			ctx.router.get("/:token/:module/:target",function (req, res, next) {
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");
 				if (!ctx.api[req.params.module][req.params.target])

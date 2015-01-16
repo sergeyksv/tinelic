@@ -24,7 +24,7 @@ define(['tinybone/base','highcharts'],function (tb) {
 				var d = new Date(v._id*quant*60000);
 				d.setMinutes(d.getMinutes()-offset);
 				d = d.valueOf();
-				var rpm1 = parseInt(v.value?v.value.r:0);
+				var rpm1 = v.value?v.value.r:0;
 				var rpmmax = Math.max(rpm1, rpmmax)
 				rpm.push([d,rpm1]);
 				load.push([d,parseInt(100*(v.value?(v.value.tt/1000):0))/100]);
@@ -32,7 +32,7 @@ define(['tinybone/base','highcharts'],function (tb) {
 				errp.push([d,parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100]);
 			})
 
-			rpmmax = parseInt(rpmmax/10)*10;
+			rpmmax = parseInt((rpmmax+1)/10)*10;
 
 			this.$('#pageviews').highcharts({
 				chart: {
