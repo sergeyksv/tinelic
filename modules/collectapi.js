@@ -95,9 +95,10 @@ module.exports.init = function (ctx, cb) {
 					events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 				},
 				getPageViews:function (t, p, cb) {
-					pages.mapReduce(function () {
-							emit(parseInt(this._dt.valueOf()/60000),{c:1,e:this._i_err?1:0,tt:this._i_tt})
-						},
+					var q = p.quant || 1;
+					pages.mapReduce("function () {\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
+						}",
 						function (k, v) {
 							var r=null;
 							v.forEach(function (v) {
@@ -106,6 +107,7 @@ module.exports.init = function (ctx, cb) {
 								else {
 									r.c+=v.c;
 									r.e+=v.e;
+									r.r+=v.r;
 									r.tt=(r.tt+v.tt)/r.c;
 								}
 							})
@@ -120,7 +122,8 @@ module.exports.init = function (ctx, cb) {
 				},
 				getErrorStats:function (t, p, cb) {
 					events.mapReduce(function () {
-							emit(this.logger+this.platform+this.message,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
+							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
+							emit(this.logger+this.platform+this.message+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
 						},
 						function (k, v) {
 							var r=null;

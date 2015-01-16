@@ -11,9 +11,7 @@
 <div class="col-xs-3">
 <h3>Top Errors</h3><hr>
 {#errors}
-<a href='{_t_prefix}/event/{error._id}'><span class="badge text-danger">{stats.c}</span> - {error.message}</a>
-{error.culprit}
-<hr>
+<a href='{_t_prefix}/event/{error._id}'><span class="badge text-danger">{stats.c}</span> - {error.message}</a><br>
 {/errors}
 </div>
 </div>

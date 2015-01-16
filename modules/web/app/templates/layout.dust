@@ -69,6 +69,7 @@ if (_t_page.valueOf()%2)
 </head>
 <body id="content">
 {@view name=_t_main_view /}
-<script>requirejs(["app"], function (App) { (new App()).init(_t_app_wire); })</script>
+<script>
+	requirejs(["app"], function (App) { (new App()).init(_t_app_wire); })</script>
 </body>
 </html>

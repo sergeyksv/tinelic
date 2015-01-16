@@ -17,10 +17,12 @@ define(['tinybone/base','highcharts'],function (tb) {
 				prev = v;
 				flat.push(v);
 			})
+			var quant = this.data.quant;
 			_.each(flat, function (v) {
-				rpm.push([v._id*60000,v.value?v.value.c:0]);
-				load.push([v._id*60000,v.value?(v.value.tt/1000):0]);
-				err.push([v._id*60000,v.value?v.value.e:0]);
+				var d = v._id*quant*60000;
+				rpm.push([d,v.value?v.value.r:0]);
+				load.push([d,v.value?(v.value.tt/1000):0]);
+				err.push([d,v.value?v.value.e:0]);
 			})
 
 			this.$('#pageviews').highcharts({

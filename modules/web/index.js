@@ -64,7 +64,7 @@ module.exports.init = function (ctx, cb) {
 								wv.prefix = app.prefix;
 								wireView(view,wv);
 
-								res.send(text.replace("_t_app_wire",JSON.stringify(wv)))
+								res.send(text.replace("_t_app_wire",JSON.stringify(wv).replace(/\//g,"\\/")))
 							}))
 						}
 					},next)
