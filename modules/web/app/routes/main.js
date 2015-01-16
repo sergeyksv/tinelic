@@ -14,11 +14,11 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			res.render({view:'page_view',data:{title:"Page Page"}})
 		},
 		project:function (req, res, cb) {
-			var quant = 10;
+			var quant = 15;
 			api("assets.getProject","public", {slug:req.params.slug}, safe.sure( cb, function (project) {
 				safe.parallel({
 					views: function (cb) {
-						api("collect.getPageViews","public",{filter:{_idp:project._id}}, cb);
+						api("collect.getPageViews","public",{quant:quant,filter:{_idp:project._id}}, cb);
 					},
 					errors: function (cb) {
 						api("collect.getErrorStats","public",{quant:quant,filter:{_idp:project._id}}, cb);

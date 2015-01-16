@@ -4,7 +4,7 @@ define(['tinybone/base','highcharts'],function (tb) {
 		id:"project/project",
 		postRender:function () {
 			view.prototype.postRender.call(this);
-			var rpm = [],load=[],err=[];
+			var rpm = [],load=[],err=[],errp=[];
 			var views = this.data.views;
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;
@@ -18,12 +18,21 @@ define(['tinybone/base','highcharts'],function (tb) {
 				flat.push(v);
 			})
 			var quant = this.data.quant;
+			var offset = new Date().getTimezoneOffset();
+			rpmmax = 0;
 			_.each(flat, function (v) {
-				var d = v._id*quant*60000;
-				rpm.push([d,v.value?v.value.r:0]);
-				load.push([d,v.value?(v.value.tt/1000):0]);
+				var d = new Date(v._id*quant*60000);
+				d.setMinutes(d.getMinutes()-offset);
+				d = d.valueOf();
+				var rpm1 = parseInt(v.value?v.value.r:0);
+				var rpmmax = Math.max(rpm1, rpmmax)
+				rpm.push([d,rpm1]);
+				load.push([d,parseInt(100*(v.value?(v.value.tt/1000):0))/100]);
 				err.push([d,v.value?v.value.e:0]);
+				errp.push([d,parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100]);
 			})
+
+			rpmmax = parseInt(rpmmax/10)*10;
 
 			this.$('#pageviews').highcharts({
 				chart: {
@@ -38,20 +47,44 @@ define(['tinybone/base','highcharts'],function (tb) {
 						text: 'Date'
 					}
 				},
-				yAxis: [{
+				yAxis: [
+					{
 						title: {
 							text: 'rpm'
-						}
+						},
+						min:0,
+						max:rpmmax
+					},{
+						title: {
+							text: '%'
+						},
+						max:100,
+						min:0,
+						tickPixelInterval: 25
 					}
 				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						}
+					}
+				},
 				series: [{
 						name: 'Views',
 						yAxis:0,
-						data:rpm
+						data:rpm,
+						color:"green"
 					},{
-						name: 'Errors',
+						name: 'Absolute errors',
 						yAxis:0,
-						data:err
+						data:err,
+						color:"lightblue"
+					},{
+						name: 'Relative Errors',
+						yAxis:1,
+						color:"red",
+						data:errp
 					}
 				]
 			})
@@ -71,9 +104,17 @@ define(['tinybone/base','highcharts'],function (tb) {
 				yAxis: [{
 						title: {
 							text: 's'
-						}
+						},
+						min:0
 					}
 				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						}
+					}
+				},
 				series: [{
 						name: 'Time',
 						data:load

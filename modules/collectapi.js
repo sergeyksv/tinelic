@@ -36,8 +36,10 @@ module.exports.init = function (ctx, cb) {
 				var data = req.query;
 				data._idp=req.params.project;
 				data._dtr = new Date();
+				data._dtc = data._dt;
+				data._dt = data._dtr;
 				var md5sum = crypto.createHash('md5');
-				data = prefixify(data);
+				data = prefixify(data,{strict:1});
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
@@ -65,7 +67,10 @@ module.exports.init = function (ctx, cb) {
 				var data = JSON.parse(req.query.sentry_data);
 				data.project && (delete data.project);
 				data._idp = req.params.project;
-				data = prefixify(data);
+				data._dtr = new Date();
+				data._dtc = data._dt;
+				data._dt = data._dtr;
+				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
@@ -105,10 +110,10 @@ module.exports.init = function (ctx, cb) {
 								if (!r)
 									r = v
 								else {
+									r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
 									r.c+=v.c;
 									r.e+=v.e;
 									r.r+=v.r;
-									r.tt=(r.tt+v.tt)/r.c;
 								}
 							})
 							return r;
