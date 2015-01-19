@@ -4,6 +4,7 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var path = require('path');
+var _ = require("lodash");
 
 var cfg = {
 	modules:[
@@ -14,18 +15,12 @@ var cfg = {
 		{name:"collect",require:"./modules/collectapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
-	config:{
-		mongo:{
-			main:{
-				db:"tinelic",
-				host:"localhost",
-//				host:"errbit.pushok.com",
-				port:27017,
-				scfg:{auto_reconnect: true, poolSize : 40},
-				ccfg:{native_parser: false, safe: true, w:1}
-			}
-		}
-	}
+	config:require("./config.js").config
+}
+
+var lcfgPath = "./local-config.js";
+if(fs.existsSync(lcfgPath)){
+	cfg.config = _.merge(cfg.config,require(lcfgPath).config);
 }
 
 tinyback.createApp(cfg, function (err, app) {

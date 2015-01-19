@@ -1,4 +1,5 @@
 node_modules
+local-config.js
 *.swp
 *.log
 *.pem
