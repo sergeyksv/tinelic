@@ -1,9 +1,12 @@
-define(['tinybone/base','highcharts'],function (tb) {
+define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,moment) {
 	var view = tb.View;
 	return view.extend({
 		id:"project/project",
 		postRender:function () {
 			view.prototype.postRender.call(this);
+			var errorsView = _.find(this.views,function(v){
+				return v.name == "project/errors_view";
+			}).view;
 			var rpm = [],load=[],err=[],errp=[];
 			var views = this.data.views;
 			views = _.sortBy(views, function (v) { return v._id; });
@@ -46,6 +49,11 @@ define(['tinybone/base','highcharts'],function (tb) {
 					type:'datetime',
 					title: {
 						text: 'Date'
+					},
+					events:{
+						afterSetExtremes:function(e){
+							errorsView.trigger("updateRange",moment.utc(e.min).format(),moment.utc(e.max).format());
+						}
 					}
 				},
 				yAxis: [

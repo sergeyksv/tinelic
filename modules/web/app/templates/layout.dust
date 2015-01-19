@@ -53,7 +53,8 @@
 			"dust":"../js/dust",
 			"safe":"../js/safe",
 			"bootstrap":"../js/bootstrap",
-			"highcharts":location.protocol+"//code.highcharts.com/highcharts"
+			"highcharts":location.protocol+"//code.highcharts.com/highcharts",
+			"moment":"../js/moment"
 		},
 		shim: {
 			'dust': {

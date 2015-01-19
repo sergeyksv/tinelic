@@ -1,7 +1,9 @@
-var _ = require("lodash")
-var safe = require("safe")
-var mongo = require("mongodb")
-var crypto = require('crypto')
+"use strict";
+var _ = require("lodash");
+var safe = require("safe");
+var mongo = require("mongodb");
+var crypto = require('crypto');
+var moment = require("moment");
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -128,6 +130,12 @@ module.exports.init = function (ctx, cb) {
 					)
 				},
 				getErrorStats:function (t, p, cb) {
+					var query = {};
+					if(p.filter._idp)
+						query._idp = new mongo.ObjectID(p.filter._idp)
+					if(p.filter._dtstart && p.filter._dtend){
+						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
+					}
 					events.mapReduce(function () {
 							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
 							emit(this.logger+this.platform+this.message+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
@@ -147,7 +155,7 @@ module.exports.init = function (ctx, cb) {
 							return r;
 						},
 						{
-							query: prefixify(p.filter),
+							query: query,
 							out: {inline:1},
 						},
 						safe.sure(cb, function (stats) {
