@@ -15,7 +15,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                     app: context.get('_t_app')
                 });
                 var parent = context.get('_t_view');
-                view.data = params.data ? context.get(params.data) : null;
+                view.data = params.data?context.get(params.data):context.get([],true);
                 parent.addSubView({
                     view: view,
                     name: params.name,

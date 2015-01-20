@@ -183,7 +183,8 @@ module.exports.init = function (ctx, cb) {
 								var os = {}; os[this.agent.os.family]=1;
 								var sessions = {}; sessions[this.shash]=1;
 								var views = {}; views[this._idpv]=1;
-								emit(this.logger+this.platform+this.message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views})
+								var ids = [this._id];
+								emit(this.logger+this.platform+this.message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids})
 							},
 							function (k, v) {
 								var r=null;
@@ -191,6 +192,7 @@ module.exports.init = function (ctx, cb) {
 									if (!r)
 										r = v
 									else {
+										r.ids = r.ids.concat(v.ids);
 										for (var k in v.sessions) {
 											r.sessions[k]=1;
 										}
@@ -217,7 +219,7 @@ module.exports.init = function (ctx, cb) {
 							},
 							safe.sure(cb, function (stats) {
 								var res = stats[0].value;
-								var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views)}
+								var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views),ids:res.ids}
 								_.each(res.route, function (v,k) {
 									res1.route.push({k:k,v:v})
 								})
