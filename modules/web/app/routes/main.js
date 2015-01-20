@@ -6,8 +6,15 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}))
 		},
 		event:function (req, res, next) {
-			api("collect.getEvent","public", {_id:req.params.id}, safe.sure( next, function (event) {
-				res.render({view:'event_view',data:{event:event,title:"Event "+event.message}})
+			safe.parallel({
+				event:function (cb) {
+					api("collect.getEvent","public", {_id:req.params.id}, cb)
+				},
+				info:function (cb) {
+					api("collect.getEventInfo","public", {filter:{_id:req.params.id}}, cb)
+				}
+			}, safe.sure( next, function (r) {
+				res.render({view:'event_view',data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
 			}))
 		},
 		page:function (req, res, next) {

@@ -1,16 +1,53 @@
 {@view name="header_view"/}
 
 <div class="container">
-<div class="starter-template">
+<div class="row">
+<div class="col-xs-12 col-sm-9">
 {#event}
 <h1>{message}</h1>
 --- {_id} - {culprit}
 <br><br>
 <ul>
 {#stacktrace.frames}
-<li>{filename}:{colno}:{lineno}</li>
+<li>{filename}:{lineno}:{colno}</li>
 {/stacktrace.frames}
 </ul>
 {/event}
+</div>
+<div class="col-xs-12 col-sm-3"><br>
+{#info}
+<div class="panel panel-default">
+  <div class="panel-heading">Information</div>
+  <div class="panel-body">
+	Total count: <b>{count}</b><br>
+	Affected sessions: <b>{sessions}</b><br>
+	Affected pages views: <b>{views}</b><br>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Error routes</div>
+  <div class="panel-body">
+	{#route}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/route}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Error Browsers</div>
+  <div class="panel-body">
+	{#browser}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/browser}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Error OS</div>
+  <div class="panel-body">
+	{#os}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/os}
+  </div>
+</div>
+{/info}
 </div>
 </div>

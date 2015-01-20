@@ -22,7 +22,8 @@ module.exports.init = function (ctx, cb) {
 						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
 						function (cb) { col.ensureIndex({_idp:1}, cb) },
-						function (cb) { col.ensureIndex({_idpv:1}, cb) }
+						function (cb) { col.ensureIndex({_idpv:1}, cb) },
+						function (cb) { col.ensureIndex({message:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
@@ -166,6 +167,71 @@ module.exports.init = function (ctx, cb) {
 						cb
 					)
 				},
+				getEventInfo:function (t, p, cb) {
+					var query = {};
+					if(p.filter._id)
+						query._id = new mongo.ObjectID(p.filter._id)
+
+					events.findOne(query, safe.sure(cb, function (event) {
+						var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
+						var query = {_idp:event._idp,logger:event.logger,platform:event.platform,message:event.message,"stacktrace.frames":{$size:st}};
+
+						events.mapReduce(function () {
+								var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
+								var route = {}; route[this.request.route]=1;
+								var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
+								var os = {}; os[this.agent.os.family]=1;
+								var sessions = {}; sessions[this.shash]=1;
+								var views = {}; views[this._idpv]=1;
+								emit(this.logger+this.platform+this.message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views})
+							},
+							function (k, v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r)
+										r = v
+									else {
+										for (var k in v.sessions) {
+											r.sessions[k]=1;
+										}
+										for (var k in v.views) {
+											r.views[k]=1;
+										}
+										r.c+=v.c;
+										for (var k in v.route) {
+											r.route[k]=(r.route[k] || 0) + v.route[k];
+										}
+										for (var k in v.browser) {
+											r.browser[k]=(r.browser[k] || 0) + v.browser[k];
+										}
+										for (var k in v.os) {
+											r.os[k]=(r.os[k] || 0) + v.os[k];
+										}
+									}
+								})
+								return r;
+							},
+							{
+								query: query,
+								out: {inline:1},
+							},
+							safe.sure(cb, function (stats) {
+								var res = stats[0].value;
+								var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views)}
+								_.each(res.route, function (v,k) {
+									res1.route.push({k:k,v:v})
+								})
+								_.each(res.os, function (v,k) {
+									res1.os.push({k:k,v:v})
+								})
+								_.each(res.browser, function (v,k) {
+									res1.browser.push({k:k,v:v})
+								})
+								cb(null,res1);
+							})
+						)
+					}))
+				},
 				getErrorStats:function (t, p, cb) {
 					var query = {};
 					if(p.filter._idp)
@@ -175,7 +241,9 @@ module.exports.init = function (ctx, cb) {
 					}
 					events.mapReduce(function () {
 							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-							emit(this.logger+this.platform+this.message+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
+							var s = {}; s[this.shash]=1;
+							var epm = {}; epm[this._idpv]=1;
+							emit(this.logger+this.platform+this.message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
 						},
 						function (k, v) {
 							var r=null;
@@ -183,6 +251,12 @@ module.exports.init = function (ctx, cb) {
 								if (!r)
 									r = v
 								else {
+									for (var k in v.s) {
+										r.s[k]=1;
+									}
+									for (var k in v.epm) {
+										r.epm[k]=1;
+									}
 									r.c+=v.c;
 									r._dtmin = Math.min(r._dtmin, v._dtmin);
 									r._dtmax = Math.min(r._dtmax, v._dtmax);
@@ -196,9 +270,15 @@ module.exports.init = function (ctx, cb) {
 							out: {inline:1},
 						},
 						safe.sure(cb, function (stats) {
-							stats = _.sortBy(stats, function (s) { return -1*s.value.c; } );
+							_.each(stats, function (s) {
+								s.value.s = _.size(s.value.s);
+								s.value.epm = _.size(s.value.epm);
+							} );
+							stats = _.sortBy(stats, function (s) { return -1*s.value.s*s.value.epm; } );
 							var ids = {};
-							_.each(stats, function (s) { ids[s.value._id]={stats:s.value}; } );
+							_.each(stats, function (s) {
+								ids[s.value._id]={stats:s.value};
+							} );
 							events.find({_id:{$in:_.map(_.keys(ids),function (id) { return new mongo.ObjectID(id)})}})
 								.toArray(safe.sure(cb, function (errors) {
 									_.each(errors, function (e) {

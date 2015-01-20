@@ -59,13 +59,16 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				yAxis: [
 					{
 						title: {
-							text: 'rpm'
+							text: null
 						},
 						min:0,
 						max:rpmmax
 					},{
 						title: {
-							text: '%'
+							text: null
+						},
+						labels: {
+						   enabled: false
 						},
 						max:100,
 						min:0,
@@ -113,7 +116,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				},
 				yAxis: [{
 						title: {
-							text: 's'
+							text: null
 						},
 						min:0
 					}
