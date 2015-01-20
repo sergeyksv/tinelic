@@ -4,6 +4,8 @@ var safe = require("safe");
 var mongo = require("mongodb");
 var crypto = require('crypto');
 var moment = require("moment");
+var useragent = require("useragent");
+var geoip = require('geoip-lite');
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -40,8 +42,25 @@ module.exports.init = function (ctx, cb) {
 				data._dtr = new Date();
 				data._dtc = data._dt;
 				data._dt = data._dtr;
-				var md5sum = crypto.createHash('md5');
+				data.agent = useragent.parse(req.headers['user-agent']).toJSON();
+				var ip = req.headers['x-forwarded-for'] ||
+					 req.connection.remoteAddress ||
+					 req.socket.remoteAddress ||
+					 req.connection.socket.remoteAddress;
+
+				var geo = geoip.lookup(ip);
+				if (geo)
+					data.geo = geo.toJSON();
+
 				data = prefixify(data,{strict:1});
+				var md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers['host']);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
+				data.shash = md5sum.digest('hex');
+				md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
@@ -52,7 +71,7 @@ module.exports.init = function (ctx, cb) {
 						// once after inserting page we need to link
 						// this page events that probably cread earlier
 						var _id = docs[0]._id;
-						events.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id}},safe.sure(cb, function (updates) {
+						events.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id,headers:{route:data.r,uri:data.p}}},safe.sure(cb, function (updates) {
 							if (updates)
 								pages.update({_id:_id},{$inc:{_i_err:updates}},cb);
 							else
@@ -67,14 +86,27 @@ module.exports.init = function (ctx, cb) {
 				})
 			})
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
+				var ip = req.headers['x-forwarded-for'] ||
+					 req.connection.remoteAddress ||
+					 req.socket.remoteAddress ||
+					 req.connection.socket.remoteAddress;
+
 				var data = JSON.parse(req.query.sentry_data);
 				data.project && (delete data.project);
 				data._idp = req.params.project;
 				data._dtr = new Date();
 				data._dtc = data._dt;
 				data._dt = data._dtr;
+				data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
 				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers['host']);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(""+(parseInt(data._dtInit.valueOf()/(1000*60*60))))
+				data.shash = md5sum.digest('hex');
+				md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtInit.toString());
@@ -84,7 +116,12 @@ module.exports.init = function (ctx, cb) {
 				// which is registered not later than current event
 				safe.run(function (cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
-						page && (data._idpv = page._id);
+						if (page) {
+							data._idpv = page._id;
+							(page.r) && (data.request.route = page.r);
+							(page.p) && (data.request.uri = page.p);
+						}
+
 						events.insert(data, cb)
 					}))
 				}, function (err) {
