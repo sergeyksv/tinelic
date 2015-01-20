@@ -50,7 +50,7 @@ module.exports.init = function (ctx, cb) {
 
 				var geo = geoip.lookup(ip);
 				if (geo)
-					data.geo = geo.toJSON();
+					data.geo = JSON.parse(JSON.stringify(geo));
 
 				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
