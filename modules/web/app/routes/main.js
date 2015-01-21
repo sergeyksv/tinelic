@@ -39,25 +39,25 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		project:function (req, res, cb) {
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range;
+			var range = 60 * 60 * 1000;
 
-			if (str == '1h') {
-				range = 60 * 60 * 1000;
-			}
-			if (str == '6h') {
-				range = 6 * 60 * 60 * 1000;
-			}
-			if (str == '12h') {
-				range = 12 * 60 * 60 * 1000;
-			}
-			if (str == '1d') {
-				range = 24 * 60 * 60 * 1000;
-			}
-			if (str == '3d') {
-				range = 3 * 24 * 60 * 60 * 1000;
-			}
-			if (str == '1w') {
-				range = 7 * 24 * 60 * 60 * 1000;
+			var	h = 60 * 60 * 1000;
+			var	d = 24 * 60 * 60 * 1000;
+			var	w = 7 * 24 * 60 * 60 * 1000;
+
+			var val = /(\d*)/.exec(str);
+			var val2 = /(\D$)/.exec(str);
+
+			switch (val2[0]) {
+				case 'h':
+					range = val[0] * h;
+					break
+				case 'd':
+					range = val[0] * d;
+					break
+				case 'w':
+					range = val[0] * w;
+					break
 			}
 
 			var dtstart = new Date(Date.parse(Date()) - range);
