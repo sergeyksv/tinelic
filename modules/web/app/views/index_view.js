@@ -1,7 +1,7 @@
-define(['tinybone/base','safe'],function (tb,safe) {
+define(['tinybone/base','safe','dustc!templates/index.dust'],function (tb,safe,tpl) {
 	var view = tb.View;
-	return view.extend({
-		id:"index",
+	var View = view.extend({
+		id:"templates/index",
 		events:{
 			"click .do-newproject":"doNewProject"
 		},
@@ -21,4 +21,6 @@ define(['tinybone/base','safe'],function (tb,safe) {
 			}, this.app.errHandler)
 		}
 	})
+	View.id = "views/index_view";
+	return View;
 })

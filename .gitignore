@@ -3,4 +3,5 @@ local-config.js
 *.swp
 *.log
 *.pem
+dump
 .idea

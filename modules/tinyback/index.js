@@ -54,13 +54,36 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.get("/:token/:module/:target",function (req, res, next) {
+			ctx.router.get("/:token/:module/:target",function (req, res) {
+				var next = function (err) {
+					res.status(500).json({message:err.message});
+				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
 				ctx.api[req.params.module][req.params.target](req.params.token, req.query, safe.sure(next, function (result) {
+					var maxAge = 0;
+					if (req.query._t_age) {
+						var age = req.query._t_age
+						var s = age.match(/(\d+)s?$/); s = s?parseInt(s[1]):0;
+						var m = age.match(/(\d+)m/); m = m?parseInt(m[1]):0;
+						var h = age.match(/(\d+)h/); h = h?parseInt(h[1]):0;
+						var d = age.match(/(\d+)d/); d = d?parseInt(d[1]):0;
+						maxAge = moment.duration(d+"."+h+":"+m+":"+s).asSeconds();
+					}
+
+					if (maxAge) {
+						res.header('Cache-Control','public');
+						res.header("Max-Age", maxAge );
+						res.header("Expires", (new Date((new Date()).valueOf()+maxAge*1000)).toGMTString());
+					} else {
+						res.header('Cache-Control','private, no-cache, no-store, must-revalidate');
+						res.header('Expires', '-1');
+						res.header('Pragma', 'no-cache');
+					}
+
 					res.json(result);
 				}))
 			})

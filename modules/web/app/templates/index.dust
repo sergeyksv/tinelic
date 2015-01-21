@@ -1,4 +1,4 @@
-{@view name="header_view" data="text"/}
+{@view name="views/header_view" data="text"/}
 <div class="container">
 <h2>Projects</h2>
 <ul>

@@ -1,35 +1,17 @@
-define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,moment) {
+define(['tinybone/base','lodash','moment/moment','highcharts',
+	'dustc!templates/project/project.dust',
+	'views/project/errors_view'],function (tb,_,moment) {
 	var view = tb.View;
-	return view.extend({
-		id:"project/project",
+	var View = view.extend({
+		id:"templates/project/project",
 		postRender:function () {
 			var filter = this.data.filter;
-			var range = 6 * 30 * 24 * 3600 * 1000;
-			//filter time range highcharts
-			if (filter == '1h') {
-				range = 60 * 60 * 1000;
-			}
-			if (filter == '6h') {
-				range = 6 * 60 * 60 * 1000;
-			}
-			if (filter == '12h') {
-				range = 12 * 60 * 60 * 1000;
-			}
-			if (filter == '1d') {
-				range = 24 * 60 * 60 * 1000;
-			}
-			if (filter == '3d') {
-				range = 3 * 24 * 60 * 60 * 1000;
-			}
-			if (filter == '1w') {
-				range = 7 * 24 * 60 * 60 * 1000;
-			}
-
+			var range = this.data.range;
 			view.prototype.postRender.call(this);
 			var errorsView = _.find(this.views,function(v){
-				return v.name == "project/errors_view";
+				return v.name == "views/project/errors_view";
 			}).view;
-			var rpm = [],load=[],err=[],errp=[];
+			var rpm = [],load=[],errp=[];
 			var views = this.data.views;
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;
@@ -44,18 +26,43 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 			})
 			var quant = this.data.quant;
 			var offset = new Date().getTimezoneOffset();
-			rpmmax = 0;
 			_.each(flat, function (v) {
 				var d = new Date(v._id*quant*60000);
 				d.setMinutes(d.getMinutes()-offset);
 				d = d.valueOf();
 				var rpm1 = v.value?v.value.r:0;
-				var rpmmax = Math.max(rpm1, rpmmax)
 				rpm.push([d,rpm1]);
 				load.push([d,parseInt(100*(v.value?(v.value.tt/1000):0))/100]);
-				err.push([d,v.value?v.value.e:0]);
 				errp.push([d,parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100]);
 			})
+
+			function meanFilter(arr,window) {
+				var rpmf = [];
+				var sample = [];
+				_.each(arr, function (v) {
+					sample.push(v);
+					var m = null;
+					if (sample.length>window/2) {
+						var ordered = _.sortBy(sample, function (v) { return v[1]; });
+						m = ordered[5][1]
+						if (sample.length>window)
+							sample.shift();
+						if (rpmf[0][1]===null) {
+							for (var i=0;i<window/2;i++) {
+								rpmf[i][1]=m;
+							}
+						}
+					}
+					rpmf.push([v[0],m]);
+				})
+				return rpmf;
+			}
+
+			var rpmf = meanFilter(rpm, 10);
+			var errpf = meanFilter(errp, 10);
+			var loadf = meanFilter(load, 10);
+			var loadmax = _.max(loadf, function (v) { return v[1]; })[1];
+			var rpmmax = _.max(rpmf, function (v) { return v[1]; })[1];
 
 			rpmmax = parseInt((rpmmax+1)/10)*10;
 			this.$('#pageviews').highcharts({
@@ -85,13 +92,16 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				yAxis: [
 					{
 						title: {
-							text: 'rpm'
+							text: null
 						},
 						min:0,
 						max:rpmmax
 					},{
 						title: {
-							text: '%'
+							text: null
+						},
+						labels: {
+						   enabled: false
 						},
 						max:100,
 						min:0,
@@ -102,7 +112,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 					series: {
 						marker: {
 							enabled: false
-						}
+						},
+						animation: false
 					}
 				},
 
@@ -110,17 +121,22 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 						name: 'Views',
 						yAxis:0,
 						data:rpm,
+						color:"lightgreen"
+					},{
+						name: 'Views Filtered',
+						yAxis:0,
+						data:rpmf,
 						color:"green"
 					},{
-						name: 'Absolute errors',
-						yAxis:0,
-						data:err,
-						color:"lightblue"
+						name: '% Errors',
+						yAxis:1,
+						color:"pink",
+						data:errp
 					},{
-						name: 'Relative Errors',
+						name: '% Errors Filtered',
 						yAxis:1,
 						color:"red",
-						data:errp
+						data:errpf
 					}
 				]
 			})
@@ -144,25 +160,36 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				},
 				yAxis: [{
 						title: {
-							text: 's'
+							text: null
 						},
-						min:0
+						min:0,
+						max:loadmax
 					}
 				],
 				plotOptions: {
 					series: {
 						marker: {
 							enabled: false
-						}
+						},
+						animation: false
 					}
 				},
 				series: [{
 						name: 'Time',
-						data:load
+						data:load,
+						color: "lightblue"
+					},
+					{
+						name: 'Time',
+						data:loadf,
+						color: "blue"
 					}
 				]
 			})
 
 		}
 	})
+
+	View.id = "views/project/project_view";
+	return View;
 })

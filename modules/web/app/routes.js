@@ -5,4 +5,3 @@ define({
 	"/project/:slug/?_str=:value":"main#project",
 	"/project/:slug":"main#project"
 })
-

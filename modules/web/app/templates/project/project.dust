@@ -1,15 +1,15 @@
-{@view name="header_view"/}
+{@view name="views/header_view"/}
 
 <div class="container">
 <div class="row">
-<div class="col-xs-9">
+<div class="col-xs-12 col-sm-8">
 <h3>Page Views</h3><hr>
 	<div id="pageviews" style="width:100%; height:400px;"></div>
 <h3>Page Time</h3><hr>
 	<div id="pagetime" style="width:100%; height:400px;"></div>
 </div>
-<div class="col-xs-3">
-{@view name="project/errors_view"/}
+<div class="col-xs-12 col-sm-4">
+{@view name="views/project/errors_view"/}
 </div>
 </div>
 </div>

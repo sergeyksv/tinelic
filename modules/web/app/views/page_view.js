@@ -1,6 +1,8 @@
-define(['tinybone/base'],function (tb) {
+define(['tinybone/base','dustc!templates/page.dust'],function (tb) {
 	var view = tb.View;
-	return view.extend({
-		id:"page"
+	var View = view.extend({
+		id:"templates/page"
 	})
+	View.id = "views/page_view";
+	return View;
 })

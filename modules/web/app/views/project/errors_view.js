@@ -1,7 +1,7 @@
-define(['tinybone/base','safe','tinybone/backadapter'],function (tb,safe,api) {
+define(['tinybone/base','safe','tinybone/backadapter','dustc!templates/project/errors.dust'],function (tb,safe,api) {
 	var view = tb.View;
-	return view.extend({
-		id:"project/errors",
+	var View = view.extend({
+		id:"templates/project/errors",
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var self = this;
@@ -16,5 +16,7 @@ define(['tinybone/base','safe','tinybone/backadapter'],function (tb,safe,api) {
 			},this);
 		}
 	})
+	View.id = "views/project/errors_view";
+	return View;
 })
 

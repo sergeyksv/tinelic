@@ -1,50 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+{#_t_env_production}
+<script src="{_t_prefix}/js/build/rum.js"></script>
+{:else}
+<script src="{_t_prefix}/app/rum.js"></script>
+{/_t_env_production}
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="{_t_prefix}/css/style.css" rel="stylesheet">
-<title>{title}</title>
-<script>_t_start = (performance && performance.timing && performance.timing.navigationStart) || new Date({_t_start});_t_page = new Date();</script>
-<script src="{_t_prefix}/js/require.js"></script>
-<script src="//code.jquery.com/jquery-2.1.3.js"></script>
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="//cdn.ravenjs.com/1.1.15/jquery,native/raven.min.js"></script>
 <script>
 (function () {
-	var _t_ready = null, _t_load = null;
-	$(document).on("ready", function () {
-		_t_ready = new Date();
+	var _t_page = new Date();
+	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')+"/collect/browser/{_t_self_id}",
+		route:"{_t_route}",
+		_dtp:_t_page
 	})
-	$(window).on("load", function () {
-		window._t_pageLoad = function (m) {
-			m.p = window.location.pathname;
-			m._dt = new Date();
-			m._dtp = _t_page;
-			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
-			$.ajax("/collect/browser/{_t_self_id}", {data:m})
-		}
-		_t_load = new Date();
-		var m = {
-			_i_nt:_t_page.valueOf()-_t_start.valueOf(),
-			_i_dt:_t_ready.valueOf()-_t_page.valueOf(),
-			_i_lt:_t_load.valueOf()-_t_ready.valueOf(),
-			r:'{_t_route}',
-		}
-		window._t_pageLoad(m);
-	})
-
-	setTimeout(function () {
-		if (_t_page.valueOf()%2)
-			throw new Error("Test Error"+(new Date()).getDay());
-	},1000);
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
-			data._dtInit = _t_page;
+			data._dtp = _t_page;
 			data._dt = new Date();
 			return data;
 		}
 	}).install();
+})();
+</script>
+</head>
+<body id="content">
+{@view name=_t_main_view /}
+
+{#_t_env_production}
+<script src="{_t_prefix}/js/build/require.js"></script>
+<script src="{_t_prefix}/js/build/app.js"></script>
+<script src="{_t_prefix}/js/build/routes/main.js"></script>
+{:else}
+<script src="{_t_prefix}/app/require.js"></script>
+{/_t_env_production}
+
+<script>
 	requirejs.config({
 		baseUrl: "{_t_prefix}/app",
 		paths:{
@@ -55,7 +51,9 @@
 			"safe":"../js/safe",
 			"bootstrap":"../js/bootstrap",
 			"highcharts":location.protocol+"//code.highcharts.com/highcharts",
-			"moment":"../js/moment"
+			"moment":"../js/moment",
+			"dustc":"../tinybone/dustc",
+			"text":"../js/text",
 		},
 		shim: {
 			'dust': {
@@ -67,17 +65,18 @@
 		}
 	})
 	define("backctx","/restapi/");
-})();
-if (_t_page.valueOf()%2)
-	throw new Error("Test Error1"+(new Date()).getDay());
-</script>
-</head>
-<body id="content">
-{@view name=_t_main_view /}
-<script>
+
 	$.getJSON("/web/app/wire/{_t_unique}", function (wire) {
 		requirejs(["app"], function (App) { (new App()).init(wire); })
 	})
+	// error simulation
+	var _t_page = new Date();
+	setTimeout(function () {
+		if (_t_page.valueOf()%2)
+			throw new Error("Test Error"+(new Date()).getDay());
+	},1000);
+	if (_t_page.valueOf()%2)
+		throw new Error("Test Error1"+(new Date()).getDay());
 </script>
 </body>
 </html>
