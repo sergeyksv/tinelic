@@ -1,7 +1,7 @@
 ({
     appDir: "./modules/web/app",
     baseUrl: ".",
-    dir: "./modules/web/public/js",
+    dir: "./modules/web/public/js/build",
 	findNestedDependencies: true,
 	removeCombined: true,
 	skipDirOptimize: false,

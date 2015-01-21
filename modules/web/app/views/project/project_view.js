@@ -5,8 +5,6 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 	var View = view.extend({
 		id:"templates/project/project",
 		postRender:function () {
-			var filter = this.data.filter;
-			var range = this.data.range;
 			view.prototype.postRender.call(this);
 			var errorsView = _.find(this.views,function(v){
 				return v.name == "views/project/errors_view";
@@ -65,6 +63,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			var rpmmax = _.max(rpmf, function (v) { return v[1]; })[1];
 
 			rpmmax = parseInt((rpmmax+1)/10)*10;
+
 			this.$('#pageviews').highcharts({
 				chart: {
 					type: 'spline',
@@ -73,11 +72,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				title: {
 					text: ''
 				},
-				rangeSelector: {
-					enabled: false
-				},
 				xAxis: {
-					range: range,
 					type:'datetime',
 					title: {
 						text: 'Date'
@@ -88,7 +83,6 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						}
 					}
 				},
-
 				yAxis: [
 					{
 						title: {
@@ -116,7 +110,6 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						animation: false
 					}
 				},
-
 				series: [{
 						name: 'Views',
 						yAxis:0,
@@ -148,11 +141,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				title: {
 					text: ''
 				},
-				rangeSelector: {
-					enabled: false
-				},
 				xAxis: {
-					range: range,
 					type:'datetime',
 					title: {
 						text: 'Date'

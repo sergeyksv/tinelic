@@ -62,6 +62,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 
 			var dtstart = new Date(Date.parse(Date()) - range);
 			var dtend = Date();
+
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/project/project_view"], function (view) {
@@ -72,20 +73,26 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						safe.parallel({
 							views: function (cb) {
-								api("collect.getPageViews","public",{_t_age:quant+"m",quant:quant,filter:{_idp:project._id}}, cb);
+								api("collect.getPageViews","public",{_t_age:quant+"m",quant:quant,filter:{
+									_idp:project._id,
+									_dtstart: dtstart,
+									_dtend: dtend
+								}}, cb);
 							},
 							errors: function (cb) {
-								api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{_idp:project._id,
+								api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
+									_idp:project._id,
 									_dtstart: dtstart,
-									_dtend: dtend}}, cb);
+									_dtend: dtend
+								}}, cb);
 							}
 						}, safe.sure(cb, function (r) {
-							 cb(null,_.extend(r, {project:project, filter: str, range: range}))
+							 cb(null,_.extend(r, {project:project, filter: str}))
 						}))
 					}))
 				}
 			}, safe.sure(cb, function (r) {
-				res.render({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, filter: r.data.filter, range: r.data.range})})
+				res.render({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name})})
 			}))
 		}
 	}

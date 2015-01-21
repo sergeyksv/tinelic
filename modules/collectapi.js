@@ -146,7 +146,13 @@ module.exports.init = function (ctx, cb) {
 					events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 				},
 				getPageViews:function (t, p, cb) {
+					var query = {};
 					var q = p.quant || 1;
+					if(p.filter._idp)
+						query._idp = new mongo.ObjectID(p.filter._idp)
+					if(p.filter._dtstart && p.filter._dtend){
+						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
+					}
 					pages.mapReduce("function () {\
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
 						}",
@@ -165,7 +171,7 @@ module.exports.init = function (ctx, cb) {
 							return r;
 						},
 						{
-							query: prefixify(p.filter),
+							query: query,
 							out: {inline:1}
 						},
 						cb
@@ -219,7 +225,7 @@ module.exports.init = function (ctx, cb) {
 							},
 							{
 								query: query,
-								out: {inline:1},
+								out: {inline:1}
 							},
 							safe.sure(cb, function (stats) {
 								var res = stats[0].value;

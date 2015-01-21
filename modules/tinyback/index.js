@@ -7,6 +7,7 @@ var cookieParser = require('cookie-parser')
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
+	app.use(require("compression")());
 	app.use(cookieParser());
 	var api = {};
 	var auto = {};
