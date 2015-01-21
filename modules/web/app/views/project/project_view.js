@@ -7,7 +7,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 			var errorsView = _.find(this.views,function(v){
 				return v.name == "project/errors_view";
 			}).view;
-			var rpm = [],load=[],err=[],errp=[];
+			var rpm = [],load=[],errp=[];
 			var views = this.data.views;
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;
@@ -22,18 +22,43 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 			})
 			var quant = this.data.quant;
 			var offset = new Date().getTimezoneOffset();
-			rpmmax = 0;
 			_.each(flat, function (v) {
 				var d = new Date(v._id*quant*60000);
 				d.setMinutes(d.getMinutes()-offset);
 				d = d.valueOf();
 				var rpm1 = v.value?v.value.r:0;
-				var rpmmax = Math.max(rpm1, rpmmax)
 				rpm.push([d,rpm1]);
 				load.push([d,parseInt(100*(v.value?(v.value.tt/1000):0))/100]);
-				err.push([d,v.value?v.value.e:0]);
 				errp.push([d,parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100]);
 			})
+
+			function meanFilter(arr,window) {
+				var rpmf = [];
+				var sample = [];
+				_.each(arr, function (v) {
+					sample.push(v);
+					var m = null;
+					if (sample.length>window/2) {
+						var ordered = _.sortBy(sample, function (v) { return v[1]; });
+						m = ordered[5][1]
+						if (sample.length>window)
+							sample.shift();
+						if (rpmf[0][1]===null) {
+							for (var i=0;i<window/2;i++) {
+								rpmf[i][1]=m;
+							}
+						}
+					}
+					rpmf.push([v[0],m]);
+				})
+				return rpmf;
+			}
+
+			var rpmf = meanFilter(rpm, 10);
+			var errpf = meanFilter(errp, 10);
+			var loadf = meanFilter(load, 10);
+			var loadmax = _.max(loadf, function (v) { return v[1]; })[1];
+			var rpmmax = _.max(rpmf, function (v) { return v[1]; })[1];
 
 			rpmmax = parseInt((rpmmax+1)/10)*10;
 
@@ -86,17 +111,22 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 						name: 'Views',
 						yAxis:0,
 						data:rpm,
+						color:"lightgreen"
+					},{
+						name: 'Views Filtered',
+						yAxis:0,
+						data:rpmf,
 						color:"green"
 					},{
-						name: 'Absolute errors',
-						yAxis:0,
-						data:err,
-						color:"lightblue"
+						name: '% Errors',
+						yAxis:1,
+						color:"pink",
+						data:errp
 					},{
-						name: 'Relative Errors',
+						name: '% Errors Filtered',
 						yAxis:1,
 						color:"red",
-						data:errp
+						data:errpf
 					}
 				]
 			})
@@ -118,7 +148,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 						title: {
 							text: null
 						},
-						min:0
+						min:0,
+						max:loadmax
 					}
 				],
 				plotOptions: {
@@ -130,7 +161,13 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				},
 				series: [{
 						name: 'Time',
-						data:load
+						data:load,
+						color: "lightblue"
+					},
+					{
+						name: 'Time',
+						data:loadf,
+						color: "blue"
 					}
 				]
 			})
