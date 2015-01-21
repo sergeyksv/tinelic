@@ -3,6 +3,28 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 	return view.extend({
 		id:"project/project",
 		postRender:function () {
+			var filter = this.data.filter;
+			var range = 6 * 30 * 24 * 3600 * 1000;
+			//filter time range highcharts
+			if (filter == '1h') {
+				range = 60 * 60 * 1000;
+			}
+			if (filter == '6h') {
+				range = 6 * 60 * 60 * 1000;
+			}
+			if (filter == '12h') {
+				range = 12 * 60 * 60 * 1000;
+			}
+			if (filter == '1d') {
+				range = 24 * 60 * 60 * 1000;
+			}
+			if (filter == '3d') {
+				range = 3 * 24 * 60 * 60 * 1000;
+			}
+			if (filter == '1w') {
+				range = 7 * 24 * 60 * 60 * 1000;
+			}
+
 			view.prototype.postRender.call(this);
 			var errorsView = _.find(this.views,function(v){
 				return v.name == "project/errors_view";
@@ -36,7 +58,6 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 			})
 
 			rpmmax = parseInt((rpmmax+1)/10)*10;
-
 			this.$('#pageviews').highcharts({
 				chart: {
 					type: 'spline',
@@ -45,7 +66,11 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				title: {
 					text: ''
 				},
+				rangeSelector: {
+					enabled: false
+				},
 				xAxis: {
+					range: range,
 					type:'datetime',
 					title: {
 						text: 'Date'
@@ -56,6 +81,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 						}
 					}
 				},
+
 				yAxis: [
 					{
 						title: {
@@ -79,6 +105,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 						}
 					}
 				},
+
 				series: [{
 						name: 'Views',
 						yAxis:0,
@@ -105,7 +132,11 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 				title: {
 					text: ''
 				},
+				rangeSelector: {
+					enabled: false
+				},
 				xAxis: {
+					range: range,
 					type:'datetime',
 					title: {
 						text: 'Date'

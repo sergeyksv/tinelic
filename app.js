@@ -18,12 +18,13 @@ var cfg = {
 	config:require("./config.js").config
 }
 
-var lcfgPath = "./local-config.js";
+/*var lcfgPath = "./local-config.js";
 if(fs.existsSync(lcfgPath)){
 	cfg.config = _.merge(cfg.config,require(lcfgPath).config);
-}
+}*/
 
 tinyback.createApp(cfg, function (err, app) {
+
 	if (err) {
 		console.log(err.stack);
 		process.exit(0);

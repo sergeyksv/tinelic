@@ -15,6 +15,7 @@ requirejs.config({
 })
 
 requirejs.define("dust",dust);
+requirejs.define("dust-helpers", require('dustjs-helpers'));
 requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets'];
@@ -35,6 +36,7 @@ module.exports.init = function (ctx, cb) {
 		}))
 	})
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
+
 		var wire = wires[req.params.id];
 		if (wire) {
 			delete wires[req.params.id];
@@ -46,9 +48,15 @@ module.exports.init = function (ctx, cb) {
 		var app = new App({prefix:"/web"});
 		_.each(routes, function (v,k) {
 			ctx.router.get(k,function (req,res,next) {
+
+				var q = req.query._str;
+				if (q=='1h'||q=='6h'||q=='12h'||q=='1d'||q=='3d'||q=='1w') {
+					res.cookie('str', q);
+				}
+
 				var rp = v.split("#");
 				requirejs(['routes/'+rp[0]],function (route) {
-					route[rp[1]](_.pick(req,["params","query"]), {
+					route[rp[1]](_.pick(req,["params","query","cookies"]), {
 						render:function (route) {
 							var view = app.getView();
 							view.data = route.data || {};
@@ -77,7 +85,6 @@ module.exports.init = function (ctx, cb) {
 
 								wires[uniqueId]=wv;
 								wireView(view,wv);
-
 								res.send(text)
 							}))
 						}

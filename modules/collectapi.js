@@ -124,7 +124,7 @@ module.exports.init = function (ctx, cb) {
 						},
 						{
 							query: prefixify(p.filter),
-							out: {inline:1},
+							out: {inline:1}
 						},
 						cb
 					)
@@ -156,7 +156,7 @@ module.exports.init = function (ctx, cb) {
 						},
 						{
 							query: query,
-							out: {inline:1},
+							out: {inline:1}
 						},
 						safe.sure(cb, function (stats) {
 							stats = _.sortBy(stats, function (s) { return -1*s.value.c; } );

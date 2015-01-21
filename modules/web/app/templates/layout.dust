@@ -51,6 +51,7 @@
 			"tinybone":"../tinybone",
 			"lodash":"../js/lodash",
 			"dust":"../js/dust",
+			"dust-helpers":"../js/dust-helpers",
 			"safe":"../js/safe",
 			"bootstrap":"../js/bootstrap",
 			"highcharts":location.protocol+"//code.highcharts.com/highcharts",
@@ -59,6 +60,9 @@
 		shim: {
 			'dust': {
 				exports: 'dust'
+			},
+			'dust-helpers': {
+				exports: 'helpers'
 			}
 		}
 	})
