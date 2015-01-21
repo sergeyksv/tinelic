@@ -220,7 +220,7 @@ module.exports.init = function (ctx, cb) {
 							},
 							safe.sure(cb, function (stats) {
 								var res = stats[0].value;
-								var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views),ids:res.ids}
+								var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views),ids:_.sortBy(res.ids)}
 								_.each(res.route, function (v,k) {
 									res1.route.push({k:k,v:v})
 								})

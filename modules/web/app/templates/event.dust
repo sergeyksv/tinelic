@@ -4,8 +4,11 @@
 <div class="row">
 <div class="col-xs-12 col-sm-9">
 <br>
-{#prevId}<a href="{_t_prefix}/event/{.}" class="do-prev-sample btn btn-default">&lt; Prev sample</a>{/prevId}
+<div class='text-center'>
+{#prevId}<a href="{_t_prefix}/event/{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>{/prevId}
+<b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>
 {#nextId}<a href="{_t_prefix}/event/{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>{/nextId}
+</div>
 <br>
 {#event}
 <h1>{message}</h1>
@@ -13,7 +16,7 @@
 <br><br>
 <ul>
 {#stacktrace.frames}
-<li><a href="#" data-idx='{$idx}'>{filename}:{lineno}:{colno}</a></li>
+<li><a href="#" data-idx='{$idx}' class='do-get-trace'>{filename}:{lineno}:{colno}</a></li>
 {/stacktrace.frames}
 </ul>
 {/event}

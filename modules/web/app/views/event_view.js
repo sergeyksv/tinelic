@@ -20,7 +20,7 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe'],function (tb,_,a
 			view.prototype.populateTplCtx.call(this,ctx.push({nextId:nextId, prevId:prevId}),cb);
 		},
 		events:{
-			"click li a": function (evt) {
+			"click .do-get-trace": function (evt) {
 				evt.preventDefault();
 				$this = $(evt.currentTarget);
 				$li = $this.closest("li");

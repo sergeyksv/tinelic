@@ -1,4 +1,14 @@
-define(['views/layout','module','safe',"dust","tinybone/base","routes"],function (Layout,module,safe,dust,tb,routes) {
+define(['views/layout','module','safe',"dust","tinybone/base","routes","moment/moment"],function (Layout,module,safe,dust,tb,routes, moment) {
+
+    // Make sure dust.helpers is an object before adding a new helper.
+    if (!dust.helpers)
+        dust.helpers = {};
+	dust.helpers.formatdate = function(chunk, context, bodies, params) {
+        var m = moment(new Date(params.date));
+        var output = m.format(params.format || 'lll');
+        return chunk.write(output);
+	}
+
 	return tb.Application.extend({
 		getLocalPath:function () {
 			return module.uri.replace("app.js","");
