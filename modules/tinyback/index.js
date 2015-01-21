@@ -50,7 +50,10 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.get("/:token/:module/:target",function (req, res, next) {
+			ctx.router.get("/:token/:module/:target",function (req, res) {
+				var next = function (err) {
+					res.json({message:err.message},500);
+				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");
 				if (!ctx.api[req.params.module][req.params.target])

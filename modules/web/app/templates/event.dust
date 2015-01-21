@@ -13,7 +13,7 @@
 <br><br>
 <ul>
 {#stacktrace.frames}
-<li>{filename}:{lineno}:{colno}</li>
+<li><a href="#" data-idx='{$idx}'>{filename}:{lineno}:{colno}</a></li>
 {/stacktrace.frames}
 </ul>
 {/event}

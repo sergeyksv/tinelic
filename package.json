@@ -12,6 +12,7 @@
     "moment": "~2.9.0",
     "mongodb": "~1.4.28",
     "newrelic": "~1.14.6",
+    "request": "^2.51.0",
     "requirejs": "~2.1.15",
     "safe": "~0.2.1",
     "serve-static": "~1.8.0",

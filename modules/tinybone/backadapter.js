@@ -7,8 +7,15 @@ define(["module","backctx"],function (module,ctx) {
 	} else {
 		return function (f, t, p, cb) {
 			var rpc = f.split(".");
-			$.getJSON(ctx+t+"/"+rpc[0]+"/"+rpc[1],p,function (data) {
-				cb(null, data)
+			$.ajax(ctx+t+"/"+rpc[0]+"/"+rpc[1],{
+				dataType: "json",
+				data:p,
+				success:function (data) {
+					cb(null, data)
+				},
+				error: function (xhr) {
+					cb(new Error(xhr.responseJSON.message));
+				}
 			})
 		}
 	}
