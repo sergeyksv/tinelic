@@ -94,24 +94,27 @@ module.exports.init = function (ctx, cb) {
 					 req.connection.socket.remoteAddress;
 
 				var data = JSON.parse(req.query.sentry_data);
+				var _dtp = data._dtp || data._dtInit;
 				data.project && (delete data.project);
 				data._idp = req.params.project;
 				data._dtr = new Date();
 				data._dtc = data._dt;
 				data._dt = data._dtr;
+				data._dtp = _dtp;
+				data._dtInit && (delete data._dtInit);
 				data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
 				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+(parseInt(data._dtInit.valueOf()/(1000*60*60))))
+				md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))))
 				data.shash = md5sum.digest('hex');
 				md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dtInit.toString());
+				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				// when error happens try to link it with current page
 				// which is latest page from same client (chash)
