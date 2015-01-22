@@ -1,8 +1,8 @@
 define(['views/layout','module','safe',"dust","tinybone/base","routes","moment/moment"],function (Layout,module,safe,dust,tb,routes, moment) {
-
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
         dust.helpers = {};
+
 	dust.helpers.formatdate = function(chunk, context, bodies, params) {
         var m = moment(new Date(params.date));
         var output = m.format(params.format || 'lll');
@@ -44,27 +44,24 @@ define(['views/layout','module','safe',"dust","tinybone/base","routes","moment/m
 			var self = this;
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
-			requirejs(['views/'+route.view], function (View) {
-				var view = new View({app:self});
-				view.data = route.data;
-				view.render(safe.sure(next, function (text) {
-					document.title = route.data.title;
-					mainView.removeChilds();
-					$("#content").html(text);
-					view.bindDom($("#content"));
-					mainView.addSubView({view:view, name:route.view, cid:view.cid, data:view.data})
-					view.postRender();
-					self._pageLoad.dom = new Date();
-					var m = {
-						_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
-						_i_dt:self._pageLoad.dom.valueOf()-self._pageLoad.data.valueOf(),
-						_i_lt:0,
-						r:self._pageLoad.route
-					}
-					window._t_pageLoad(m);
-				}))
-			},next)
-
+			var view = new route.view({app:self});
+			view.data = route.data;
+			view.render(safe.sure(next, function (text) {
+				document.title = route.data.title;
+				mainView.removeChilds();
+				$("#content").html(text);
+				view.bindDom($("#content"));
+				mainView.addSubView({view:view, name:route.view, cid:view.cid, data:view.data})
+				view.postRender();
+				self._pageLoad.dom = new Date();
+				var m = {
+					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
+					_i_dt:self._pageLoad.dom.valueOf()-self._pageLoad.data.valueOf(),
+					_i_lt:0,
+					r:self._pageLoad.route
+				}
+				window.Tinelic.pageLoad(m);
+			}))
 		}
 	})
 })

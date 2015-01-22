@@ -6,8 +6,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="{_t_prefix}/css/style.css" rel="stylesheet">
 <script src="{_t_prefix}/js/require.js"></script>
-<script src="{_t_prefix}/js/rum.js"></script>
-<script src="//code.jquery.com/jquery-2.1.3.js"></script>
+{#_t_env_production}
+<script src="{_t_prefix}/js/build/rum.js"></script>
+{:else}
+<script src="{_t_prefix}/app/rum.js"></script>
+{/_t_env_production}
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="//cdn.ravenjs.com/1.1.15/jquery,native/raven.min.js"></script>
 <script>
 (function () {
@@ -36,7 +40,9 @@
 			"safe":"../js/safe",
 			"bootstrap":"../js/bootstrap",
 			"highcharts":location.protocol+"//code.highcharts.com/highcharts",
-			"moment":"../js/moment"
+			"moment":"../js/moment",
+			"dustc":"../tinybone/dustc",
+			"text":"../js/text",
 		},
 		shim: {
 			'dust': {
@@ -52,6 +58,10 @@
 </head>
 <body id="content">
 {@view name=_t_main_view /}
+{#_t_env_production}
+<script src="{_t_prefix}/js/build/app.js"></script>
+<script src="{_t_prefix}/js/build/routes/main.js"></script>
+{/_t_env_production}
 <script>
 	$.getJSON("/web/app/wire/{_t_unique}", function (wire) {
 		requirejs(["app"], function (App) { (new App()).init(wire); })

@@ -10,7 +10,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
 
     dust.helpers.view = function(chunk, context, bodies, params) {
         return chunk.map(function(chunk) {
-            requirejs(['views/' + params.name], function(View) {
+            requirejs([params.name], function(View) {
                 var view = new View({
                     app: context.get('_t_app')
                 });
@@ -33,7 +33,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
         });
     };
 
-    dust.config.whitespace = true;
+    dust.config && (dust.config.whitespace = true);
 
     // A module that can be mixed in to *any object* in order to provide it with
     // custom events. You may bind with `on` or remove with `off` callback
@@ -326,7 +326,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
             }, safe.sure(cb, function(ctx) {
                 self.populateTplCtx(ctx, safe.sure(cb, function(ctx) {
                     safe.each(wire.views, function(wireView, cb) {
-                        requirejs(["views/" + wireView.name], function(View) {
+                        requirejs([wireView.name], function(View) {
                             var view = new View({
                                 app: self.app
                             });
@@ -370,31 +370,7 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
             safe.back(cb, null, ctx);
         },
 
-        // ensures that all required templates for view are being loaded
-        // inluding partials (then are not loaded in runtime)
-        loadTpls: function(cb) {
-            var self = this;
-            var names = this.tpls || [this.id];
-            if (typeof window == 'undefined') {
-                var fs = require('fs');
-                var path = require('path');
-                safe.each(names, function(name, cb) {
-                    fs.readFile(path.resolve(self.app.getLocalPath(), "./templates", name + ".dust"), safe.sure(cb, function(template) {
-                        dust.loadSource(dust.compile(template.toString(), name));
-                        cb();
-                    }))
-                }, cb)
-            } else {
-                safe.each(names, function(name, cb) {
-                    requirejs(["dustjs/" + name + "_tpl"], function(template) {
-                        dust.loadSource(template);
-                        cb();
-                    }, cb)
-                }, cb);
-            }
-        },
-
-        // renders inner view content (free form), unlikely need to be
+         // renders inner view content (free form), unlikely need to be
         // redefined
         renderHtml: function(cb) {
             var self = this;
@@ -403,9 +379,6 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                     self.getBaseTplCtx(safe.sure(cb, function(ctx) {
                         self.populateTplCtx(ctx, cb)
                     }))
-                },
-                tpls: function(cb) {
-                    self.loadTpls(cb)
                 }
             }, safe.sure(cb, function(res) {
                 dust.render(self.id, res.context, cb)

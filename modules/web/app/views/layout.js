@@ -1,7 +1,7 @@
-define(['tinybone/base'],function (tb) {
+define(['tinybone/base','dustc!templates/layout.dust','views/header_view'],function (tb) {
 	var view = tb.View;
 	return view.extend({
-		id:"layout",
+		id:"templates/layout",
 		render:function (cb) {
 			view.prototype.renderHtml.call(this,cb);
 		},

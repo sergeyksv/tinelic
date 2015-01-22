@@ -1,11 +1,13 @@
-define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,moment) {
+define(['tinybone/base','lodash','moment/moment','highcharts',
+	'dustc!templates/project/project.dust',
+	'views/project/errors_view'],function (tb,_,moment) {
 	var view = tb.View;
-	return view.extend({
-		id:"project/project",
+	var View = view.extend({
+		id:"templates/project/project",
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var errorsView = _.find(this.views,function(v){
-				return v.name == "project/errors_view";
+				return v.name == "views/project/errors_view";
 			}).view;
 			var rpm = [],load=[],errp=[];
 			var views = this.data.views;
@@ -174,4 +176,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts'],function (tb,_,mo
 
 		}
 	})
+
+	View.id = "views/project/project_view";
+	return View;
 })

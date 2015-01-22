@@ -10,7 +10,14 @@ var lessMiddleware = require('less-middleware');
 requirejs.config({
     baseUrl: __dirname+"/app",
     paths:{
-		"tinybone":path.resolve(__dirname,"../tinybone")
+		"tinybone":path.resolve(__dirname,"../tinybone"),
+		'dustc': path.resolve(__dirname,'../tinybone/dustc'),
+		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text')
+	},
+	config:{
+		"text":{
+			env:"node"
+		}
 	}
 })
 
@@ -23,17 +30,10 @@ var wires = {};
 
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
+	var cfg = ctx.cfg;
 	requirejs.define("backctx",ctx);
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
 	ctx.router.use(static(__dirname+"/public"));
-	ctx.router.get("/app/dustjs*", function (req, res, next) {
-		var name = req.path.replace("/app/dustjs/","");
-		name = name.replace("_tpl.js","");
-		fs.readFile(path.resolve(__dirname, "./app/templates",name+".dust"), safe.sure(next, function (template) {
-			res.set('Content-Type', 'application/javascript');
-			res.send(dust.compile(template.toString(), name));
-		}))
-	})
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
 		var wire = wires[req.params.id];
 		if (wire) {
@@ -55,12 +55,13 @@ module.exports.init = function (ctx, cb) {
 							var populateTplCtx = view.populateTplCtx;
 							var uniqueId = _.uniqueId("w")
 							view.populateTplCtx = function (ctx, cb) {
-								ctx = ctx.push({_t_main_view:route.view,
+								ctx = ctx.push({_t_main_view:route.view.id,
 									_t_prefix:"/web",
 									_t_self_id:self_id,
 									_t_start:(new Date()).valueOf(),
 									_t_route:k,
-									_t_unique:uniqueId
+									_t_unique:uniqueId,
+									_t_env_production:cfg.env=="production"
 								});
 								populateTplCtx.call(this,ctx,cb)
 							}

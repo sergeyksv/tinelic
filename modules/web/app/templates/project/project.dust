@@ -1,4 +1,4 @@
-{@view name="header_view"/}
+{@view name="views/header_view"/}
 
 <div class="container">
 <div class="row">
@@ -9,7 +9,7 @@
 	<div id="pagetime" style="width:100%; height:400px;"></div>
 </div>
 <div class="col-xs-12 col-sm-4">
-{@view name="project/errors_view"/}
+{@view name="views/project/errors_view"/}
 </div>
 </div>
 </div>

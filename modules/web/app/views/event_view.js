@@ -1,4 +1,4 @@
-define(['tinybone/base',"lodash",'tinybone/backadapter','safe'],function (tb,_,api,safe) {
+define(['tinybone/base',"lodash",'tinybone/backadapter','safe','dustc!templates/event.dust'],function (tb,_,api,safe) {
 	var view = tb.View;
 	function htmlEscape(str) {
 		return String(str)
@@ -8,8 +8,8 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe'],function (tb,_,a
 				.replace(/</g, '&lt;')
 				.replace(/>/g, '&gt;');
 	}
-	return view.extend({
-		id:"event",
+	var View = view.extend({
+		id:"templates/event",
 		populateTplCtx:function (ctx, cb) {
 			// inject xtra data
 			var selfId = this.data.event._id;
@@ -40,4 +40,6 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe'],function (tb,_,a
 			}
 		}
 	})
+	View.id = "views/event_view";
+	return View;
 })

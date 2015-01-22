@@ -1,7 +1,7 @@
-define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe'],function (tb,modal,api,safe) {
+define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe','dustc!templates/modals/project.dust'],function (tb,modal,api,safe) {
 	var view = tb.View;
-	return view.extend({
-		id:"modals/project",
+	var View = view.extend({
+		id:"templates/modals/project",
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			this.$('.modal').modal({});
@@ -26,4 +26,6 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe'],functio
 			}))
 		}
 	})
+	View.id = "views/modals/project";
+	return View;
 })

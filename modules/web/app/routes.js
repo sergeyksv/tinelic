@@ -4,4 +4,3 @@ define({
 	"/page":"main#page",
 	"/project/:slug":"main#project"
 })
-
