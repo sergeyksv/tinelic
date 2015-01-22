@@ -1,11 +1,48 @@
 {@view name="views/header_view" data="text"/}
 <div class="container">
-<h2>Projects</h2>
 <ul>
-{#projects}
-	<li><h3><a href='{_t_prefix}/project/{slug}'>{name}</a></h3> - {_id}</li>
-{/projects}
 </ul>
-<button class="do-newproject btn btn-default">Add new project</button>
-
+<table class="table-stripped table-hover table-bordered" data-url="data1.json" data-height="400" data-row-style="rowStyle">
+    <tr>
+        <th data-field="id" class="col-md-3">
+        	Project
+        </th>
+        <th data-field="name" class="col-md-2">
+            Project ID
+        </th>
+        <th data-field="price" class="col-md-2">
+            Page views (n)
+        </th>
+        <th data-field="price" class="col-md-2">
+            Error rate (%)
+        </th>
+        <th data-field="price" class="col-md-2">
+            End user time (s)
+        </th>
+    </tr>
+    {#projects}
+    	<tr>
+       		 <td data-field="name" class="col-md-3">
+       			<h3>
+       			<a href='{_t_prefix}/project/{slug}'>
+       				{name}
+       			</a>
+       			</h3>
+       		 </td>
+       		 <td data-field="id" class="col-md-2">
+                {_id}
+             </td>
+             <td data-field="views" class="col-md-2">
+                {views}
+             </td>
+             <td data-field="errors" class="col-md-2">
+                 {errors}
+             </td>
+             <td data-field="etu" class="col-md-2">
+                {etu}
+             </td>
+       	</tr>
+    {/projects}
+</table>
+<button class="do-newproject btn btn-default" style="margin-top: 5px;">Add new project</button>
 </div>
