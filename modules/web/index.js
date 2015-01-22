@@ -76,8 +76,12 @@ module.exports.init = function (ctx, cb) {
 								}
 								wv.prefix = app.prefix;
 
-								wires[uniqueId]=wv;
 								wireView(view,wv);
+								// make wire available for download for 30s
+								wires[uniqueId]=wv;
+								setTimeout(function () {
+									delete wires[uniqueId]
+								}, 30000);
 
 								res.send(text)
 							}))
