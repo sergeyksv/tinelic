@@ -106,7 +106,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					series: {
 						marker: {
 							enabled: false
-						}
+						},
+						animation: false
 					}
 				},
 				series: [{
@@ -158,7 +159,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					series: {
 						marker: {
 							enabled: false
-						}
+						},
+						animation: false
 					}
 				},
 				series: [{

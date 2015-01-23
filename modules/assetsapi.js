@@ -17,8 +17,8 @@ module.exports.init = function (ctx, cb) {
 					projects.find().toArray(cb)
 				},
 				getProject:function (t, p, cb) {
-					p._id && (p._id =  mongo.ObjectID(p._id));
-					projects.findOne(p,cb);
+					p.filter._id && (p.filter._id =  mongo.ObjectID(p._id));
+					projects.findOne(p.filter,cb);
 				},
 				saveProject:function (t, p, cb) {
 					var id = new mongo.ObjectID(p.project._id); delete(p.project._id);

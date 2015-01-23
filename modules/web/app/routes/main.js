@@ -8,7 +8,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				data: function (cb) {
-					api("assets.getProjects","public", {}, cb)
+					api("assets.getProjects","public", {_t_age:"30d"}, cb)
 				}
 			}, safe.sure(cb, function (r) {
 				res.render({view:r.view, data:{projects:r.data,title:"Tinelic - Home"}})
@@ -22,10 +22,10 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				event:function (cb) {
-					api("collect.getEvent","public", {_id:req.params.id}, cb)
+					api("collect.getEvent","public", {_t_age:"30d",_id:req.params.id}, cb)
 				},
 				info:function (cb) {
-					api("collect.getEventInfo","public", {filter:{_id:req.params.id}}, cb)
+					api("collect.getEventInfo","public", {_t_age:"10m",filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
 				res.render({view:r.view,data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
@@ -45,13 +45,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				data:function (cb) {
-					api("assets.getProject","public", {slug:req.params.slug}, safe.sure( cb, function (project) {
+					api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						safe.parallel({
 							views: function (cb) {
-								api("collect.getPageViews","public",{quant:quant,filter:{_idp:project._id}}, cb);
+								api("collect.getPageViews","public",{_t_age:quant+"m",quant:quant,filter:{_idp:project._id}}, cb);
 							},
 							errors: function (cb) {
-								api("collect.getErrorStats","public",{filter:{_idp:project._id}}, cb);
+								api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{_idp:project._id}}, cb);
 							}
 						}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project}))

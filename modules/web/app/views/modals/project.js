@@ -21,6 +21,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe','dustc!t
 				name:this.$("#name").val()
 			}
 			api("assets.saveProject","public",{project:project}, safe.sure(this.app.errHandler, function () {
+				api.invalidate();
 				self.remove();
 				self.trigger("saved");
 			}))
