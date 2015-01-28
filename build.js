@@ -16,15 +16,11 @@
 			]
 		}
 	],
-	shim: {
-		'dust': {
-			exports: 'dust'
-		}
-	},
 	paths:{
 		"tinybone":"../../tinybone",
 		"lodash":"../public/js/lodash",
 		"dust":"../public/js/dust",
+		"dust-helpers":"../public/js/dust-helpers",
 		"dustjs":"../public/js/dust",
 		"dustc":"../../tinybone/dustc",
 		"text":"../../../node_modules/requirejs-text/text",
@@ -32,11 +28,24 @@
 		"bootstrap":"../public/js/bootstrap",
 		"moment":"../public/js/moment",
 		"backctx":"empty:",
-		"highcharts":"empty:"
+		"highcharts":"empty:",
+		"jquery": "empty:",
+		"jquery-cookie": "../public/js/jquery-cookie",
 	},
-    map: {
-        "dustc": {
-            "dust": "dust"
-        }
-    }
+	shim: {
+		'jquery-cookie': {
+			deps: ['jquery'],
+			exports: 'jquery-cookie'
+		},
+		'jquery': {
+			exports: 'jquery'
+		},
+		'dust-helpers': {
+			deps: ['dust'],
+			exports: 'helpers'
+		},
+		'dust': {
+			exports: 'dust'
+		}
+	}
 })

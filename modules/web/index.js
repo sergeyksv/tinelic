@@ -23,9 +23,11 @@ requirejs.config({
 
 requirejs.define("dust",dust);
 requirejs.define("dust-helpers", require('dustjs-helpers'));
-requirejs.define("jquery", require(__dirname,'../modules/web/public/js/jquery-2.1.3'));
-requirejs.define("jquery-cookie", require(__dirname,'../modules/web/public/js/jquery-cookie'));
-requirejs.define("bootstrap/dropdown", require(__dirname,'../modules/web/public/js/bootstrap/dropdown'));
+
+// server stubs
+requirejs.define("jquery", true);
+requirejs.define("jquery-cookie", true);
+requirejs.define("bootstrap/dropdown", true);
 requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets'];
