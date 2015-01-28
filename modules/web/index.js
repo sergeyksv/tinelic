@@ -22,6 +22,10 @@ requirejs.config({
 })
 
 requirejs.define("dust",dust);
+requirejs.define("dust-helpers", require('dustjs-helpers'));
+requirejs.define("jquery", require(__dirname,'../modules/web/public/js/jquery-2.1.3'));
+requirejs.define("jquery-cookie", require(__dirname,'../modules/web/public/js/jquery-cookie'));
+requirejs.define("bootstrap/dropdown", require(__dirname,'../modules/web/public/js/bootstrap/dropdown'));
 requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets'];
@@ -35,6 +39,7 @@ module.exports.init = function (ctx, cb) {
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
 	ctx.router.use(static(__dirname+"/public"));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
+
 		var wire = wires[req.params.id];
 		if (wire) {
 			delete wires[req.params.id];
@@ -48,7 +53,7 @@ module.exports.init = function (ctx, cb) {
 			ctx.router.get(k,function (req,res,next) {
 				var rp = v.split("#");
 				requirejs(['routes/'+rp[0]],function (route) {
-					route[rp[1]](_.pick(req,["params","query"]), {
+					route[rp[1]](_.pick(req,["params","query","cookies"]), {
 						render:function (route) {
 							var view = app.getView();
 							view.data = route.data || {};

@@ -14,6 +14,29 @@
 		<li class="active"><a href="{_t_prefix}/">Home</a></li>
 		<li><a href="{_t_prefix}/page">Page</a></li>
 	  </ul>
+	  	{#filter}
+	  		<div class="btn-group" style="float: right; margin-top: 10px;">
+              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+				{@select key="{filter}"}
+					{@eq value="1h"}Last hour{/eq}
+					{@eq value="6h"}Last 6 hours{/eq}
+					{@eq value="12h"}Last 12 hours{/eq}
+					{@eq value="1d"}Last day{/eq}
+					{@eq value="3d"}Last 3 days{/eq}
+					{@eq value="1w"}Last week{/eq}
+					{@default}Default time range{/default}
+				{/select}
+              </button>
+      		  <ul class="dropdown-menu" role="menu">
+      			<li onclick="$.cookie('str', '1h', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=1h ">Last hour</a></li>
+      			<li onclick="$.cookie('str', '6h', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=6h ">Last 6 hours</a></li>
+      			<li onclick="$.cookie('str', '12h', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=12h ">Last 12 hours</a></li>
+      			<li onclick="$.cookie('str', '1d', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=1d ">Last day</a></li>
+      			<li onclick="$.cookie('str', '3d', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=3d ">Last 3 days</a></li>
+      			<li onclick="$.cookie('str', '1w', {expires: 5,path: '/',});"><a href="{_t_prefix}/project/{project.slug}/?_str=1w ">Last week</a></li>
+      		  </ul>
+			</div>
+		{/filter}
 	</div><!--/.nav-collapse -->
   </div>
 </nav>

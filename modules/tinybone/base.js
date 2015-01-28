@@ -1,4 +1,4 @@
-define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
+define(['safe', 'lodash', 'dust','dust-helpers','jquery','jquery-cookie','bootstrap/dropdown'], function(safe, _, dust) {
 	var array = [];
 	var push = array.push;
 	var slice = array.slice;
@@ -695,10 +695,12 @@ define(['safe', 'lodash', 'dust'], function(safe, _, dust) {
                         history.pushState({}, "", url);
                         var v = self.routes[p.source];
                         var rp = v.split("#");
+
                         requirejs(['routes/' + rp[0]], function(route) {
                             route[rp[1]]({
                                 params: match,
-                                query: getQueryStringAsObject()
+                                query: getQueryStringAsObject(),
+                                cookies: $.cookie()
                             }, {
                                 render: self.render
                             }, next)

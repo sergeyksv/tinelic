@@ -3,15 +3,20 @@ var safe = require("safe")
 var path = require("path");
 var express = require('express');
 var moment = require('moment');
+var cookieParser = require('cookie-parser')
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
 	app.use(require("compression")());
+	app.use(cookieParser());
 	var api = {};
 	var auto = {};
 	var registered = {};
 	var requested = {};
+
 	_.each(cfg.modules, function (module) {
+
+		app.use(require("compression")());
 		console.log("loading "+module.name);
 		registered[module.name]=1;
 		var mod = module.object || null;
