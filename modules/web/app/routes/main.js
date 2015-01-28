@@ -41,24 +41,15 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			var quant = 10;
 			var range = 60 * 60 * 1000;
 
-			var	h = 60 * 60 * 1000;
-			var	d = 24 * 60 * 60 * 1000;
-			var	w = 7 * 24 * 60 * 60 * 1000;
-
-			var val = /(\d*)/.exec(str);
-			var val2 = /(\D$)/.exec(str);
-
-			switch (val2[0]) {
-				case 'h':
-					range = val[0] * h;
-					break
-				case 'd':
-					range = val[0] * d;
-					break
-				case 'w':
-					range = val[0] * w;
-					break
+			// transcode range paramater into seconds
+			var match = str.match(/(\d+)(.)/);
+			var units = {
+				h:60 * 60 * 1000,
+				d:24 * 60 * 60 * 1000,
+				w:7 * 24 * 60 * 60 * 1000
 			}
+			if (match.length==3 && units[match[2]])
+				range = match[1]*units[match[2]];
 
 			var dtstart = new Date(Date.parse(Date()) - range);
 			var dtend = Date();

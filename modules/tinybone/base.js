@@ -1,4 +1,4 @@
-define(['safe', 'lodash', 'dust','dust-helpers','jquery','jquery-cookie','bootstrap/dropdown'], function(safe, _, dust) {
+define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, dust) {
 	var array = [];
 	var push = array.push;
 	var slice = array.slice;
