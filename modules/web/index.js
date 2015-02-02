@@ -90,6 +90,11 @@ module.exports.init = function (ctx, cb) {
 									delete wires[uniqueId]
 								}, 30000);
 
+								// every page rendered on server should "sync"
+								// client cache
+								var _t_state = req.cookies._t_state || -1;
+								_t_state++;
+								res.cookie('_t_state',_t_state);
 								res.send(text)
 							}))
 						}

@@ -12,7 +12,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 						var quant = 10;
 						var dtstart = new Date(Date.parse(Date()) - 24 * 60 * 60 * 1000);
 						var dtend = Date();
-						safe.forEach(project, function (n, cb1) {
+						safe.forEach(project, function (n, cb) {
 							api("collect.getPageViews", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
@@ -20,46 +20,21 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									_dtend: dtend
 								}
 							}, safe.sure(cb, function (v) {
-								var load = []
-								var errp = []
-								var rpm = []
-								var offset = new Date().getTimezoneOffset();
-								_.each(v, function (v) {
-									var d = new Date(v._id*quant*60000);
-									d.setMinutes(d.getMinutes()-offset);
-									d = d.valueOf();
-									var rpm1 = v.value?v.value.r:0;
-									rpm.push(rpm1);
-									load.push(parseInt(100*(v.value?(v.value.tt/1000):0))/100);
-									errp.push(parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100);
-								})
-								var vall = 0;
-								for (var i=0; i<load.length; i++) {
-									vall+=+load[i];
-								};
-								var vale = 0;
-								for (var i=0; i<errp.length; i++) {
-									vale+=+errp[i];
-								};
-								var valr = 0;
-								for (var i=0; i<rpm.length; i++) {
-									valr+=+rpm[i];
-								};
+								var vall = null; var vale = null; var valr = null;
+								if (v.length) {
+									vall = vale = valr = 0;
+									_.each(v, function (v) {
+										valr+=v.value?v.value.r:0;
+										vall+=v.value?(v.value.tt/1000):0;
+										vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+									})
 
-								vall=(vall/load.length).toFixed(2);
-								vale=(vale/errp.length).toFixed(2);
-								valr=(valr/rpm.length).toFixed(2);
-
-								switch (true) {
-									case isNaN(vall):
-										vall = [];
-									case isNaN(vale):
-										vale = [];
-									case isNaN(valr):
-										valr = [];
+									vall=(vall/v.length).toFixed(2);
+									vale=(vale/v.length).toFixed(2);
+									valr=(valr/v.length).toFixed(2);
 								}
 
-								cb1(null,_.extend(n, {views: valr, errors: vale, etu: vall}))
+								cb(null,_.extend(n, {views: valr, errors: vale, etu: vall}))
 							}))
 						}, safe.sure(cb, function() {
 							cb(null, project)

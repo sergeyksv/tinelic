@@ -7,9 +7,6 @@
         <th data-field="id" class="col-md-3">
         	Project
         </th>
-        <th data-field="name" class="col-md-2">
-            Project ID
-        </th>
         <th data-field="price" class="col-md-2">
             Page views (n)
         </th>
@@ -23,23 +20,20 @@
     {#projects}
     	<tr>
        		 <td data-field="name" class="col-md-3">
-       			<h3>
+       			<h5>
        			<a href='{_t_prefix}/project/{slug}'>
        				{name}
        			</a>
-       			</h3>
+       			</h5>
        		 </td>
-       		 <td data-field="id" class="col-md-2">
-                {_id}
-             </td>
              <td data-field="views" class="col-md-2">
-                {views}
+                {#views}{.} ppm{/views}
              </td>
              <td data-field="errors" class="col-md-2">
-                 {errors}
+                 {#errors}{.} %{/errors}
              </td>
              <td data-field="etu" class="col-md-2">
-                {etu}
+                {#etu}{.} s{/etu}
              </td>
        	</tr>
     {/projects}
