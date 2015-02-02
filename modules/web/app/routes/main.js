@@ -9,8 +9,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				},
 				data: function (cb) {
 					api("assets.getProjects","public", {_t_age:"30d"}, safe.sure(cb, function (project) {
-						var quant = 10;
-						var dtstart = new Date(Date.parse(Date()) - 24 * 60 * 60 * 1000);
+						var quant = 1; var period = 15;
+						var dtstart = new Date(Date.parse(Date()) - period * 60 * 1000);
 						var dtend = Date();
 						safe.forEach(project, function (n, cb) {
 							api("collect.getPageViews", "public", {
@@ -29,9 +29,9 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 										vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 									})
 
-									vall=(vall/v.length).toFixed(2);
-									vale=(vale/v.length).toFixed(2);
-									valr=(valr/v.length).toFixed(2);
+									vall=(vall/period).toFixed(2);
+									vale=(vale/period).toFixed(2);
+									valr=(valr/period).toFixed(2);
 								}
 
 								cb(null,_.extend(n, {views: valr, errors: vale, etu: vall}))
