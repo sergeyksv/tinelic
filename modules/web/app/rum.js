@@ -13,7 +13,7 @@
 		return matches ? decodeURIComponent(matches[1]) : undefined;
 	}
 
-	function loadEvent() {
+	function loadEvent(js) {
 		var _t_page = softStart;
 		var _t_load = new Date();
 		var _t_rum = parseInt(getCookie("_t_rum"));
@@ -31,6 +31,11 @@
 			_i_dt:_t_ready.valueOf()-_t_page.valueOf(),
 			_i_lt:_t_load.valueOf()-_t_ready.valueOf(),
 		}
+
+		if (js.length) {
+			m.AJAX = js;
+		}
+
 		window.Tinelic.pageLoad(m);
 	}
 
@@ -101,5 +106,67 @@
 			}
 			i.src = this.url+params;
 		}
+	}
+
+	var xml_type;
+
+	if(window.XMLHttpRequest && !(window.ActiveXObject)) {
+		xml_type = 'XMLHttpRequest';
+	}
+	if (xml_type == 'XMLHttpRequest') {
+
+		(function(XHR) {
+			"use strict";
+			var open = XHR.prototype.open;
+			var send = XHR.prototype.send;
+			XHR.prototype.open = function(method, url, async, user, pass) {
+				this._url = url;
+				open.call(this, method, url, async, user, pass);
+			};
+			XHR.prototype.send = function(data) {
+				var self = this;
+				var start;
+				var oldOnReadyStateChange;
+				var url = this._url;
+				var s = {}
+				function onReadyStateChange() {
+					var time = new Date() - start;
+					if(self.readyState == 2) {
+						s._nt = time;
+					}
+					if(self.readyState == 4) {
+						var xhr = new XHR();
+						s._tt = time;
+						s._pt = s._tt - s._nt;
+						s._url = url;
+						s._code = self.status
+						s._dtc = new Date();
+						xhr.noIntercept = true;
+
+						var js = JSON.stringify(s);
+
+						loadEvent(js);
+
+						/*xhr.open("GET", "/web");
+						xhr.setRequestHeader("Content-type","application/json");
+						xhr.setRequestHeader("ajaxstats", JSON.stringify(s));
+						xhr.send(); */
+					}
+					if(oldOnReadyStateChange) {
+						oldOnReadyStateChange();
+					}
+				}
+				if(!this.noIntercept) {
+					start = new Date();
+					if(this.addEventListener) {
+						this.addEventListener("readystatechange", onReadyStateChange, false);
+					} else {
+						oldOnReadyStateChange = this.onreadystatechange;
+						this.onreadystatechange = onReadyStateChange;
+					}
+				}
+				send.call(this, data);
+			}
+		})(XMLHttpRequest);
 	}
 })()

@@ -36,8 +36,17 @@ module.exports.init = function (ctx, cb) {
 						function (cb) { col.ensureIndex({_idp:1}, cb) }
 					], safe.sure(cb, col))
 				}))
+			},
+			function (cb) {
+				db.collection("ajax", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({chash:1}, cb)},
+						function (cb) { col.ensureIndex({_dt:1}, cb)},
+						function (cb) { col.ensureIndex({_idp:1}, cb)}
+					], safe.sure(cb, col))
+				}))
 			}
-		], safe.sure_spread(cb, function (events,pages) {
+		], safe.sure_spread(cb, function (events,pages,ajax) {
 			ctx.router.get("/browser/:project",function (req, res, next) {
 				var data = req.query;
 				data._idp=req.params.project;
@@ -69,17 +78,30 @@ module.exports.init = function (ctx, cb) {
 				data.chash = md5sum.digest('hex');
 				data._i_err = 0;
 				safe.run(function (cb) {
-					pages.insert(data, safe.sure(cb, function (docs) {
-						// once after inserting page we need to link
-						// this page events that probably cread earlier
-						var _id = docs[0]._id;
-						events.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id,headers:{route:data.r,uri:data.p}}},safe.sure(cb, function (updates) {
-							if (updates)
-								pages.update({_id:_id},{$inc:{_i_err:updates}},cb);
-							else
-								cb();
+					if (!req.query.AJAX) {
+						pages.insert(data, safe.sure(cb, function (docs) {
+							// once after inserting page we need to link
+							// this page events that probably cread earlier
+							var _id = docs[0]._id;
+							events.update({chash: data.chash, _idpv: {$exists: false}}, {
+								$set: {
+									_idpv: _id,
+									headers: {route: data.r, uri: data.p}
+								}
+							}, safe.sure(cb, function (updates) {
+								if (updates)
+									pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+								else
+									cb();
+							}))
 						}))
-					}))
+					}
+					else {
+						var stats = JSON.parse(req.query.AJAX);
+						stats._dtr = data._dtr;
+						stats._dt = data._dtr;
+						ajax.insert(stats, cb);
+					}
 				}, function (err) {
 					if (err)
 						return console.log(err);
