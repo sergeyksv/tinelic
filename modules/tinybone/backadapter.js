@@ -25,6 +25,17 @@ define(["module","backctx",'jquery','jquery-cookie'],function (module,ctx, $) {
 		api.invalidate = function () {
 			st++; $.cookie("_t_state",st,{expired:null,path:"/"});
 		}
+
+		$(window).on("beforeunload", function (e) {
+			// on leaving page (real redirect) drop current path in
+			// short leaving cookie (1m)
+			$.cookie("_t_refresh",window.location.pathname,{expired:new Date((new Date()).valueOf()+60*1000),path:"/"});
+		})
+
+		// detection of page refresh
+		if ($.cookie("_t_refresh")==window.location.pathname)
+			api.invalidate();
+
 		return api;
 	}
 
