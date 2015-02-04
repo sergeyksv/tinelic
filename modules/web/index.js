@@ -65,10 +65,10 @@ module.exports.init = function (ctx, cb) {
 								ctx = ctx.push({_t_main_view:route.view.id,
 									_t_prefix:"/web",
 									_t_self_id:self_id,
-									_t_start:(new Date()).valueOf(),
 									_t_route:k,
 									_t_unique:uniqueId,
-									_t_env_production:cfg.env=="production"
+									_t_env_production:cfg.env=="production",
+									_t_rev:cfg.rev
 								});
 								populateTplCtx.call(this,ctx,cb)
 							}
