@@ -10,8 +10,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				data: function (cb) {
 					api("assets.getProjects","public", {_t_age:"30d"}, safe.sure(cb, function (project) {
 						var quant = 1; var period = 15;
-						var dtstart = new Date(Date.parse(Date()) - period * 60 * 1000);
-						var dtend = Date();
+						var dtend = new Date();
+						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
 						safe.forEach(project, function (n, cb) {
 							api("collect.getPageViews", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
