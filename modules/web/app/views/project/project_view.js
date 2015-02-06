@@ -11,8 +11,10 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			}).view;
 			var rpm = [],load=[],errp=[];
 			var views = this.data.views;
+			var ajax = this.data.ajax;
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;
+			var ajflat = [], ajprev = null;
 			_.each(views, function (v) {
 				if (prev) {
 					for (var i=prev._id+1; i<v._id; i++) {
@@ -21,6 +23,15 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				}
 				prev = v;
 				flat.push(v);
+			})
+			_.each(ajax, function (a) {
+				if (ajprev) {
+					for (var i=ajprev._id+1; i< a._id; i++) {
+						ajflat.push({_id: i, value:null});
+					}
+				}
+				ajprev = a;
+				ajflat.push(a);
 			})
 			var quant = this.data.quant;
 			var offset = new Date().getTimezoneOffset();
@@ -32,6 +43,19 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				rpm.push([d,rpm1]);
 				load.push([d,parseInt(100*(v.value?(v.value.tt/1000):0))/100]);
 				errp.push([d,parseInt(10000*(v.value?(1.0*v.value.e/v.value.r):0))/100]);
+			})
+
+			var ajrpm = [], ajerr = [], ajload=[], ajpt=[];
+
+			_.each(ajflat, function (a) {
+				var d = new Date(a._id*quant*60000);
+				d.setMinutes(d.getMinutes()-offset);
+				d = d.valueOf();
+				var ajrpm1 = a.value? a.value.r:0;
+				ajrpm.push([d,ajrpm1]);
+				ajerr.push([d,parseInt(10000*(a.value?(1.0*a.value.e/a.value.r):0))/100]);
+				ajload.push([d,parseInt(100*(a.value?(a.value.tt/1000):0))/100]);
+				ajpt.push([d,parseInt(100*(a.value?(a.value.pt/1000):0))/100])
 			})
 
 			function meanFilter(arr,window) {
@@ -60,6 +84,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			var errpf = meanFilter(errp, 10);
 			var loadf = meanFilter(load, 10);
 			var loadmax = _.max(loadf, function (v) { return v[1]; })[1];
+			var ajrpmmax = _.max(ajrpm, function (v) { return v[1]; })[1];
+			var ajloadmax = _.max(ajload, function (v) { return v[1]; })[1];
 			var rpmmax = _.max(rpmf, function (v) { return v[1]; })[1];
 
 			rpmmax = parseInt((rpmmax+1)/10)*10;
@@ -175,7 +201,92 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				]
 			})
-
+			this.$('#ajaxstats').highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: [{
+					title: {
+						text: 'times'
+					},
+					min:0,
+					max:ajrpmmax
+				}
+				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						},
+						animation: false
+					}
+				},
+				series: [
+					{
+						name: 'Requests/minute',
+						data: ajrpm,
+						color: "lightblue"
+					},
+					{
+						name: 'Error/minute',
+						data: ajerr,
+						color: "red"
+					}
+				]
+			})
+			this.$('#ajaxtime').highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: [{
+					title: {
+						text: 'seconds'
+					},
+					min:0,
+					max:ajloadmax
+				}
+				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						},
+						animation: false
+					}
+				},
+				series: [
+					{
+						name: 'Total Time',
+						data: ajload,
+						color: "blue"
+					},
+					{
+						name: 'Process Time',
+						data: ajpt,
+						color: "lightgreen"
+					},
+				]
+			})
 		}
 	})
 

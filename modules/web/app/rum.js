@@ -13,7 +13,7 @@
 		return matches ? decodeURIComponent(matches[1]) : undefined;
 	}
 
-	function loadEvent(js) {
+	function loadEvent() {
 		var _t_page = softStart;
 		var _t_load = new Date();
 		var _t_rum = parseInt(getCookie("_t_rum"));
@@ -30,10 +30,6 @@
 			_i_nt:_t_page.valueOf()-_t_start.valueOf(),
 			_i_dt:_t_ready.valueOf()-_t_page.valueOf(),
 			_i_lt:_t_load.valueOf()-_t_ready.valueOf(),
-		}
-
-		if (js.length) {
-			m.AJAX = js;
 		}
 
 		window.Tinelic.pageLoad(m);
@@ -141,16 +137,13 @@
 						s._url = url;
 						s._code = self.status
 						s._dtc = new Date();
+						s.r = '/ajax/:project'
 						xhr.noIntercept = true;
-
 						var js = JSON.stringify(s);
-
-						loadEvent(js);
-
-						/*xhr.open("GET", "/web");
+						xhr.open("GET", "/collect/ajax/" + window.Tinelic.url.split( '/' )[5]);
 						xhr.setRequestHeader("Content-type","application/json");
 						xhr.setRequestHeader("ajaxstats", JSON.stringify(s));
-						xhr.send(); */
+						xhr.send();
 					}
 					if(oldOnReadyStateChange) {
 						oldOnReadyStateChange();

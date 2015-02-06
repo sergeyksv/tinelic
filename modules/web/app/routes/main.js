@@ -137,6 +137,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									_dtstart: dtstart,
 									_dtend: dtend
 								}}, cb);
+							},
+							ajax: function (cb) {
+								api("collect.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
+									_idp:project._id,
+									_dtstart: dtstart,
+									_dtend: dtend
+								}}, cb);
 							}
 						}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project, filter: str}))
