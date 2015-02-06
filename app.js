@@ -10,6 +10,7 @@ var cfg = {
 	modules:[
 		{name:"prefixify",object:tinyback.prefixify()},
 		{name:"mongo",object:tinyback.mongodb()},
+		{name:"users",require:"./modules/usersapi.js"},
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
