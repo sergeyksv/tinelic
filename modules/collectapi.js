@@ -58,6 +58,7 @@ module.exports.init = function (ctx, cb) {
 					req.socket.remoteAddress ||
 					req.connection.socket.remoteAddress;
 
+				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
@@ -70,10 +71,7 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
-				data.request = {
-					route: data.r,
-					uri: data._url
-				}
+				data.request = {};
 				safe.run(function (cb) {
 					pages.findAndModify(
 						{
@@ -82,6 +80,8 @@ module.exports.init = function (ctx, cb) {
 						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
+								(page.r) && (data.request.route = page.r);
+								(page.p) && (data.request.uri = page.p);
 							}
 							ajax.insert(data, cb)
 						}))
@@ -132,9 +132,9 @@ module.exports.init = function (ctx, cb) {
 								events.update({chash: data.chash, _idpv: {$exists: false}}, {
 									$set: {
 										_idpv: _id,
-										headers: {route: data.r, uri: data.p}
+										request: {route: data.r, uri: data.p}
 									}
-								}, safe.sure(cb, function (updates) {
+								}, {multi: true}, safe.sure(cb, function (updates) {
 									if (updates)
 										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
 									else
@@ -142,16 +142,19 @@ module.exports.init = function (ctx, cb) {
 								}))
 							},
 							function(cb) {
-								ajax.update({chash: data.chash, _idpv: {$exists: false}},
-									{$set: {_idpv: _id, headers: {route: data.r, uri: data.p}}},
-									{multi: true}, safe.sure(cb, function() {
-										ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
-											if (count > 0)
-												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
-											else
-												cb();
-										}))
+								ajax.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										request: {route: data.r, uri: data.p}
+									}
+								}, {multi: true}, safe.sure(cb, function() {
+									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+										if (count > 0)
+											pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+										else
+											cb();
 									}))
+								}))
 							}
 						], cb)
 					}))
@@ -230,7 +233,7 @@ module.exports.init = function (ctx, cb) {
 					}
 					ajax.mapReduce(
 						"function() {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._pt,tt:this._tt, code: this._code, r:1.0/"+q+", e:1.0*(this._code != 200 ? 1:0 )/"+q+"})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
 						function (k,v) {
 							var r=null;

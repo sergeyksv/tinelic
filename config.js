@@ -1,5 +1,5 @@
 module.exports = {
-	env:"production",
+	env:"dev",
 	mongo:{
 		main:{
 			db:"tinelic",
