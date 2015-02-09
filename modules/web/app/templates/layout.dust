@@ -15,7 +15,8 @@
 <script>
 (function () {
 	var _t_page = new Date();
-	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')+"/collect/browser/{_t_self_id}",
+	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
+		project:"{_t_self_id}",
 		route:"{_t_route}",
 		_dtp:_t_page
 	})

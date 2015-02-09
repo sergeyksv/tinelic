@@ -31,6 +31,7 @@
 			_i_dt:_t_ready.valueOf()-_t_page.valueOf(),
 			_i_lt:_t_load.valueOf()-_t_ready.valueOf(),
 		}
+
 		window.Tinelic.pageLoad(m);
 	}
 
@@ -82,11 +83,27 @@
 		document.cookie = '_t_rum='+(new Date().valueOf())+";expires="+ttl+";path=/";
 	})
 
+	function sendPixel(m, u) {
+		var i = new Image();
+		var params = "?";
+		for (var v in m) {
+			params+=v+"="+encodeURIComponent(m[v])+"&";
+		}
+		i.src = u+params;
+		return i;
+	}
+
 	window.Tinelic = {
 		config:function (opts) {
 			this.url = opts.url;
 			this._dtp = opts._dtp;
 			this.route = opts.route;
+			this.project = opts.project;
+			// work around for legacy initialization
+			if (!this.project) {
+				this.project = window.Tinelic.url.split( '/' )[5];
+				this.url = this.url.replace("/collect/browser/"+this.project, "");
+			}
 		},
 		pageLoad:function (m) {
 			m.p = window.location.pathname;
@@ -94,12 +111,59 @@
 			m._dtp = this._dtp;
 			m.r = m.r || this.route;
 			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
-			var i = new Image();
-			var params = "?";
-			for (var v in m) {
-				params+=v+"="+m[v]+"&";
-			}
-			i.src = this.url+params;
+			sendPixel(m, this.url+"/collect/browser/"+this.project)
 		}
+	}
+
+	var xml_type;
+
+	if(window.XMLHttpRequest && !(window.ActiveXObject)) {
+		xml_type = 'XMLHttpRequest';
+	}
+	if (xml_type == 'XMLHttpRequest') {
+
+		(function(XHR) {
+			"use strict";
+			var open = XHR.prototype.open;
+			var send = XHR.prototype.send;
+			XHR.prototype.open = function(method, url, async, user, pass) {
+				this._url = url;
+				open.call(this, method, url, async, user, pass);
+			};
+			XHR.prototype.send = function(data) {
+				var self = this;
+				var start = new Date();
+				var oldOnReadyStateChange;
+				var url = this._url;
+				var s = {}
+				function onReadyStateChange() {
+					var time = new Date() - start;
+					if(self.readyState == 2) {
+						s._i_nt = time;
+					}
+					if(self.readyState == 4) {
+						s._i_tt = time;
+						s._i_pt = s._i_tt - s._i_nt;
+						s.url = url;
+						s._i_code = self.status
+						s._dtc = new Date();
+						s._dtp = window.Tinelic._dtp
+						sendPixel(s, window.Tinelic.url + "/collect/ajax/" + window.Tinelic.project);
+
+					}
+					if(oldOnReadyStateChange) {
+						oldOnReadyStateChange();
+					}
+				}
+				if(this.addEventListener) {
+					this.addEventListener("readystatechange", onReadyStateChange, false);
+				} else {
+					oldOnReadyStateChange = this.onreadystatechange;
+					this.onreadystatechange = onReadyStateChange;
+				}
+
+				send.call(this, data);
+			}
+		})(XMLHttpRequest);
 	}
 })()
