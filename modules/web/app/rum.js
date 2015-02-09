@@ -83,6 +83,16 @@
 		document.cookie = '_t_rum='+(new Date().valueOf())+";expires="+ttl+";path=/";
 	})
 
+	function image(m, u) {
+		var i = new Image();
+		var params = "?";
+		for (var v in m) {
+			params+=v+"="+m[v]+"&";
+		}
+		i.src = u+params;
+		return i;
+	}
+
 	window.Tinelic = {
 		config:function (opts) {
 			this.url = opts.url;
@@ -95,12 +105,7 @@
 			m._dtp = this._dtp;
 			m.r = m.r || this.route;
 			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
-			var i = new Image();
-			var params = "?";
-			for (var v in m) {
-				params+=v+"="+m[v]+"&";
-			}
-			i.src = this.url+params;
+			image(m, this.url)
 		}
 	}
 
@@ -131,19 +136,14 @@
 						s._nt = time;
 					}
 					if(self.readyState == 4) {
-						var xhr = new XHR();
 						s._tt = time;
 						s._pt = s._tt - s._nt;
 						s._url = url;
 						s._code = self.status
 						s._dtc = new Date();
 						s.r = '/ajax/:project'
-						xhr.noIntercept = true;
-						var js = JSON.stringify(s);
-						xhr.open("GET", "/collect/ajax/" + window.Tinelic.url.split( '/' )[5]);
-						xhr.setRequestHeader("Content-type","application/json");
-						xhr.setRequestHeader("ajaxstats", JSON.stringify(s));
-						xhr.send();
+						image(s, "/collect/ajax/" + window.Tinelic.url.split( '/' )[5]);
+
 					}
 					if(oldOnReadyStateChange) {
 						oldOnReadyStateChange();

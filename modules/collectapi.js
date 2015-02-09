@@ -48,7 +48,7 @@ module.exports.init = function (ctx, cb) {
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
-				var data = JSON.parse(req.headers.ajaxstats);
+				var data = req.query;
 				data._idp = new mongo.ObjectID(req.params.project);
 				data._dtr = new Date();
 				data._dt = data._dtr;
@@ -70,24 +70,40 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dt.toString());
 				data.chash = md5sum.digest('hex');
-
+				data.request = {
+					route: data.r,
+					uri: data._url
+				}
 				safe.run(function (cb) {
-					ajax.insert(data, safe.sure(cb, function (docs) {
-						// once after inserting page we need to link
-						// this page events that probably cread earlier
-						var _id = docs[0]._id;
-						events.update({chash: data.chash, _idpv: {$exists: false}}, {
-							$set: {
-								_idpv: _id,
-								headers: {route: data.r, uri: data._url}
+					if (data._code != 200) {
+						ajax.findAndModify({
+							chash: data.chash,
+							_dt: {$lte: data._dt}
+						}, {_dt: -1}, {$inc: {_i_err: 1}}, {multi: false}, safe.sure(cb, function (page) {
+							if (page) {
+								data._idpv = page._id;
+								(page.r) && (data.request.route = page.r);
+								(page.p) && (data.request.uri = page.p);
 							}
-						}, safe.sure(cb, function (updates) {
-							if (updates)
-								ajax.update({_id: _id}, {$inc: {_code: 500}}, cb);
-							else
-								cb();
+							ajax.insert(data, cb)
 						}))
-					}))
+					}
+					else {
+						ajax.insert(data,  safe.sure(cb, function (docs) {
+							var _id = docs[0]._id;
+							ajax.update({chash: data.chash, _idpv: {$exists: false}}, {
+								$set: {
+									_idpv: _id,
+									headers: {route: data.r, uri: data._url}
+								}
+							}, safe.sure(cb, function (updates) {
+								if (updates)
+									ajax.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+								else
+									cb();
+							}))
+						}))
+					}
 				}, function (err) {
 					if (err)
 						return console.log(err);
