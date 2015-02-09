@@ -75,21 +75,16 @@ module.exports.init = function (ctx, cb) {
 					uri: data._url
 				}
 				safe.run(function (cb) {
-					if (data._code != 200) {
-						pages.findAndModify(
-							{
-								chash: data.chash,
-								_dt: {$lte: data._dt}
-							}, {_dt: -1},{$inc:{_i_err:1}}, {multi: false}, safe.sure(cb, function (page) {
-								if (page) {
-									data._idpv = page._id;
-								}
-								ajax.insert(data, cb)
-							}))
-					}
-					else {
-						ajax.insert(data, cb)
-					}
+					pages.findAndModify(
+						{
+							chash: data.chash,
+							_dt: {$lte: data._dt}
+						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+							if (page) {
+								data._idpv = page._id;
+							}
+							ajax.insert(data, cb)
+						}))
 				}, function (err) {
 					if (err)
 						return console.log(err);
@@ -147,14 +142,15 @@ module.exports.init = function (ctx, cb) {
 								}))
 							},
 							function(cb) {
-								ajax.update({chash: data.chash, _code: {$ne: '200'},_idpv: {$exists: false}},
+								ajax.update({chash: data.chash, _idpv: {$exists: false}},
 									{$set: {_idpv: _id, headers: {route: data.r, uri: data.p}}},
-									{multi: true},
-									safe.sure(cb, function (updates) {
-										if (updates)
-											pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-										else
-											cb();
+									{multi: true}, safe.sure(cb, function() {
+										ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+											if (count > 0)
+												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+											else
+												cb();
+										}))
 									}))
 							}
 						], cb)
