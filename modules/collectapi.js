@@ -48,7 +48,7 @@ module.exports.init = function (ctx, cb) {
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
-				var data = JSON.parse(req.headers.ajaxstats);
+				var data = req.query;
 				data._idp = new mongo.ObjectID(req.params.project);
 				data._dtr = new Date();
 				data._dt = data._dtr;
@@ -58,36 +58,33 @@ module.exports.init = function (ctx, cb) {
 					req.socket.remoteAddress ||
 					req.connection.socket.remoteAddress;
 
+				data = prefixify(data,{strict:1});
 				var md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+parseInt((data._dt.valueOf()/(1000*60*60))))
+				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
 				data.shash = md5sum.digest('hex');
 				md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dt.toString());
+				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
-
+				data.request = {};
 				safe.run(function (cb) {
-					ajax.insert(data, safe.sure(cb, function (docs) {
-						// once after inserting page we need to link
-						// this page events that probably cread earlier
-						var _id = docs[0]._id;
-						events.update({chash: data.chash, _idpv: {$exists: false}}, {
-							$set: {
-								_idpv: _id,
-								headers: {route: data.r, uri: data._url}
+					pages.findAndModify(
+						{
+							chash: data.chash,
+							_dt: {$lte: data._dt}
+						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+							if (page) {
+								data._idpv = page._id;
+								(page.r) && (data.request.route = page.r);
+								(page.p) && (data.request.uri = page.p);
 							}
-						}, safe.sure(cb, function (updates) {
-							if (updates)
-								ajax.update({_id: _id}, {$inc: {_code: 500}}, cb);
-							else
-								cb();
+							ajax.insert(data, cb)
 						}))
-					}))
 				}, function (err) {
 					if (err)
 						return console.log(err);
@@ -130,17 +127,36 @@ module.exports.init = function (ctx, cb) {
 						// once after inserting page we need to link
 						// this page events that probably cread earlier
 						var _id = docs[0]._id;
-						events.update({chash: data.chash, _idpv: {$exists: false}}, {
-							$set: {
-								_idpv: _id,
-								headers: {route: data.r, uri: data.p}
+						safe.parallel([
+							function(cb) {
+								events.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										request: {route: data.r, uri: data.p}
+									}
+								}, {multi: true}, safe.sure(cb, function (updates) {
+									if (updates)
+										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+									else
+										cb();
+								}))
+							},
+							function(cb) {
+								ajax.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										request: {route: data.r, uri: data.p}
+									}
+								}, {multi: true}, safe.sure(cb, function() {
+									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+										if (count > 0)
+											pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+										else
+											cb();
+									}))
+								}))
 							}
-						}, safe.sure(cb, function (updates) {
-							if (updates)
-								pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-							else
-								cb();
-						}))
+						], cb)
 					}))
 				}, function (err) {
 					if (err)
@@ -217,7 +233,7 @@ module.exports.init = function (ctx, cb) {
 					}
 					ajax.mapReduce(
 						"function() {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._pt,tt:this._tt, code: this._code, r:1.0/"+q+", e:1.0*(this._code != 200 ? 1:0 )/"+q+"})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
 						function (k,v) {
 							var r=null;
