@@ -142,6 +142,7 @@
 						s._code = self.status
 						s._dtc = new Date();
 						s.r = '/ajax/:project'
+						s._dtp = window.Tinelic._dtp
 						image(s, "/collect/ajax/" + window.Tinelic.url.split( '/' )[5]);
 
 					}

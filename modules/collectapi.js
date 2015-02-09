@@ -62,13 +62,13 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+parseInt((data._dt.valueOf()/(1000*60*60))))
+				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
 				data.shash = md5sum.digest('hex');
 				md5sum = crypto.createHash('md5');
 				md5sum.update(ip);
 				md5sum.update(req.headers['host']);
 				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dt.toString());
+				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				data.request = {
 					route: data.r,
@@ -76,33 +76,19 @@ module.exports.init = function (ctx, cb) {
 				}
 				safe.run(function (cb) {
 					if (data._code != 200) {
-						ajax.findAndModify({
-							chash: data.chash,
-							_dt: {$lte: data._dt}
-						}, {_dt: -1}, {$inc: {_i_err: 1}}, {multi: false}, safe.sure(cb, function (page) {
-							if (page) {
-								data._idpv = page._id;
-								(page.r) && (data.request.route = page.r);
-								(page.p) && (data.request.uri = page.p);
-							}
-							ajax.insert(data, cb)
-						}))
+						pages.findAndModify(
+							{
+								chash: data.chash,
+								_dt: {$lte: data._dt}
+							}, {_dt: -1},{$inc:{_i_err:1}}, {multi: false}, safe.sure(cb, function (page) {
+								if (page) {
+									data._idpv = page._id;
+								}
+								ajax.insert(data, cb)
+							}))
 					}
 					else {
-						ajax.insert(data,  safe.sure(cb, function (docs) {
-							var _id = docs[0]._id;
-							ajax.update({chash: data.chash, _idpv: {$exists: false}}, {
-								$set: {
-									_idpv: _id,
-									headers: {route: data.r, uri: data._url}
-								}
-							}, safe.sure(cb, function (updates) {
-								if (updates)
-									ajax.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-								else
-									cb();
-							}))
-						}))
+						ajax.insert(data, cb)
 					}
 				}, function (err) {
 					if (err)
@@ -146,17 +132,32 @@ module.exports.init = function (ctx, cb) {
 						// once after inserting page we need to link
 						// this page events that probably cread earlier
 						var _id = docs[0]._id;
-						events.update({chash: data.chash, _idpv: {$exists: false}}, {
-							$set: {
-								_idpv: _id,
-								headers: {route: data.r, uri: data.p}
+						safe.parallel([
+							function(cb) {
+								events.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										headers: {route: data.r, uri: data.p}
+									}
+								}, safe.sure(cb, function (updates) {
+									if (updates)
+										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+									else
+										cb();
+								}))
+							},
+							function(cb) {
+								ajax.update({chash: data.chash, _code: {$ne: '200'},_idpv: {$exists: false}},
+									{$set: {_idpv: _id, headers: {route: data.r, uri: data.p}}},
+									{multi: true},
+									safe.sure(cb, function (updates) {
+										if (updates)
+											pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+										else
+											cb();
+									}))
 							}
-						}, safe.sure(cb, function (updates) {
-							if (updates)
-								pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-							else
-								cb();
-						}))
+						], cb)
 					}))
 				}, function (err) {
 					if (err)
