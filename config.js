@@ -1,4 +1,4 @@
-exports.config = {
+module.exports = {
 	env:"production",
 	mongo:{
 		main:{
