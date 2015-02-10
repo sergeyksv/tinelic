@@ -30,7 +30,7 @@ requirejs.define("jquery-cookie", true);
 requirejs.define("bootstrap/dropdown", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets'];
+module.exports.deps = ['assets','users','collect'];
 
 var wires = {};
 
