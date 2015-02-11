@@ -42,13 +42,13 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                             function(err) {
                                 if (err)
                                     throw err
-                            },"POST");
+                            });
                         }
                         else {
                             api("users.saveUser", "public", {firstname: fname, lastname: lname, login: login, pass: pass},  function(err) {
                                 if (err)
                                     throw err
-                            }, "POST");
+                            });
                         }
                         require(["views/users_view"],function (Modal) {
                             self.app.router.navigateTo("/web/users");
@@ -81,7 +81,7 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                 api("users.removeUser", "public", {id: $this.data('delete')},  function(err) {
                     if (err)
                         throw err
-                }, "POST");
+                });
                 require(["views/users_view"],function (Modal) {
                     self.app.router.navigateTo("/web/users");
                 })
