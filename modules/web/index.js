@@ -28,6 +28,7 @@ requirejs.define("dust-helpers", require('dustjs-helpers'));
 requirejs.define("jquery", true);
 requirejs.define("jquery-cookie", true);
 requirejs.define("bootstrap/dropdown", true);
+requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets'];
@@ -108,9 +109,9 @@ module.exports.init = function (ctx, cb) {
 				cb(null,{api:{}})
 			}
 		}))
-		ctx.api.users.getUser("public",{filter:{name:"DefaultUser"}}, safe.sure(cb, function (self) {
+		ctx.api.users.getUser("public",{filter:{firstname:"User",lastname: "Default", login:"login"}}, safe.sure(cb, function (self) {
 			if (self==null) {
-				ctx.api.users.saveUser("public", {name:"DefaultUser", pass:'123'},cb)
+				ctx.api.users.saveUser("public", {firstname:"User", lastname:"Default", login:"login", pass:'123'},cb)
 			}
 			else {
 				cb(null, self)

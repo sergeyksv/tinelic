@@ -4,11 +4,16 @@ var path = require("path");
 var express = require('express');
 var moment = require('moment');
 var cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser');
+var multer = require('multer');
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
 	app.use(require("compression")());
 	app.use(cookieParser());
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(multer());
 	var api = {};
 	var auto = {};
 	var registered = {};
