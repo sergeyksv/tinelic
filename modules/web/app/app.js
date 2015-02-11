@@ -1,4 +1,9 @@
-define(['views/layout','module','safe',"dust","tinybone/base","routes","moment/moment"],function (Layout,module,safe,dust,tb,routes, moment) {
+define(['views/layout','module','safe',"dust"
+	,"tinybone/base"
+	,"routes"
+	,"moment/moment"
+	,"tinybone/backadapter" // Important to get it on top level dependancy
+],function (Layout,module,safe,dust,tb,routes, moment) {
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
         dust.helpers = {};

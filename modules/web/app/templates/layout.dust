@@ -2,20 +2,21 @@
 <html lang="en">
 <head>
 {#_t_env_production}
-<script src="{_t_prefix}/js/build/rum.js"></script>
+<script src="{_t_prefix}/js/build/rum.js?rev={_t_rev}"></script>
 {:else}
 <script src="{_t_prefix}/app/rum.js"></script>
 {/_t_env_production}
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link href="{_t_prefix}/css/style.css" rel="stylesheet">
+<link href="{_t_prefix}/css/style.css?rev={_t_rev}" rel="stylesheet">
 <script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
 <script src="//cdn.ravenjs.com/1.1.15/jquery,native/raven.min.js"></script>
 <script>
 (function () {
 	var _t_page = new Date();
-	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')+"/collect/browser/{_t_self_id}",
+	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
+		project:"{_t_self_id}",
 		route:"{_t_route}",
 		_dtp:_t_page
 	})
@@ -33,9 +34,9 @@
 {@view name=_t_main_view /}
 
 {#_t_env_production}
-<script src="{_t_prefix}/js/build/require.js"></script>
-<script src="{_t_prefix}/js/build/app.js"></script>
-<script src="{_t_prefix}/js/build/routes/main.js"></script>
+<script src="{_t_prefix}/js/build/require.js?rev={_t_rev}"></script>
+<script src="{_t_prefix}/js/build/app.js?rev={_t_rev}"></script>
+<script src="{_t_prefix}/js/build/routes/main.js?rev={_t_rev}"></script>
 {:else}
 <script src="{_t_prefix}/app/require.js"></script>
 {/_t_env_production}

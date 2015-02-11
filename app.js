@@ -16,12 +16,12 @@ var cfg = {
 		{name:"collect",require:"./modules/collectapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
-	config:require("./config.js").config
+	config:require("./config.js")
 }
 
 var lcfgPath = "./local-config.js";
 if(fs.existsSync(lcfgPath)){
-	cfg.config = _.merge(cfg.config,require(lcfgPath).config);
+	cfg.config = _.merge(cfg.config,require(lcfgPath));
 }
 
 tinyback.createApp(cfg, function (err, app) {
