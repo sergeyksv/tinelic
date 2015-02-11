@@ -69,7 +69,7 @@ module.exports.restapi = function () {
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
-				ctx.api[req.params.module][req.params.target](req.params.token, req.query, safe.sure(next, function (result) {
+				ctx.api[req.params.module][req.params.target](req.params.token, (req.method == 'POST')?req.body:req.query, safe.sure(next, function (result) {
 					var maxAge = 0;
 					if (req.query._t_age) {
 						var age = req.query._t_age
