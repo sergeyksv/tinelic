@@ -130,7 +130,7 @@
 				this._url = url;
 				open.call(this, method, url, async, user, pass);
 			};
-			XHR.prototype.send = function(data) {
+			XHR.prototype.send = function(data, ajaxCallback) {
 				var self = this;
 				var start = new Date();
 				var oldOnReadyStateChange;
@@ -145,6 +145,11 @@
 						s._i_tt = time;
 						s._i_pt = s._i_tt - s._i_nt;
 						s.url = url;
+					
+						s.r=window.location.href.split('?',1)
+					if (typeof ajaxCallback != 'undefined'){
+					ajaxCallback(s,XHR);
+					}	
 						s._i_code = self.status
 						s._dtc = new Date();
 						s._dtp = window.Tinelic._dtp

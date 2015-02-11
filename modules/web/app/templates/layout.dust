@@ -16,9 +16,13 @@
 (function () {
 	var _t_page = new Date();
 	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
+		ajaxCallback: function(s, XHR){
+		var re=/(\/[0-9]+[A-Za-z-]*)|(\/[A-Za-z]+[0-9]+)/
+		s.r=s.url.split(re,1)
 		project:"{_t_self_id}",
 		route:"{_t_route}",
 		_dtp:_t_page
+		}
 	})
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
