@@ -11,30 +11,6 @@ module.exports.init = function (ctx, cb) {
                 db.collection("users",cb)
             }
         }, safe.sure(cb,function (usr) {
-            ctx.router.post("/", function (req, res, next) {
-                var data = req.body;
-                if (data.opts) {
-                    var _id = new mongo.ObjectID(data.id)
-                    usr.users.remove({_id: _id})
-                }
-                if (data.id.length != 0 && !data.opts) {
-                    var _id = new mongo.ObjectID(data.id)
-                    usr.users.update({_id: _id}, {
-                        firstname: data.firstname,
-                        lastname: data.lastname,
-                        login: data.login,
-                        pass: data.pass}, {})
-                }
-                if (data.id.length == 0) {
-                    usr.users.insert({
-                            firstname: data.firstname,
-                            lastname: data.lastname,
-                            login: data.login,
-                            pass: data.pass
-                        })
-                }
-                res.send();
-            })
             cb(null, {api:{
                 getUser: function (t,u,cb) {
                     // t = "public",u = {filter:{name:"DefaultUser"}}
@@ -47,6 +23,21 @@ module.exports.init = function (ctx, cb) {
                 saveUser: function (t,u,cb) {
                     // t = "public", u = {name:"DefaultUser", pass:'123'}
                     usr.users.insert(u, cb);
+                },
+                updateUser: function (t,u,cb) {
+                    var _id = new mongo.ObjectID(u.id)
+                    usr.users.update({_id: _id},
+                        {
+                            firstname: u.firstname,
+                            lastname: u.lastname,
+                            login: u.login,
+                            pass: u.pass
+                        }
+                        ,{}, cb);
+                },
+                removeUser: function(t,u,cb) {
+                    var _id = new mongo.ObjectID(u.id)
+                    usr.users.remove({_id: _id}, cb)
                 }
             }});
         }))

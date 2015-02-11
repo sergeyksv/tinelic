@@ -60,7 +60,7 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.get("/:token/:module/:target",function (req, res) {
+			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
 					res.status(500).json({message:err.message});
 				}
