@@ -1,6 +1,7 @@
 define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 	return {
 		index:function (req, res, cb) {
+			console.log("here");
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/index_view"], function (view) {
@@ -42,7 +43,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}))
 				}
 			}, safe.sure(cb, function (r) {
-				res.render({
+				res.renderX({
+					route:req.route.path,
 					view:r.view,
 					data:{
 						projects:r.data,
@@ -64,13 +66,28 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("collect.getEventInfo","public", {_t_age:"10m",filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
-				res.render({view:r.view,data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
+				res.renderX({view:r.view,route:req.route.path,data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
 			}))
 		},
 		page:function (req, res, cb) {
-			requirejs(["views/page_view"], function (view) {
-				res.render({view:view,data:{title:"Page Page"}})
-			}, cb);
+			requirejs(["views/page_view"], safe.trap(cb, function (view) {
+				res.renderX({view:view,route:req.route.path,data:{title:"Page Page"}})
+			}), cb);
+		},
+		users:function (req, res, cb) {
+			safe.parallel({
+				view: function (cb) {
+					requirejs(["views/users_view"], function (view) {
+						safe.back(cb, null, view)
+					}, cb)
+				},
+				users: function (cb) {
+					api("users.getUsers", "public", {}, cb)
+				}
+			},safe.sure(cb, function(r) {
+				res.renderX({view: r.view, route:req.route.path, data: {title: "Manage users", users: r.users}})
+
+			}))
 		},
 		project:function (req, res, cb) {
 			var str = req.query._str || req.cookies.str || '1d';
@@ -126,7 +143,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}))
 				}
 			}, safe.sure(cb, function (r) {
-				res.render({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name})})
+				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name})})
 			}))
 		}
 	}
