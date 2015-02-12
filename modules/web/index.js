@@ -32,6 +32,7 @@ requirejs.define("dust-helpers", require('dustjs-helpers'));
 requirejs.define("jquery", true);
 requirejs.define("jquery-cookie", true);
 requirejs.define("bootstrap/dropdown", true);
+requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
 module.exports.deps = ['assets','users','collect'];

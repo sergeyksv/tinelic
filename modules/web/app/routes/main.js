@@ -74,6 +74,21 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				res.renderX({view:view,route:req.route.path,data:{title:"Page Page"}})
 			}), cb);
 		},
+		users:function (req, res, cb) {
+			safe.parallel({
+				view: function (cb) {
+					requirejs(["views/users_view"], function (view) {
+						safe.back(cb, null, view)
+					}, cb)
+				},
+				users: function (cb) {
+					api("users.getUsers", "public", {}, cb)
+				}
+			},safe.sure(cb, function(r) {
+				res.renderX({view: r.view, route:req.route.path, data: {title: "Manage users", users: r.users}})
+
+			}))
+		},
 		project:function (req, res, cb) {
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;

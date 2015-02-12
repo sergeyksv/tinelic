@@ -36,6 +36,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/event/:id", main.event);
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
+				router.get("/users", main.users);
 				cb();
 			},cb)
 		},

@@ -4,11 +4,16 @@ var path = require("path");
 var express = require('express');
 var moment = require('moment');
 var cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser');
+var multer = require('multer');
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
 	app.use(require("compression")());
 	app.use(cookieParser());
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(multer());
 	var api = {};
 	var auto = {};
 	var registered = {};
@@ -55,7 +60,7 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.get("/:token/:module/:target",function (req, res) {
+			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
 					res.status(500).json({message:err.message});
 				}
@@ -64,7 +69,7 @@ module.exports.restapi = function () {
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
-				ctx.api[req.params.module][req.params.target](req.params.token, req.query, safe.sure(next, function (result) {
+				ctx.api[req.params.module][req.params.target](req.params.token, (req.method == 'POST')?req.body:req.query, safe.sure(next, function (result) {
 					var maxAge = 0;
 					if (req.query._t_age) {
 						var age = req.query._t_age
