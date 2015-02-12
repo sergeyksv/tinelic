@@ -667,12 +667,11 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
     var ClientRouter = function(options) {
         var self = this;
         options || (options = {});
-        _.extend(this, _.pick(options, ["routes", "errHandler","render","prefix"]));
+        _.extend(this, _.pick(options, ["prefix"]));
 
-        this.paths = [];
-        _.each(this.routes, function(v, k) {
-            self.paths.push(new Router(k, false))
-        })
+        this.routes = {};
+        this.wares = [];
+        this.ewares = [];
 
         window.onpopstate = function(event) {
             self.navigateTo(document.location, self.errHandler);
@@ -680,6 +679,20 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
     }
 
     _.extend(ClientRouter.prototype, Events, {
+		use: function (ware) {
+			if (ware.length==4)
+				this.ewares.push(ware);
+			else
+				this.wares.push(ware);
+		},
+		get: function () {
+			var route = arguments[0];
+			var wares = [];
+			for (var i=1; i<arguments.length; i++) {
+				wares.push(arguments[1])
+			}
+			this.routes[route]={router:new Router(route,false), wares:wares}
+		},
         navigateTo: function(href, next) {
 			var self = this;
             next || (next = self.errHandler);
@@ -687,30 +700,59 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             var prefix = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + this.prefix
             var uri = url.replace(prefix, "/");
             var match = null;
-            _.each(this.paths, function(p) {
-                    if (match) return;
-                    match = p.match(uri);
-                    if (match) {
-						self.trigger("start",{route:p.source})
-                        history.pushState({}, "", url);
-                        var v = self.routes[p.source];
-                        var rp = v.split("#");
-
-                        requirejs(['routes/' + rp[0]], function(route) {
-                            route[rp[1]]({
-                                params: match,
-                                query: getQueryStringAsObject(),
-                                cookies: $.cookie()
-                            }, {
-                                render: self.render
-                            }, next)
-                        }, next)
-                    }
-                })
-                // if no match found just do normal
-                // client navigation
-            if (!match)
-                window.location = url;
+			var req = {
+				query: getQueryStringAsObject(),
+				cookies: $.cookie()
+			}
+			var res = {};
+			var stack = [];
+			safe.run(function (cb) {
+				// execute all normal midlewares
+				_.each(self.wares, function (r) {
+					stack.push(function (cb) {
+						r(req, res, cb)
+					})
+				});
+				safe.series(stack, safe.sure(cb, function () {
+					// now simulate router midleware
+					_.each(self.routes, function(p,k) {
+						if (match) return;
+						match = p.router.match(uri);
+						if (match) {
+							self.trigger("start",{route:k})
+							history.pushState({}, "", url);
+							stack = [];
+							req.params = match;
+							req.route = {path:k};
+							_.each(p.wares, function (r) {
+								stack.push(function (cb) {
+									r(req, res, cb)
+								})
+							});
+							safe.series(stack, cb);
+						}
+					})
+				}))
+			}, function (err) {
+				if (err) {
+					// finally error handlers
+					stack = [];
+					_.each(self.ewares, function (r) {
+						stack.push(function (cb) {
+							r(err,req, res, cb)
+						})
+					});
+					stack.push(function (cb) {
+						next(err)
+					})
+					safe.series(stack, next);
+				} else {
+					// if no match found just do normal
+					// client navigation
+					if (!match)
+						window.location = url;
+				}
+			})
         }
     })
     return {

@@ -67,6 +67,9 @@
 			}
 		}
 	})
+	requirejs.onError = function (err) {
+		console.log(err.trace);
+	}
 	define("backctx","/restapi/");
 	define("jquery", [], function() {
 		return window.jQuery;
