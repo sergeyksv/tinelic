@@ -8,7 +8,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : ['[dev] tinelic'],
+  app_name : ['[dev] tinelic3'],
   /**
    * Your New Relic license key.
    */
@@ -20,5 +20,8 @@ exports.config = {
      * production applications.
      */
     level : 'info'
-  }
+  },
+  host : 'localhost',
+  port : 80,
+  ssl : false
 };
