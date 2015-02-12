@@ -38,6 +38,9 @@ module.exports.init = function (ctx, cb) {
                 removeUser: function(t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
                     usr.users.remove({_id: _id}, cb)
+                },
+                signUp:function(t,u,cb) {
+                    usr.users.find({login: u.login, pass: u.pass}).count(cb);
                 }
             }});
         }))

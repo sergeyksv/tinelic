@@ -21,7 +21,7 @@ define(['views/layout','module','safe',"dust"
 		getView:function () {
 			return new Layout({app:this});
 		},
-		errHandler: function (err) {
+		errHandler: function (err,req, res) {
 			if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
@@ -29,7 +29,12 @@ define(['views/layout','module','safe',"dust"
 			var router = self.router;
 			var routes = ["routes/main"];
 			router.use(function (err, req, res, next) {
-				self.errHandler(err);
+				if (err.resCode = '401') {
+					self.router.navigateTo('/web/signup', {trigger: true})
+				}
+				else {
+					self.errHandler(err);
+				}
 			})
 			requirejs(routes, function (main) {
 				router.get("/", main.index);
@@ -37,6 +42,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
+				router.get("/signup", main.signup);
 				cb();
 			},cb)
 		},

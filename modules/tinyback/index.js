@@ -41,6 +41,14 @@ module.exports.createApp = function (cfg, cb) {
 		args.push(function (cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
+			app.use(function(err, req, res, next) {
+				if (err.resCode == 401) {
+					res.redirect('/web/signup')
+				}
+				else {
+					res.send(err)
+				}
+			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
 				cb();
@@ -62,7 +70,8 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					res.status(500).json({message:err.message});
+					var code = err.resCode || 500
+					res.status(code).json({message:err.message});
 				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");
