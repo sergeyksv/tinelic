@@ -21,17 +21,11 @@ module.exports.init = function (ctx, cb) {
                     usr.users.find({}).sort({name: 1}).toArray(cb);
                 },
                 getCurrentUser: function (t,cb) {
-                    usr.users.find({tokens: {$exists: 1}},{tokens: 1}).toArray(safe.sure(cb, function(n){
-                        var _id = null
-                        _.forEach(n, function(k) {
-                            _.forEach(k.tokens, function(p) {
-                                    if (p.token == t) {
-                                        _id = k._id
-                                    }
-                                }
-                            )
-                        })
-                        cb(null, _id)
+                    usr.users.find({'tokens.token' : t }).toArray(safe.sure(cb, function(n){
+                        if (n.length)
+                            cb(null, n)
+                        else
+                            throw {resCode: 401, message: 'This is a guest'}
                     }))
                 },
                 saveUser: function (t,u,cb) {

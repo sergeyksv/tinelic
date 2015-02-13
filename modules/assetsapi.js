@@ -14,15 +14,9 @@ module.exports.init = function (ctx, cb) {
 			var projects = res.projects;
 			cb(null, {api:{
 				getProjects:function (t, p, cb) {
-					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(id) {
-						if (id) {
-							projects.find().toArray(cb)
-						}
-						else {
-							throw {resCode: 401, message: "This is a guest"}
-						}
+					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
+						projects.find().toArray(cb)
 					}))
-
 				},
 				getProject:function (t, p, cb) {
 					p.filter._id && (p.filter._id =  mongo.ObjectID(p._id));
