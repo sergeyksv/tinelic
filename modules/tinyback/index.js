@@ -7,9 +7,8 @@ var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
 var multer = require('multer');
 
-module.exports.customError = function (code, message, subject) {
+module.exports.CustomError = function (message, subject) {
 	this.name = 'customError';
-	this.resCode = code
 	this.message = message;
 	this.subject = subject;
 	this.stack = (new Error()).stack;
@@ -78,7 +77,11 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var code = err.resCode || 500;
+					var code = 500;
+
+					if(err.subject == "Login required")
+						code = 401;
+
 					res.status(code).json((err.subject)?{message:err.message, subject: err.subject}:{message:err.message});
 				}
 				if (!ctx.api[req.params.module])
