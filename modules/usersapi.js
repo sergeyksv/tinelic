@@ -1,6 +1,7 @@
 var _ = require("lodash")
 var safe = require("safe")
 var mongo = require("mongodb")
+var customError = require('tinyback').customError
 
 module.exports.deps = ['mongo'];
 
@@ -25,7 +26,7 @@ module.exports.init = function (ctx, cb) {
                         if (n.length)
                             cb(null, n)
                         else
-                            throw {resCode: 401, message: 'This is a guest'}
+                            throw new customError(401,'This is a guest',"Login required")
                     }))
                 },
                 saveUser: function (t,u,cb) {

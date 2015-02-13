@@ -7,6 +7,14 @@ var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
 var multer = require('multer');
 
+module.exports.customError = function (code, message, subject) {
+	this.name = 'customError';
+	this.resCode = code
+	this.message = message;
+	this.subject = subject;
+	this.stack = (new Error()).stack;
+}
+
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
 	app.use(require("compression")());
@@ -42,7 +50,7 @@ module.exports.createApp = function (cfg, cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
 			app.use(function(err, req, res, next) {
-				if (err.resCode == 401) {
+				if (err.subject == "Login required") {
 					res.redirect('/web/signup')
 				}
 				else {
@@ -70,8 +78,8 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var code = err.resCode || 500
-					res.status(code).json({message:err.message});
+					var code = err.resCode || 500;
+					res.status(code).json((err.subject)?{message:err.message, subject: err.subject}:{message:err.message});
 				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");

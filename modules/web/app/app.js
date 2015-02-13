@@ -29,7 +29,7 @@ define(['views/layout','module','safe',"dust"
 			var router = self.router;
 			var routes = ["routes/main"];
 			router.use(function (err, req, res, next) {
-				if (err.resCode = '401') {
+				if (err.subject = "Login required") {
 					self.router.navigateTo('/web/signup', {trigger: true})
 				}
 				else {
