@@ -20,6 +20,20 @@ module.exports.init = function (ctx, cb) {
                     // t = "public",u = {filter:{name:"DefaultUser"}}
                     usr.users.find({}).sort({name: 1}).toArray(cb);
                 },
+                getCurrentUser: function (t,cb) {
+                    usr.users.find({tokens: {$exists: 1}},{tokens: 1}).toArray(safe.sure(cb, function(n){
+                        var _id = null
+                        _.forEach(n, function(k) {
+                            _.forEach(k.tokens, function(p) {
+                                    if (p.token == t) {
+                                        _id = k._id
+                                    }
+                                }
+                            )
+                        })
+                        cb(null, _id)
+                    }))
+                },
                 saveUser: function (t,u,cb) {
                     // t = "public", u = {name:"DefaultUser", pass:'123'}
                     usr.users.insert(u, cb);
@@ -46,12 +60,9 @@ module.exports.init = function (ctx, cb) {
 
                     usr.users.findAndModify(
                         {login: u.login, pass: u.pass},{},{
-                           $set: {tokens:[
-                               {token: Math.random().toString(36).slice(-14)},
-                               {_dt: dt},
-                               {_dtexp: dtexp}]}
+                           $push: {tokens:{token: Math.random().toString(36).slice(-14),_dt: dt,_dtexp: dtexp}}
                            },{new: true, fields: {tokens: 1}}, safe.sure(cb, function(t) {
-                              cb(null, t.tokens[0])
+                              cb(null, t.tokens[t.tokens.length-1].token)
                         })
                     )
                 }

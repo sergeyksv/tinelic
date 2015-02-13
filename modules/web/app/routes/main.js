@@ -2,11 +2,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 	return {
 		index:function (req, res, cb) {
 			var token = req.cookies.token || "public"
-			if (token == "public") {
-				throw {
-					resCode: 401, message: 'This is a guest'
-				};
-			}
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/index_view"], function (view) {
@@ -60,11 +55,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		},
 		event:function (req, res, next) {
 			var token = req.cookies.token || "public"
-			if (token == "public") {
-				throw {
-					resCode: 401, message: 'This is a guest'
-				};
-			}
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/event_view"], function (view) {
@@ -93,11 +83,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		},
 		users:function (req, res, cb) {
 			var token = req.cookies.token || "public"
-			if (token == "public") {
-				throw {
-					resCode: 401, message: 'This is a guest'
-				};
-			}
 			safe.parallel({
 				view: function (cb) {
 					requirejs(["views/users_view"], function (view) {
@@ -114,11 +99,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		},
 		project:function (req, res, cb) {
 			var token = req.cookies.token || "public"
-			if (token == "public") {
-				throw {
-					resCode: 401, message: 'This is a guest'
-				};
-			}
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
 			var range = 60 * 60 * 1000;
