@@ -40,7 +40,20 @@ module.exports.init = function (ctx, cb) {
                     usr.users.remove({_id: _id}, cb)
                 },
                 signUp:function(t,u,cb) {
-                    usr.users.find({login: u.login, pass: u.pass}).count(cb);
+                    var dt = new Date()
+                    var range = 7 * 24 * 60 * 60 * 1000;
+                    var dtexp = new Date(Date.parse(Date()) + range);
+
+                    usr.users.findAndModify(
+                        {login: u.login, pass: u.pass},{},{
+                           $set: {tokens:[
+                               {token: Math.random().toString(36).slice(-14)},
+                               {_dt: dt},
+                               {_dtexp: dtexp}]}
+                           },{new: true, fields: {tokens: 1}}, safe.sure(cb, function(t) {
+                              cb(null, t.tokens[0])
+                        })
+                    )
                 }
             }});
         }))

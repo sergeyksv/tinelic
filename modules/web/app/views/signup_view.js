@@ -10,17 +10,13 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/signup.dust'],
                 var dang = self.$('.panel-danger');
                 var textErr = self.$('.panel-body');
                 api("users.signUp", "public", {login: login, pass: pass},  function(err, n) {
-                    if (err)
-                        throw err
+                    if (err) {
+                        dang.css({display: 'block'});
+                        textErr.html('Login or password incorrect');
+                    }
                     else {
-                        if (n != 0) {
-                            $.cookie("token",login)
-                            self.app.router.navigateTo('/web/')
-                        }
-                        else {
-                            dang.css({display:'block'});
-                            textErr.html('Login or password incorrect');
-                        }
+                       $.cookie("token", n.token)
+                       self.app.router.navigateTo('/web/')
                     }
                 });
             }
