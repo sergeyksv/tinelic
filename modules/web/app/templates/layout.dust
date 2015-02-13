@@ -15,10 +15,15 @@
 <script>
 (function () {
 	var _t_page = new Date();
-	Tinelic.config({url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
+	Tinelic.config({
+		url:location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
 		project:"{_t_self_id}",
 		route:"{_t_route}",
-		_dtp:_t_page
+		_dtp:_t_page,
+		ajaxCallback: function(s, XHR){
+			var  re=/\/w[0-9]+/
+			s.url=s.url.split(re,1); 
+		}
 	})
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
