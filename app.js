@@ -14,7 +14,8 @@ var cfg = {
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
-		{name:"web",require:"./modules/web"}
+		{name:"web",require:"./modules/web"},
+		{name:"newrelic_server",require:"./modules/newrelic_agent"}
 	],
 	config:require("./config.js")
 }
@@ -27,7 +28,7 @@ if(fs.existsSync(lcfgPath)){
 tinyback.createApp(cfg, function (err, app) {
 
 	if (err) {
-		console.log(err.stack);
+		console.trace(err.originalError || err);
 		process.exit(0);
 	}
 	try {

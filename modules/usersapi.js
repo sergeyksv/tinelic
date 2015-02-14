@@ -1,6 +1,7 @@
 var _ = require("lodash")
 var safe = require("safe")
 var mongo = require("mongodb")
+var CustomError = require('tinyback').CustomError
 
 module.exports.deps = ['mongo'];
 
@@ -20,6 +21,13 @@ module.exports.init = function (ctx, cb) {
                     // t = "public",u = {filter:{name:"DefaultUser"}}
                     usr.users.find({}).sort({name: 1}).toArray(cb);
                 },
+                getCurrentUser: function (t,cb) {
+                    usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
+						if (!user)
+                            return cb(new CustomError('Current user is unknown',"Unauthorized"));
+						cb(null, user)
+                    }))
+                },
                 saveUser: function (t,u,cb) {
                     // t = "public", u = {name:"DefaultUser", pass:'123'}
                     usr.users.insert(u, cb);
@@ -38,6 +46,22 @@ module.exports.init = function (ctx, cb) {
                 removeUser: function(t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
                     usr.users.remove({_id: _id}, cb)
+                },
+                signUp:function(t,u,cb) {
+                    var dt = new Date()
+                    var range = 7 * 24 * 60 * 60 * 1000;
+                    var dtexp = new Date(Date.parse(Date()) + range);
+
+                    usr.users.findAndModify(
+                        {login: u.login, pass: u.pass},{},{
+                           $push: {tokens:{token: Math.random().toString(36).slice(-14),_dt: dt,_dtexp: dtexp}}
+                           },{new: true, fields: {tokens: 1}}, safe.sure(cb, function(t) {
+                              cb(null, t.tokens[t.tokens.length-1].token)
+                        })
+                    )
+                },
+                userLogout: function(t, u, cb) {
+                    usr.users.update({'tokens.token':u.token}, { $pull: {tokens: { token: u.token } } },{},cb);
                 }
             }});
         }))

@@ -1,4 +1,12 @@
 define(["module","backctx",'jquery','jquery-cookie'],function (module,ctx, $) {
+	function CustomError (message, subject) {
+		this.constructor.prototype.__proto__ = Error.prototype;
+		Error.captureStackTrace(this, this.constructor);
+		this.name = this.constructor.name;
+		this.message = message;
+		this.subject = subject;
+	}
+
 	if (typeof window == 'undefined') {
 		return function (f, t, p, cb) {
 			var rpc = f.split(".");
@@ -18,7 +26,7 @@ define(["module","backctx",'jquery','jquery-cookie'],function (module,ctx, $) {
 					cb(null, data)
 				},
 				error: function (xhr) {
-					cb(new Error(xhr.responseJSON.message));
+					cb(new CustomError(xhr.responseJSON.message,xhr.responseJSON.subject));
 				}
 			})
 		}

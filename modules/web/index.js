@@ -118,10 +118,10 @@ module.exports.init = function (ctx, cb) {
 				}))
 			},
 			function (cb) {
-				ctx.api.users.getUser("public",{filter:{name:"admin"}}, safe.sure(cb, function (self) {
+				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
 
-					ctx.api.users.saveUser("public", {name:"admin", pass:'tinelic'},cb)
+					ctx.api.users.saveUser("public", {login:"admin", pass: "tinelic"},cb)
 				}))
 			}
 		], safe.sure(cb, function () {
