@@ -427,7 +427,7 @@ module.exports.init = function (ctx, cb) {
 					if(p.filter._dtstart && p.filter._dtend){
 						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
 					}
-					pages.mapReduce(
+					ajax.mapReduce(
 						"function() {\
 							emit(this.r, { r:1.0/"+q+", dt:this._dt})\
 						}",

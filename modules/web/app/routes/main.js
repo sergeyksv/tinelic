@@ -181,16 +181,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				r.rpm =_.sortBy(r.rpm, function(v){
 					return -1*v.value.r;
 				})
-				var max_rpm = _.max(r.rpm, function(aj){
-					return aj.value.r;
-				});
-				var percent = max_rpm.value.r/100;
+				var sum=0.0;
+				_.each(r.rpm, function(rpm){
+					sum+=rpm.value.r
+				})
+				var percent = sum/100;
 				_.each(r.rpm, function (rpm) {
-					if (rpm.value.r < max_rpm.value.r)	{
-						rpm.value.bar = Math.round(rpm.value.r/percent);
-					}
-					else
-						rpm.value.bar = 100;
+					rpm.value.bar = Math.round(rpm.value.r/percent);
 					rpm.value.r=rpm.value.r.toFixed(2);
 				})
 				 res.renderX({view:r.view,route:req.route.path,data:{rpm:r.rpm, title:"Ajax_rpm"}})
