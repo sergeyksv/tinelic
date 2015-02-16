@@ -97,6 +97,22 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 
 			}))
 		},
+		teams:function (req, res, cb) {
+			var token = req.cookies.token || "public"
+			safe.parallel({
+				view: function (cb) {
+					requirejs(["views/teams_view"], function (view) {
+						safe.back(cb, null, view)
+					}, cb)
+				},
+				teams: function (cb) {
+					api("teams.getTeams", token, {}, cb)
+				}
+			},safe.sure(cb, function(r) {
+				res.renderX({view: r.view, route:req.route.path, data: {title: "Manage teams", teams: r.teams}})
+
+			}))
+		},
 		project:function (req, res, cb) {
 			var token = req.cookies.token || "public"
 			var str = req.query._str || req.cookies.str || '1d';

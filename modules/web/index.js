@@ -123,6 +123,12 @@ module.exports.init = function (ctx, cb) {
 
 					ctx.api.users.saveUser("public", {login:"admin", pass: "tinelic"},cb)
 				}))
+			},
+			function (cb) {
+				ctx.api.teams.getTeam("public",{filter:{name:"DefaultTeam"}}, safe.sure(cb, function (self) {
+					if (self) return cb()
+					ctx.api.teams.saveTeam("public", {name:"DeafaultTeam"},cb)
+				}))
 			}
 		], safe.sure(cb, function () {
 			cb(null,{api:{}})

@@ -43,6 +43,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
 				router.get("/signup", main.signup);
+				router.get("/teams", main.teams);
 				cb();
 			},cb)
 		},
