@@ -8,7 +8,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : ['[dev] tinelic3'],
+  app_name : ['Tinelic Web'],
   /**
    * Your New Relic license key.
    */
