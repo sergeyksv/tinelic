@@ -29,7 +29,12 @@ define(['views/layout','module','safe',"dust"
 			var router = self.router;
 			var routes = ["routes/main"];
 			router.use(function (err, req, res, next) {
-				self.errHandler(err);
+				if (err.subject = "Login required") {
+					res.redirect('/web/signup')
+				}
+				else {
+					self.errHandler(err);
+				}
 			})
 			requirejs(routes, function (main) {
 				router.get("/", main.index);
@@ -37,6 +42,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
+				router.get("/signup", main.signup);
 				cb();
 			},cb)
 		},
@@ -53,6 +59,9 @@ define(['views/layout','module','safe',"dust"
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
 			this.router.use(function (req, res, next) {
+				res.redirect = function (path) {
+					self.router.navigateTo(path)
+				}
 				res.renderX = function (route) {
 					self.clientRender(route);
 				}

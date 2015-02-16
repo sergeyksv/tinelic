@@ -1,7 +1,7 @@
 define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 	return {
 		index:function (req, res, cb) {
-			console.log("here");
+			var token = req.cookies.token || "public"
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/index_view"], function (view) {
@@ -9,12 +9,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				data: function (cb) {
-					api("assets.getProjects","public", {_t_age:"30d"}, safe.sure(cb, function (project) {
+
+					api("assets.getProjects",token, {_t_age:"30d"}, safe.sure(cb, function (project) {
 						var quant = 1; var period = 15;
 						var dtend = new Date();
 						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
 						safe.forEach(project, function (n, cb) {
-							api("collect.getPageViews", "public", {
+							api("collect.getPageViews", token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
 									_dtstart: dtstart,
@@ -53,6 +54,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}))
 		},
 		event:function (req, res, next) {
+			var token = req.cookies.token || "public"
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/event_view"], function (view) {
@@ -60,10 +62,10 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				event:function (cb) {
-					api("collect.getEvent","public", {_t_age:"30d",_id:req.params.id}, cb)
+					api("collect.getEvent",token, {_t_age:"30d",_id:req.params.id}, cb)
 				},
 				info:function (cb) {
-					api("collect.getEventInfo","public", {_t_age:"10m",filter:{_id:req.params.id}}, cb)
+					api("collect.getEventInfo",token, {_t_age:"10m",filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
 				res.renderX({view:r.view,route:req.route.path,data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
@@ -74,7 +76,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				res.renderX({view:view,route:req.route.path,data:{title:"Page Page"}})
 			}), cb);
 		},
+		signup:function (req, res, cb) {
+			requirejs(["views/signup_view"], safe.trap(cb, function (view) {
+				res.renderX({view:view,route:req.route.path,data:{title:"Sign UP"}})
+			}), cb);
+		},
 		users:function (req, res, cb) {
+			var token = req.cookies.token || "public"
 			safe.parallel({
 				view: function (cb) {
 					requirejs(["views/users_view"], function (view) {
@@ -82,7 +90,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}, cb)
 				},
 				users: function (cb) {
-					api("users.getUsers", "public", {}, cb)
+					api("users.getUsers", token, {}, cb)
 				}
 			},safe.sure(cb, function(r) {
 				res.renderX({view: r.view, route:req.route.path, data: {title: "Manage users", users: r.users}})
@@ -90,6 +98,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}))
 		},
 		project:function (req, res, cb) {
+			var token = req.cookies.token || "public"
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
 			var range = 60 * 60 * 1000;
@@ -114,24 +123,24 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					},cb)
 				},
 				data:function (cb) {
-					api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+					api("assets.getProject",token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						safe.parallel({
 							views: function (cb) {
-								api("collect.getPageViews","public",{_t_age:quant+"m",quant:quant,filter:{
+								api("collect.getPageViews",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
 									_dtstart: dtstart,
 									_dtend: dtend
 								}}, cb);
 							},
 							errors: function (cb) {
-								api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
+								api("collect.getErrorStats",token,{_t_age:quant+"m",filter:{
 									_idp:project._id,
 									_dtstart: dtstart,
 									_dtend: dtend
 								}}, cb);
 							},
 							ajax: function (cb) {
-								api("collect.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
+								api("collect.getAjaxStats",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
 									_dtstart: dtstart,
 									_dtend: dtend
