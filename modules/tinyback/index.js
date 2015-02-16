@@ -4,11 +4,23 @@ var path = require("path");
 var express = require('express');
 var moment = require('moment');
 var cookieParser = require('cookie-parser')
+var bodyParser = require('body-parser');
+var multer = require('multer');
+
+module.exports.CustomError = function (message, subject) {
+	this.name = 'customError';
+	this.message = message;
+	this.subject = subject;
+	this.stack = (new Error()).stack;
+}
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
 	app.use(require("compression")());
 	app.use(cookieParser());
+	app.use(bodyParser.json());
+	app.use(bodyParser.urlencoded({ extended: true }));
+	app.use(multer());
 	var api = {};
 	var auto = {};
 	var registered = {};
@@ -36,6 +48,14 @@ module.exports.createApp = function (cfg, cb) {
 		args.push(function (cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
+			app.use(function(err, req, res, next) {
+				if (err.subject == "Login required") {
+					res.redirect('/web/signup')
+				}
+				else {
+					next();
+				}
+			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
 				cb();
@@ -55,16 +75,19 @@ module.exports.createApp = function (cfg, cb) {
 module.exports.restapi = function () {
 	return {
 		init: function (ctx, cb) {
-			ctx.router.get("/:token/:module/:target",function (req, res) {
+			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					res.status(500).json({message:err.message});
+					var statusMap = {"Login required":401};
+					var code = statusMap[err.subject] || 500;
+
+					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));
 				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
-				ctx.api[req.params.module][req.params.target](req.params.token, req.query, safe.sure(next, function (result) {
+				ctx.api[req.params.module][req.params.target](req.params.token, (req.method == 'POST')?req.body:req.query, safe.sure(next, function (result) {
 					var maxAge = 0;
 					if (req.query._t_age) {
 						var age = req.query._t_age

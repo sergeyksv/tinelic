@@ -36,8 +36,62 @@ module.exports.init = function (ctx, cb) {
 						function (cb) { col.ensureIndex({_idp:1}, cb) }
 					], safe.sure(cb, col))
 				}))
+			},
+			function (cb) {
+				db.collection("ajax", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({chash:1}, cb)},
+						function (cb) { col.ensureIndex({_dt:1}, cb)},
+						function (cb) { col.ensureIndex({_idp:1}, cb)}
+					], safe.sure(cb, col))
+				}))
 			}
-		], safe.sure_spread(cb, function (events,pages) {
+		],safe.sure_spread(cb, function (events,pages,ajax) {
+			ctx.router.get("/ajax/:project", function (req, res, next) {
+				var data = req.query;
+				data._idp = new mongo.ObjectID(req.params.project);
+				data._dtr = new Date();
+				data._dt = data._dtr;
+
+				var ip = req.headers['x-forwarded-for'] ||
+					req.connection.remoteAddress ||
+					req.socket.remoteAddress ||
+					req.connection.socket.remoteAddress;
+
+				data = prefixify(data,{strict:1});
+				var md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers['host']);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
+				data.shash = md5sum.digest('hex');
+				md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers['host']);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(data._dtp.toString());
+				data.chash = md5sum.digest('hex');
+				data.request = {};
+				safe.run(function (cb) {
+					pages.findAndModify(
+						{
+							chash: data.chash,
+							_dt: {$lte: data._dt}
+						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+							if (page) {
+								data._idpv = page._id;
+								(page.r) && (data.request.route = page.r);
+								(page.p) && (data.request.uri = page.p);
+							}
+							ajax.insert(data, cb)
+						}))
+				}, function (err) {
+					if (err)
+						return console.log(err);
+					res.set('Content-Type', 'image/gif');
+					res.send(buf);
+				})
+			})
 			ctx.router.get("/browser/:project",function (req, res, next) {
 				var data = req.query;
 				data._idp=req.params.project;
@@ -73,12 +127,36 @@ module.exports.init = function (ctx, cb) {
 						// once after inserting page we need to link
 						// this page events that probably cread earlier
 						var _id = docs[0]._id;
-						events.update({chash:data.chash,_idpv:{$exists:false}},{$set:{_idpv:_id,headers:{route:data.r,uri:data.p}}},safe.sure(cb, function (updates) {
-							if (updates)
-								pages.update({_id:_id},{$inc:{_i_err:updates}},cb);
-							else
-								cb();
-						}))
+						safe.parallel([
+							function(cb) {
+								events.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										request: {route: data.r, uri: data.p}
+									}
+								}, {multi: true}, safe.sure(cb, function (updates) {
+									if (updates)
+										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+									else
+										cb();
+								}))
+							},
+							function(cb) {
+								ajax.update({chash: data.chash, _idpv: {$exists: false}}, {
+									$set: {
+										_idpv: _id,
+										request: {route: data.r, uri: data.p}
+									}
+								}, {multi: true}, safe.sure(cb, function() {
+									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+										if (count > 0)
+											pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+										else
+											cb();
+									}))
+								}))
+							}
+						], cb)
 					}))
 				}, function (err) {
 					if (err)
@@ -144,6 +222,40 @@ module.exports.init = function (ctx, cb) {
 				getEvent:function (t, p, cb) {
 					// dummy, just get it all out
 					events.findOne({_id:new mongo.ObjectID(p._id)},cb);
+				},
+				getAjaxStats:function(t, p, cb) {
+					var query = {};
+					var q = p.quant || 1;
+					if(p.filter._idp)
+						query._idp = new mongo.ObjectID(p.filter._idp)
+					if(p.filter._dtstart && p.filter._dtend){
+						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
+					}
+					ajax.mapReduce(
+						"function() {\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
+						}",
+						function (k,v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r)
+									r = v
+								else {
+									r.tt += v.tt;
+									r.c+=v.c;
+									r.e+=v.e;
+									r.r+=v.r;
+									r.pt+= v.pt;
+								}
+							})
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
 				},
 				getPageViews:function (t, p, cb) {
 					var query = {};

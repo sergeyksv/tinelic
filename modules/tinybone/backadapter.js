@@ -11,6 +11,7 @@ define(["module","backctx",'jquery','jquery-cookie'],function (module,ctx, $) {
 			var rpc = f.split(".");
 			p._t_st = st;
 			$.ajax(ctx+t+"/"+rpc[0]+"/"+rpc[1],{
+				type: (rpc[1].search(/(^get)/) == -1)?"POST":"GET",
 				dataType: "json",
 				data:JSON.parse(JSON.stringify(p)),
 				success:function (data) {

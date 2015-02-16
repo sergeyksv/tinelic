@@ -21,6 +21,10 @@ requirejs.config({
 	}
 })
 
+requirejs.onError = function (err) {
+	console.log(err.trace);
+}
+
 requirejs.define("dust",dust);
 requirejs.define("dust-helpers", require('dustjs-helpers'));
 
@@ -28,9 +32,10 @@ requirejs.define("dust-helpers", require('dustjs-helpers'));
 requirejs.define("jquery", true);
 requirejs.define("jquery-cookie", true);
 requirejs.define("bootstrap/dropdown", true);
+requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets'];
+module.exports.deps = ['assets','users','collect'];
 
 var wires = {};
 
@@ -49,64 +54,78 @@ module.exports.init = function (ctx, cb) {
 		} else
 			res.send(404)
 	})
-	requirejs(['routes','app'], function (routes,App) {
+	requirejs(['app'], function (App) {
 		var app = new App({prefix:"/web"});
-		_.each(routes, function (v,k) {
-			ctx.router.get(k,function (req,res,next) {
-				var rp = v.split("#");
-				requirejs(['routes/'+rp[0]],function (route) {
-					route[rp[1]](_.pick(req,["params","query","cookies"]), {
-						render:function (route) {
-							var view = app.getView();
-							view.data = route.data || {};
-							var populateTplCtx = view.populateTplCtx;
-							var uniqueId = _.uniqueId("w")
-							view.populateTplCtx = function (ctx, cb) {
-								ctx = ctx.push({_t_main_view:route.view.id,
-									_t_prefix:"/web",
-									_t_self_id:self_id,
-									_t_start:(new Date()).valueOf(),
-									_t_route:k,
-									_t_unique:uniqueId,
-									_t_env_production:cfg.env=="production"
-								});
-								populateTplCtx.call(this,ctx,cb)
-							}
-							view.render(safe.sure(next, function (text) {
-								var wv = {name:"app",data:route.data,views:[]};
-								function wireView(realView,wiredView) {
-									_.each(realView.views, function (view) {
-										var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
-										wireView(view.view,wv);
-										wiredView.views.push(wv)
-									})
-								}
-								wv.prefix = app.prefix;
+		// reuse express router as is
+		app.router = ctx.router;
+		// register render function
+		ctx.router.get('*',function (req,res,next) {
+			res.renderX = function (route) {
+				var view = app.getView();
+				view.data = route.data || {};
+				var populateTplCtx = view.populateTplCtx;
+				var uniqueId = _.uniqueId("w")
+				view.populateTplCtx = function (ctx, cb) {
+					ctx = ctx.push({_t_main_view:route.view.id,
+						_t_prefix:"/web",
+						_t_self_id:self_id,
+						_t_route:route.route,
+						_t_unique:uniqueId,
+						_t_env_production:cfg.env=="production",
+						_t_rev:cfg.rev
+					});
+					populateTplCtx.call(this,ctx,cb)
+				}
+				view.render(safe.sure(next, function (text) {
+					var wv = {name:"app",data:route.data,views:[]};
+					function wireView(realView,wiredView) {
+						_.each(realView.views, function (view) {
+							var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
+							wireView(view.view,wv);
+							wiredView.views.push(wv)
+						})
+					}
+					wv.prefix = app.prefix;
 
-								wireView(view,wv);
-								// make wire available for download for 30s
-								wires[uniqueId]=wv;
-								setTimeout(function () {
-									delete wires[uniqueId]
-								}, 30000);
+					wireView(view,wv);
+					// make wire available for download for 30s
+					wires[uniqueId]=wv;
+					setTimeout(function () {
+						delete wires[uniqueId]
+					}, 30000);
 
-								res.send(text)
-							}))
-						}
-					},next)
-				},next)
-			})
-		})
-		ctx.api.assets.getProject("public",{filter:{slug:"tinelic-web"}}, safe.sure(cb, function (selfProj) {
-			if (selfProj==null) {
-				ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id) {
-					self_id = selfProj_id;
-					cb(null,{api:{}})
+					res.send(text)
 				}))
-			} else {
-				self_id = selfProj._id;
-				cb(null,{api:{}})
 			}
+			next();
+		})
+
+		safe.series([
+			function (cb) {
+				app.initRoutes(cb)
+			},
+			function (cb) {
+				ctx.api.assets.getProject("public",{filter:{slug:"tinelic-web"}}, safe.sure(cb, function (selfProj) {
+					if (selfProj==null) {
+						ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id) {
+							self_id = selfProj_id;
+							cb()
+						}))
+					} else {
+						self_id = selfProj._id;
+						cb()
+					}
+				}))
+			},
+			function (cb) {
+				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
+					if (self) return cb()
+
+					ctx.api.users.saveUser("public", {login:"admin", pass: "tinelic"},cb)
+				}))
+			}
+		], safe.sure(cb, function () {
+			cb(null,{api:{}})
 		}))
 	},cb)
 }

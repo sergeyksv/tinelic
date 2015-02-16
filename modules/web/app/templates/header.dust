@@ -13,7 +13,10 @@
 	  <ul class="nav navbar-nav">
 		<li class="active"><a href="{_t_prefix}/">Home</a></li>
 		<li><a href="{_t_prefix}/page">Page</a></li>
+		<li><a href="{_t_prefix}/users">Manage users</a></li>
+		<li class="navbar-right"><a id="logout" href="#">Log out</a></li>
 	  </ul>
+
 	  	{#filter}
 	  		<div class="btn-group" style="float: right; margin-top: 10px;">
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
