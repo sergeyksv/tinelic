@@ -60,6 +60,9 @@ module.exports.init = function (ctx, cb) {
                               cb(null, t.tokens[t.tokens.length-1].token)
                         })
                     )
+                },
+                userLogout: function(t, u, cb) {
+                    usr.users.update({'tokens.token':u.token}, { $pull: {tokens: { token: u.token } } },{},cb);
                 }
             }});
         }))
