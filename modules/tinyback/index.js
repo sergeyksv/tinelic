@@ -53,7 +53,7 @@ module.exports.createApp = function (cfg, cb) {
 					res.redirect('/web/signup')
 				}
 				else {
-					res.send(err)
+					next();
 				}
 			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
@@ -77,12 +77,10 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var code = 500;
+					var statusMap = {"Login required":401};
+					var code = statusMap[err.subject] || 500;
 
-					if(err.subject == "Login required")
-						code = 401;
-
-					res.status(code).json((err.subject)?{message:err.message, subject: err.subject}:{message:err.message});
+					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));
 				}
 				if (!ctx.api[req.params.module])
 					throw new Error("No api module available");

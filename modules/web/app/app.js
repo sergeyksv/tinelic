@@ -21,7 +21,7 @@ define(['views/layout','module','safe',"dust"
 		getView:function () {
 			return new Layout({app:this});
 		},
-		errHandler: function (err,req, res) {
+		errHandler: function (err) {
 			if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
@@ -30,7 +30,7 @@ define(['views/layout','module','safe',"dust"
 			var routes = ["routes/main"];
 			router.use(function (err, req, res, next) {
 				if (err.subject = "Login required") {
-					self.router.navigateTo('/web/signup', {trigger: true})
+					res.redirect('/web/signup')
 				}
 				else {
 					self.errHandler(err);
@@ -59,6 +59,9 @@ define(['views/layout','module','safe',"dust"
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
 			this.router.use(function (req, res, next) {
+				res.redirect = function (path) {
+					self.router.navigateTo(path)
+				}
 				res.renderX = function (route) {
 					self.clientRender(route);
 				}
