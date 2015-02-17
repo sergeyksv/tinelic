@@ -27,7 +27,7 @@ if(fs.existsSync(lcfgPath)){
 tinyback.createApp(cfg, function (err, app) {
 
 	if (err) {
-		console.log(err.stack);
+		console.trace(err.originalError || err);
 		process.exit(0);
 	}
 	try {

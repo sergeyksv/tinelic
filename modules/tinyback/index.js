@@ -7,11 +7,12 @@ var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
 var multer = require('multer');
 
-module.exports.CustomError = function (message, subject) {
-	this.name = 'customError';
-	this.message = message;
-	this.subject = subject;
-	this.stack = (new Error()).stack;
+module.exports.CustomError  = function (message, subject) {
+  this.constructor.prototype.__proto__ = Error.prototype;
+  Error.captureStackTrace(this, this.constructor);
+  this.name = this.constructor.name;
+  this.message = message;
+  this.subject = subject;
 }
 
 module.exports.createApp = function (cfg, cb) {
@@ -48,14 +49,6 @@ module.exports.createApp = function (cfg, cb) {
 		args.push(function (cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
-			app.use(function(err, req, res, next) {
-				if (err.subject == "Login required") {
-					res.redirect('/web/signup')
-				}
-				else {
-					next();
-				}
-			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
 				cb();
@@ -77,7 +70,7 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var statusMap = {"Login required":401};
+					var statusMap = {"Unauthorized":401};
 					var code = statusMap[err.subject] || 500;
 
 					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));

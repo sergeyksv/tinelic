@@ -22,11 +22,10 @@ module.exports.init = function (ctx, cb) {
                     usr.users.find({}).sort({name: 1}).toArray(cb);
                 },
                 getCurrentUser: function (t,cb) {
-                    usr.users.find({'tokens.token' : t }).toArray(safe.sure(cb, function(n){
-                        if (n.length)
-                            cb(null, n)
-                        else
-                            throw new CustomError('This is a guest',"Login required")
+                    usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
+						if (!user)
+                            return cb(new CustomError('Current user is unknown',"Unauthorized"));
+						cb(null, user)
                     }))
                 },
                 saveUser: function (t,u,cb) {

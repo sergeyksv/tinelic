@@ -22,27 +22,33 @@ define(['views/layout','module','safe',"dust"
 			return new Layout({app:this});
 		},
 		errHandler: function (err) {
-			if (err) console.log(err.stack);
+			// if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
 			var self = this;
 			var router = self.router;
 			var routes = ["routes/main"];
-			router.use(function (err, req, res, next) {
-				if (err.subject = "Login required") {
-					res.redirect('/web/signup')
-				}
-				else {
-					self.errHandler(err);
-				}
-			})
 			requirejs(routes, function (main) {
+				// routes goes first
 				router.get("/", main.index);
 				router.get("/event/:id", main.event);
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
 				router.get("/signup", main.signup);
+
+				// error handler after that
+				router.use(function (err, req, res, cb) {
+					if (err.subject == "Unauthorized") {
+						requirejs(["views/signup_view"], safe.trap(cb, function (view) {
+							res.renderX({view:view,route:req.route.path,data:{title:"Sign UP"}})
+						}), cb);
+					}
+					else cb()
+				})
+				router.use(function (err, req, res, cb) {
+					self.errHandler(err);
+				})
 				cb();
 			},cb)
 		},
