@@ -76,11 +76,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				res.renderX({view:view,route:req.route.path,data:{title:"Page Page"}})
 			}), cb);
 		},
-		signup:function (req, res, cb) {
-			requirejs(["views/signup_view"], safe.trap(cb, function (view) {
-				res.renderX({view:view,route:req.route.path,data:{title:"Sign UP"}})
-			}), cb);
-		},
 		users:function (req, res, cb) {
 			var token = req.cookies.token || "public"
 			safe.parallel({
