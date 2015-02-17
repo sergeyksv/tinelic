@@ -35,12 +35,12 @@ define(['views/layout','module','safe',"dust"
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
-				router.get("/signup", main.signup);
 
 				// error handler after that
 				router.use(function (err, req, res, cb) {
 					if (err.subject == "Unauthorized") {
 						requirejs(["views/signup_view"], safe.trap(cb, function (view) {
+							res.status(401);
 							res.renderX({view:view,route:req.route.path,data:{title:"Sign UP"}})
 						}), cb);
 					}
@@ -65,6 +65,7 @@ define(['views/layout','module','safe',"dust"
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
 			this.router.use(function (req, res, next) {
+				res.status = function () {};
 				res.redirect = function (path) {
 					self.router.navigateTo(path)
 				}
