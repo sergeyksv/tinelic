@@ -107,10 +107,41 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				},
 				teams: function (cb) {
 					api("teams.getTeams", token, {}, cb)
+				},
+				proj: function(cb) {
+					api("assets.getProjects", token, {}, cb)
+				},
+				users: function(cb) {
+					api("users.getUsers", token, {}, cb)
 				}
 			},safe.sure(cb, function(r) {
-				res.renderX({view: r.view, route:req.route.path, data: {title: "Manage teams", teams: r.teams}})
-
+					_.forEach(r.teams, function(teams) {
+						if (teams.projects) {
+							_.forEach(teams.projects, function (_idp) {
+								_.forEach(r.proj,function(pr) {
+									if (_idp._idp == pr._id) {
+										_idp.name = pr.name
+									}
+								})
+							})
+						}
+						if (teams.users) {
+							_.forEach(teams.users, function(_idu) {
+								_.forEach(r.users, function(usr) {
+									if (_idu._idu == usr._id) {
+										_idu.firstname = usr.firstname
+										_idu.lastname = usr.lastname
+									}
+								})
+							})
+						}
+					})
+				res.renderX({view: r.view, route:req.route.path, data: {
+					title: "Manage teams",
+					teams: r.teams,
+					proj: r.proj,
+					usr: r.users
+				}})
 			}))
 		},
 		project:function (req, res, cb) {

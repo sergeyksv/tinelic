@@ -38,6 +38,31 @@ module.exports.init = function (ctx, cb) {
                 removeTeam: function(t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
                     tm.teams.remove({_id: _id}, cb)
+                },
+                addProjects: function(t, u, cb) {
+                    var _id = new mongo.ObjectID(u.id);
+                    tm.teams.update({_id: _id}, {
+                        $addToSet: {
+                            projects: {$each: u.projects}
+                        }}, {},
+                        cb)
+                },
+                addUsers: function(t, u , cb) {
+                    var _id = new mongo.ObjectID(u.id);
+                    tm.teams.update({_id: _id}, {
+                            $addToSet: {
+                                    users: {$each:u.users}
+                            }}, {},
+                        cb)
+                },
+                pullData: function(t, u, cb) {
+                    var _id = new mongo.ObjectID(u.id)
+                    if (u.idt == '_idu') {
+                        tm.teams.update({_id: _id}, {$pull: {users: {_idu: u.idtt}}},{}, cb)
+                    }
+                    else {
+                        tm.teams.update({_id: _id}, {$pull: {projects: {_idp: u.idtt}}},{}, cb)
+                    }
                 }
             }});
         }))
