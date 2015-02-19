@@ -18,8 +18,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							api("collect.getPageViews", token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}
 							}, safe.sure(cb, function (v) {
 								var vall = null; var vale = null; var valr = null;
@@ -123,22 +122,19 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							views: function (cb) {
 								api("collect.getPageViews",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							},
 							errors: function (cb) {
 								api("collect.getErrorStats",token,{_t_age:quant+"m",filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							},
 							ajax: function (cb) {
 								api("collect.getAjaxStats",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							}
 						}, safe.sure(cb, function (r) {

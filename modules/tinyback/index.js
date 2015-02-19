@@ -128,11 +128,13 @@ module.exports.prefixify = function () {
 		"_t_": function (pr) {
 		},
 		"_dt": function (pr) {
-			if (pr) {
-				var t = moment(pr);
-				if (t.isValid())
-					return t.toDate();
-			}
+			var t = Date.parse(pr);
+			if (!isNaN(t))
+				return new Date(t);
+			else if (!isNaN(parseInt(pr)))
+				return new Date(parseInt(pr))
+			else if (pr instanceof Date)
+				return pr;
 		},
 		"_b_": function (pr) {
 			if (_.contains([true,"true",1,"1"], pr))
@@ -140,6 +142,44 @@ module.exports.prefixify = function () {
 			if (_.contains([false,"false",0,"0",null,"null",""], pr))
 				return 0;
 		}
+	}
+
+	function queryfix(obj, opts) {
+		if (!obj) return null;
+		var nobj = {};
+		_.each(obj, function (v, k) {
+			// query can use dot notation for names
+			// last component should refer to actual type
+			var prefix = k.match(/(_..).*$/);
+			if (prefix)
+				prefix = prefix[1];
+
+			if (prefix && translate[prefix]) {
+				// object meand op, like {$gt:5,$lt:8}
+				if (_.isPlainObject(v)) {
+					var no = {};
+					_.each(v, function (val, op) {
+						// op value is array {$in:[1,2,4]}
+						if (_.isArray(val)) {
+							var na = [];
+							_.each(val, function (a) {
+								try { na.push(translate[prefix](a)); } catch (e) {};
+							})
+							no[op]=na;
+						} else {
+							try { no[op] = translate[prefix](val); } catch (e) {};
+						}
+					})
+					nobj[k]=no;
+				} else {
+					// plain value then
+					try { nobj[k] = translate[prefix](v); } catch (e) {};
+				}
+			} else {
+				nobj[k]=v;
+			}
+		})
+		return nobj;
 	}
 
 	function datafix(obj,opts) {
@@ -172,6 +212,7 @@ module.exports.prefixify = function () {
 		init:function (ctx,cb) {
 			cb(null, {
 				api:{
+					queryfix:queryfix,
 					datafix:datafix,
 					register:function (prefix, transform) {
 						translate[prefix]=transform;
