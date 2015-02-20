@@ -29,12 +29,15 @@ define(['views/layout','module','safe',"dust"
 			var router = self.router;
 			var routes = ["routes/main"];
 			router.use(function (err, req, res, next) {
-				if (err.subject = "Login required") {
-					res.redirect('/web/signup')
+				switch (true) {
+					case err.subject == "Login required":
+						res.redirect('/web/signup')
+						break;
+					case err.subject == "Access forbidden":
+						res.redirect('/web/')
+						break;
 				}
-				else {
-					self.errHandler(err);
-				}
+				self.errHandler(err);
 			})
 			requirejs(routes, function (main) {
 				router.get("/", main.index);

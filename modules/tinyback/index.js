@@ -49,12 +49,15 @@ module.exports.createApp = function (cfg, cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
 			app.use(function(err, req, res, next) {
-				if (err.subject == "Login required") {
-					res.redirect('/web/signup')
+				switch (true) {
+					case err.subject == "Login required":
+						res.redirect('/web/signup')
+						break;
+					case err.subject == "Access forbidden":
+						res.redirect('/web/')
+						break;
 				}
-				else {
-					next();
-				}
+				next();
 			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
@@ -77,7 +80,10 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var statusMap = {"Login required":401};
+					var statusMap = {
+						"Login required":401,
+						"Access forbidden":403
+					};
 					var code = statusMap[err.subject] || 500;
 
 					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));

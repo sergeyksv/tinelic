@@ -20,8 +20,15 @@ module.exports.init = function (ctx, cb) {
                     tm.teams.findOne(u.filter, cb);
                 },
                 getTeams: function (t,u,cb) {
-                    // t = "public",u = {filter:{name:"DefaultUser"}}
-                    tm.teams.find({}).sort({name: 1}).toArray(cb);
+                    ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
+                        if (u[0].role == 'admin' ) {
+                            tm.teams.find({}).sort({name: 1}).toArray(cb)
+                        }
+                        else {
+                            var id = u[0]._id
+                            tm.teams.find({"users._idu": id.toString()}).toArray(cb)
+                        }
+                    }))
                 },
                 saveTeam: function (t,u,cb) {
                     // t = "public", u = {name:"DefaultUser", pass:'123'}
@@ -30,8 +37,9 @@ module.exports.init = function (ctx, cb) {
                 updateTeam: function (t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
                     tm.teams.update({_id: _id},
-                        {
-                            name: u.name
+                        { $set: {
+                                name: u.name
+                            }
                         }
                         ,{}, cb);
                 },

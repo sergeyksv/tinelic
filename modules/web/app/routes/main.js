@@ -42,14 +42,26 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							cb(null, project)
 						}))
 					}))
+				},
+				teams: function (cb) {
+					api("teams.getTeams", token, {}, cb)
 				}
 			}, safe.sure(cb, function (r) {
+				_.forEach(r.teams, function(team) {
+					var projects = {};
+					_.forEach(r.data, function(proj) {
+						projects[proj._id] = proj
+					})
+					_.forEach(team.projects, function(proj) {
+						proj._t_proj = projects[proj._idp]
+					})
+				})
 				res.renderX({
 					route:req.route.path,
 					view:r.view,
 					data:{
-						projects:r.data,
-						title:"Tinelic - Home"
+						title:"Tinelic - Home",
+						teams: r.teams
 					}})
 			}))
 		},
@@ -117,22 +129,23 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			},safe.sure(cb, function(r) {
 					_.forEach(r.teams, function(teams) {
 						if (teams.projects) {
-							_.forEach(teams.projects, function (_idp) {
-								_.forEach(r.proj,function(pr) {
-									if (_idp._idp == pr._id) {
-										_idp.name = pr.name
-									}
-								})
+							var projects = {};
+							_.forEach(r.proj, function(proj) {
+								projects[proj._id] = proj
+							})
+							_.forEach(teams.projects, function (proj) {
+								proj._t_project = projects[proj._idp]
 							})
 						}
 						if (teams.users) {
-							_.forEach(teams.users, function(_idu) {
-								_.forEach(r.users, function(usr) {
-									if (_idu._idu == usr._id) {
-										_idu.firstname = usr.firstname
-										_idu.lastname = usr.lastname
-									}
-								})
+							var users = {};
+							_.forEach(r.users, function(usr) {
+								users[usr._id] = usr;
+							})
+							_.forEach(teams.users, function(user) {
+								var usr = users[user._idu]
+								user.firstname = usr.firstname;
+								user.lastname = usr.lastname;
 							})
 						}
 					})

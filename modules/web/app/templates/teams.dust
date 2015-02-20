@@ -49,7 +49,7 @@
                         {#projects}
                             <tr>
                                 <td class="col-md-1">
-                                    {name}
+                                    {_t_project.name}
                                 </td>
                                 <td class="col-md-1">
                                     <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idp,{_idp},{_id}" style="margin: 2px;">del</button>

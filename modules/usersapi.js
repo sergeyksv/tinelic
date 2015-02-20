@@ -19,7 +19,15 @@ module.exports.init = function (ctx, cb) {
                 },
                 getUsers: function (t,u,cb) {
                     // t = "public",u = {filter:{name:"DefaultUser"}}
-                    usr.users.find({}).sort({name: 1}).toArray(cb);
+                    this.getCurrentUser(t, safe.sure(cb, function(u) {
+                        if (u[0].role == "admin") {
+                            usr.users.find({}).sort({name: 1}).toArray(cb);
+                        }
+                        else {
+                            throw new CustomError('You are not admin',"Access forbidden")
+                        }
+                    }))
+
                 },
                 getCurrentUser: function (t,cb) {
                     usr.users.find({'tokens.token' : t }).toArray(safe.sure(cb, function(n){
@@ -39,6 +47,7 @@ module.exports.init = function (ctx, cb) {
                         {
                             firstname: u.firstname,
                             lastname: u.lastname,
+                            role: u.role,
                             login: u.login,
                             pass: u.pass
                         }

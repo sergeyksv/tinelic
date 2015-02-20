@@ -121,7 +121,7 @@ module.exports.init = function (ctx, cb) {
 				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
 
-					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', pass: "tinelic"},cb)
+					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', role: 'admin', pass: "tinelic"},cb)
 				}))
 			},
 			function (cb) {
