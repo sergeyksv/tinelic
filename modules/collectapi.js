@@ -418,6 +418,32 @@ module.exports.init = function (ctx, cb) {
 
 						return cb(null, block)
 					}))
+				},
+				getAjaxRpm:function(t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					ajax.mapReduce(
+						"function() {\
+							emit(this.r, { r:1.0/"+q+", dt:this._dt})\
+						}",
+						function (k,v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r)
+									r = v
+								else {
+									r.r+=v.r;
+									r.dt=v.dt;
+								}
+							})
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
 				}
 			}});
 		}))

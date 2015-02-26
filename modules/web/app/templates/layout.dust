@@ -21,8 +21,8 @@
 		route:"{_t_route}",
 		_dtp:_t_page,
 		ajaxCallback: function(s, XHR){
-			var  re=/\/w[0-9]+/
-			s.url=s.url.split(re,1); 
+			s.r=s.r.replace(/\/wire\/w[0-9]+/,"/wire")
+				.replace(/^\/restapi\/([^\/]+)\//,"/restapi/token/");
 		}
 	})
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {

@@ -12,6 +12,12 @@
 <h3>AJAX total time</h3><hr>
 	<div id="ajaxtime" style="width:100%; height:400px; float: left;"></div>
 </div>
+{#project}
+	<div class="btn-group" style="float: right; margin-top: 10px; margin-right:20px">
+       <button type="button" class="btn btn-default dropdown-toggle" onClick="location.href='{_t_prefix}/project/{slug}/ajax_rpm'">Ajax_rpm
+       </button>
+	</div>
+{/project}
 <div class="col-xs-12 col-sm-4">
 {@view name="views/project/errors_view"/}
 </div>
