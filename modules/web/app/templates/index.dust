@@ -1,42 +1,66 @@
 {@view name="views/header_view" data="text"/}
 <div class="container">
-<ul>
-</ul>
-<table class="table-stripped table-hover table-bordered" data-url="data1.json" data-height="400" data-row-style="rowStyle">
-    <tr>
-        <th data-field="id" class="col-md-3">
-        	Project
-        </th>
-        <th data-field="price" class="col-md-2">
-            Page views (n)
-        </th>
-        <th data-field="price" class="col-md-2">
-            Error rate (%)
-        </th>
-        <th data-field="price" class="col-md-2">
-            End user time (s)
-        </th>
-    </tr>
-    {#projects}
-    	<tr>
-       		 <td data-field="name" class="col-md-3">
-       			<h5>
-       			<a href='{_t_prefix}/project/{slug}'>
-       				{name}
-       			</a>
-       			</h5>
-       		 </td>
-             <td data-field="views" class="col-md-2">
-                {#views}{.} ppm{/views}
-             </td>
-             <td data-field="errors" class="col-md-2">
-                 {#errors}{.} %{/errors}
-             </td>
-             <td data-field="etu" class="col-md-2">
-                {#etu}{.} s{/etu}
-             </td>
-       	</tr>
-    {/projects}
-</table>
+
+
+    <table class="table table-hover" style="margin-top: 40px;">
+        <tr class="info">
+            <th class="col-md-3">
+                Team
+            </th>
+            <th>
+                <span class="col-md-3">Project</span><span class="col-md-3">Page views</span><span class="col-md-3">Error rate (%)</span><span class="col-md-3">End user time (s)</span>
+            </th>
+           <!-- <th data-field="price">
+                 Page views (n)
+            </th>
+            <th data-field="price">
+                 Error rate (%)
+            </th>
+            <th data-field="price">
+                 End user time (s)
+            </th> -->
+        </tr>
+        {#teams}
+        <tr class="success">
+            <td>
+            </td>
+            <td>
+            </td>
+        </tr>
+        <tr>
+            <td class="col-md-3">
+                {name}
+            </td>
+            <td>
+                <table>
+                    {#projects}
+                      {#_t_proj}
+                       <tr>
+                         <td>
+                         </td>
+                         <td data-field="name" class="col-md-3">
+                            <a href='{_t_prefix}/project/{slug}'>
+                               {name}
+                            </a>
+                         </td>
+                         <td data-field="views" class="col-md-3">
+                           {#views}{.} ppm{/views}
+                         </td>
+                         <td data-field="errors" class="col-md-3">
+                           {#errors}{.} %{/errors}
+                         </td>
+                         <td data-field="etu" class="col-md-3">
+                           {#etu}{.} s{/etu}
+                         </td>
+                       </tr>
+                      {/_t_proj}
+                    {/projects}
+                </table>
+            </td>
+        </tr>
+
+        {/teams}
+    </table>
 <button class="do-newproject btn btn-default" style="margin-top: 5px;">Add new project</button>
 </div>
+

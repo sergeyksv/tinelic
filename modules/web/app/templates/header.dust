@@ -14,7 +14,8 @@
 		<li class="active"><a href="{_t_prefix}/">Home</a></li>
 		<li><a href="{_t_prefix}/page">Page</a></li>
 		<li><a href="{_t_prefix}/users">Manage users</a></li>
-		<li class="navbar-right"><a id="logout" href="#">Log out</a></li>
+		<li><a href="{_t_prefix}/teams">Manage teams</a></li>
+		<li><a id="logout" href="#">Log out</a></li>
 	  </ul>
 
 	  	{#filter}

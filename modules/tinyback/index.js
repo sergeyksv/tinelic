@@ -70,7 +70,7 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var statusMap = {"Unauthorized":401};
+					var statusMap = {"Unauthorized":401,"Access forbidden":403};
 					var code = statusMap[err.subject] || 500;
 
 					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));
