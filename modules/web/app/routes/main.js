@@ -18,8 +18,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							api("collect.getPageViews", token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}
 							}, safe.sure(cb, function (v) {
 								var vall = null; var vale = null; var valr = null;
@@ -88,11 +87,6 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				res.renderX({view:view,route:req.route.path,data:{title:"Page Page"}})
 			}), cb);
 		},
-		signup:function (req, res, cb) {
-			requirejs(["views/signup_view"], safe.trap(cb, function (view) {
-				res.renderX({view:view,route:req.route.path,data:{title:"Sign UP"}})
-			}), cb);
-		},
 		users:function (req, res, cb) {
 			var token = req.cookies.token || "public"
 			safe.parallel({
@@ -143,9 +137,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 								users[usr._id] = usr;
 							})
 							_.forEach(teams.users, function(user) {
-								var usr = users[user._idu]
-								user.firstname = usr.firstname;
-								user.lastname = usr.lastname;
+								user.firstname = users[user._idu].firstname;
+								user.lastname = users[user._idu].lastname;
 							})
 						}
 					})
@@ -188,22 +181,19 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							views: function (cb) {
 								api("collect.getPageViews",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							},
 							errors: function (cb) {
 								api("collect.getErrorStats",token,{_t_age:quant+"m",filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							},
 							ajax: function (cb) {
 								api("collect.getAjaxStats",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dtstart: dtstart,
-									_dtend: dtend
+									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
 							}
 						}, safe.sure(cb, function (r) {

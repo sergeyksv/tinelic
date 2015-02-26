@@ -15,6 +15,7 @@ module.exports.deps = ['mongo','prefixify'];
 
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
+	var queryfix = ctx.api.prefixify.queryfix;
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
@@ -224,13 +225,8 @@ module.exports.init = function (ctx, cb) {
 					events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 				},
 				getAjaxStats:function(t, p, cb) {
-					var query = {};
+					var query = queryfix(p.filter);
 					var q = p.quant || 1;
-					if(p.filter._idp)
-						query._idp = new mongo.ObjectID(p.filter._idp)
-					if(p.filter._dtstart && p.filter._dtend){
-						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
-					}
 					ajax.mapReduce(
 						"function() {\
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
@@ -258,13 +254,8 @@ module.exports.init = function (ctx, cb) {
 					)
 				},
 				getPageViews:function (t, p, cb) {
-					var query = {};
+					var query = queryfix(p.filter);
 					var q = p.quant || 1;
-					if(p.filter._idp)
-						query._idp = new mongo.ObjectID(p.filter._idp)
-					if(p.filter._dtstart && p.filter._dtend){
-						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
-					}
 					pages.mapReduce("function () {\
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
 						}",
@@ -290,9 +281,7 @@ module.exports.init = function (ctx, cb) {
 					)
 				},
 				getEventInfo:function (t, p, cb) {
-					var query = {};
-					if(p.filter._id)
-						query._id = new mongo.ObjectID(p.filter._id)
+					var query = queryfix(p.filter);
 
 					events.findOne(query, safe.sure(cb, function (event) {
 						var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
@@ -357,12 +346,7 @@ module.exports.init = function (ctx, cb) {
 					}))
 				},
 				getErrorStats:function (t, p, cb) {
-					var query = {};
-					if(p.filter._idp)
-						query._idp = new mongo.ObjectID(p.filter._idp)
-					if(p.filter._dtstart && p.filter._dtend){
-						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
-					}
+					var query = queryfix(p.filter);
 					events.mapReduce(function () {
 							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
 							var s = {}; s[this.shash]=1;
@@ -403,7 +387,7 @@ module.exports.init = function (ctx, cb) {
 							_.each(stats, function (s) {
 								ids[s.value._id]={stats:s.value};
 							} );
-							events.find({_id:{$in:_.map(_.keys(ids),function (id) { return new mongo.ObjectID(id)})}})
+							events.find(queryfix({_id:{$in:_.keys(ids)}}))
 								.toArray(safe.sure(cb, function (errors) {
 									_.each(errors, function (e) {
 										ids[e._id].error = e;

@@ -21,7 +21,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 					}
 					else {
 						$.removeCookie("token");
-						self.app.router.navigateTo('/web/signup')
+						self.app.router.navigateTo('.')
 					}
 				});
 			}

@@ -22,31 +22,40 @@ define(['views/layout','module','safe',"dust"
 			return new Layout({app:this});
 		},
 		errHandler: function (err) {
-			if (err) console.log(err.stack);
+			// if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
 			var self = this;
 			var router = self.router;
 			var routes = ["routes/main"];
-			router.use(function (err, req, res, next) {
-				switch (true) {
-					case err.subject == "Login required":
-						res.redirect('/web/signup')
-						break;
-					case err.subject == "Access forbidden":
-						res.redirect('/web/')
-						break;
-				}
-				self.errHandler(err);
-			})
 			requirejs(routes, function (main) {
+				// routes goes first
 				router.get("/", main.index);
 				router.get("/event/:id", main.event);
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
-				router.get("/signup", main.signup);
 				router.get("/teams", main.teams);
+
+				// error handler after that
+				router.use(function (err, req, res, cb) {
+					if (err.subject) {
+						if (err.subject == "Unauthorized") {
+							requirejs(["views/signup_view"], safe.trap(cb, function (view) {
+								res.status(401);
+								res.renderX({view: view, route: req.route.path, data: {title: "Sign UP"}})
+							}), cb);
+						}
+						if (err.subject == "Access forbidden") {
+							res.redirect('/web/')
+						}
+					}
+					else
+						cb()
+				})
+				router.use(function (err, req, res, cb) {
+					self.errHandler(err);
+				})
 				cb();
 			},cb)
 		},
@@ -63,6 +72,7 @@ define(['views/layout','module','safe',"dust"
 			this.mainView || (this.mainView = new Layout({app:this}));
 			var mainView = this.mainView;
 			this.router.use(function (req, res, next) {
+				res.status = function () {};
 				res.redirect = function (path) {
 					self.router.navigateTo(path)
 				}

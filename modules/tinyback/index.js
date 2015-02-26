@@ -7,11 +7,12 @@ var cookieParser = require('cookie-parser')
 var bodyParser = require('body-parser');
 var multer = require('multer');
 
-module.exports.CustomError = function (message, subject) {
-	this.name = 'customError';
-	this.message = message;
-	this.subject = subject;
-	this.stack = (new Error()).stack;
+module.exports.CustomError  = function (message, subject) {
+  this.constructor.prototype.__proto__ = Error.prototype;
+  Error.captureStackTrace(this, this.constructor);
+  this.name = this.constructor.name;
+  this.message = message;
+  this.subject = subject;
 }
 
 module.exports.createApp = function (cfg, cb) {
@@ -48,17 +49,6 @@ module.exports.createApp = function (cfg, cb) {
 		args.push(function (cb) {
 			var router = express.Router();
 			app.use("/"+module.name,router)
-			app.use(function(err, req, res, next) {
-				switch (true) {
-					case err.subject == "Login required":
-						res.redirect('/web/signup')
-						break;
-					case err.subject == "Access forbidden":
-						res.redirect('/web/')
-						break;
-				}
-				next();
-			})
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
 				cb();
@@ -80,10 +70,7 @@ module.exports.restapi = function () {
 		init: function (ctx, cb) {
 			ctx.router.all("/:token/:module/:target",function (req, res) {
 				var next = function (err) {
-					var statusMap = {
-						"Login required":401,
-						"Access forbidden":403
-					};
+					var statusMap = {"Unauthorized":401,"Access forbidden":403};
 					var code = statusMap[err.subject] || 500;
 
 					res.status(code).json(_.pick({message: err.message, subject: err.subject}, _.isString));
@@ -141,11 +128,13 @@ module.exports.prefixify = function () {
 		"_t_": function (pr) {
 		},
 		"_dt": function (pr) {
-			if (pr) {
-				var t = moment(pr);
-				if (t.isValid())
-					return t.toDate();
-			}
+			var t = Date.parse(pr);
+			if (!isNaN(t))
+				return new Date(t);
+			else if (!isNaN(parseInt(pr)))
+				return new Date(parseInt(pr))
+			else if (pr instanceof Date)
+				return pr;
 		},
 		"_b_": function (pr) {
 			if (_.contains([true,"true",1,"1"], pr))
@@ -153,6 +142,44 @@ module.exports.prefixify = function () {
 			if (_.contains([false,"false",0,"0",null,"null",""], pr))
 				return 0;
 		}
+	}
+
+	function queryfix(obj, opts) {
+		if (!obj) return null;
+		var nobj = {};
+		_.each(obj, function (v, k) {
+			// query can use dot notation for names
+			// last component should refer to actual type
+			var prefix = k.match(/(_..).*$/);
+			if (prefix)
+				prefix = prefix[1];
+
+			if (prefix && translate[prefix]) {
+				// object meand op, like {$gt:5,$lt:8}
+				if (_.isPlainObject(v)) {
+					var no = {};
+					_.each(v, function (val, op) {
+						// op value is array {$in:[1,2,4]}
+						if (_.isArray(val)) {
+							var na = [];
+							_.each(val, function (a) {
+								try { na.push(translate[prefix](a)); } catch (e) {};
+							})
+							no[op]=na;
+						} else {
+							try { no[op] = translate[prefix](val); } catch (e) {};
+						}
+					})
+					nobj[k]=no;
+				} else {
+					// plain value then
+					try { nobj[k] = translate[prefix](v); } catch (e) {};
+				}
+			} else {
+				nobj[k]=v;
+			}
+		})
+		return nobj;
 	}
 
 	function datafix(obj,opts) {
@@ -185,6 +212,7 @@ module.exports.prefixify = function () {
 		init:function (ctx,cb) {
 			cb(null, {
 				api:{
+					queryfix:queryfix,
 					datafix:datafix,
 					register:function (prefix, transform) {
 						translate[prefix]=transform;

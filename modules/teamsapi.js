@@ -21,11 +21,11 @@ module.exports.init = function (ctx, cb) {
                 },
                 getTeams: function (t,u,cb) {
                     ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
-                        if (u[0].role == 'admin' ) {
+                        if (u.role == 'admin' ) {
                             tm.teams.find({}).sort({name: 1}).toArray(cb)
                         }
                         else {
-                            var id = u[0]._id
+                            var id = u._id
                             tm.teams.find({"users._idu": id.toString()}).toArray(cb)
                         }
                     }))
