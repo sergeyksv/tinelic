@@ -232,8 +232,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				rpm: function (cb) {
 					api("collect.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
-						_dtstart: dtstart,
-						_dtend: dtend
+						_dt: {$gt: dtstart,$lte:dtend}
 					}}, cb);
 				}
 			}, safe.sure(cb, function(r){
