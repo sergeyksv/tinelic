@@ -46,8 +46,11 @@ module.exports.init = function (ctx, cb) {
 						function (cb) { col.ensureIndex({_idp:1}, cb)}
 					], safe.sure(cb, col))
 				}))
+			},
+			function (cb) {
+				db.collection("actions", cb)
 			}
-		],safe.sure_spread(cb, function (events,pages,ajax) {
+		],safe.sure_spread(cb, function (events,pages,ajax, actions) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
 				var data = req.query;
 				data._idp = new mongo.ObjectID(req.params.project);
@@ -216,6 +219,127 @@ module.exports.init = function (ctx, cb) {
 				})
 			})
 			cb(null, {api:{
+				getActions: function(t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					actions.mapReduce(
+						"function() {\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._itt})\
+						}",
+						function (k,v) {
+							var t = 200; //apdex T
+							var f = 4*t;
+							var r=null;
+							v.forEach(function (v) {
+								if (!r) {
+									r = v;
+									r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
+								}
+								else {
+									r.r += v.r;
+									r.tt = (r.tt + v.tt)/2;
+									r.apdex[0] += (v.tt <= t)?1:0;
+									r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
+									r.apdex[2] += 1;
+								}
+							})
+							r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
+				},
+				getTopTransactions: function(t, p , cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					actions.mapReduce(
+						"function() {\
+							emit(this.r, {tt: this._itt, tta: (this._itt/1000).toFixed(3)})\
+						}",
+						function (k,v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r) {
+									r = v
+									r.tta = v.tt;
+								}
+								else {
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
+								}
+							})
+							r.tta = (r.tta/1000).toFixed(3)
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
+				},
+				getTopAjax: function(t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					ajax.mapReduce(
+						"function() {\
+							emit(this.r, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+						}",
+						function (k,v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r) {
+									r = v;
+									r.tta = v.tt;
+								}
+								else {
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
+								}
+							})
+							r.tta = (r.tta/1000).toFixed(2)
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
+				},
+				getTopPages: function(t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					pages.mapReduce(
+						"function() {\
+							emit(this.p, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+						}",
+						function (k,v) {
+							var r=null;
+							v.forEach(function (v) {
+								if (!r) {
+									r = v;
+									r.tta = v.tt;
+								}
+								else {
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
+								}
+							})
+							r.tta = (r.tta/1000).toFixed(2)
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
+				},
 				getEvents:function (t, p, cb) {
 					// dummy, just get it all out
 					events.find().toArray(cb)
@@ -232,18 +356,26 @@ module.exports.init = function (ctx, cb) {
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
 						function (k,v) {
+							var t = 400; //apdex T
+							var f = 4*t;
 							var r=null;
 							v.forEach(function (v) {
-								if (!r)
-									r = v
+								if (!r) {
+									r = v;
+									r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
+								}
 								else {
-									r.tt += v.tt;
+									r.tt = (r.tt + v.tt)/2;
 									r.c+=v.c;
 									r.e+=v.e;
 									r.r+=v.r;
 									r.pt+= v.pt;
+									r.apdex[0] += (v.tt <= t)?1:0;
+									r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
+									r.apdex[2] += 1;
 								}
 							})
+							r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
 							return r;
 						},
 						{
@@ -260,17 +392,26 @@ module.exports.init = function (ctx, cb) {
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
 						}",
 						function (k, v) {
+							var t = 4000; //apdex T
+							var f = 4*t;
 							var r=null;
 							v.forEach(function (v) {
-								if (!r)
-									r = v
+								if (!r) {
+									r = v;
+									r.apdex = [(v.tt <= t)?1:0,(v.tt > t && v.tt <= f)?1:0,1]
+
+								}
 								else {
 									r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
 									r.c+=v.c;
 									r.e+=v.e;
 									r.r+=v.r;
+									r.apdex[0] += (v.tt <= t)?1:0;
+									r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
+									r.apdex[2] += 1;
 								}
 							})
+							r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
 							return r;
 						},
 						{

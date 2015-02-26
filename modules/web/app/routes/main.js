@@ -195,6 +195,41 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									_idp:project._id,
 									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
+							},
+							actions: function (cb) {
+								api("collect.getActions", token, {_t_age:quant+"m",quant:quant,filter:{
+									_idp:project._id,
+									_dt: {$gt: dtstart,$lte:dtend}}}, cb)
+							},
+							topAjax: function (cb) {
+								api("collect.getTopAjax", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
+							},
+							topPages: function (cb) {
+								api("collect.getTopPages", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
+							},
+							topTransactions: function(cb) {
+								api("collect.getTopTransactions", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
 							}
 						}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project, filter: str}))
@@ -202,7 +237,122 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}))
 				}
 			}, safe.sure(cb, function (r) {
-				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name})})
+				var views = {}; // total | server | browser | transaction | page | ajax
+				var valtt; var vale; var valr; var period;
+				if (r.data.views.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.views.length;
+					_.forEach(r.data.views, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt/1000):0;
+						vale+=v.value?v.value.e:0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					vale=(vale/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
+
+				}
+				if (r.data.actions.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.actions.length;
+					_.forEach(r.data.actions, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt):0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					_.extend(views.total,{rsm: valr, ttserver: valtt});
+
+				}
+				if (r.data.ajax.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.ajax.length;
+					_.forEach(r.data.ajax, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt/1000):0;
+						vale+=v.value?v.value.e:0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					vale=(vale/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
+
+				}
+				if (r.data.errors.length != 0) {
+					views.browser = {};
+
+					var data = _.take(r.data.errors, 10)
+					views.browser.err = data;
+				}
+				if (r.data.topAjax.length != 0) {
+					views.topa = {}
+					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.topa.a,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.topa.a, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length-1];
+					})
+				}
+				if (r.data.topPages.length != 0) {
+					views.topp = {}
+					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.topp.p,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.topp.p, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length-1]
+					})
+				}
+				if (r.data.topTransactions.length != 0) {
+					views.transactions = {}
+					views.transactions.top = _.take(_.sortBy(r.data.topTransactions, function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.transactions.top,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.transactions.top, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length - 2]+'/'+split[split.length-1]
+					})
+				}
+
+				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views})})
 			}))
 		},
 		ajax_rpm:function (req, res, cb) {
