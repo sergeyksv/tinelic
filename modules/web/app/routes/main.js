@@ -136,6 +136,41 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									_idp:project._id,
 									_dt: {$gt: dtstart,$lte:dtend}
 								}}, cb);
+							},
+							actions: function (cb) {
+								api("collect.getActions", token, {_t_age:quant+"m",quant:quant,filter:{
+									_idp:project._id,
+									_dt: {$gt: dtstart,$lte:dtend}}}, cb)
+							},
+							ajaxSlowest: function (cb) {
+								api("collect.getAjaxSlowest", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
+							},
+							pagesSlowest: function (cb) {
+								api("collect.getPagesSlowest", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
+							},
+							topTransactions: function(cb) {
+								api("collect.getTopTransactions", token, {
+									_t_age:quant+"m",
+									quant:quant,
+									filter:{
+										_idp:project._id,
+										_dt: {$gt: dtstart,$lte:dtend}
+									}
+								}, cb)
 							}
 						}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project, filter: str}))
@@ -143,7 +178,70 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}))
 				}
 			}, safe.sure(cb, function (r) {
-				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name})})
+				var views = {}; // total | server | browser | transaction | page | ajax
+				var valtt; var vale; var valr; var period;
+				if (r.data.views.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.views.length;
+					_.forEach(r.data.views, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt/1000):0;
+						vale+=v.value?v.value.e:0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					vale=(vale/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
+
+				}
+				if (r.data.actions.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.actions.length;
+					_.forEach(r.data.actions, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt):0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					_.extend(views.total,{rsm: valr, ttserver: valtt});
+
+				}
+				if (r.data.ajax.length != 0) {
+					valtt = vale = valr = 0;
+					period = r.data.ajax.length;
+					_.forEach(r.data.ajax, function (v) {
+						valr+=v.value?v.value.r:0;
+						valtt+=v.value?(v.value.tt/1000):0;
+						vale+=v.value?v.value.e:0;
+					})
+
+					valtt=(valtt/period).toFixed(2);
+					vale=(vale/period).toFixed(2);
+					valr=(valr/period).toFixed(2);
+					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
+
+				}
+				if (r.data.errors.length != 0) {
+					views.browser = {};
+
+					var data = _.take(r.data.errors, 10)
+					views.browser.err = data;
+				}
+				if (r.data.ajaxSlowest.length != 0) {
+					views.slowesta = {}
+					views.slowesta.a = _.take(_.sortBy(r.data.ajaxSlowest,"value").reverse(),10)
+				}
+				if (r.data.pagesSlowest.length != 0) {
+					views.slowestp = {}
+					views.slowestp.p = _.take(_.sortBy(r.data.pagesSlowest,"value").reverse(),10)
+				}
+				if (r.data.topTransactions.length != 0) {
+					views.transactions = {}
+					views.transactions.top = _.take(_.sortBy(r.data.topTransactions, 'value').reverse(),10)
+				}
+				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views})})
 			}))
 		}
 	}
