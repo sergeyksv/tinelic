@@ -258,17 +258,21 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					actions.mapReduce(
 						"function() {\
-							emit(this.r, 1)\
+							emit(this.r, {tt: this._itt, tta: (this._itt/1000).toFixed(3)})\
 						}",
 						function (k,v) {
 							var r=null;
 							v.forEach(function (v) {
-								if (!r)
+								if (!r) {
 									r = v
+									r.tta = v.tt;
+								}
 								else {
-									r += v
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
 								}
 							})
+							r.tta = (r.tta/1000).toFixed(3)
 							return r;
 						},
 						{
@@ -278,22 +282,26 @@ module.exports.init = function (ctx, cb) {
 						cb
 					)
 				},
-				getAjaxSlowest: function(t, p, cb) {
+				getTopAjax: function(t, p, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					ajax.mapReduce(
 						"function() {\
-							emit(this.r, this._i_tt)\
+							emit(this.r, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 						}",
 						function (k,v) {
 							var r=null;
 							v.forEach(function (v) {
-								if (!r)
-									r = v
+								if (!r) {
+									r = v;
+									r.tta = v.tt;
+								}
 								else {
-									r = parseInt((r+v)/2)
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
 								}
 							})
+							r.tta = (r.tta/1000).toFixed(2)
 							return r;
 						},
 						{
@@ -303,22 +311,26 @@ module.exports.init = function (ctx, cb) {
 						cb
 					)
 				},
-				getPagesSlowest: function(t, p, cb) {
+				getTopPages: function(t, p, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					pages.mapReduce(
 						"function() {\
-							emit(this.p, this._i_tt)\
+							emit(this.p, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 						}",
 						function (k,v) {
 							var r=null;
 							v.forEach(function (v) {
-								if (!r)
-									r = v
+								if (!r) {
+									r = v;
+									r.tta = v.tt;
+								}
 								else {
-									r = parseInt((r+v)/2)
+									r.tt += v.tt;
+									r.tta = (r.tta+v.tt)/2;
 								}
 							})
+							r.tta = (r.tta/1000).toFixed(2)
 							return r;
 						},
 						{

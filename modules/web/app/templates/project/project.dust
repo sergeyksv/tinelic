@@ -9,7 +9,7 @@
 					<div class="panel panel-default">
 						<div class="panel-heading">Total</div>
 						<div class="panel-body">
-							<ul class="list-unstyled">
+							<ul class="list-unstyled ">
 								<li>{#ram} RAM: {.} apm{/ram}</li>
 								<li>{#rpm} RPM: {.} ppm{/rpm}</li>
 								<li>{#rsm} RSM: {.} spm{/rsm}</li>
@@ -28,7 +28,7 @@
 					<div class="panel panel-default">
 						<div class="panel-heading">Browser errors</div>
 						<div class="panel-body">
-							<ul class="list-unstyled">
+							<ul class="list-unstyled h6">
 							{#err}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
 									<a href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.epm}</span> - {error.message}</a><br>
@@ -40,41 +40,76 @@
 				</div>
 			{/browser}
 			{#transactions}
-				<div class="col-md-3">
+				<div class="col-md-2">
 					<div class="panel panel-default">
 						<div class="panel-heading">Top transactions</div>
 						<div class="panel-body">
-							<ul class="list-unstyled" style="overflow: hidden;text-overflow: ellipsis;">
-							{#top}<li style="overflow: hidden;text-overflow: ellipsis;"><span class="badge text-danger">{value}</span> {_id}</li>{/top}
+							<ul class="list-unstyled h6" style="overflow: hidden;">
+							{#top}
+								<div class="progress" style="margin: 2px 0 0 0;">
+									<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
+										<li class="navbar" style="padding-top: 3px;">
+											<span class="text-info">
+												<strong>
+													{value.tta}
+												</strong>
+											</span> {_id}
+										</li>
+									</div>
+								</div>
+							{/top}
 						</div>
 					</div>
 				</div>
 			{/transactions}
-			{#slowesta}
-				<div class="col-md-4">
+			{#topa}
+				<div class="col-md-2">
 					<div class="panel panel-default">
-						<div class="panel-heading">Slowest ajax (ms)</div>
+						<div class="panel-heading">Top ajax</div>
 						<div class="panel-body">
-							<ul class="list-unstyled" style="overflow: hidden;text-overflow: ellipsis;">
-							{#a}<li style="overflow: hidden;text-overflow: ellipsis;"><span class="badge text-danger">{value}</span> {_id}</li>{/a}
+							<ul class="list-unstyled h6" style="overflow: hidden;">
+							{#a}
+								<div class="progress" style="margin: 2px 0 0 0;">
+									<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
+										<li class="navbar" style="padding-top: 3px;">
+											<span class="text-info">
+												<strong>
+													{value.tta}
+												</strong>
+											</span> {_id}
+										</li>
+									</div>
+								</div>
+							{/a}
 						</div>
 					</div>
 				</div>
-			{/slowesta}
+			{/topa}
 
-			{#slowestp}
-				<div class="col-md-3">
+			{#topp}
+				<div class="col-md-2">
 					<div class="panel panel-default">
-						<div class="panel-heading">Slowest pages (ms)</div>
+						<div class="panel-heading">Top pages</div>
 						<div class="panel-body" >
-							<ul class="list-unstyled">
+							<ul class="list-unstyled h6" style="overflow: hidden;">
 							{#p}
-								<li style="overflow: hidden; text-overflow: ellipsis;"><span class="badge text-danger">{value}</span> {_id}</li>
+								<div class="progress" style="margin: 2px 0 0 0;">
+									<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
+										<li class="navbar" style="padding-top: 3px;">
+											<span class="text-info">
+    											<strong>
+    												{value.tta}
+    											</strong>
+    										</span>
+											{_id}
+										</li>
+									</div>
+								</div>
 							{/p}
 						</div>
 					</div>
 				</div>
-			{/slowestp}
+			{/topp}
         </div>
     {/stats}
 

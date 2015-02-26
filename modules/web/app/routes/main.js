@@ -142,8 +142,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									_idp:project._id,
 									_dt: {$gt: dtstart,$lte:dtend}}}, cb)
 							},
-							ajaxSlowest: function (cb) {
-								api("collect.getAjaxSlowest", token, {
+							topAjax: function (cb) {
+								api("collect.getTopAjax", token, {
 									_t_age:quant+"m",
 									quant:quant,
 									filter:{
@@ -152,8 +152,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 									}
 								}, cb)
 							},
-							pagesSlowest: function (cb) {
-								api("collect.getPagesSlowest", token, {
+							topPages: function (cb) {
+								api("collect.getTopPages", token, {
 									_t_age:quant+"m",
 									quant:quant,
 									filter:{
@@ -229,18 +229,70 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					var data = _.take(r.data.errors, 10)
 					views.browser.err = data;
 				}
-				if (r.data.ajaxSlowest.length != 0) {
-					views.slowesta = {}
-					views.slowesta.a = _.take(_.sortBy(r.data.ajaxSlowest,"value").reverse(),10)
+				if (r.data.topAjax.length != 0) {
+					views.topa = {}
+					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.topa.a,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.topa.a, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length-1];
+					})
 				}
-				if (r.data.pagesSlowest.length != 0) {
-					views.slowestp = {}
-					views.slowestp.p = _.take(_.sortBy(r.data.pagesSlowest,"value").reverse(),10)
+				if (r.data.topPages.length != 0) {
+					views.topp = {}
+					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.topp.p,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.topp.p, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length-1]
+					})
 				}
 				if (r.data.topTransactions.length != 0) {
 					views.transactions = {}
-					views.transactions.top = _.take(_.sortBy(r.data.topTransactions, 'value').reverse(),10)
+					views.transactions.top = _.take(_.sortBy(r.data.topTransactions, function(r) {
+						return r.value.tt
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.transactions.top,function(r) {
+						if (!progress) {
+							progress = r.value.tt
+						}
+						else {
+							progress += r.value.tt
+						}
+					})
+					_.forEach(views.transactions.top, function(r) {
+						r.value.progress = (r.value.tt/progress)*100
+						var split = r._id.split('/')
+						if (split.length > 3)
+							r._id = '../'+split[split.length - 2]+'/'+split[split.length-1]
+					})
 				}
+
 				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views})})
 			}))
 		}
