@@ -12,10 +12,13 @@
                  <th data-field="id" class="col-md-3">
                     Last name
                  </th>
-                 <th>
+                 <th data-field="id" class="col-md-3">
                     Login
                  </th>
-                 <th data-field="id" class="col-md-1">
+                 <th data-field="id" class="col-md-3">
+                    Role
+                 </th>
+                 <th data-field="id" >
 
                  </th>
 			</tr>
@@ -30,12 +33,15 @@
                 <td>
                     {login}
                 </td>
+                <td>
+                    {role}
+                </td>
           		<td>
           		    <div class="dropdown">
           			    <button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs">Actions</button>
 
                       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
-                        <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{firstname},{lastname},{login},{_id}">Edit</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{firstname},{lastname},{login},{_id},{role}">Edit</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 
                       </ul>
@@ -69,6 +75,14 @@
               <div class="form-group">
                    <label for="name">Login</label>
                    <input type="name" class="form-control" id="login" placeholder="Enter login">
+              </div>
+              <div class="dropdown" style="margin-bottom: 10px;">
+                  <label for="name">Role</label>
+                  <button type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
+                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                     <li role="presentation" data-role="admin" class="li-role"><a role="menuitem" tabindex="-1" href="#">admin</a></li>
+                     <li role="presentation" data-role="user" class="li-role"><a role="menuitem" tabindex="-1" href="#">user</a></li>
+                  </ul>
               </div>
               <div class="form-group">
                 <label for="password">Password</label>
