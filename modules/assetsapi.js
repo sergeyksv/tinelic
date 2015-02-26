@@ -15,7 +15,19 @@ module.exports.init = function (ctx, cb) {
 			cb(null, {api:{
 				getProjects:function (t, p, cb) {
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
-						projects.find().toArray(cb)
+						if (u.role == 'admin')
+							projects.find().toArray(cb)
+						else {
+							var proj = [];
+							ctx.api.teams.getTeams(t, {}, safe.sure(cb, function(teams) {
+								_.forEach(teams, function(team) {
+									_.forEach(team.projects, function (project) {
+										proj.push(new mongo.ObjectID(project._idp))
+									})
+								})
+								projects.find({"_id": {$in: proj}}).toArray(cb)
+							}))
+						}
 					}))
 				},
 				getProject:function (t, p, cb) {

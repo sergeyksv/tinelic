@@ -1,0 +1,203 @@
+{@view name="views/header_view"/}
+
+<div class="container">
+	<div class="starter-template">
+		<button type="button" id="addnt" class="btn btn-default btn-xs">Add new team</button>
+		<p class="bg-primary"></p>
+		<table style="margin-top: 20px;"class="table table-condensed">
+			<tr>
+				 <th data-field="id" class="active col-md-1">
+                    Team name
+                 </th>
+                 <th class="col-md-1 active">
+                    Projects
+                 </th>
+                 <th class="col-md-3 active">
+                    Users and Role
+                 </th>
+                 <th data-field="id" class="col-md-1 active">
+                 </th>
+			</tr>
+          {#teams}
+          	<tr>
+          		<td class="success">
+          			{name}
+          		</td>
+                <td class="success">
+                </td>
+          		<td class="success">
+          		</td>
+          		<td class="success">
+          		    <div class="dropdown">
+          			    <button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs navbar-right" style="margin-right: 20px;">Actions</button>
+
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-project" data-addp="{_id}", href="#">Add project</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-user" data-addu="{_id}" href="#">Add user</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
+
+                      </ul>
+                    <div>
+          		</td>
+          	</tr>
+          	<tr>
+                <td class="warning">
+                </td>
+                <td class="warning">
+                    <table>
+                        {#projects}
+                            <tr>
+                                <td class="col-md-1">
+                                    {_t_project.name}
+                                </td>
+                                <td class="col-md-1">
+                                    <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idp,{_idp},{_id}" style="margin: 2px;">del</button>
+                                </td>
+                            </tr>
+                        {/projects}
+                    </table>
+                </td>
+                <td class="info">
+                    <table>
+                        {#users}
+                            <tr>
+                                <td class="col-md-1">
+                                    {firstname} {lastname}
+                                </td>
+                                <th class="col-md-1">
+                                    {role}
+                                </th>
+                                <td class="col-md-1">
+                                    <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idu,{_idu},{_id}" style="margin: 2px 5px;">del</button>
+                                </td>
+                            </tr>
+                        {/users}
+                    </table>
+                </td>
+                <td class="info">
+                </td>
+          	</tr>
+          {/teams}
+        </table>
+
+	</div>
+</div>
+
+<!-- Modal settings -->
+<div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Settings</h4>
+        <p class="bg-danger" id="warn"></p>
+      </div>
+      	<form id="form" role="form" style="margin: 5% 15%;">
+			<div class="form-group">
+                <label for="name">Team name</label>
+                <input type="name" class="form-control" id="name" placeholder="Enter team name">
+              </div>
+            <div class="form-group">
+              <label for="name"> Id </label>
+              <input type="name" class="form-control" id="_id" placeholder="Id" disabled>
+            </div>
+        </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="savebtn" type="button" class="btn btn-primary ">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal add-project -->
+<div class="modal fade" id="modal-add-project" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Add project</h4>
+
+        <p class="bg-danger" id="addp-warn"></p>
+        <input type="name" class="form-control _idteam" placeholder="Id" disabled>
+      </div>
+      	<table id="table-add-project" role="form" style="margin: 5% 15%;">
+                {#proj}
+                    <tr>
+                        <td>
+                            <input class="cb-ap" style="margin-right: 5px;" value="{_id}, {name}" type="checkbox"></input>
+                        </td>
+                        <td>
+                             {name}
+                        </td>
+                    </tr>
+                {/proj}
+        </table>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="btn-add-project" type="button" class="btn btn-primary ">Save</button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal add-users -->
+<div class="modal fade" id="modal-add-users" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog container">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Add users</h4>
+
+        <p class="bg-danger" id="addu-warn"></p>
+        <input type="name" class="form-control _idteamu" placeholder="Id" disabled>
+      </div>
+      	<table class="table" id="table-add-users" role="form">
+      	        <tr class="active">
+      	            <th>
+      	            </th>
+      	            <th>
+      	                #
+      	            </th>
+
+      	            <th>
+      	                User
+      	            </th>
+      	            <th>
+      	                Role
+      	            </th>
+      	        </tr>
+                {#usr}
+                    <tr style="margin: 5px;">
+                        <td>
+                        </td>
+                        <td>
+                            <input class="cb-au" style="margin-right: 5px;" value="{_id}, {firstname}, {lastname}" type="checkbox"></input>
+                        </td>
+                        <td>
+                             {firstname} {lastname}
+                        </td>
+                        <td>
+                            <div class="dropdown">
+                                <button type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
+                                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                                        <li role="presentation" data-role="Lead" class="li-role"><a role="menuitem" tabindex="-1" href="#">Lead</a></li>
+                                        <li role="presentation" data-role="Member" class="li-role"><a role="menuitem" tabindex="-1" href="#">Member</a></li>
+                                    </ul>
+                            </div>
+                        </td>
+                    </tr>
+                {/usr}
+        </table>
+      <div class="modal-footer">
+
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button id="btn-add-users" type="button" class="btn btn-primary ">Save</button>
+
+      </div>
+    </div>
+  </div>
+</div>
