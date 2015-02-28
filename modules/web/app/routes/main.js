@@ -190,7 +190,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					rpm.value.bar = Math.round(rpm.value.r/percent);
 					rpm.value.r=rpm.value.r.toFixed(2);
 				})
-				 res.renderX({view:r.view,route:req.route.path,data:{rpm:r.rpm, title:"Ajax_rpm"}})
+				 res.renderX({view:r.view,route:req.route.path,data:{rpm:r.rpm, quant:quant, project:project, dtstart:dtstart, dtend:dtend, title:"Ajax_rpm"}})
 				})
 			)
 		    }))

@@ -427,28 +427,55 @@ module.exports.init = function (ctx, cb) {
 					if(p.filter._dtstart && p.filter._dtend){
 						query._dt = {$gte:moment.utc(p.filter._dtstart).toDate(),$lte:moment.utc(p.filter._dtend).toDate()};
 					}
-					ajax.mapReduce(
-						"function() {\
-							emit(this.r, { r:1.0/"+q+", dt:this._dt})\
-						}",
-						function (k,v) {
-							var r=null;
-							v.forEach(function (v) {
-								if (!r)
-									r = v
-								else {
-									r.r+=v.r;
-									r.dt=v.dt;
-								}
-							})
-							return r;
-						},
-						{
-							query: query,
-							out: {inline:1}
-						},
-						cb
-					)
+					if (!p.Graph_bool) {
+						ajax.mapReduce(
+							"function() {\
+								emit(this.r, { r:1.0/"+q+", dt:this._dt})\
+							}",
+							function (k,v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r)
+										r = v
+									else {
+										r.r+=v.r;
+										r.dt=v.dt;
+									}
+								})
+								return r;
+							},
+							{
+								query: query,
+								out: {inline:1}
+							},
+							cb
+						)
+					}
+					else {
+						query.r=p._idurl;
+						ajax.mapReduce(
+							"function() {\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+"})\
+							}",
+							function (k,v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r)
+										r = v
+									else {
+										r.c+=v.c;
+										r.r+=v.r;
+									}
+								})
+								return r;
+							},
+							{
+								query: query,
+								out: {inline:1}
+							},
+							cb
+						)
+					}
 				}
 			}});
 		}))

@@ -2,18 +2,23 @@
 
 <div class="container">
 <div class="starter-template">
-{title}<br><br>
+<h4>{title}</h4><br>
 <div style="width:33%; position:absolute; left:30px">
 {#rpm}
   {#value}
+  <a href="#" data-idx='{$idx}' class='do-get-ajax'>
 	<div class="progress" style="border-radius:20px">
 		<span style="text-align:right;position:absolute; right:10px"> {r} rpm</span>
 		<div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: {bar}%;color:black">
 			<div style="text-align:left; padding-left:20px"">{_id} </div>
 		</div>
 	</div>
+   </a>
   {/value}
 {/rpm}
+</div>
+<div style="width:58%; position:absolute; right:30px; top:90px">
+	{@view name="views/ajax_rpmGraph_view"/}
 </div>
 </div>
 </div>
