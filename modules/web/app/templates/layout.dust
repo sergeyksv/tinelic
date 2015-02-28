@@ -21,10 +21,10 @@
 		route:"{_t_route}",
 		_dtp:_t_page,
 		ajaxCallback: function(s, XHR){
-			var  re=/\/w[0-9]+/
-			s.r=s.r[0].split(re,1); 
-			var re1=/(\/restapi\/[A-Za-z]+[0-9]+\w+\/)|(\/restapi\/[0-9]+[A-Za-z]+\w+\/)/
-			s.r=s.r[0].replace(re1,"/restapi/");
+			var re=/(^\/restapi\/[A-Za-z]+[0-9]+\w+\/)|(^\/restapi\/[0-9]+[A-Za-z]+\w+\/)/
+			s.r=s.r.replace(/\/wire\/w[0-9]+/,"/wire")
+				.replace(/^\/restapi\/([^\/]+)\//,"/restapi/token/")
+				.replace(re,"/restapi/");
 		}
 	})
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {

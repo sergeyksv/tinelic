@@ -146,10 +146,10 @@
 						s._i_tt = time;
 						s._i_pt = s._i_tt - s._i_nt;
 						s.url = url;
-						s.r=s.url.split('?',1);
+						s.r=s.url.replace(/\?.*/,"");
 						if (typeof window.Tinelic.ajaxCallback != 'undefined'){
 							window.Tinelic.ajaxCallback(s, XHR)
-						}	
+						}
 						s._i_code = self.status
 						s._dtc = new Date();
 						s._dtp = window.Tinelic._dtp

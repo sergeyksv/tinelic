@@ -4,6 +4,14 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
         id:"templates/users",
         events: {
             //'click .doUpdate':"doUpdate",
+            'click .btn-info': function(ebtn) {
+                var self = this;
+                var role = self.$('.li-role');
+                role.on('click', function(e) {
+                    ebtn.currentTarget.innerHTML = $(e.currentTarget).data('role');
+                    role.off()
+                })
+            },
             'click #addnu':function(e) {
                 var self = this;
                 var modal = self.$('#settings');
@@ -24,35 +32,54 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                 var fname = self.$('#firstname')[0].value;
                 var lname = self.$('#lastname')[0].value;
                 var login = self.$('#login')[0].value;
+                var role = self.$('.btn-info')[0].innerHTML;
                 var pass = self.$('#userpass')[0].value;
                 var rpass = self.$('#userrpass')[0].value;
                 var id = self.$('#_id')[0].value;
                 var warn = self.$('#warn');
 
-                if (pass.length < 3 || lname.length < 3 || fname.length < 3 || login.length < 3 ) {
-                    warn.html('Name or password is to short')
+                if (role == "Role is not checked") {
+                    warn.html('Role is not checked')
                 }
                 else {
-                    if (pass != rpass) {
-                        warn.html('Password does not match')
+                    if (pass.length < 3 || lname.length < 3 || fname.length < 3 || login.length < 3) {
+                        warn.html('Name or password or role is to short')
                     }
                     else {
-                        if(id.length != 0) {
-                            api("users.updateUser", "public", {firstname: fname, lastname: lname, login: login, pass: pass,  id: id},
-                            function(err) {
-                                if (err)
-                                    throw err
-                            });
+                        if (pass != rpass) {
+                            warn.html('Password does not match')
                         }
                         else {
-                            api("users.saveUser", "public", {firstname: fname, lastname: lname, login: login, pass: pass},  function(err) {
-                                if (err)
-                                    throw err
-                            });
+                            if (id.length != 0) {
+                                api("users.updateUser", "public", {
+                                        firstname: fname,
+                                        lastname: lname,
+                                        login: login,
+                                        role: role,
+                                        pass: pass,
+                                        id: id
+                                    },
+                                    function (err) {
+                                        if (err)
+                                            throw err
+                                    });
+                            }
+                            else {
+                                api("users.saveUser", "public", {
+                                    firstname: fname,
+                                    lastname: lname,
+                                    login: login,
+                                    role: role,
+                                    pass: pass
+                                }, function (err) {
+                                    if (err)
+                                        throw err
+                                });
+                            }
+                            require(["views/users_view"], function (Modal) {
+                                self.app.router.navigateTo("/web/users");
+                            })
                         }
-                        require(["views/users_view"],function (Modal) {
-                            self.app.router.navigateTo("/web/users");
-                        })
                     }
                 }
                 return false;
