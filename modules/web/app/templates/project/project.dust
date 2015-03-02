@@ -75,7 +75,7 @@
 			{#topp}
 				<div class="col-md-2">
 					<div class="panel panel-default">
-						<div class="panel-heading">Top pages</div>
+						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a></div>
 						<div class="panel-body" >
 							{#p}
 								<div class="progress" style="margin: 2px 0 0 0;">

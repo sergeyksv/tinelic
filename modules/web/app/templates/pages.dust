@@ -31,7 +31,7 @@
 							{@eq value="wa"}{apdex} <span class="text-info">apdex</span>{/eq}
 						{/select}
 					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
+					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
 						<div style="text-align:left; padding-left:20px""><span style="cursor: pointer;" class="more">{_id}</span> </div>
 					</div>
 				</div>

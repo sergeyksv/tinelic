@@ -323,23 +323,31 @@ module.exports.init = function (ctx, cb) {
 				getTopPages: function(t, p, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
+					var t = 4000; //apdex T
+					var f = 4*t;
 					pages.mapReduce(
 						"function() {\
-							emit(this.p, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+							emit(this.p, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
 						function (k,v) {
+							var t = 4000; //apdex T
+							var f = 4*t;
 							var r=null;
 							v.forEach(function (v) {
 								if (!r) {
-									r = v;
-									r.tta = v.tt;
+									r = v
+									r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
 								}
 								else {
 									r.tt += v.tt;
-									r.tta = (r.tta+v.tt)/2;
+									r.tta = Number(((r.tta+v.tta)/2).toFixed(3));
+									r.r += v.r
+									r.apdex[0] += (v.tta <= t)?1:0;
+									r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
+									r.apdex[2] += 1;
 								}
 							})
-							r.tta = (r.tta/1000).toFixed(2)
+							r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
 							return r;
 						},
 						{
@@ -638,6 +646,40 @@ module.exports.init = function (ctx, cb) {
 						},
 						cb
 					)
+				},
+				pagesBreakDown: function(t,p,cb){
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
+						delete query.p
+						var idpv = []
+						_.forEach(data, function(r){
+							idpv.push(r._id)
+						})
+						query._idpv = {$in: idpv}
+						ajax.mapReduce(
+							"function() {\
+                                emit(this.r, {r: 1.0/"+q+", tt: this._i_tt} )\
+                            }",
+							function (k,v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r)
+										r = v
+									else {
+										r.r += v.r
+										r.tt = (r.tt + v.tt)/2
+									}
+								})
+								return r;
+							},
+							{
+								query: query,
+								out: {inline:1}
+							},
+							cb
+						)
+					}))
 				}
 			}});
 		}))
