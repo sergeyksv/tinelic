@@ -22,7 +22,7 @@ define(['views/layout','module','safe',"dust"
 			return new Layout({app:this});
 		},
 		errHandler: function (err) {
-			// if (err) console.log(err.stack);
+			if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
 			var self = this;
@@ -46,13 +46,13 @@ define(['views/layout','module','safe',"dust"
 								res.status(401);
 								res.renderX({view: view, route: req.route.path, data: {title: "Sign UP"}})
 							}), cb);
-						}
-						if (err.subject == "Access forbidden") {
+						} else if (err.subject == "Access forbidden") {
 							res.redirect('/web/')
-						}
+						} else
+							cb(err)
 					}
 					else
-						cb()
+						cb(err)
 				})
 				router.use(function (err, req, res, cb) {
 					self.errHandler(err);

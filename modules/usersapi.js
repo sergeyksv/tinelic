@@ -3,9 +3,11 @@ var safe = require("safe")
 var mongo = require("mongodb")
 var CustomError = require('tinyback').CustomError
 
-module.exports.deps = ['mongo'];
+module.exports.deps = ['mongo','obac'];
 
 module.exports.init = function (ctx, cb) {
+	ctx.api.obac.register(['user_new','user_edit','*'],'users','getPermission');
+
     ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
         safe.series({
             "users":function (cb) {
@@ -13,6 +15,22 @@ module.exports.init = function (ctx, cb) {
             }
         }, safe.sure(cb,function (usr) {
             cb(null, {api:{
+				getPermission:function (t, p, cb) {
+					this.getCurrentUser(t, safe.sure(cb, function (u) {
+						// admin can do everything
+						if (u.role == "admin")
+							return cb(null, true)
+						// owner can create new user
+						if (u.role == "owner" && p.action == "user_new")
+							return cb(null, true)
+						// user can edit and view himself
+						if (u._id == p._id && p.action == "user_view" || p.action == "user_edit")
+							return cb(null, true)
+						// for rest we don't care
+						else
+							cb(null, null)
+					}))
+				},
                 getUser: function (t,u,cb) {
                     // t = "public",u = {filter:{name:"DefaultUser"}}
                     usr.users.findOne(u.filter, cb);

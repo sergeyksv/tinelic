@@ -1,4 +1,4 @@
-require('newrelic')
+// require('newrelic')
 var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');
@@ -10,6 +10,7 @@ var cfg = {
 	modules:[
 		{name:"prefixify",object:tinyback.prefixify()},
 		{name:"mongo",object:tinyback.mongodb()},
+		{name:"obac",object:tinyback.obac()},
 		{name:"users",require:"./modules/usersapi.js"},
 		{name:"teams",require:"./modules/teamsapi.js"},
 		{name:"restapi",object:tinyback.restapi()},

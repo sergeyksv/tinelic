@@ -105,6 +105,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		},
 		teams:function (req, res, cb) {
 			var token = req.cookies.token || "public"
+			console.log("here");
 			safe.parallel({
 				view: function (cb) {
 					requirejs(["views/teams_view"], function (view) {
@@ -120,7 +121,16 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				users: function(cb) {
 					api("users.getUsers", token, {}, cb)
 				}
-			},safe.sure(cb, function(r) {
+			}, safe.sure(cb,function(r) {
+				var rules = [{action:"team_new"}]
+				_.each(r.teams, function (team) {
+					rules.push({action:"team_edit",_id:team._id})
+					_.each(team.projects, function (project) {
+						rules.push({action:"project_edit",_id:project._idp})
+					})
+				})
+				api("obac.getPermissions", token, {rules:rules}, safe.sure(cb, function (answers) {
+					console.log(answers);
 					_.forEach(r.teams, function(teams) {
 						if (teams.projects) {
 							var projects = {};
@@ -142,12 +152,14 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							})
 						}
 					})
-				res.renderX({view: r.view, route:req.route.path, data: {
-					title: "Manage teams",
-					teams: r.teams,
-					proj: r.proj,
-					usr: r.users
-				}})
+					res.renderX({view: r.view, route:req.route.path, data: {
+						title: "Manage teams",
+						teams: r.teams,
+						proj: r.proj,
+						usr: r.users,
+						obac: answers
+					}})
+				}))
 			}))
 		},
 		project:function (req, res, cb) {
