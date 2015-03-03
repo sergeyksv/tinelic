@@ -2,9 +2,12 @@ var _ = require("lodash")
 var safe = require("safe")
 var mongo = require("mongodb")
 
-module.exports.deps = ['mongo'];
+module.exports.deps = ['mongo','obac','prefixify'];
 
 module.exports.init = function (ctx, cb) {
+	var prefixify = ctx.api.prefixify.datafix;
+	var queryfix = ctx.api.prefixify.queryfix;
+
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.series({
 			"projects":function (cb) {
@@ -14,21 +17,9 @@ module.exports.init = function (ctx, cb) {
 			var projects = res.projects;
 			cb(null, {api:{
 				getProjects:function (t, p, cb) {
-					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
-						if (u.role == 'admin')
-							projects.find().toArray(cb)
-						else {
-							var proj = [];
-							ctx.api.teams.getTeams(t, {}, safe.sure(cb, function(teams) {
-								_.forEach(teams, function(team) {
-									_.forEach(team.projects, function (project) {
-										proj.push(new mongo.ObjectID(project._idp))
-									})
-								})
-								projects.find({"_id": {$in: proj}}).toArray(cb)
-							}))
-						}
-					}))
+                    ctx.api.obac.getGrantedIds(t,{action:"project_view"}, safe.sure(cb,function(ids) {
+                        projects.find(queryfix({_id:{$in:ids}})).toArray(cb)
+                    }))
 				},
 				getProject:function (t, p, cb) {
 					p.filter._id && (p.filter._id =  mongo.ObjectID(p._id));

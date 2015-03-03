@@ -179,7 +179,10 @@ module.exports.prefixify = function () {
 					try { nobj[k] = translate[prefix](v); } catch (e) {};
 				}
 			} else {
-				nobj[k]=v;
+				if (_.isPlainObject(v))
+					nobj[k]=queryfix(v,opts)
+				else
+					nobj[k]=v;
 			}
 		})
 		return nobj;
@@ -275,7 +278,6 @@ module.exports.obac = function () {
 			cb(null, {
 				api:{
 					getPermissions:function (t, p, cb) {
-						console.log(arguments);
 						var result = {};
 						safe.each(p.rules, function (rule, cb) {
 							var acl = _.filter(_acl, function (a) {
@@ -283,9 +285,11 @@ module.exports.obac = function () {
 							})
 							var checks = [];
 							_.each(acl, function (a) {
-								checks.push(function (cb) {
-									ctx.api[a.m][a.f](t,rule,cb);
-								})
+								if (a.f.permission) {
+									checks.push(function (cb) {
+										ctx.api[a.m][a.f.permission](t,rule,cb);
+									})
+								}
 							})
 							safe.parallel(checks, safe.sure(cb, function (answers) {
 								var answer = null;
@@ -301,9 +305,25 @@ module.exports.obac = function () {
 							cb(null,result)
 						}))
 					},
-					register:function(actions, module, func) {
+					getGrantedIds:function (t, p, cb) {
+						var acl = _.filter(_acl, function (a) {
+							return a.r.test(p.action);
+						})
+						var checks = [];
+						_.each(acl, function (a) {
+							if (a.f.grantids) {
+								checks.push(function (cb) {
+									ctx.api[a.m][a.f.grantids](t,p,cb);
+								})
+							}
+						})
+						safe.parallel(checks, safe.sure(cb, function (answers) {
+							cb(null, _.intersection.apply(_,answers));
+						}))
+					},
+					register:function(actions, module, face) {
 						_.each(actions, function (a) {
-							_acl.push({m:module, f:func, r:new RegExp(a.replace("*",".*"))})
+							_acl.push({m:module, f:face, r:new RegExp(a.replace("*",".*"))})
 						})
 					}
 				}

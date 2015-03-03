@@ -6,7 +6,7 @@ var CustomError = require('tinyback').CustomError
 module.exports.deps = ['mongo','obac'];
 
 module.exports.init = function (ctx, cb) {
-	ctx.api.obac.register(['user_new','user_edit','*'],'users','getPermission');
+	ctx.api.obac.register(['user_new','user_edit','*'],'users',{permission:'getPermission'});
 
     ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
         safe.series({
