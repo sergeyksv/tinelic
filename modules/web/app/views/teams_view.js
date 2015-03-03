@@ -46,7 +46,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 var self = this;
                 $this = $(e.currentTarget);
                 var data = $this.data('del').split(',');
-                api("teams.pullData", "public", {idt: data[0], idtt: data[1], id: data[2]}, function(err) {
+                api("assets.pullData", "public", {idt: data[0], idtt: data[1], id: data[2]}, function(err) {
                     if (err) {
                         alert(err)
                     }
@@ -75,7 +75,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 })
                 data.id = id;
                 if (n.length) {
-                  api("teams.addUsers", "public", data, function (err) {
+                  api("assets.addUsers", "public", data, function (err) {
                         if (err) {
                             dang.html(err);
                         }
@@ -103,7 +103,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 })
                 data.id = id;
                 if (n.length) {
-                    api("teams.addProjects", "public", data, function (err, data) {
+                    api("assets.addProjects", "public", data, function (err, data) {
                         if (err) {
                             dang.html(err);
                         }
@@ -129,14 +129,14 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 }
                 else {
                         if(id.length != 0) {
-                            api("teams.updateTeam", "public", {name: name,  id: id},
+                            api("assets.updateTeam", "public", {name: name,  id: id},
                                 function(err) {
                                     if (err)
                                         throw err
                                 });
                         }
                         else {
-                            api("teams.saveTeam", "public", {name: name},  function(err) {
+                            api("assets.saveTeam", "public", {name: name},  function(err) {
                                 if (err)
                                     throw err
                             });
@@ -164,7 +164,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 var self = this;
 
                 $this = $(e.currentTarget);
-                api("teams.removeTeam", "public", {id: $this.data('delete')},  function(err) {
+                api("assets.removeTeam", "public", {id: $this.data('delete')},  function(err) {
                     if (err)
                         throw err
                 });

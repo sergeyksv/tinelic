@@ -125,9 +125,9 @@ module.exports.init = function (ctx, cb) {
 				}))
 			},
 			function (cb) {
-				ctx.api.teams.getTeam("public",{filter:{name:"DefaultTeam"}}, safe.sure(cb, function (self) {
+				ctx.api.assets.getTeam("public",{filter:{name:"DefaultTeam"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
-					ctx.api.teams.saveTeam("public", {name:"DefaultTeam"},cb)
+					ctx.api.assets.saveTeam("public", {name:"DefaultTeam"},cb)
 				}))
 			}
 		], safe.sure(cb, function () {

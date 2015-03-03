@@ -12,7 +12,6 @@ var cfg = {
 		{name:"mongo",object:tinyback.mongodb()},
 		{name:"obac",object:tinyback.obac()},
 		{name:"users",require:"./modules/usersapi.js"},
-		{name:"teams",require:"./modules/teamsapi.js"},
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
@@ -30,7 +29,7 @@ if(fs.existsSync(lcfgPath)){
 tinyback.createApp(cfg, function (err, app) {
 
 	if (err) {
-		console.trace(err.originalError || err);
+		console.log((err.originalError || err).stack);
 		process.exit(0);
 	}
 	try {

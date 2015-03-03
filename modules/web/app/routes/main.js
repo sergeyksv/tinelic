@@ -43,7 +43,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}))
 				},
 				teams: function (cb) {
-					api("teams.getTeams", token, {}, cb)
+					api("assets.getTeams", token, {}, cb)
 				}
 			}, safe.sure(cb, function (r) {
 				_.forEach(r.teams, function(team) {
@@ -114,7 +114,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}, cb)
 				},
 				teams: function (cb) {
-					api("teams.getTeams", token, {}, cb)
+					api("assets.getTeams", token, {}, cb)
 				},
 				proj: function(cb) {
 					api("assets.getProjects", token, {}, cb)
