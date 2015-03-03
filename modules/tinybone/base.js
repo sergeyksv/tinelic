@@ -702,7 +702,8 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             var match = null;
 			var req = {
 				query: getQueryStringAsObject(),
-				cookies: $.cookie()
+				cookies: $.cookie(),
+                headers: {'user-agent': navigator.userAgent}
 			}
 			var res = {};
 			var stack = [];

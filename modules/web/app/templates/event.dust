@@ -1,13 +1,20 @@
-{@view name="views/header_view"/}
+{@select key="{st}"}
+	{@eq value="none"}{/eq}
+	{@default}{@view name="views/header_view"/}{/default}
+{/select}
 
 <div class="container">
 <div class="row">
 <div class="col-xs-12 col-sm-9">
 <br>
 <div class='text-center'>
-{#prevId}<a href="{_t_prefix}/event/{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>{/prevId}
+{#prevId}
+	<a href="{_t_prefix}/event/{.}{@select key="{st}"}{@eq value="none"}/none{/eq}{@default}{/default}{/select}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
+{/prevId}
 <b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>
-{#nextId}<a href="{_t_prefix}/event/{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>{/nextId}
+{#nextId}
+	<a href="{_t_prefix}/event/{.}{@select key="{st}"}{@eq value="none"}/none{/eq}{@default}{/default}{/select}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
+{/nextId}
 </div>
 <br>
 {#event}

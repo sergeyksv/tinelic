@@ -26,7 +26,7 @@
 			{#browser}
 				<div class="col-md-2">
 						<div class="panel panel-default">
-							<div class="panel-heading">Browser errors</div>
+							<div class="panel-heading"><a href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a></div>
 							<div class="panel-body">
 							<ul class="list-unstyled h6">
 							{#err}
