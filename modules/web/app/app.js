@@ -31,6 +31,7 @@ define(['views/layout','module','safe',"dust"
 			requirejs(routes, function (main) {
 				// routes goes first
 				router.get("/", main.index);
+				router.get("/event/:id/:st", main.event);
 				router.get("/event/:id", main.event);
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
@@ -38,6 +39,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug/ajax_rpm", main.ajax_rpm);
 				router.get("/project/:slug/application/:stats", main.application);
 				router.get("/project/:slug/pages/:stats", main.pages);
+				router.get("/project/:slug/errors/:stats", main.errors);
 				router.get("/teams", main.teams);
 
 				// error handler after that

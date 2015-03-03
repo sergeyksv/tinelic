@@ -65,6 +65,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}))
 		},
 		event:function (req, res, next) {
+			var st = req.params.st
 			var token = req.cookies.token || "public"
 			safe.parallel({
 				view:function (cb) {
@@ -79,7 +80,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("collect.getEventInfo",token, {_t_age:"10m",filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
-				res.renderX({view:r.view,route:req.route.path,data:{event:r.event,info:r.info,title:"Event "+r.event.message}})
+				res.renderX({view:r.view,route:req.route.path,data:{event:r.event,info:r.info,title:"Event "+r.event.message, st: st}})
 			}))
 		},
 		page:function (req, res, cb) {
@@ -325,6 +326,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					})
 					_.forEach(views.topp.p, function(r) {
 						r.value.progress = (r.value.tt/progress)*100
+						r.value.tta = (r.value.tta/1000).toFixed(2)
 						var split = r._id.split('/')
 						if (split.length > 3)
 							r._id = '../'+split[split.length-1]
@@ -577,6 +579,59 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							}
 						})
 						res.renderX({view:r.view,route:req.route.path,data:{data:r.data, title:"Pages", st: st, fr: filter}})
+					})
+				)
+			}))
+		},
+		errors:function (req, res, cb) {
+			var st = req.params.stats
+			var str = req.query._str || req.cookies.str || '1d';
+			var quant = 10;
+			var range = 60 * 60 * 1000;
+
+			// transcode range paramater into seconds
+			var match = str.match(/(\d+)(.)/);
+			var units = {
+				h:60 * 60 * 1000,
+				d:24 * 60 * 60 * 1000,
+				w:7 * 24 * 60 * 60 * 1000
+			}
+			if (match.length==3 && units[match[2]])
+				range = match[1]*units[match[2]];
+
+			var dtstart = new Date(Date.parse(Date()) - range);
+			var dtend = Date();
+			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				safe.parallel({
+						view: function (cb) {
+							requirejs(["views/err_view"], function (view) {
+								safe.back(cb, null, view)
+							},cb)
+						},
+						data: function (cb) {
+							api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
+								_idp:project._id,
+								_dt: {$gt: dtstart,$lte:dtend}
+							}}, cb);
+						}
+					}, safe.sure(cb, function(r){
+						var data = []
+						if (st == 'terr') {
+							data = r.data
+						}
+						else {
+							_.forEach(r.data, function (r) {
+								if (r.error.request.headers) {
+									if (r.error.request.headers['User-Agent'] == req.headers['user-agent']) {
+										data.push(r)
+									}
+								}
+							})
+							if (data.length == 0) {
+								data.push({error: {message: "Not errors on this client"}})
+							}
+						}
+						res.renderX({view:r.view,route:req.route.path,data:{data:data, title:"Errors",st: st}})
 					})
 				)
 			}))
