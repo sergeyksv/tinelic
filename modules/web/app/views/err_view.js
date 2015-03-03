@@ -7,15 +7,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 var self = this;
                 $this = $(e.currentTarget);
                 var h = window.location.pathname.split('/',5)
-                this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort'));
+                this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+"/"+$this.data('sort')+'/');
                 return false;
-            },
-            'click .more': function(e) {
-                var self = this;
-                var id = $(e.currentTarget).data('id')
-                var frame = self.$('#frame')
-                frame.empty();
-                frame.append('<iframe style="width:100%; height: 600px; border: 0px;" src='+location.origin+'/web/event/'+id+'/none></iframe>')
             }
         },
         postRender:function () {

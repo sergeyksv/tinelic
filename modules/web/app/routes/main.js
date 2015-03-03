@@ -1,4 +1,4 @@
-define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
+define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,safe,_,feed) {
 	return {
 		index:function (req, res, cb) {
 			var token = req.cookies.token || "public"
@@ -73,14 +73,11 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 						safe.back(cb, null, view)
 					},cb)
 				},
-				event:function (cb) {
-					api("collect.getEvent",token, {_t_age:"30d",_id:req.params.id}, cb)
-				},
-				info:function (cb) {
-					api("collect.getEventInfo",token, {_t_age:"10m",filter:{_id:req.params.id}}, cb)
+				res:function (cb) {
+					feed.errorInfo(token, {_id:req.params.id}, cb)
 				}
 			}, safe.sure( next, function (r) {
-				res.renderX({view:r.view,route:req.route.path,data:{event:r.event,info:r.info,title:"Event "+r.event.message, st: st}})
+				res.renderX({view:r.view,route:req.route.path,data:_.extend(r.res,{title:"Event "+r.res.event.message, st: st})})
 			}))
 		},
 		page:function (req, res, cb) {
@@ -596,7 +593,11 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}))
 		},
 		errors:function (req, res, cb) {
-			var st = req.params.stats
+			// we want to server on folder style url
+			if (req.path.substr(-1) != "/" && !req.params.id)
+				return res.redirect(req.baseUrl+req.path+"/");
+			var token = req.cookies.token || "public"
+			var st = req.params.sort
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
 			var range = 60 * 60 * 1000;
@@ -625,8 +626,12 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 								_idp:project._id,
 								_dt: {$gt: dtstart,$lte:dtend}
 							}}, cb);
+						},
+						event: function (cb) {
+							feed.errorInfo(token, {_id:req.params.id}, cb)
 						}
 					}, safe.sure(cb, function(r){
+						r.event.headless = true;
 						var data = []
 						if (st == 'terr') {
 							data = r.data
@@ -643,7 +648,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 								data.push({error: {message: "Not errors on this client"}})
 							}
 						}
-						res.renderX({view:r.view,route:req.route.path,data:{data:data, title:"Errors",st: st}})
+						res.renderX({view:r.view,route:req.route.path,data:{data:data,event:r.event, title:"Errors",st: st}})
 					})
 				)
 			}))

@@ -63,6 +63,7 @@ module.exports.init = function (ctx, cb) {
 			res.renderX = function (route) {
 				var view = app.getView();
 				view.data = route.data || {};
+				view.locals = res.locals;
 				var populateTplCtx = view.populateTplCtx;
 				var uniqueId = _.uniqueId("w")
 				view.populateTplCtx = function (ctx, cb) {
