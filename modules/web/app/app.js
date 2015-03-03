@@ -85,7 +85,7 @@ define(['views/layout','module','safe',"dust"
 			this.router.use(function (req, res, next) {
 				res.status = function () {};
 				res.redirect = function (path) {
-					self.router.navigateTo(path)
+					self.router.navigateTo(path,{replace:true})
 				}
 				res.renderX = function (route) {
 					self.clientRender(this,route);

@@ -685,7 +685,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         this.ewares = [];
 
         window.onpopstate = function(event) {
-            self.navigateTo(document.location, self.errHandler);
+            self.navigateTo(document.location.href, {back:true}, self.errHandler);
         };
     }
 
@@ -708,7 +708,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             var url = resolveUrl(href);
 			history.pushState({}, "", url);
 		},
-        navigateTo: function(href, next) {
+        navigateTo: function(href, opts, next) {
 			var self = this;
             next || (next = self.errHandler);
             var url = resolveUrl(href);
@@ -739,7 +739,10 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
 						match = p.router.match(uri);
 						if (match) {
 							self.trigger("start",{route:k})
-							history.pushState({}, "", url);
+							if (opts.replace)
+								history.replaceState({}, "", url);
+							else if (!opts.back)
+								history.pushState({}, "", url);
 							stack = [];
 							req.params = match;
 							req.route = {path:k};
