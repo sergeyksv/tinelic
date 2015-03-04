@@ -58,7 +58,7 @@
 			{#topa}
 				<div class="col-md-2">
 					<div class="panel panel-default">
-						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax_rpm'>Top ajax</a></div>
+						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a></div>
 						<div class="panel-body">
 							{#a}
 								<div class="progress" style="margin: 2px 0 0 0;">

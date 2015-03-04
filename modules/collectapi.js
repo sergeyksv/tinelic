@@ -583,18 +583,30 @@ module.exports.init = function (ctx, cb) {
 					if (!p.Graph_bool) {
 						ajax.mapReduce(
 							"function() {\
-								emit(this.r, { r:1.0/"+q+", dt:this._dt})\
+								emit(this.r, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 							}",
 							function (k,v) {
+								var t = 400; //apdex T
+								var f = 4*t;
 								var r=null;
 								v.forEach(function (v) {
-									if (!r)
+									if (!r){
 										r = v
+										r.tta = v.tt;
+										r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
+									}
 									else {
 										r.r+=v.r;
 										r.dt=v.dt;
+										r.tt = (r.tt + v.tt)/2;
+										r.tta = Number((r.tta+v.tt)/2);
+										r.apdex[0] += (v.tt <= t)?1:0;
+										r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
+										r.apdex[2] += 1;
 									}
 								})
+								r.tta = Number((r.tta/1000).toFixed(2))
+								r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
 								return r;
 							},
 							{
@@ -608,14 +620,17 @@ module.exports.init = function (ctx, cb) {
 						query.r=p._idurl;
 						ajax.mapReduce(
 							"function() {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+"})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tt:this._i_tt})\
 							}",
 							function (k,v) {
+								var t = 400; //apdex T
+								var f = 4*t;
 								var r=null;
 								v.forEach(function (v) {
 									if (!r)
 										r = v
 									else {
+										r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
 										r.c+=v.c;
 										r.r+=v.r;
 									}
@@ -707,6 +722,31 @@ module.exports.init = function (ctx, cb) {
 							cb
 						)
 					}))
+				},
+				ajaxBreakDown: function(t,p,cb){
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+						ajax.mapReduce(
+							"function() {\
+                                emit(this.r, { uri: this.request.uri, pag: [], count:{}} )\
+                            }",
+							function (k,v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r)
+										r = v
+									else {
+											r.pag.push(v.uri)
+									}
+							})
+							return r;
+							},
+							{
+								query: query,
+								out: {inline:1}
+							},
+							cb
+						)
 				}
 			}});
 		}))
