@@ -17,7 +17,7 @@ module.exports.CustomError  = function (message, subject) {
 
 module.exports.createApp = function (cfg, cb) {
 	var app = express();
-	app.use(require("compression")());
+//	app.use(require("compression")());
 	app.use(cookieParser());
 	app.use(bodyParser.json());
 	app.use(bodyParser.urlencoded({ extended: true }));
@@ -47,8 +47,11 @@ module.exports.createApp = function (cfg, cb) {
 			requested[m]=1;
 		})
 		args.push(function (cb) {
-			var router = express.Router();
-			app.use("/"+module.name,router)
+			var router = null;
+			if (mod.reqs==null || mod.reqs.router!==false) {
+				router = express.Router();
+				app.use("/"+module.name,router)
+			}
 			mod.init({api:api,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
 				api[module.name]=mobj.api;
 				cb();
@@ -176,7 +179,10 @@ module.exports.prefixify = function () {
 					try { nobj[k] = translate[prefix](v); } catch (e) {};
 				}
 			} else {
-				nobj[k]=v;
+				if (_.isPlainObject(v))
+					nobj[k]=queryfix(v,opts)
+				else
+					nobj[k]=v;
 			}
 		})
 		return nobj;
@@ -209,6 +215,7 @@ module.exports.prefixify = function () {
 	}
 
 	return {
+		reqs:{router:false},
 		init:function (ctx,cb) {
 			cb(null, {
 				api:{
@@ -225,6 +232,7 @@ module.exports.prefixify = function () {
 
 module.exports.mongodb = function () {
 	return {
+		reqs:{router:false},
 		init:function (ctx,cb) {
 			var mongo = require("mongodb");
 			ctx.api.prefixify.register("_id",function (pr) {
@@ -255,6 +263,68 @@ module.exports.mongodb = function () {
 							dbcache[name]=db;
 							cb(null,db)
 						}))
+					}
+				}
+			})
+		}
+	}
+}
+
+module.exports.obac = function () {
+	return {
+		reqs:{router:false},
+		init:function (ctx,cb) {
+			var _acl = [];
+			cb(null, {
+				api:{
+					getPermissions:function (t, p, cb) {
+						var result = {};
+						safe.each(p.rules, function (rule, cb) {
+							var acl = _.filter(_acl, function (a) {
+								return a.r.test(rule.action);
+							})
+							var checks = [];
+							_.each(acl, function (a) {
+								if (a.f.permission) {
+									checks.push(function (cb) {
+										ctx.api[a.m][a.f.permission](t,rule,cb);
+									})
+								}
+							})
+							safe.parallel(checks, safe.sure(cb, function (answers) {
+								var answer = null;
+								_.each(answers, function (voice) {
+									answer = (answer == null)?voice:(answer?voice:answer)
+								})
+								if (!result[rule.action])
+									result[rule.action] = {};
+								result[rule.action][rule._id || 'global']=!!answer;
+								cb();
+							}))
+						}, safe.sure(cb,function () {
+							cb(null,result)
+						}))
+					},
+					getGrantedIds:function (t, p, cb) {
+						var acl = _.filter(_acl, function (a) {
+							return a.r.test(p.action);
+						})
+						var checks = [];
+						_.each(acl, function (a) {
+							if (a.f.grantids) {
+								checks.push(function (cb) {
+									ctx.api[a.m][a.f.grantids](t,p,cb);
+								})
+							}
+						})
+						safe.parallel(checks, safe.sure(cb, function (answers) {
+							cb(null, _.intersection.apply(_,answers));
+						}))
+					},
+					register:function(actions, module, face) {
+						_.each(actions, function (a) {
+							_acl.push({m:module, f:face, r:new RegExp(a.replace("*",".*"))})
+						})
 					}
 				}
 			})

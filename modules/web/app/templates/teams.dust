@@ -2,7 +2,9 @@
 
 <div class="container">
 	<div class="starter-template">
+		{?obac.team_new.global}
 		<button type="button" id="addnt" class="btn btn-default btn-xs">Add new team</button>
+		{/obac.team_new.global}
 		<p class="bg-primary"></p>
 		<table style="margin-top: 20px;"class="table table-condensed">
 			<tr>
@@ -52,7 +54,9 @@
                                     {_t_project.name}
                                 </td>
                                 <td class="col-md-1">
+									{?obac.project_edit[_t_project._id]}
                                     <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idp,{_idp},{_id}" style="margin: 2px;">del</button>
+                                    {/obac.project_edit[_t_project._id]}
                                 </td>
                             </tr>
                         {/projects}

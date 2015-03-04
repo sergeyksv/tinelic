@@ -22,15 +22,21 @@ define(['views/layout','module','safe',"dust"
 			return new Layout({app:this});
 		},
 		errHandler: function (err) {
-			// if (err) console.log(err.stack);
+			if (err) console.log(err.stack);
 		},
 		initRoutes: function (cb) {
 			var self = this;
 			var router = self.router;
 			var routes = ["routes/main"];
 			requirejs(routes, function (main) {
+				// some standard locals grabber
+				router.use(function (req,res, next) {
+					res.locals._t_req = _.pick(req,['path','query','baseUrl']);
+					next()
+				})
 				// routes goes first
 				router.get("/", main.index);
+				router.get("/event/:id/:st", main.event);
 				router.get("/event/:id", main.event);
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
@@ -38,6 +44,8 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug/ajax/:stats", main.ajax_rpm);
 				router.get("/project/:slug/application/:stats", main.application);
 				router.get("/project/:slug/pages/:stats", main.pages);
+				router.get("/project/:slug/errors/:sort", main.errors);
+				router.get("/project/:slug/errors/:sort/:id", main.errors);
 				router.get("/teams", main.teams);
 
 				// error handler after that
@@ -48,13 +56,13 @@ define(['views/layout','module','safe',"dust"
 								res.status(401);
 								res.renderX({view: view, route: req.route.path, data: {title: "Sign UP"}})
 							}), cb);
-						}
-						if (err.subject == "Access forbidden") {
+						} else if (err.subject == "Access forbidden") {
 							res.redirect('/web/')
-						}
+						} else
+							cb(err)
 					}
 					else
-						cb()
+						cb(err)
 				})
 				router.use(function (err, req, res, cb) {
 					self.errHandler(err);
@@ -66,7 +74,7 @@ define(['views/layout','module','safe',"dust"
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
-				prefix:module.uri.replace("app/app.js","")
+				prefix:module.uri.replace("/app/app.js","")
 			})
 			this.router.on("start", function (route) {
 				self._pageLoad = {start:new Date(),route:route.route};
@@ -77,10 +85,10 @@ define(['views/layout','module','safe',"dust"
 			this.router.use(function (req, res, next) {
 				res.status = function () {};
 				res.redirect = function (path) {
-					self.router.navigateTo(path)
+					self.router.navigateTo(path,{replace:true})
 				}
 				res.renderX = function (route) {
-					self.clientRender(route);
+					self.clientRender(this,route);
 				}
 				next();
 			})
@@ -90,7 +98,7 @@ define(['views/layout','module','safe',"dust"
 				}))
 			}))
 		},
-		clientRender:function (route, next) {
+		clientRender:function (res, route, next) {
 			this._pageLoad.data = new Date();
 			next || (next = this.errHandler);
 			var self = this;
@@ -98,6 +106,7 @@ define(['views/layout','module','safe',"dust"
 			var mainView = this.mainView;
 			var view = new route.view({app:self});
 			view.data = route.data;
+			view.locals = res.locals;
 			view.render(safe.sure(next, function (text) {
 				document.title = route.data.title;
 				mainView.removeChilds();

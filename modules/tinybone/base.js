@@ -27,6 +27,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
                     safe.back(cb, null, context);
                 }
                 view.render(function(err, text) {
+					if (err) console.log(err.stack)
                     chunk.end(text);
                 })
             })
@@ -362,9 +363,9 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
 
         // used to populate base content by data that are specific for this this
         populateTplCtx: function(ctx, cb) {
-            ctx = ctx.push({
+            ctx = ctx.push(_.extend(this.locals || {}, {
                 _t_view: this
-            });
+            }));
             if (this.data)
                 ctx = ctx.push(this.data);
             safe.back(cb, null, ctx);
@@ -392,6 +393,16 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
                 cb(null, "<div id='" + self.cid + "'>" + text + "</div>");
             }))
         },
+
+		// completely refresh current view
+        refresh: function(cb) {
+			var self = this;
+			this.renderHtml(safe.sure(cb, function(text) {
+				self.removeChild;
+				self.$el.html(text);
+				cb();
+			}))
+		},
 
         // Remove this view by taking the element out of the DOM, and removing any
         // applicable Backbone.Events listeners.
@@ -674,7 +685,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         this.ewares = [];
 
         window.onpopstate = function(event) {
-            self.navigateTo(document.location, self.errHandler);
+            self.navigateTo(document.location.href, {back:true}, self.errHandler);
         };
     }
 
@@ -693,18 +704,26 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
 			}
 			this.routes[route]={router:new Router(route,false), wares:wares}
 		},
-        navigateTo: function(href, next) {
+		mutateTo: function (href) {
+            var url = resolveUrl(href);
+			history.pushState({}, "", url);
+		},
+        navigateTo: function(href, opts, next) {
 			var self = this;
             next || (next = self.errHandler);
             var url = resolveUrl(href);
             var prefix = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + this.prefix
-            var uri = url.replace(prefix, "/");
+            var uri = url.replace(prefix, "").replace(/\?.*$/,"");
             var match = null;
 			var req = {
 				query: getQueryStringAsObject(),
-				cookies: $.cookie()
+				cookies: $.cookie(),
+                headers: {'user-agent': navigator.userAgent},
+                originalUrl: url,
+                baseUrl: this.prefix,
+                path:uri
 			}
-			var res = {};
+			var res = {req:req,locals:{}};
 			var stack = [];
 			safe.run(function (cb) {
 				// execute all normal midlewares
@@ -720,7 +739,10 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
 						match = p.router.match(uri);
 						if (match) {
 							self.trigger("start",{route:k})
-							history.pushState({}, "", url);
+							if (opts.replace)
+								history.replaceState({}, "", url);
+							else if (!opts.back)
+								history.pushState({}, "", url);
 							stack = [];
 							req.params = match;
 							req.route = {path:k};
