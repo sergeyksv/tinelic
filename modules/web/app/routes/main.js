@@ -367,6 +367,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			}))
 		},
 		ajax_rpm:function (req, res, cb) {
+			var st = req.params.stats;
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
 			var range = 60 * 60 * 1000;
@@ -397,19 +398,55 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					}}, cb);
 				}
 			}, safe.sure(cb, function(r){
+				var filter = {
+						_t_age: quant + "m", quant: quant,
+						filter: {
+							_idp: project._id,
+							_dt: {$gt: dtstart, $lte: dtend}
+						}
+					}
 				r.rpm =_.sortBy(r.rpm, function(v){
-					return -1*v.value.r;
+					if (st == "rpm")
+						return -1*v.value.r;
+					if (st == "mtc")
+						return -1* v.value.tt;
+					if (st == "sar")
+						return -1* v.value.tta;
+					if (st == "wa")
+						return 1* v.value.apdex;
 				})
 				var sum=0.0;
-				_.each(r.rpm, function(rpm){
-					sum+=rpm.value.r
+				_.each(r.rpm, function(r){
+					if (st == "rpm")
+						sum+=r.value.r
+					if (st == "mtc")
+						sum += r.value.tt
+					if (st == "sar")
+						sum += r.value.tta
+					if (st == "wa") {
+						sum = 1;
+						(r.value.apdex < sum) ?	(sum = r.value.apdex) : null
+					}
 				})
 				var percent = sum/100;
-				_.each(r.rpm, function (rpm) {
-					rpm.value.bar = Math.round(rpm.value.r/percent);
-					rpm.value.r=rpm.value.r.toFixed(2);
+				_.each(r.rpm, function (r) {
+					if (st == "rpm") {
+						r.value.bar = Math.round(r.value.r/percent);
+						r.value.r = r.value.r.toFixed(2)
+					}
+					if (st == "mtc") {
+						r.value.bar = Math.round(r.value.tt/percent);
+						r.value.tt = r.value.tt.toFixed(1);
+					}
+					if (st == "sar") {
+						r.value.bar = Math.round(r.value.tta/percent);
+					}
+					if (st == "wa") {
+						r.value.bar = Math.round(r.value.apdex/percent);
+						r.value.apdex = r.value.apdex.toFixed(2);
+					}
 				})
-				 res.renderX({view:r.view,route:req.route.path,data:{rpm:r.rpm, title:"Ajax_rpm"}})
+				 res.renderX({view:r.view,route:req.route.path,data:{rpm:r.rpm, project:project, st: st, fr: filter, title:"Ajax"}})
 				})
 			)
 		    }))

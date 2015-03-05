@@ -41,7 +41,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
-				router.get("/project/:slug/ajax_rpm", main.ajax_rpm);
+				router.get("/project/:slug/ajax/:stats", main.ajax_rpm);
 				router.get("/project/:slug/application/:stats", main.application);
 				router.get("/project/:slug/pages/:stats", main.pages);
 				router.get("/project/:slug/errors/:sort", main.errors);
