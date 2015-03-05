@@ -612,8 +612,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			if (match.length==3 && units[match[2]])
 				range = match[1]*units[match[2]];
 
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
+			var tolerance = 5 * 60 * 1000;
+			var dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+			var dtstart = dtend - range;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
