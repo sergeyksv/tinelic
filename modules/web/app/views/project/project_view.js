@@ -8,7 +8,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			view.prototype.postRender.call(this);
 			var errorsView = _.find(this.views,function(v){
 				return v.name == "views/project/errors_view";
-			}).view;
+			});
 			var rpm = [];
 			var views = this.data.views;
 			var ajax = this.data.ajax;

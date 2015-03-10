@@ -172,62 +172,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				},
 				data:function (cb) {
 					api("assets.getProject",token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-						safe.parallel({
-							views: function (cb) {
-								api("collect.getPageViews",token,{_t_age:quant+"m",quant:quant,filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb);
-							},
-							errors: function (cb) {
-								api("collect.getErrorStats",token,{_t_age:quant+"m",filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb);
-							},
-							ajax: function (cb) {
-								api("collect.getAjaxStats",token,{_t_age:quant+"m",quant:quant,filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb);
-							},
-							actions: function (cb) {
-								api("collect.getActions", token, {_t_age:quant+"m",quant:quant,filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb)
-							},
-							topAjax: function (cb) {
-								api("collect.getTopAjax", token, {
-									_t_age:quant+"m",
-									quant:quant,
-									filter:{
-										_idp:project._id,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-									}
-								}, cb)
-							},
-							topPages: function (cb) {
-								api("collect.getTopPages", token, {
-									_t_age:quant+"m",
-									quant:quant,
-									filter:{
-										_idp:project._id,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-									}
-								}, cb)
-							},
-							topTransactions: function(cb) {
-								api("collect.getTopTransactions", token, {
-									_t_age:quant+"m",
-									quant:quant,
-									filter:{
-										_idp:project._id,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-									}
-								}, cb)
-							}
-						}, safe.sure(cb, function (r) {
+						api("web.getFeed",token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
+							_idp:project._id,
+							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+						}}}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project}))
 						}))
 					}))

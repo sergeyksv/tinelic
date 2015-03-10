@@ -134,7 +134,14 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		], safe.sure(cb, function () {
-			cb(null,{api:{}})
+			cb(null,{api:{
+				getFeed:function (token, p, cb) {
+					feed = p.feed.split(".")
+					requirejs(["feed/"+feed[0]], function (m) {
+						m[feed[1]](token,p.params,cb)
+					},cb)
+				}
+			}})
 		}))
 	},cb)
 }
