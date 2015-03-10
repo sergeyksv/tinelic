@@ -1,0 +1,10 @@
+{#.}
+	<div class="progress" style="border-radius:20px">
+		<span style="text-align:right;position:absolute; right:20px">
+			<span class="text-info">{stats.epm}</span>
+		</span>
+		<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
+			<div style="text-align:left; padding-left:20px""><a href="./{stats._id}">{error.message}</a> </div>
+		</div>
+	</div>
+{/.}

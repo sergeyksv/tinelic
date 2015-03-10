@@ -88,6 +88,9 @@
 					</div>
 				</div>
 			{/topp}
+				<div class="col-md-2">
+					<a href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a>
+				</div>
         </div>
     {/stats}
 

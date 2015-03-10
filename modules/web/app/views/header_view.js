@@ -2,15 +2,12 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 	var view = tb.View;
 	var View = view.extend({
 		id:"templates/header",
-		postRender:function () {
-			view.prototype.postRender.call(this);
-		},
 		events: {
 			'click .dropdown-menu li':function (e) {
 				e.preventDefault();
 				$this = $(e.currentTarget);
 				$.cookie('str', $this.data('range'), {expires: 5,path: '/',});
-				this.app.router.navigateTo(window.location.pathname);
+				this.app.router.reload();
 				return false;
 			},
 			'click #logout': function(e) {
@@ -21,7 +18,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 					}
 					else {
 						$.removeCookie("token");
-						self.app.router.navigateTo('.')
+						self.app.router.reload();
 					}
 				});
 			}

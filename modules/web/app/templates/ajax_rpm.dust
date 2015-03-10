@@ -1,4 +1,4 @@
-{@view name="views/header_view"/}
+{@view name="views/header_view" data="header" /}
 
 <div class="container-fluid">
 <div class="starter-template">

@@ -29,6 +29,7 @@ module.exports = function(grunt) {
                         "tinybone": "../../tinybone",
                         "lodash": "../public/js/lodash",
                         "dust": "../public/js/dust",
+						"md5":"../public/js/md5",
                         "dust-helpers": "../public/js/dust-helpers",
                         "dustjs": "../public/js/dust",
                         "dustc": "../../tinybone/dustc",

@@ -31,7 +31,25 @@ define(['views/layout','module','safe',"dust"
 			requirejs(routes, function (main) {
 				// some standard locals grabber
 				router.use(function (req,res, next) {
+					res.locals.token = req.cookies.token || "public"
 					res.locals._t_req = _.pick(req,['path','query','baseUrl']);
+					var str = req.query._str || req.cookies.str || '1d';
+					var range = 60 * 60 * 1000;
+
+					// transcode range paramater into seconds
+					var match = str.match(/(\d+)(.)/);
+					var units = {
+						h:60 * 60 * 1000,
+						d:24 * 60 * 60 * 1000,
+						w:7 * 24 * 60 * 60 * 1000
+					}
+					if (match.length==3 && units[match[2]])
+						range = match[1]*units[match[2]];
+
+					var tolerance = 10 * 60 * 1000;
+					res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+					res.locals.dtstart = res.locals.dtend - range;
+					res.locals.header = {range:str};
 					next()
 				})
 				// routes goes first
@@ -46,6 +64,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug/pages/:stats", main.pages);
 				router.get("/project/:slug/errors/:sort", main.errors);
 				router.get("/project/:slug/errors/:sort/:id", main.errors);
+				router.get("/project/:slug/database/:stats", main.database);
 				router.get("/teams", main.teams);
 
 				// error handler after that
@@ -108,12 +127,13 @@ define(['views/layout','module','safe',"dust"
 			view.data = route.data;
 			view.locals = res.locals;
 			view.render(safe.sure(next, function (text) {
+				var oldView = mainView.views[0];
 				document.title = route.data.title;
-				mainView.removeChilds();
-				$("#content").html(text);
-				view.bindDom($("#content"));
-				mainView.addSubView({view:view, name:route.view, cid:view.cid, data:view.data})
-				view.postRender();
+				var $dom = $(text);
+				$("#content").html($dom);
+				view.bindDom($dom, oldView)
+				oldView.remove();
+				mainView.attachSubView(view)
 				self._pageLoad.dom = new Date();
 				var m = {
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),

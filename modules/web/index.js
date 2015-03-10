@@ -6,13 +6,15 @@ var fs = require('fs');
 var path = require('path');
 var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
+var raven = require('raven');
 
 requirejs.config({
     baseUrl: __dirname+"/app",
     paths:{
 		"tinybone":path.resolve(__dirname,"../tinybone"),
 		'dustc': path.resolve(__dirname,'../tinybone/dustc'),
-		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text')
+		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
+		"md5":"../public/js/md5",
 	},
 	config:{
 		"text":{
@@ -70,19 +72,20 @@ module.exports.init = function (ctx, cb) {
 					ctx = ctx.push({_t_main_view:route.view.id,
 						_t_prefix:"/web",
 						_t_self_id:self_id,
-						_t_route:route.route,
+						_t_route:res.req.route.path,
 						_t_unique:uniqueId,
 						_t_env_production:cfg.env=="production",
 						_t_rev:cfg.rev
 					});
 					populateTplCtx.call(this,ctx,cb)
 				}
+
 				view.render(safe.sure(next, function (text) {
 					var wv = {name:"app",data:route.data,views:[]};
-					function wireView(realView,wiredView) {
+					function wireView(realView, wiredView) {
 						_.each(realView.views, function (view) {
-							var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
-							wireView(view.view,wv);
+							var wv = {md5:view.md5, name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
+							wireView(view,wv);
 							wiredView.views.push(wv)
 						})
 					}
@@ -141,7 +144,20 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		], safe.sure(cb, function () {
-			cb(null,{api:{}})
+			// Set up Raven
+			var ravenjs = new raven.Client('http://pushok_public_key:pushok_private_key@localhost/getsentry/'+self_id);
+			var testError = new Error("Tinelic server startup!");
+			ravenjs.captureError(testError);
+			require("newrelic").noticeError(testError);
+
+			cb(null,{api:{
+				getFeed:function (token, p, cb) {
+					feed = p.feed.split(".")
+					requirejs(["feed/"+feed[0]], function (m) {
+						m[feed[1]](token,p.params,cb)
+					},cb)
+				}
+			}})
 		}))
 	},cb)
 }

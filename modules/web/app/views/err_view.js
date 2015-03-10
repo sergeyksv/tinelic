@@ -10,10 +10,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+"/"+$this.data('sort')+'/');
                 return false;
             }
-        },
-        postRender:function () {
-            view.prototype.postRender.call(this);
-            var ajax = this.data.rpm;
         }
     })
     View.id = "views/err_view";
