@@ -12,7 +12,8 @@ requirejs.config({
     paths:{
 		"tinybone":path.resolve(__dirname,"../tinybone"),
 		'dustc': path.resolve(__dirname,'../tinybone/dustc'),
-		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text')
+		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
+		"md5":"../public/js/md5",
 	},
 	config:{
 		"text":{
@@ -82,7 +83,7 @@ module.exports.init = function (ctx, cb) {
 					var wv = {name:"app",data:route.data,views:[]};
 					function wireView(realView, wiredView) {
 						_.each(realView.views, function (view) {
-							var wv = {name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
+							var wv = {md5:view.md5, name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
 							wireView(view,wv);
 							wiredView.views.push(wv)
 						})

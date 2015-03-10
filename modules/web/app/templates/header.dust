@@ -18,10 +18,10 @@
 		<li><a id="logout" href="#">Log out</a></li>
 	  </ul>
 
-	  	{#filter}
+	  	{?range}
 	  		<div class="btn-group" style="float: right; margin-top: 10px;">
               <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-				{@select key="{filter}"}
+				{@select key="{range}"}
 					{@eq value="1h"}Last hour{/eq}
 					{@eq value="6h"}Last 6 hours{/eq}
 					{@eq value="12h"}Last 12 hours{/eq}
@@ -40,7 +40,7 @@
       			<li data-range='1w'> <a href="#">Last week</a></li>
       		  </ul>
 			</div>
-		{/filter}
+		{/range}
 	</div><!--/.nav-collapse -->
   </div>
 </nav>

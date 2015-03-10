@@ -1,4 +1,4 @@
-define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, dust) {
+define(['safe', 'lodash', 'dust', 'md5', 'jquery', 'jquery-cookie'], function(safe, _, dust, md5) {
     var array = [];
     var push = array.push;
     var slice = array.slice;
@@ -288,7 +288,7 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
         // views are bound. Redefine in your own views, but don't forget to
         // call base
         postRender: function() {
-            // this.$el.prepend("<font style='position:absolute;left:"+this.$el.offset().left+";top:"+this.$el.offset().top+";' color='red'>"+this.name+" "+this.cid+"</font>");
+            this.$el.prepend("<font style='position:absolute;left:"+this.$el.offset().left+";top:"+this.$el.offset().top+";' color='red'>"+this.name+" "+this.cid+"</font>");
         },
 
         // used internally to bind view to already available DOM model
@@ -371,7 +371,7 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                         var $rdom = $dom.find("#" + rview.cid);
                         // equaity of data that views are build upon ies a sign
                         // that view is not need to be recreated
-                        if (_.isEqual(lview.data, rview.data)) {
+                        if (lview.md5 == rview.md5 && _.isEqual(lview.data, rview.data)) {
                             // move dom subnodes
                             $rdom.replaceWith(lview.$el)
                                 // detach lview
@@ -443,7 +443,10 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                     }))
                 }
             }, safe.sure(cb, function(res) {
-                dust.render(self.id, res.context, cb)
+                dust.render(self.id, res.context, safe.sure(cb, function (text) {
+					this.md5 = md5(text);
+					cb(null, text);
+				}))
             }))
         },
 

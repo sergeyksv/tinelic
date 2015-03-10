@@ -32,6 +32,23 @@ define(['views/layout','module','safe',"dust"
 				// some standard locals grabber
 				router.use(function (req,res, next) {
 					res.locals._t_req = _.pick(req,['path','query','baseUrl']);
+					var str = req.query._str || req.cookies.str || '1d';
+					var range = 60 * 60 * 1000;
+
+					// transcode range paramater into seconds
+					var match = str.match(/(\d+)(.)/);
+					var units = {
+						h:60 * 60 * 1000,
+						d:24 * 60 * 60 * 1000,
+						w:7 * 24 * 60 * 60 * 1000
+					}
+					if (match.length==3 && units[match[2]])
+						range = match[1]*units[match[2]];
+
+					var tolerance = 10 * 60 * 1000;
+					res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+					res.locals.dtstart = res.locals.dtend - range;
+					res.locals.header = {range:str};
 					next()
 				})
 				// routes goes first

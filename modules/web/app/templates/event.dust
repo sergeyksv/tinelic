@@ -1,5 +1,5 @@
 {^headless}
-{@view name="views/header_view" data="title" /}
+{@view name="views/header_view" data="header" /}
 <div class="starter-template container-fluid">
 {/headless}
 

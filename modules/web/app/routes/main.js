@@ -162,22 +162,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 		},
 		project:function (req, res, cb) {
 			var token = req.cookies.token || "public"
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
-
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
 
 			safe.parallel({
 				view:function (cb) {
@@ -191,25 +176,26 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							views: function (cb) {
 								api("collect.getPageViews",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dt: {$gt: dtstart,$lte:dtend}
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb);
 							},
 							errors: function (cb) {
 								api("collect.getErrorStats",token,{_t_age:quant+"m",filter:{
 									_idp:project._id,
-									_dt: {$gt: dtstart,$lte:dtend}
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb);
 							},
 							ajax: function (cb) {
 								api("collect.getAjaxStats",token,{_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dt: {$gt: dtstart,$lte:dtend}
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb);
 							},
 							actions: function (cb) {
 								api("collect.getActions", token, {_t_age:quant+"m",quant:quant,filter:{
 									_idp:project._id,
-									_dt: {$gt: dtstart,$lte:dtend}}}, cb)
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								}}, cb)
 							},
 							topAjax: function (cb) {
 								api("collect.getTopAjax", token, {
@@ -217,7 +203,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 									quant:quant,
 									filter:{
 										_idp:project._id,
-										_dt: {$gt: dtstart,$lte:dtend}
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}
 								}, cb)
 							},
@@ -227,7 +213,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 									quant:quant,
 									filter:{
 										_idp:project._id,
-										_dt: {$gt: dtstart,$lte:dtend}
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}
 								}, cb)
 							},
@@ -237,12 +223,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 									quant:quant,
 									filter:{
 										_idp:project._id,
-										_dt: {$gt: dtstart,$lte:dtend}
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}
 								}, cb)
 							}
 						}, safe.sure(cb, function (r) {
-							 cb(null,_.extend(r, {project:project, filter: str}))
+							 cb(null,_.extend(r, {project:project}))
 						}))
 					}))
 				}
@@ -368,22 +354,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 		},
 		ajax_rpm:function (req, res, cb) {
 			var st = req.params.stats;
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
-
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 			safe.parallel({
 				view: function (cb) {
@@ -394,7 +365,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				rpm: function (cb) {
 					api("collect.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
-						_dt: {$gt: dtstart,$lte:dtend}
+						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}, cb);
 				}
 			}, safe.sure(cb, function(r){
@@ -402,7 +373,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						_t_age: quant + "m", quant: quant,
 						filter: {
 							_idp: project._id,
-							_dt: {$gt: dtstart, $lte: dtend}
+							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 						}
 					}
 				r.rpm =_.sortBy(r.rpm, function(v){
@@ -453,22 +424,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
-
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -480,7 +436,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							api("collect.getTopTransactions", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend}
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}
 							}, cb)
 						}
@@ -489,7 +445,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							_t_age: quant + "m", quant: quant,
 							filter: {
 								_idp: project._id,
-								_dt: {$gt: dtstart, $lte: dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
 						r.data =_.sortBy(r.data, function(v){
@@ -542,22 +498,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 		},
 		pages:function (req, res, cb) {
 			var st = req.params.stats
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
-
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -569,7 +510,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							api("collect.getTopPages", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend}
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}
 							}, cb)
 						}
@@ -578,7 +519,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							_t_age: quant + "m", quant: quant,
 							filter: {
 								_idp: project._id,
-								_dt: {$gt: dtstart, $lte: dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
 						r.data =_.sortBy(r.data, function(v){
@@ -635,23 +576,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				return res.redirect(req.baseUrl+req.path+"/");
 			var token = req.cookies.token || "public"
 			var st = req.params.sort
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
-
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var tolerance = 5 * 60 * 1000;
-			var dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
-			var dtstart = dtend - range;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -662,7 +587,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						data: function (cb) {
 							api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
 								_idp:project._id,
-								_dt: {$gt: dtstart,$lte:dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						event: function (cb) {
