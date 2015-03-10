@@ -288,7 +288,7 @@ define(['safe', 'lodash', 'dust', 'md5', 'jquery', 'jquery-cookie'], function(sa
         // views are bound. Redefine in your own views, but don't forget to
         // call base
         postRender: function() {
-            this.$el.prepend("<font style='position:absolute;left:"+this.$el.offset().left+";top:"+this.$el.offset().top+";' color='red'>"+this.name+" "+this.cid+"</font>");
+            // this.$el.prepend("<font style='position:absolute;left:"+this.$el.offset().left+";top:"+this.$el.offset().top+";' color='red'>"+this.name+" "+this.cid+"</font>");
         },
 
         // used internally to bind view to already available DOM model
