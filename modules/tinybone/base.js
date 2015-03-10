@@ -309,7 +309,6 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                 if ($el.length != 1)
                     return safe.back(cb, new Error("View '" + wire.name + "' can't find its unique element"))
                 $el.attr('id', this.cid);
-                console.log(this.name, wire.data);
                 this.data = _.isString(wire.data) ? (wire.data == "." ? ctx.get([], true) : ctx.get(wire.data)) : wire.data;
                 this.setElement($el)
             }
@@ -799,10 +798,18 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
             var url = resolveUrl(href);
             history.pushState({}, "", url);
         },
-        navigateTo: function(href, opts, next) {
-			opts = opts || {};
+        reload: function (opts, cb) {
+			this.navigateTo(window.location.pathname, opts, cb);
+		},
+        navigateTo: function(href, opts, cb) {
             var self = this;
-            next || (next = self.errHandler);
+
+			if (_.isFunction(opts)) {
+				cb = opts;
+				opts = {}
+			}
+			opts = opts || {};
+
             var url = resolveUrl(href);
             var prefix = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + this.prefix
             var uri = url.replace(prefix, "").replace(/\?.*$/, "");
@@ -865,10 +872,12 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                             r(err, req, res, cb)
                         })
                     });
-                    stack.push(function(cb) {
-                        next(err)
-                    })
-                    safe.series(stack, next);
+                    if (cb) {
+						stack.push(function(cb) {
+							cb(err)
+						})
+					}
+                    safe.series(stack, function () {});
                 } else {
                     // if no match found just do normal
                     // client navigation
