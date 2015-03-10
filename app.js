@@ -1,4 +1,4 @@
-// require('newrelic')
+require('newrelic')
 var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');

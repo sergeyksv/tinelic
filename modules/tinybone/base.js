@@ -800,6 +800,7 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
             history.pushState({}, "", url);
         },
         navigateTo: function(href, opts, next) {
+			opts = opts || {};
             var self = this;
             next || (next = self.errHandler);
             var url = resolveUrl(href);
