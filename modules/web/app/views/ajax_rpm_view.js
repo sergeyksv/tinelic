@@ -1,4 +1,4 @@
-define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust', 
+define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust',
 'views/ajax_rpmGraph_view'],function (tb,_) {
 	var view = tb.View;
 	var GraphView=null
@@ -9,7 +9,7 @@ define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust',
 			var ajax = this.data.rpm;
 			GraphView = _.find(this.views,function(v){
 				return v.name == "views/ajax_rpmGraph_view";
-			}).view;
+			});
 		},
 		events:{
 			'click .do-stats': function(e) {

@@ -16,7 +16,7 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                 });
                 var parent = context.get('_t_view');
                 view.data = params.data ? context.get(params.data) : context.get([], true);
-                view.dataPath = params.data;
+                view.dataPath = params.data ? params.data : ".";
                 parent.attachSubView(view)
                     // need to overwrite getting base context
                     // to current one, because it is subview
@@ -299,17 +299,19 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                 // root view :)
                 parent = this;
                 this.parent = null;
-                this.setElement($(document.body))
                 this.data = wire.data;
                 this.locals = wire.locals;
+                this.setElement($(document.body))
             } else {
                 // any other
                 parent.attachSubView(self);
-                this.setElement(parent.$el.find("#" + wire.cid))
-                if (this.$el.length != 1)
+                var $el = parent.$el.find("#" + wire.cid);
+                if ($el.length != 1)
                     return safe.back(cb, new Error("View '" + wire.name + "' can't find its unique element"))
-                this.$el.attr('id', this.cid);
+                $el.attr('id', this.cid);
+                console.log(this.name, wire.data);
                 this.data = _.isString(wire.data) ? (wire.data == "." ? ctx.get([], true) : ctx.get(wire.data)) : wire.data;
+                this.setElement($el)
             }
 
             safe.run(function(cb) {
@@ -392,7 +394,7 @@ define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, 
                 })
                 self.setElement($dom, {
                     delegate: true,
-                    render: false,
+                    render: true,
                     recursive: false
                 });
             }

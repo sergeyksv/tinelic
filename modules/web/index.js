@@ -79,7 +79,6 @@ module.exports.init = function (ctx, cb) {
 				}
 
 				view.render(safe.sure(next, function (text) {
-					// console.log(text);
 					var wv = {name:"app",data:route.data,views:[]};
 					function wireView(realView, wiredView) {
 						_.each(realView.views, function (view) {
