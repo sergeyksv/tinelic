@@ -71,7 +71,7 @@ module.exports.init = function (ctx, cb) {
 					ctx = ctx.push({_t_main_view:route.view.id,
 						_t_prefix:"/web",
 						_t_self_id:self_id,
-						_t_route:route.route,
+						_t_route:res.req.route.path,
 						_t_unique:uniqueId,
 						_t_env_production:cfg.env=="production",
 						_t_rev:cfg.rev

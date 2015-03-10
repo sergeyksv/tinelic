@@ -31,6 +31,7 @@ define(['views/layout','module','safe',"dust"
 			requirejs(routes, function (main) {
 				// some standard locals grabber
 				router.use(function (req,res, next) {
+					res.locals.token = req.cookies.token || "public"
 					res.locals._t_req = _.pick(req,['path','query','baseUrl']);
 					var str = req.query._str || req.cookies.str || '1d';
 					var range = 60 * 60 * 1000;
