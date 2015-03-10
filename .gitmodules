@@ -1,0 +1,6 @@
+[submodule "modules/tinyback"]
+	path = modules/tinyback
+	url = http://git.pushok.com/pushok/tinyback.git
+[submodule "modules/tinybone"]
+	path = modules/tinybone
+	url = http://git.pushok.com/pushok/tinybone.git
