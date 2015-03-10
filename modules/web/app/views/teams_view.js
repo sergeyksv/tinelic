@@ -69,7 +69,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                     var n = val.value.split(',');
                     $.each(input, function(i, val1) {
                         if (n[0] == val1.name) {
-                            data.users.push({_idu: n[0], role: val1.innerHTML})
+                            data.users.push({_idu: n[0], role_team: val1.innerHTML})
                         }
                     })
                 })

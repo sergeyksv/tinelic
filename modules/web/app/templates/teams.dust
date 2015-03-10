@@ -70,7 +70,7 @@
                                     {firstname} {lastname}
                                 </td>
                                 <th class="col-md-1">
-                                    {role}
+                                    {role_team}
                                 </th>
                                 <td class="col-md-1">
                                     <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idu,{_idu},{_id}" style="margin: 2px 5px;">del</button>
