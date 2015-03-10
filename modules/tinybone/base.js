@@ -1,8 +1,8 @@
-define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, dust) {
-	var array = [];
-	var push = array.push;
-	var slice = array.slice;
-	var splice = array.splice;
+define(['safe', 'lodash', 'dust', 'jquery', 'jquery-cookie'], function(safe, _, dust) {
+    var array = [];
+    var push = array.push;
+    var slice = array.slice;
+    var splice = array.splice;
 
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
@@ -15,19 +15,16 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
                     app: context.get('_t_app')
                 });
                 var parent = context.get('_t_view');
-                view.data = params.data?context.get(params.data):context.get([],true);
-                parent.addSubView({
-                    view: view,
-                    name: params.name,
-                    data: params.data ? params.data : "."
-                });
-                // need to overwrite getting base context
-                // to current one, because it is subview
+                view.data = params.data ? context.get(params.data) : context.get([], true);
+                view.dataPath = params.data;
+                parent.attachSubView(view)
+                    // need to overwrite getting base context
+                    // to current one, because it is subview
                 view.getBaseTplCtx = function(cb) {
                     safe.back(cb, null, context);
                 }
                 view.render(function(err, text) {
-					if (err) console.log(err.stack)
+                    if (err) console.log(err.stack)
                     chunk.end(text);
                 })
             })
@@ -266,6 +263,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         this.parent = null;
         this.views = [];
         this.cid = _.uniqueId('v');
+        this.name = this.constructor.id;
         options || (options = {});
         _.extend(this, _.pick(options, viewOptions));
     }
@@ -290,10 +288,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         // views are bound. Redefine in your own views, but don't forget to
         // call base
         postRender: function() {
-            this.delegateEvents();
-            _.each(this.views, function(child) {
-                child.view.postRender()
-            })
+            // this.$el.prepend("<font style='position:absolute;left:"+this.$el.offset().left+";top:"+this.$el.offset().top+";' color='red'>"+this.name+" "+this.cid+"</font>");
         },
 
         // used internally to bind view to already available DOM model
@@ -301,22 +296,20 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         bindWire: function(wire, parent, ctx, cb) {
             var self = this;
             if (!parent) {
+                // root view :)
                 parent = this;
                 this.parent = null;
-                this.$el = $(document.body);
+                this.setElement($(document.body))
                 this.data = wire.data;
+                this.locals = wire.locals;
             } else {
-                parent.views.push({
-                    view: self,
-                    name: wire.name,
-                    data: wire.data,
-                    cid: wire.cid
-                });
-                this.parent = parent;
-                this.$el = parent.$el.find("#" + wire.cid);
+                // any other
+                parent.attachSubView(self);
+                this.setElement(parent.$el.find("#" + wire.cid))
                 if (this.$el.length != 1)
                     return safe.back(cb, new Error("View '" + wire.name + "' can't find its unique element"))
-                this.data = _.isString(wire.data) ? (wire.data=="."?ctx.get([],true):ctx.get(wire.data)) : wire.data;
+                this.$el.attr('id', this.cid);
+                this.data = _.isString(wire.data) ? (wire.data == "." ? ctx.get([], true) : ctx.get(wire.data)) : wire.data;
             }
 
             safe.run(function(cb) {
@@ -338,20 +331,87 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             }))
         },
 
-        bindDom: function($parent) {
+        // This is magic function that links just rendered dom model
+        // with view hierarchy. Magic happens when previous (donor)
+        // view is available. While binding we can take some parts
+        // of donor view as is (avoid redraw or state change)
+        bindDom: function($dom, donor) {
             var self = this;
-            this.$el = $parent.find("#" + this.cid);
-            if (this.$el.length != 1)
-                throw new Error("View '" + wire.name + "' can't find its unique element");
+            var mutable = !!donor;
+            if (mutable) {
+                // views should have same class
+                if (donor.name != this.name)
+                    mutable = false;
+                // view should have same ammount of subviews
+                if (donor.views.length != this.views.length)
+                    mutable = false;
+                else {
+                    // subview order and types should match
+                    _.each(this.views, function(lview, i) {
+                        var rview = donor.views[i];
+                        if (lview.name != rview.name)
+                            mutable = false;
+                    })
+                }
+            }
 
-            _.each(self.views, function(child) {
-                child.view.bindDom(self.$el);
-            })
+            if (!mutable) {
+                // just recursively bound elements
+                this.setElement($dom, {
+                    delegate: true,
+                    render: true,
+                    recursive: true
+                });
+            } else {
+                // lets try to mutate childs
+                var movedViews = [];
+                _.each(donor.views, function(lview, i) {
+                        var rview = self.views[i];
+                        var $rdom = $dom.find("#" + rview.cid);
+                        // equaity of data that views are build upon ies a sign
+                        // that view is not need to be recreated
+                        if (_.isEqual(lview.data, rview.data)) {
+                            // move dom subnodes
+                            $rdom.replaceWith(lview.$el)
+                                // detach lview
+                            movedViews.push({
+                                view: lview,
+                                parent: rview.parent
+                            });
+                            // implant into right
+                            lview.data = rview.data;
+                            self.views[i] = lview;
+                        } else {
+                            rview.bindDom($rdom, lview)
+                        }
+                    })
+                    // remove transplanted views from tree
+                _.each(movedViews, function(mv) {
+                    donor.detachSubView(mv.view);
+                    mv.view.parent = mv.parent;
+                })
+                self.setElement($dom, {
+                    delegate: true,
+                    render: false,
+                    recursive: false
+                });
+            }
         },
 
-        addSubView: function(view) {
+        attachSubView: function(view) {
+            if (view.parent)
+                throw new Error("View already has parent")
             view.parent = this;
             this.views.push(view);
+        },
+
+        detachSubView: function(view) {
+            if (view.parent != this)
+                throw new Errror("View is attached to another parent")
+            view.parent = null;
+            this.views = _.reject(this.views, function(v) {
+                return v.cid == view.cid;
+            })
         },
 
         // by convension this should return initial (root) dust content
@@ -371,7 +431,7 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             safe.back(cb, null, ctx);
         },
 
-         // renders inner view content (free form), unlikely need to be
+        // renders inner view content (free form), unlikely need to be
         // redefined
         renderHtml: function(cb) {
             var self = this;
@@ -394,40 +454,64 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
             }))
         },
 
-		// completely refresh current view
+        // completely refresh current view
         refresh: function(cb) {
-			var self = this;
-			this.renderHtml(safe.sure(cb, function(text) {
-				self.removeChild;
-				self.$el.html(text);
-				cb();
-			}))
-		},
+            var self = this;
+            this.renderHtml(safe.sure(cb, function(text) {
+                self.removeChild;
+                self.$el.html(text);
+                cb();
+            }))
+        },
 
         // Remove this view by taking the element out of the DOM, and removing any
         // applicable Backbone.Events listeners.
         remove: function() {
+            if (this.$el) {
+                this.undelegateEvents();
+                this.$el.remove();
+            }
             this.removeChilds();
-            this.$el.remove();
             this.stopListening();
+            if (this.parent) {
+                this.parent.detachSubView(this)
+            }
             return this;
         },
 
         removeChilds: function() {
             _.each(this.views, function(child) {
-                child.view.remove();
+                child.remove();
             })
-            this.views = [];
+            if (this.views.length)
+                throw new Error("Invalid subview links?")
             return this;
         },
 
         // Change the view's element (`this.el` property), including event
         // re-delegation.
-        setElement: function(element, delegate) {
+        setElement: function(element, options) {
+            var self = this;
+            options = options || {
+                delegate: true,
+                render: true,
+                recursive: false
+            };
             if (this.$el) this.undelegateEvents();
-            this.$el = element instanceof Backbone.$ ? element : Backbone.$(element);
+            this.$el = element instanceof $ ? element : $(element);
             this.el = this.$el[0];
-            if (delegate !== false) this.delegateEvents();
+            if (options.delegate)
+                this.delegateEvents();
+            if (options.render)
+                this.postRender();
+            if (options.recursive) {
+                _.each(this.views, function(child) {
+                    var $el = self.$el.find("#" + child.cid);
+                    if ($el.length != 1)
+                        throw new Error("Child view '" + child.name + "' can't find its root element");
+                    child.setElement($el, options);
+                })
+            }
             return this;
         },
 
@@ -685,96 +769,110 @@ define(['safe', 'lodash', 'dust','jquery','jquery-cookie'], function(safe, _, du
         this.ewares = [];
 
         window.onpopstate = function(event) {
-            self.navigateTo(document.location.href, {back:true}, self.errHandler);
+            self.navigateTo(document.location.href, {
+                back: true
+            }, self.errHandler);
         };
     }
 
     _.extend(ClientRouter.prototype, Events, {
-		use: function (ware) {
-			if (ware.length==4)
-				this.ewares.push(ware);
-			else
-				this.wares.push(ware);
-		},
-		get: function () {
-			var route = arguments[0];
-			var wares = [];
-			for (var i=1; i<arguments.length; i++) {
-				wares.push(arguments[1])
-			}
-			this.routes[route]={router:new Router(route,false), wares:wares}
-		},
-		mutateTo: function (href) {
+        use: function(ware) {
+            if (ware.length == 4)
+                this.ewares.push(ware);
+            else
+                this.wares.push(ware);
+        },
+        get: function() {
+            var route = arguments[0];
+            var wares = [];
+            for (var i = 1; i < arguments.length; i++) {
+                wares.push(arguments[1])
+            }
+            this.routes[route] = {
+                router: new Router(route, false),
+                wares: wares
+            }
+        },
+        mutateTo: function(href) {
             var url = resolveUrl(href);
-			history.pushState({}, "", url);
-		},
+            history.pushState({}, "", url);
+        },
         navigateTo: function(href, opts, next) {
-			var self = this;
+            var self = this;
             next || (next = self.errHandler);
             var url = resolveUrl(href);
             var prefix = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + this.prefix
-            var uri = url.replace(prefix, "").replace(/\?.*$/,"");
+            var uri = url.replace(prefix, "").replace(/\?.*$/, "");
             var match = null;
-			var req = {
-				query: getQueryStringAsObject(),
-				cookies: $.cookie(),
-                headers: {'user-agent': navigator.userAgent},
+            var req = {
+                query: getQueryStringAsObject(),
+                cookies: $.cookie(),
+                headers: {
+                    'user-agent': navigator.userAgent
+                },
                 originalUrl: url,
                 baseUrl: this.prefix,
-                path:uri
-			}
-			var res = {req:req,locals:{}};
-			var stack = [];
-			safe.run(function (cb) {
-				// execute all normal midlewares
-				_.each(self.wares, function (r) {
-					stack.push(function (cb) {
-						r(req, res, cb)
-					})
-				});
-				safe.series(stack, safe.sure(cb, function () {
-					// now simulate router midleware
-					_.each(self.routes, function(p,k) {
-						if (match) return;
-						match = p.router.match(uri);
-						if (match) {
-							self.trigger("start",{route:k})
-							if (opts.replace)
-								history.replaceState({}, "", url);
-							else if (!opts.back)
-								history.pushState({}, "", url);
-							stack = [];
-							req.params = match;
-							req.route = {path:k};
-							_.each(p.wares, function (r) {
-								stack.push(function (cb) {
-									r(req, res, cb)
-								})
-							});
-							safe.series(stack, cb);
-						}
-					})
-				}))
-			}, function (err) {
-				if (err) {
-					// finally error handlers
-					stack = [];
-					_.each(self.ewares, function (r) {
-						stack.push(function (cb) {
-							r(err,req, res, cb)
-						})
-					});
-					stack.push(function (cb) {
-						next(err)
-					})
-					safe.series(stack, next);
-				} else {
-					// if no match found just do normal
-					// client navigation
-					if (!match)
-						window.location = url;
-				}
-			})
+                path: uri
+            }
+            var res = {
+                req: req,
+                locals: {}
+            };
+            var stack = [];
+            safe.run(function(cb) {
+                // execute all normal midlewares
+                _.each(self.wares, function(r) {
+                    stack.push(function(cb) {
+                        r(req, res, cb)
+                    })
+                });
+                safe.series(stack, safe.sure(cb, function() {
+                    // now simulate router midleware
+                    _.each(self.routes, function(p, k) {
+                        if (match) return;
+                        match = p.router.match(uri);
+                        if (match) {
+                            self.trigger("start", {
+                                route: k
+                            })
+                            if (opts.replace)
+                                history.replaceState({}, "", url);
+                            else if (!opts.back)
+                                history.pushState({}, "", url);
+                            stack = [];
+                            req.params = match;
+                            req.route = {
+                                path: k
+                            };
+                            _.each(p.wares, function(r) {
+                                stack.push(function(cb) {
+                                    r(req, res, cb)
+                                })
+                            });
+                            safe.series(stack, cb);
+                        }
+                    })
+                }))
+            }, function(err) {
+                if (err) {
+                    // finally error handlers
+                    stack = [];
+                    _.each(self.ewares, function(r) {
+                        stack.push(function(cb) {
+                            r(err, req, res, cb)
+                        })
+                    });
+                    stack.push(function(cb) {
+                        next(err)
+                    })
+                    safe.series(stack, next);
+                } else {
+                    // if no match found just do normal
+                    // client navigation
+                    if (!match)
+                        window.location = url;
+                }
+            })
         }
     })
     return {

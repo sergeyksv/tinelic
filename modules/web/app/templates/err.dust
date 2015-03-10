@@ -1,4 +1,4 @@
-{@view name="views/header_view"/}
+{@view name="views/header_view" data="title"/}
 
 <div class="starter-template container-fluid">
 <div class="row">
@@ -15,18 +15,7 @@
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Total errors</a></li>
 			</ul>
 		</div>
-		<div>
-			{#data}
-				<div class="progress" style="border-radius:20px">
-					<span style="text-align:right;position:absolute; right:20px">
-						<span class="text-info">{stats.epm}</span>
-					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
-						<div style="text-align:left; padding-left:20px""><a href="./{stats._id}">{error.message}</a> </div>
-					</div>
-				</div>
-			{/data}
-		</div>
+		{@view name="views/err_list_view" data="data"/}
 	</div>
 	<div class="col-sm-8">
 		<div class="row">

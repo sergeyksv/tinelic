@@ -2,9 +2,6 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 	var view = tb.View;
 	var View = view.extend({
 		id:"templates/header",
-		postRender:function () {
-			view.prototype.postRender.call(this);
-		},
 		events: {
 			'click .dropdown-menu li':function (e) {
 				e.preventDefault();

@@ -77,12 +77,14 @@ module.exports.init = function (ctx, cb) {
 					});
 					populateTplCtx.call(this,ctx,cb)
 				}
+
 				view.render(safe.sure(next, function (text) {
+					// console.log(text);
 					var wv = {name:"app",data:route.data,views:[]};
-					function wireView(realView,wiredView) {
+					function wireView(realView, wiredView) {
 						_.each(realView.views, function (view) {
-							var wv = {name:view.name, data:view.data, cid:view.view.cid, views:[]};
-							wireView(view.view,wv);
+							var wv = {name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
+							wireView(view,wv);
 							wiredView.views.push(wv)
 						})
 					}

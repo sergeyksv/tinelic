@@ -11,8 +11,9 @@ define(['tinybone/base','safe','dustc!templates/index.dust'],function (tb,safe,t
 				var modal = new Modal({app:self.app});
 				modal.data = {};
 				modal.render(safe.sure(self.app.errHandler, function (text) {
-					self.$el.prepend(text);
-					modal.bindDom(self.$el);
+					var $modal = $(text)
+					self.$el.prepend($modal);
+					modal.bindDom($modal);
 					modal.postRender();
 				}))
 				modal.once("saved", function () {

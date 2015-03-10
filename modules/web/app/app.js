@@ -108,12 +108,13 @@ define(['views/layout','module','safe',"dust"
 			view.data = route.data;
 			view.locals = res.locals;
 			view.render(safe.sure(next, function (text) {
+				var oldView = mainView.views[0];
 				document.title = route.data.title;
-				mainView.removeChilds();
-				$("#content").html(text);
-				view.bindDom($("#content"));
-				mainView.addSubView({view:view, name:route.view, cid:view.cid, data:view.data})
-				view.postRender();
+				var $dom = $(text);
+				$("#content").html($dom);
+				view.bindDom($dom, oldView)
+				oldView.remove();
+				mainView.attachSubView(view)
 				self._pageLoad.dom = new Date();
 				var m = {
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
