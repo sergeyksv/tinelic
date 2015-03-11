@@ -7,7 +7,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 				e.preventDefault();
 				$this = $(e.currentTarget);
 				$.cookie('str', $this.data('range'), {expires: 5,path: '/',});
-				this.app.router.navigateTo(window.location.pathname);
+				this.app.router.reload();
 				return false;
 			},
 			'click #logout': function(e) {
@@ -18,7 +18,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!templates/header.dust','bo
 					}
 					else {
 						$.removeCookie("token");
-						self.app.router.navigateTo('.')
+						self.app.router.reload();
 					}
 				});
 			}

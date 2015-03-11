@@ -12,7 +12,8 @@ requirejs.config({
     paths:{
 		"tinybone":path.resolve(__dirname,"../tinybone"),
 		'dustc': path.resolve(__dirname,'../tinybone/dustc'),
-		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text')
+		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
+		"md5":"../public/js/md5",
 	},
 	config:{
 		"text":{
@@ -70,7 +71,7 @@ module.exports.init = function (ctx, cb) {
 					ctx = ctx.push({_t_main_view:route.view.id,
 						_t_prefix:"/web",
 						_t_self_id:self_id,
-						_t_route:route.route,
+						_t_route:res.req.route.path,
 						_t_unique:uniqueId,
 						_t_env_production:cfg.env=="production",
 						_t_rev:cfg.rev
@@ -82,7 +83,7 @@ module.exports.init = function (ctx, cb) {
 					var wv = {name:"app",data:route.data,views:[]};
 					function wireView(realView, wiredView) {
 						_.each(realView.views, function (view) {
-							var wv = {name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
+							var wv = {md5:view.md5, name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
 							wireView(view,wv);
 							wiredView.views.push(wv)
 						})
@@ -133,7 +134,14 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		], safe.sure(cb, function () {
-			cb(null,{api:{}})
+			cb(null,{api:{
+				getFeed:function (token, p, cb) {
+					feed = p.feed.split(".")
+					requirejs(["feed/"+feed[0]], function (m) {
+						m[feed[1]](token,p.params,cb)
+					},cb)
+				}
+			}})
 		}))
 	},cb)
 }

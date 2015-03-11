@@ -16,7 +16,7 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/signup.dust'],
                     }
                     else {
                        $.cookie("token", t, { expires: 7 })
-                       self.app.router.navigateTo('/web/')
+                       self.app.router.reload()
                     }
                 });
             }
