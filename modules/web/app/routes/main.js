@@ -690,6 +690,98 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					})
 				)
 			}))
+		},
+		database:function (req, res, cb) {
+			var st = req.params.stats
+			var str = req.query._str || req.cookies.str || '1d';
+			var quant = 10;
+			var range = 60 * 60 * 1000;
+
+			// transcode range paramater into seconds
+			var match = str.match(/(\d+)(.)/);
+			var units = {
+				h:60 * 60 * 1000,
+				d:24 * 60 * 60 * 1000,
+				w:7 * 24 * 60 * 60 * 1000
+			}
+			if (match.length==3 && units[match[2]])
+				range = match[1]*units[match[2]];
+
+			var dtstart = new Date(Date.parse(Date()) - range);
+			var dtend = Date();
+			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				safe.parallel({
+						view: function (cb) {
+							requirejs(["views/database_view"], function (view) {
+								safe.back(cb, null, view)
+							},cb)
+						},
+						data: function (cb) {
+							api("collect.asBreakDown", "public", {
+								_t_age: quant + "m", quant: quant, filter: {
+									_idp: project._id,
+									_dt: {$gt: dtstart, $lte: dtend}
+								}
+							}, cb)
+						}
+					}, safe.sure(cb, function(r){
+						var filter = {
+							_t_age: quant + "m", quant: quant,
+							filter: {
+								_idp: project._id,
+								_dt: {$gt: dtstart, $lte: dtend}
+							}
+						}
+						var data = {};
+						_.forEach(r.data, function(r) {
+							_.forEach(r.value,function(r) {
+								if (r.r) {
+									if (r.r.search(/MongoDB/) == 0) {
+										if (!data[r.r]) {
+											data[r.r] = r.data
+										}
+										else {
+											data[r.r][0] += r.data[0];
+											data[r.r][1] += r.data[0];
+										}
+									}
+								}
+							})
+						})
+						var arr = [];
+						var sum = 0.0;
+						_.forEach(data, function(r,v) {
+							if (st == 'req')
+								sum += r[0]
+							if (st == 'mtc')
+								sum += r[1]
+							arr.push({name:v, r: r[0], tt: r[1], avg: r[1]/r[0]})
+							if (st == 'sar')
+								sum += (r[1]/r[0])
+						})
+						var procent = sum/100
+						_.forEach(arr, function(r) {
+							if (st == 'req')
+								r.bar = r.r/procent
+							if (st == 'mtc')
+								r.bar = r.tt/procent
+							if (st == 'sar')
+								r.bar = r.avg/procent
+						})
+						arr = _.sortBy(arr, function(r) {
+							r.avg = r.avg.toFixed(4)
+							r.tt = r.tt.toFixed(2)
+							if (st == 'req')
+								return r.r*-1
+							if (st == 'mtc')
+								return r.tt*-1
+							if (st == 'sar')
+								return r.avg*-1
+						})
+						res.renderX({view:r.view,route:req.route.path,data:{data:arr, title:"Database/Statements", st: st, fr: filter}})
+					})
+				)
+			}))
 		}
 	}
 })
