@@ -16,7 +16,8 @@ var cfg = {
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
 		{name:"web",require:"./modules/web"},
-		{name:"newrelic_server",require:"./modules/newrelic_agent"}
+		{name:"newrelic_server",require:"./modules/newrelic_agent"},
+		{name:"getsentry_server",require:"./modules/getsentry_agent"}
 	],
 	config:require("./config.js")
 }
