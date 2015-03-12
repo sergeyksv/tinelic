@@ -18,11 +18,17 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.validate.register("team", {$set:{properties:{
 		_id:{type:"mongoId"},
 		name:{type:"string",required:true},
-		projects:{type:"array", items:[
-			{type:"object", properties:{
-				_idp:{type:"mongoId", required:true}
-			}}
-		]}
+		projects:{type:"array", items:{
+			type:"object", required:false, properties:{
+				_idp:{type:"mongoId"}
+			}
+		}},
+		users:{type:"array", required:true, items:{
+			type:"object", required:false, properties:{
+				_idu:{required:true, type:"mongoId"},
+				role:{required:true, enum: [ "member", "lead"]}
+			}
+		}}
 	}}})
 
     ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
@@ -120,8 +126,10 @@ module.exports.init = function (ctx, cb) {
                     }))
                 },
                 saveTeam: function (t,u,cb) {
-                    // t = "public", u = {name:"DefaultUser", pass:'123'}
-                    tm.teams.insert(u, cb);
+					u = prefixify(u);
+                    ctx.api.validate.check("team", u, safe.sure(cb, function (u) {
+						tm.teams.insert(u, cb);
+					}))
                 },
                 updateTeam: function (t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
@@ -155,32 +163,24 @@ module.exports.init = function (ctx, cb) {
                         cb)
 					}))
                 },
-                addUsers: function(t, u , cb) {
-					ctx.api.users.getUsers(token,{}, safe.sure(cb, function (v) {
-						for(var i=0; i<u.users.length; i++){
-							v.forEach(function(v){
-								if (v._id == u.users[i]._idu){
-									u.users[i]._idu=v._id
-								}
-							})
+                addUsers: function(t, u, cb) {
+					u = prefixify(u);
+					var update = {
+						$addToSet: {
+								users: {$each:u.users}
 						}
-						var _id = new mongo.ObjectID(u.id);
-						tm.teams.update({_id: _id}, {
-                            $addToSet: {
-                                    users: {$each:u.users}
-                            }}, {},
-                        cb)
+					}
+					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+						tm.teams.update({_id: u._id}, update, {},cb)
 					}))
                 },
                 pullData: function(t, u, cb) {
-                    var _id = new mongo.ObjectID(u.id)
-                    var idtt = new mongo.ObjectID(u.idtt)
-                    if (u.idt == '_idu') {
-                        tm.teams.update({_id: _id}, {$pull: {users: {_idu: idtt}}},{}, cb)
-                    }
-                    else {
-                        tm.teams.update({_id: _id}, {$pull: {projects: {_idp: idtt}}},{}, cb)
-                    }
+					u = prefixify(u);
+                    var update = u.idt == '_idu' ? {$pull: {users: {_idu: u._idtt}}} : {$pull: {projects: {_idp: u._idtt}}};
+
+					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+                        tm.teams.update({_id: u._id}, update,{}, cb)
+                    }))
                 }
             }});
         }))

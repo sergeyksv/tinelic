@@ -113,8 +113,6 @@ module.exports.init = function (ctx, cb) {
 					if (selfProj==null) {
 						ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id, name, slug) {
 							proj_Def[0]._idp=selfProj_id;
-							proj_Def[0].name=name;
-							proj_Def[0].slug=slug;
 							self_id = selfProj_id;
 							cb()
 						}))
@@ -130,9 +128,7 @@ module.exports.init = function (ctx, cb) {
 
 					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
 						usr_admin[0]._idu=self[0]._id;
-						usr_admin[0].login=self[0].login;
-						usr_admin[0].role=self[0].role;
-						usr_admin[0].role_team="Lead";
+						usr_admin[0].role="lead";
 					cb()
 					}))
 				}))
