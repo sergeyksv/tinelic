@@ -103,7 +103,7 @@ module.exports.init = function (ctx, cb) {
 			}
 			next();
 		})
-
+		var usr_admin=[{}], proj_Def=[{}];
 		safe.series([
 			function (cb) {
 				app.initRoutes(cb)
@@ -111,7 +111,10 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				ctx.api.assets.getProject("public",{filter:{slug:"tinelic-web"}}, safe.sure(cb, function (selfProj) {
 					if (selfProj==null) {
-						ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id) {
+						ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id, name, slug) {
+							proj_Def[0]._idp=selfProj_id;
+							proj_Def[0].name=name;
+							proj_Def[0].slug=slug;
 							self_id = selfProj_id;
 							cb()
 						}))
@@ -125,13 +128,19 @@ module.exports.init = function (ctx, cb) {
 				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
 
-					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', role: 'admin', pass: "tinelic"},cb)
+					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
+						usr_admin[0]._idu=self[0]._id;
+						usr_admin[0].login=self[0].login;
+						usr_admin[0].role=self[0].role;
+						usr_admin[0].role_team="Lead";
+					cb()
+					}))
 				}))
 			},
 			function (cb) {
-				ctx.api.assets.getTeam("public",{filter:{name:"DefaultTeam"}}, safe.sure(cb, function (self) {
+				ctx.api.assets.getTeam("public",{filter:{name:"Tinelic"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
-					ctx.api.assets.saveTeam("public", {name:"DefaultTeam"},cb)
+					ctx.api.assets.saveTeam("public", {name:"Tinelic", projects:proj_Def, users:usr_admin},cb)
 				}))
 			}
 		], safe.sure(cb, function () {
