@@ -129,6 +129,10 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				data._i_err = 0;
+				data.uri = data.p
+				data.route = data.r
+				delete data.r
+				delete data.p
 				safe.run(function (cb) {
 					pages.insert(data, safe.sure(cb, function (docs) {
 						// once after inserting page we need to link

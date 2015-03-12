@@ -139,7 +139,7 @@ define(['views/layout','module','safe',"dust"
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
 					_i_dt:self._pageLoad.dom.valueOf()-self._pageLoad.data.valueOf(),
 					_i_lt:0,
-					route:self._pageLoad.route
+					r:self._pageLoad.route
 				}
 				window.Tinelic.pageLoad(m);
 			}))
