@@ -10,7 +10,7 @@ module.exports.deps = ['mongo'];
 
 module.exports.init = function ( ctx, cb_main ) {
 	ctx.api.mongo.getDb( {}, safe.sure( cb_main, function( db ) {
-		
+
 		function cb_error( error ) {
 			_log_error( "GETSENTRY_SERVER ERROR: " + (error.stack ? error.stack : error) + "\n" );
 		}
@@ -78,7 +78,7 @@ module.exports.init = function ( ctx, cb_main ) {
 			fs.appendFile( "server_getsentry.log", "\n" );
 			*/
 		}
-		
+
 		function _replace( str, from, to ) {
 			while( str.indexOf(from) >= 0 )
 				str = str.replace( from, to );

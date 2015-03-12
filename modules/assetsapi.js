@@ -14,6 +14,16 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.obac.register(['team_view','team_edit'],'assets',{permission:'getTeamPermission',grantids:'getGrantedTeamIds'});
 	ctx.api.obac.register(['project_view','project_edit'],'assets',{permission:'getProjectPermission',grantids:'getGrantedProjectIds'});
 
+	ctx.api.validate.register("team", {$set:{properties:{
+		_id:{type:"mongoId"},
+		name:{type:"string",required:true},
+		projects:{type:"array", items:[
+			{type:"object", properties:{
+				_idp:{type:"mongoId", required:true}
+			}}
+		]}
+	}}})
+
     ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
         safe.series({
             "teams":function (cb) {

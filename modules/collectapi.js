@@ -11,11 +11,16 @@ var request = require('request');
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
 
-module.exports.deps = ['mongo','prefixify'];
+module.exports.deps = ['mongo','prefixify','validate'];
 
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
 	var queryfix = ctx.api.prefixify.queryfix;
+	ctx.api.validate.register("error", {$set:{properties:{
+		_dt:{type:"date",required:true},
+		_idp:{type:"mongoId",required:true},
+		_id:{type:"mongoId"}
+	}}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {

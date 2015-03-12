@@ -10,7 +10,7 @@ module.exports.deps = ['mongo'];
 
 module.exports.init = function ( ctx, cb_main ) {
 	ctx.api.mongo.getDb( {}, safe.sure( cb_main, function( db ) {
-		
+
 		function cb_error( error ) {
 			_log_error( "NEWRELIC_SERVER ERROR: " + (error.stack ? error.stack : error) + "\n" );
 		}
@@ -125,7 +125,7 @@ module.exports.init = function ( ctx, cb_main ) {
 			} else {
 				var project_id = query["run_id"];
 				if( !project_id )
-					throw new Error( "invalid request \"" + query.method + "\", run_id is undefined" ); 
+					throw new Error( "invalid request \"" + query.method + "\", run_id is undefined" );
 				var metric_data = request_data_json;
 				_prepare_2_db( metric_data );
 				safe.waterfall([
@@ -265,7 +265,7 @@ module.exports.init = function ( ctx, cb_main ) {
 					_prepare_2_db( _json[p] );
 			}
 		}
-		
+
 		function _replace( str, from, to ) {
 			while( str.indexOf(from) >= 0 )
 				str = str.replace( from, to );
