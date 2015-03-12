@@ -64,6 +64,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug/pages/:stats", main.pages);
 				router.get("/project/:slug/errors/:sort", main.errors);
 				router.get("/project/:slug/errors/:sort/:id", main.errors);
+				router.get("/project/:slug/database/:stats", main.database);
 				router.get("/teams", main.teams);
 
 				// error handler after that

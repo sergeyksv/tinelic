@@ -1,0 +1,46 @@
+{@view name="views/header_view"/}
+
+<div class="starter-template container-fluid">
+<div class="row">
+	<div class="col-sm-4">
+		<div class="dropdown">
+			{title} <span class="btn btn-xs btn-info" data-toggle="dropdown">
+				{@select key="{st}"}
+					{@eq value="req"}highest requests{/eq}
+					{@eq value="mtc"}most time consuming{/eq}
+					{@eq value="sar"}slowest average response time{/eq}
+				{/select}
+			<span class="caret"></span></span><br><br>
+			<ul class="dropdown-menu" role="menu">
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="req" class="do-stats" href="#">Highest requests</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mtc" class="do-stats" href="#">Most time consuming</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
+			</ul>
+		</div>
+		<div>
+			{#data}
+				<div class="progress" style="border-radius:20px">
+					<span style="text-align:right;position:absolute; right:20px">
+						{@select key="{st}"}
+							{@eq value="req"}{r} <span class="text-info">req</span>{/eq}
+							{@eq value="mtc"}{tt} <span class="text-info">avgt*req</span>{/eq}
+							{@eq value="sar"}{avg} <span class="text-info">s</span>{/eq}
+						{/select}
+					</span>
+					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
+						<div style="text-align:left; padding-left:20px""><span style="cursor: pointer;" class="more">{name}</span> </div>
+					</div>
+				</div>
+			{/data}
+		</div>
+	</div>
+	<div class="col-sm-8">
+    	<span class="text-info"><strong>Throughput(time)</strong></span><hr></hr>
+       	<div id="time-one" style="width:100%; height:200px; float: left;"></div>
+       	<span class="text-info"><strong>Throughput(rpm)</strong></span><hr></hr>
+        <div id="rpm-one" style="width:100%; height:200px; float: left;"></div>
+        <table class="table table-hover" id="trbreak">
+        </table>
+    </div>
+</div>
+</div>

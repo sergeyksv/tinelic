@@ -747,6 +747,84 @@ module.exports.init = function (ctx, cb) {
 							},
 							cb
 						)
+				},
+				postDbViews:function (t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					as.mapReduce("function () {\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{data: this.data})\
+						}",
+						function (k, v) {
+							var r=null;
+
+							v.forEach(function (v) {
+								if (!r) {
+									r = v
+								}
+								else {
+									var data={}
+									v.data.forEach(function(v){
+										data[v.r] = v
+									})
+									r.data.forEach(function(r){
+										if (data[r.r]) {
+											r.data[0] += data[r.r].data[0]
+											r.data[1] += data[r.r].data[1]
+											r.data[2] += data[r.r].data[2]
+											r.data[3] += data[r.r].data[3]
+											r.data[4] += data[r.r].data[4]
+											r.data[5] += data[r.r].data[5]
+										}
+									})
+								}
+							})
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
+				},
+				postDbBreakdown:function (t, p, cb) {
+					var query = queryfix(p.filter);
+					var q = p.quant || 1;
+					as.mapReduce("function () {\
+							emit(this.r,{data: this.data})\
+						}",
+						function (k, v) {
+							var r=null;
+
+							v.forEach(function (v) {
+								if (!r) {
+									r = v
+								}
+								else {
+									var data={}
+									v.data.forEach(function(v){
+										data[v.r] = v
+									})
+									r.data.forEach(function(r){
+										if (data[r.r]) {
+											r.data[0] += data[r.r].data[0]
+											r.data[1] += data[r.r].data[1]
+											r.data[2] += data[r.r].data[2]
+											r.data[3] += data[r.r].data[3]
+											r.data[4] += data[r.r].data[4]
+											r.data[5] += data[r.r].data[5]
+										}
+									})
+								}
+							})
+							return r;
+						},
+						{
+							query: query,
+							out: {inline:1}
+						},
+						cb
+					)
 				}
 			}});
 		}))
