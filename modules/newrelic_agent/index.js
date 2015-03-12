@@ -3,6 +3,8 @@ var fs = require("fs");
 var safe = require("safe");
 var _ = require("lodash");
 var mongo = require("mongodb");
+var zlib = require('zlib');
+ErrorParser_Newrelic = require( "../error_parser/parser_newrelic.js" );
 
 module.exports.deps = ['mongo'];
 
@@ -11,7 +13,7 @@ module.exports.init = function ( ctx, cb_main ) {
 		
 		function cb_error( error ) {
 			_log_error( "NEWRELIC_SERVER ERROR: " + (error.stack ? error.stack : error) + "\n" );
-		}		
+		}
 
 		safe.series( {
 			projects_cache: function( cb ) {
@@ -24,11 +26,14 @@ module.exports.init = function ( ctx, cb_main ) {
 				} ) );
 			}
 		}, safe.sure( cb_error, function( tinelic_data ) {
+			/* request from newrelic agent */
 			ctx.express.post( "/agent_listener/invoke_raw_method", function( req, res ) {
 				safe.run( function() {
 					if( !req.body )
 						throw new Error( "Cannot parse body (" + req.url + ")" );
-					on_agent_request( res, req.url, req.body, tinelic_data );
+					// when newrelic accumulated big data it zips requests, but body-parser inflates it
+					var _body = Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString()) : req.body;
+					on_agent_request( res, req.url, _body, tinelic_data );
 				}, function( error ){
 					cb_error( error );
 					safe.run( function(){
@@ -37,6 +42,7 @@ module.exports.init = function ( ctx, cb_main ) {
 					}, cb_error );
 				} );
 			} );
+			/* test request from web */
 			ctx.express.get("/nrs_cache", function (req, res) {
 				safe.run( function() {
 					var _response = "";
@@ -172,7 +178,7 @@ module.exports.init = function ( ctx, cb_main ) {
 							}
 							cb( null, metric_id );
 						}
-						, function( metric_id, cb ){
+						, function( metric_id, cb ) {
 							// parse known data
 							if( query.method == "analytic_event_data" ) {
 								var _data_array = metric_data[metric_data.length - 1];
@@ -195,6 +201,22 @@ module.exports.init = function ( ctx, cb_main ) {
 										// TODO
 									} ) );
 								}
+								cb( null, metric_id );
+							} else cb( null, metric_id );
+						}
+						, function( metric_id, cb ) {
+							// parse error data
+							if( query.method == "error_data" ) {
+								var _data_array = metric_data[metric_data.length - 1];
+								if( !_data_array )
+									throw new Error( "Newrelic metric data is empty" );
+								// write object in database
+								var error_parser = new ErrorParser_Newrelic();
+								error_parser.add_error( db, new mongo.ObjectID(project_id), _data_array, safe.sure( cb_error, function( error_data ) {
+									db.collection("actions_errors").insert( error_data, safe.sure( cb, function( records ){
+										// TODO
+									} ) );
+								} ) );
 								cb( null, metric_id );
 							} else cb( null, metric_id );
 						}

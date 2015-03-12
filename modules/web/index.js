@@ -6,6 +6,7 @@ var fs = require('fs');
 var path = require('path');
 var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
+var raven = require('raven');
 
 requirejs.config({
     baseUrl: __dirname+"/app",
@@ -134,6 +135,12 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		], safe.sure(cb, function () {
+			// Set up Raven
+			var ravenjs = new raven.Client('http://pushok_public_key:pushok_private_key@localhost/getsentry/'+self_id);
+			var testError = new Error("Tinelic server startup!");
+			ravenjs.captureError(testError);
+			require("newrelic").noticeError(testError);
+
 			cb(null,{api:{
 				getFeed:function (token, p, cb) {
 					feed = p.feed.split(".")
