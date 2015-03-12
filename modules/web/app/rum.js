@@ -107,10 +107,10 @@
 			}
 		},
 		pageLoad:function (m) {
-			m.p = window.location.pathname;
+			m.uri = window.location.pathname;
 			m._dt = new Date();
 			m._dtp = this._dtp;
-			m.r = m.r || this.route;
+			m.route = m.route || this.route;
 			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
 			sendPixel(m, this.url+"/collect/browser/"+this.project)
 		}

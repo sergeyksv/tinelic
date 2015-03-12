@@ -87,8 +87,8 @@ module.exports.init = function (ctx, cb) {
 						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
-								(page.r) && (data.request.route = page.r);
-								(page.p) && (data.request.uri = page.p);
+								(page.route) && (data.request.route = page.route);
+								(page.uri) && (data.request.uri = page.uri);
 							}
 							ajax.insert(data, cb)
 						}))
@@ -139,7 +139,7 @@ module.exports.init = function (ctx, cb) {
 								events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.r, uri: data.p}
+										request: {route: data.route, uri: data.uri}
 									}
 								}, {multi: true}, safe.sure(cb, function (updates) {
 									if (updates)
@@ -152,7 +152,7 @@ module.exports.init = function (ctx, cb) {
 								ajax.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.r, uri: data.p}
+										request: {route: data.route, uri: data.uri}
 									}
 								}, {multi: true}, safe.sure(cb, function() {
 									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
@@ -208,8 +208,8 @@ module.exports.init = function (ctx, cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
-							(page.r) && (data.request.route = page.r);
-							(page.p) && (data.request.uri = page.p);
+							(page.route) && (data.request.route = page.route);
+							(page.uri) && (data.request.uri = page.uri);
 						}
 
 						events.insert(data, cb)
@@ -327,7 +327,7 @@ module.exports.init = function (ctx, cb) {
 					var f = 4*t;
 					pages.mapReduce(
 						"function() {\
-							emit(this.p, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+							emit(this.uri, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
 						function (k,v) {
 							var t = 4000; //apdex T
@@ -693,7 +693,7 @@ module.exports.init = function (ctx, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-						delete query.p
+						delete query.uri
 						var idpv = []
 						_.forEach(data, function(r){
 							idpv.push(r._id)
