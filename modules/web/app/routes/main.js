@@ -551,6 +551,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								data.push({error: {message: "Not errors on this client"}})
 							}
 						}
+						var sum = 0.0
+						_.forEach(data, function(r) {
+							sum += r.stats.epm
+						})
+						var percent = sum/100
+						_.forEach(data, function(r) {
+							r.bar = r.stats.epm/percent
+						})
 						res.renderX({view:r.view,data:{data:data,event:r.event, title:"Errors",st: st}})
 					})
 				)

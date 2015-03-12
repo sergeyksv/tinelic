@@ -4,7 +4,7 @@
 			<span class="text-info">{stats.epm}</span>
 		</span>
 		<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
-			<div style="text-align:left; padding-left:20px""><a href="./{stats._id}">{error.message}</a> </div>
+			<div style="text-align:left; padding-left:20px""><a href="./{stats._id}"  style="color: black;">{error.message}</a> </div>
 		</div>
 	</div>
 {/.}

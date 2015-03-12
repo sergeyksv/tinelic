@@ -19,7 +19,7 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
-				db.collection("events",safe.sure(cb, function (col) {
+				db.collection("page_errors",safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
@@ -39,7 +39,7 @@ module.exports.init = function (ctx, cb) {
 				}))
 			},
 			function (cb) {
-				db.collection("ajax", safe.sure(cb, function (col) {
+				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({chash:1}, cb)},
 						function (cb) { col.ensureIndex({_dt:1}, cb)},
@@ -78,7 +78,10 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
-				data.request = {};
+				data._s_name = data.r
+				data._s_url = data.url
+				delete data.url
+				delete data.r
 				safe.run(function (cb) {
 					pages.findAndModify(
 						{
@@ -87,8 +90,8 @@ module.exports.init = function (ctx, cb) {
 						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
-								(page.route) && (data.request.route = page.route);
-								(page.uri) && (data.request.uri = page.uri);
+								(page._s_route) && (data._s_route = page._s_route);
+								(page._s_uri) && (data._s_uri = page._s_uri);
 							}
 							ajax.insert(data, cb)
 						}))
@@ -129,8 +132,8 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				data._i_err = 0;
-				data.uri = data.p
-				data.route = data.r
+				data._s_uri = data.p
+				data._s_route = data.r
 				delete data.r
 				delete data.p
 				safe.run(function (cb) {
@@ -143,8 +146,8 @@ module.exports.init = function (ctx, cb) {
 								events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.route, uri: data.uri}
-									}
+										_s_route: data._s_route,
+										_s_uri: data._s_uri}
 								}, {multi: true}, safe.sure(cb, function (updates) {
 									if (updates)
 										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
@@ -156,8 +159,8 @@ module.exports.init = function (ctx, cb) {
 								ajax.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.route, uri: data.uri}
-									}
+										_s_route: data._s_route,
+										_s_uri: data._s_uri}
 								}, {multi: true}, safe.sure(cb, function() {
 									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
 										if (count > 0)
@@ -212,8 +215,8 @@ module.exports.init = function (ctx, cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
-							(page.route) && (data.request.route = page.route);
-							(page.uri) && (data.request.uri = page.uri);
+							(page._s_route) && (data.request.route = page._s_route);
+							(page._s_uri) && (data.request.uri = page._s_uri);
 						}
 
 						events.insert(data, cb)
@@ -300,7 +303,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					ajax.mapReduce(
 						"function() {\
-							emit(this.r, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+							emit(this._s_name, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 						}",
 						function (k,v) {
 							var r=null;
@@ -331,7 +334,7 @@ module.exports.init = function (ctx, cb) {
 					var f = 4*t;
 					pages.mapReduce(
 						"function() {\
-							emit(this.uri, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+							emit(this._s_uri, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
 						function (k,v) {
 							var t = 4000; //apdex T
@@ -587,7 +590,7 @@ module.exports.init = function (ctx, cb) {
 					if (!p.Graph_bool) {
 						ajax.mapReduce(
 							"function() {\
-								emit(this.r, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+								emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 							}",
 							function (k,v) {
 								var t = 400; //apdex T
@@ -621,7 +624,7 @@ module.exports.init = function (ctx, cb) {
 						)
 					}
 					else {
-						query.r=p._idurl;
+						query._s_name=p._idurl;
 						ajax.mapReduce(
 							"function() {\
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tt:this._i_tt})\
@@ -697,7 +700,7 @@ module.exports.init = function (ctx, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-						delete query.uri
+						delete query._s_uri
 						var idpv = []
 						_.forEach(data, function(r){
 							idpv.push(r._id)
@@ -705,7 +708,7 @@ module.exports.init = function (ctx, cb) {
 						query._idpv = {$in: idpv}
 						ajax.mapReduce(
 							"function() {\
-                                emit(this.r, {r: 1.0/"+q+", tt: this._i_tt} )\
+                                emit(this._s_name, {r: 1.0/"+q+", tt: this._i_tt} )\
                             }",
 							function (k,v) {
 								var r=null;
@@ -732,7 +735,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 						ajax.mapReduce(
 							"function() {\
-                                emit(this.r, { uri: this.request.uri, pag: [], count:{}} )\
+                                emit(this._s_name, { uri: this._s_uri, pag: [], count:{}} )\
                             }",
 							function (k,v) {
 								var r=null;
