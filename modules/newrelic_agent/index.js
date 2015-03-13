@@ -165,16 +165,14 @@ module.exports.init = function ( ctx, cb_main ) {
 										};
 									}
 									_tinelic_items[_newrelic_item_scope].data.push( {
-										"_s_name": _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).name
-										, "_s_type": _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).type
-										, "data": {
-											_i_cnt: _newrelic_item[1][0],
-											_i_tt: parseInt(_newrelic_item[1][1]*1000),
-											_i_own: parseInt(_newrelic_item[1][2]*1000),
-											_i_min: parseInt(_newrelic_item[1][3]*1000),
-											_i_max: parseInt(_newrelic_item[1][4]*1000),
-											_i_sqr: parseInt(_newrelic_item[1][5]*1000)
-										}
+										_s_name: _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).name,
+										_s_type: _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).type,
+										_i_cnt: _newrelic_item[1][0],
+										_i_tt: parseInt(_newrelic_item[1][1]*1000),
+										_i_own: parseInt(_newrelic_item[1][2]*1000),
+										_i_min: parseInt(_newrelic_item[1][3]*1000),
+										_i_max: parseInt(_newrelic_item[1][4]*1000),
+										_i_sqr: parseInt(_newrelic_item[1][5]*1000)
 									} );
 								}
 								for( var p in _tinelic_items ) {

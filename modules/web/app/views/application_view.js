@@ -22,10 +22,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                       api("collect.asBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                           trbreak.empty();
                           trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
-                          var sum = data[0].value[transaction].data
+                          var sum = data[0].value[transaction]
                           _.forEach(data[0].value, function(data) {
-                              var count = (data.data._i_cnt/sum._i_cnt).toFixed(2)
-                              var proc = ((data.data._i_tt/sum._i_tt)*100).toFixed(1)
+                              var count = (data._i_cnt/sum._i_cnt).toFixed(2)
+                              var proc = ((data._i_tt/sum._i_tt)*100).toFixed(1)
                               trbreak.append('<tr><td>'+data._s_name+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                           })
                       }))

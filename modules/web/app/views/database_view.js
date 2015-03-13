@@ -22,7 +22,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         api("collect.postDbBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = []
                             _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0].data
+                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
                                 views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
                             })
                             trbreak.empty();
@@ -41,7 +41,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         api("collect.postDbViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = [];
                             _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0].data
+                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
                                 views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
                             })
                             var flat = [], prev = null

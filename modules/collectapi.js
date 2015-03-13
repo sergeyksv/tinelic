@@ -693,12 +693,12 @@ module.exports.init = function (ctx, cb) {
 							var int = {}
 							r.data.forEach(function(data){
 								if (int[data._s_name]) {
-									int[data._s_name].data._i_cnt += data.data._i_cnt
-									int[data._s_name].data._i_tt += data.data._i_tt
-									int[data._s_name].data._i_own += data.data._i_own
-									int[data._s_name].data._i_min += data.data._i_min
-									int[data._s_name].data._i_max += data.data._i_max
-									int[data._s_name].data._i_sqr += data.data._i_sqr
+									int[data._s_name]._i_cnt += data._i_cnt
+									int[data._s_name]._i_tt += data._i_tt
+									int[data._s_name]._i_own += data._i_own
+									int[data._s_name]._i_min += data._i_min
+									int[data._s_name]._i_max += data._i_max
+									int[data._s_name]._i_sqr += data._i_sqr
 								}
 								else {
 									int[data._s_name] = data
@@ -792,12 +792,12 @@ module.exports.init = function (ctx, cb) {
 									})
 									r.data.forEach(function(r){
 										if (data[r._s_name]) {
-											r.data._i_cnt += data[r._s_name].data._i_cnt
-											r.data._i_tt += data[r._s_name].data._i_tt
-											r.data._i_own += data[r._s_name]._i_own
-											r.data._i_min += data[r._s_name]._i_min
-											r.data._i_max += data[r._s_name]._i_max
-											r.data._i_sqr += data[r._s_name]._i_sqr
+											r._i_cnt += data[r._s_name]._i_cnt
+											r._i_tt += data[r._s_name]._i_tt
+											r._i_own += data[r._s_name]._i_own
+											r._i_min += data[r._s_name]._i_min
+											r._i_max += data[r._s_name]._i_max
+											r._i_sqr += data[r._s_name]._i_sqr
 										}
 									})
 								}
@@ -831,12 +831,12 @@ module.exports.init = function (ctx, cb) {
 									})
 									r.data.forEach(function(r){
 										if (data[r._s_name]) {
-											r.data._i_cnt += data[r._s_name].data._i_cnt
-											r.data._i_tt += data[r._s_name].data._i_tt
-											r.data._i_own += data[r._s_name].data._i_own
-											r.data._i_min += data[r._s_name].data._i_min
-											r.data._i_max += data[r._s_name].data._i_max
-											r.data._i_sqr += data[r._s_name].data._i_sqr
+											r._i_cnt += data[r._s_name]._i_cnt
+											r._i_tt += data[r._s_name]._i_tt
+											r._i_own += data[r._s_name]._i_own
+											r._i_min += data[r._s_name]._i_min
+											r._i_max += data[r._s_name]._i_max
+											r._i_sqr += data[r._s_name]._i_sqr
 										}
 									})
 								}

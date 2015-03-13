@@ -611,11 +611,11 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								if (r._s_name) {
 									if (r._s_type == "Datastore/statement") {
 										if (!data[r._s_name]) {
-											data[r._s_name] = r.data
+											data[r._s_name] = r
 										}
 										else {
-											data[r._s_name]._i_cnt += r.data._i_cnt;
-											data[r._s_name]._i_tt += r.data._i_tt;
+											data[r._s_name]._i_cnt += r._i_cnt;
+											data[r._s_name]._i_tt += r._i_tt;
 										}
 									}
 								}
