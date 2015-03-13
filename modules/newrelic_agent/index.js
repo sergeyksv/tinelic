@@ -156,8 +156,8 @@ module.exports.init = function ( ctx, cb_main ) {
 										_tinelic_items[_newrelic_item_scope] = {
 											"_idp": new mongo.ObjectID(project_id)
 											, "_idm": metric_id
-											, "r": _parse_newrelic_metric_name( _newrelic_item[0]["scope"] ).name
-											, "t": _parse_newrelic_metric_name( _newrelic_item[0]["scope"] ).type
+											, "_s_name": _parse_newrelic_metric_name( _newrelic_item[0]["scope"] ).name
+											, "_s_type": _parse_newrelic_metric_name( _newrelic_item[0]["scope"] ).type
 											, "_dt": _time_avg
 											, "_dts": _time_start
 											, "_dte": _time_end
@@ -165,13 +165,18 @@ module.exports.init = function ( ctx, cb_main ) {
 										};
 									}
 									_tinelic_items[_newrelic_item_scope].data.push( {
-										"r": _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).name
-										, "t": _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).type
-										, "data": _newrelic_item[1]
+										_s_name: _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).name,
+										_s_type: _parse_newrelic_metric_name( _newrelic_item[0]["name"] ).type,
+										_i_cnt: _newrelic_item[1][0],
+										_i_tt: parseInt(_newrelic_item[1][1]*1000),
+										_i_own: parseInt(_newrelic_item[1][2]*1000),
+										_i_min: parseInt(_newrelic_item[1][3]*1000),
+										_i_max: parseInt(_newrelic_item[1][4]*1000),
+										_i_sqr: parseInt(_newrelic_item[1][5]*1000)
 									} );
 								}
 								for( var p in _tinelic_items ) {
-									db.collection("actions_stats").insert( _tinelic_items[p], safe.sure( cb_error, function( records ){
+									db.collection("action_stats").insert( _tinelic_items[p], safe.sure( cb_error, function( records ){
 										// TODO
 									} ) );
 								}
@@ -191,11 +196,11 @@ module.exports.init = function ( ctx, cb_main ) {
 									var _tinelic_item = {
 										"_idp": new mongo.ObjectID(project_id)
 										, "_idm": metric_id
-										, "r": _parse_newrelic_metric_name( _newrelic_item["name"] ).name
-										, "t": _parse_newrelic_metric_name( _newrelic_item["name"] ).type
+										, "_s_name": _parse_newrelic_metric_name( _newrelic_item["name"] ).name
+										, "_s_type": _parse_newrelic_metric_name( _newrelic_item["name"] ).type
 										, "_dt": new Date( _newrelic_item["timestamp"] )
-										, "_iwt": _newrelic_item["webDuration"]
-										, "_itt": _newrelic_item["duration"]
+										, "_i_wt": (_newrelic_item["webDuration"])*1000
+										, "_i_tt": (_newrelic_item["duration"])*1000
 									};
 									db.collection("actions").insert( _tinelic_item, safe.sure( cb_error, function( records ){
 										// TODO
@@ -213,7 +218,7 @@ module.exports.init = function ( ctx, cb_main ) {
 								// write object in database
 								var error_parser = new ErrorParser_Newrelic();
 								error_parser.add_error( db, new mongo.ObjectID(project_id), _data_array, safe.sure( cb_error, function( error_data ) {
-									db.collection("actions_errors").insert( error_data, safe.sure( cb, function( records ){
+									db.collection("action_errors").insert( error_data, safe.sure( cb, function( records ){
 										// TODO
 									} ) );
 								} ) );

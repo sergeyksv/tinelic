@@ -24,7 +24,7 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
-				db.collection("events",safe.sure(cb, function (col) {
+				db.collection("page_errors",safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
@@ -44,7 +44,7 @@ module.exports.init = function (ctx, cb) {
 				}))
 			},
 			function (cb) {
-				db.collection("ajax", safe.sure(cb, function (col) {
+				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({chash:1}, cb)},
 						function (cb) { col.ensureIndex({_dt:1}, cb)},
@@ -56,7 +56,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("actions", cb)
 			},
 			function (cb) {
-				db.collection("actions_stats", cb)
+				db.collection("action_stats", cb)
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
@@ -83,7 +83,10 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
-				data.request = {};
+				data._s_name = data.r
+				data._s_url = data.url
+				delete data.url
+				delete data.r
 				safe.run(function (cb) {
 					pages.findAndModify(
 						{
@@ -92,8 +95,8 @@ module.exports.init = function (ctx, cb) {
 						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
-								(page.r) && (data.request.route = page.r);
-								(page.p) && (data.request.uri = page.p);
+								(page._s_route) && (data._s_route = page._s_route);
+								(page._s_uri) && (data._s_uri = page._s_uri);
 							}
 							ajax.insert(data, cb)
 						}))
@@ -134,6 +137,10 @@ module.exports.init = function (ctx, cb) {
 				md5sum.update(data._dtp.toString());
 				data.chash = md5sum.digest('hex');
 				data._i_err = 0;
+				data._s_uri = data.p
+				data._s_route = data.r
+				delete data.r
+				delete data.p
 				safe.run(function (cb) {
 					pages.insert(data, safe.sure(cb, function (docs) {
 						// once after inserting page we need to link
@@ -144,7 +151,10 @@ module.exports.init = function (ctx, cb) {
 								events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.r, uri: data.p}
+										request: {
+											route: data._s_route,
+											uri: data._s_uri
+										}
 									}
 								}, {multi: true}, safe.sure(cb, function (updates) {
 									if (updates)
@@ -157,8 +167,8 @@ module.exports.init = function (ctx, cb) {
 								ajax.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										request: {route: data.r, uri: data.p}
-									}
+										_s_route: data._s_route,
+										_s_uri: data._s_uri}
 								}, {multi: true}, safe.sure(cb, function() {
 									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
 										if (count > 0)
@@ -209,14 +219,28 @@ module.exports.init = function (ctx, cb) {
 				// when error happens try to link it with current page
 				// which is latest page from same client (chash)
 				// which is registered not later than current event
+				data._s_culprit = data.culprit; delete data.culprit;
+				data._s_message = data.message; delete data.message;
+				data._s_id = data.event_id; delete data.event_id;
+				data._s_logger = data.logger; delete data.logger;
+				data.exception._s_type = data.exception.type; delete data.exception.type;
+				data.exception._s_value = data.exception.value; delete data.exception.value;
+				_.forEach(data.stacktrace.frames, function(r) {
+					r._s_file = r.filename; delete r.filename;
+					r._i_line = r.lineno; delete r.lineno;
+					r._i_col = r.colno; delete r.colno;
+					r._s_func = r.function; delete r.function;
+					r._b_inapp = r.in_app; delete r.in_app;
+				})
+				delete data.platform;
+
 				safe.run(function (cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
-							(page.r) && (data.request.route = page.r);
-							(page.p) && (data.request.uri = page.p);
+							(page._s_route) && (data.request.route = page._s_route);
+							(page._s_uri) && (data.request.uri = page._s_uri);
 						}
-
 						events.insert(data, cb)
 					}))
 				}, function (err) {
@@ -232,7 +256,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					actions.mapReduce(
 						"function() {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._itt})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._i_tt})\
 						}",
 						function (k,v) {
 							var t = 200; //apdex T
@@ -266,10 +290,10 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					actions.mapReduce(
 						"function() {\
-							emit(this.r, {tt: this._itt*(1.0/"+q+"), tta: Number(this._itt.toFixed(3)), r: 1.0/"+q+"})\
+							emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+"})\
 						}",
 						function (k,v) {
-							var t = 0.2; //apdex T
+							var t = 200; //apdex T
 							var f = 4*t;
 							var r=null;
 							v.forEach(function (v) {
@@ -279,7 +303,7 @@ module.exports.init = function (ctx, cb) {
 								}
 								else {
 									r.tt += v.tt;
-									r.tta = Number(((r.tta+v.tta)/2).toFixed(3));
+									r.tta = parseInt(((r.tta+v.tta)/2));
 									r.r += v.r
 									r.apdex[0] += (v.tta <= t)?1:0;
 									r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
@@ -301,7 +325,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					ajax.mapReduce(
 						"function() {\
-							emit(this.r, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+							emit(this._s_name, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 						}",
 						function (k,v) {
 							var r=null;
@@ -332,7 +356,7 @@ module.exports.init = function (ctx, cb) {
 					var f = 4*t;
 					pages.mapReduce(
 						"function() {\
-							emit(this.p, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+							emit(this._s_uri, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
 						function (k,v) {
 							var t = 4000; //apdex T
@@ -448,7 +472,7 @@ module.exports.init = function (ctx, cb) {
 
 					events.findOne(query, safe.sure(cb, function (event) {
 						var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
-						var query = {_idp:event._idp,logger:event.logger,platform:event.platform,message:event.message,"stacktrace.frames":{$size:st}};
+						var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
 
 						events.mapReduce(function () {
 								var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
@@ -458,7 +482,7 @@ module.exports.init = function (ctx, cb) {
 								var sessions = {}; sessions[this.shash]=1;
 								var views = {}; views[this._idpv]=1;
 								var ids = [this._id];
-								emit(this.logger+this.platform+this.message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids})
+								emit(this._s_logger+this._s_message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids})
 							},
 							function (k, v) {
 								var r=null;
@@ -514,7 +538,7 @@ module.exports.init = function (ctx, cb) {
 							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
 							var s = {}; s[this.shash]=1;
 							var epm = {}; epm[this._idpv]=1;
-							emit(this.logger+this.platform+this.message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
+							emit(this._s_logger+this._s_message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
 						},
 						function (k, v) {
 							var r=null;
@@ -561,19 +585,19 @@ module.exports.init = function (ctx, cb) {
 					)
 				},
 				getJSByTrace:function (t, p, cb) {
-					var url = p.filename.trim();
+					var url = p._s_file.trim();
 
 					request.get({url:url}, safe.sure(cb, function (res, body) {
 						if (res.statusCode!=200)
 							return cb(new Error("Error, status code " + res.statusCode));
 						var lineno=0,lineidx=0;
-						while (lineno<parseInt(p.lineno)-1) {
+						while (lineno<parseInt(p._i_line)-1) {
 							lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
 							if (lineidx==-1)
-								return cb(new Error("Line number '"+p.lineno+"' is not found"));
+								return cb(new Error("Line number '"+p._i_line+"' is not found"));
 							lineno++;
 						}
-						var idx = lineidx+parseInt(p.colno);
+						var idx = lineidx+parseInt(p._i_col);
 						body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
 						if (idx>=body.length)
 							return cb(new Error("Column number '"+p.colno+"' is not found"));
@@ -588,7 +612,7 @@ module.exports.init = function (ctx, cb) {
 					if (!p.Graph_bool) {
 						ajax.mapReduce(
 							"function() {\
-								emit(this.r, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+								emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
 							}",
 							function (k,v) {
 								var t = 400; //apdex T
@@ -622,7 +646,7 @@ module.exports.init = function (ctx, cb) {
 						)
 					}
 					else {
-						query.r=p._idurl;
+						query._s_name=p._idurl;
 						ajax.mapReduce(
 							"function() {\
 							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tt:this._i_tt})\
@@ -655,7 +679,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					as.mapReduce(
 						"function() {\
-							emit(this.r, {data: this.data} )\
+							emit(this._s_name, {data: this.data} )\
 						}",
 						function (k,v) {
 							var r=null;
@@ -673,16 +697,16 @@ module.exports.init = function (ctx, cb) {
 							})
 							var int = {}
 							r.data.forEach(function(data){
-								if (int[data.r]) {
-									int[data.r].data[0] += data.data[0]
-									int[data.r].data[1] += data.data[1]
-									int[data.r].data[2] += data.data[2]
-									int[data.r].data[3] += data.data[3]
-									int[data.r].data[4] += data.data[4]
-									int[data.r].data[5] += data.data[5]
+								if (int[data._s_name]) {
+									int[data._s_name]._i_cnt += data._i_cnt
+									int[data._s_name]._i_tt += data._i_tt
+									int[data._s_name]._i_own += data._i_own
+									int[data._s_name]._i_min += data._i_min
+									int[data._s_name]._i_max += data._i_max
+									int[data._s_name]._i_sqr += data._i_sqr
 								}
 								else {
-									int[data.r] = data
+									int[data._s_name] = data
 								}
 							})
 							return int;
@@ -698,7 +722,7 @@ module.exports.init = function (ctx, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-						delete query.p
+						delete query._s_uri
 						var idpv = []
 						_.forEach(data, function(r){
 							idpv.push(r._id)
@@ -706,7 +730,7 @@ module.exports.init = function (ctx, cb) {
 						query._idpv = {$in: idpv}
 						ajax.mapReduce(
 							"function() {\
-                                emit(this.r, {r: 1.0/"+q+", tt: this._i_tt} )\
+                                emit(this._s_name, {r: 1.0/"+q+", tt: this._i_tt} )\
                             }",
 							function (k,v) {
 								var r=null;
@@ -733,7 +757,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 						ajax.mapReduce(
 							"function() {\
-                                emit(this.r, { uri: this.request.uri, pag: [], count:{}} )\
+                                emit(this._s_name, { uri: this._s_uri, pag: [], count:{}} )\
                             }",
 							function (k,v) {
 								var r=null;
@@ -769,16 +793,16 @@ module.exports.init = function (ctx, cb) {
 								else {
 									var data={}
 									v.data.forEach(function(v){
-										data[v.r] = v
+										data[v._s_name] = v
 									})
 									r.data.forEach(function(r){
-										if (data[r.r]) {
-											r.data[0] += data[r.r].data[0]
-											r.data[1] += data[r.r].data[1]
-											r.data[2] += data[r.r].data[2]
-											r.data[3] += data[r.r].data[3]
-											r.data[4] += data[r.r].data[4]
-											r.data[5] += data[r.r].data[5]
+										if (data[r._s_name]) {
+											r._i_cnt += data[r._s_name]._i_cnt
+											r._i_tt += data[r._s_name]._i_tt
+											r._i_own += data[r._s_name]._i_own
+											r._i_min += data[r._s_name]._i_min
+											r._i_max += data[r._s_name]._i_max
+											r._i_sqr += data[r._s_name]._i_sqr
 										}
 									})
 								}
@@ -796,7 +820,7 @@ module.exports.init = function (ctx, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					as.mapReduce("function () {\
-							emit(this.r,{data: this.data})\
+							emit(this._s_name,{data: this.data})\
 						}",
 						function (k, v) {
 							var r=null;
@@ -808,16 +832,16 @@ module.exports.init = function (ctx, cb) {
 								else {
 									var data={}
 									v.data.forEach(function(v){
-										data[v.r] = v
+										data[v._s_name] = v
 									})
 									r.data.forEach(function(r){
-										if (data[r.r]) {
-											r.data[0] += data[r.r].data[0]
-											r.data[1] += data[r.r].data[1]
-											r.data[2] += data[r.r].data[2]
-											r.data[3] += data[r.r].data[3]
-											r.data[4] += data[r.r].data[4]
-											r.data[5] += data[r.r].data[5]
+										if (data[r._s_name]) {
+											r._i_cnt += data[r._s_name]._i_cnt
+											r._i_tt += data[r._s_name]._i_tt
+											r._i_own += data[r._s_name]._i_own
+											r._i_min += data[r._s_name]._i_min
+											r._i_max += data[r._s_name]._i_max
+											r._i_sqr += data[r._s_name]._i_sqr
 										}
 									})
 								}

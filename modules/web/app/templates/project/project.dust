@@ -31,7 +31,7 @@
 							<ul class="list-unstyled h6">
 							{#err}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.epm}</span> - {error.message}</a><br>
+									<a href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.epm}</span> - {error._s_message}</a><br>
 								</li>
 							{/err}
 							</ul>
