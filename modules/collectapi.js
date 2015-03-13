@@ -7,6 +7,8 @@ var moment = require("moment");
 var useragent = require("useragent");
 var geoip = require('geoip-lite');
 var request = require('request');
+var zlib = require('zlib');
+var ErrorParser_GetsentryServer = require("./error_parser/parser_getsentry_server.js");
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -57,8 +59,11 @@ module.exports.init = function (ctx, cb) {
 			},
 			function (cb) {
 				db.collection("action_stats", cb)
+			},
+			function (cb) {
+				db.collection("action_errors", cb)
 			}
-		],safe.sure_spread(cb, function (events,pages,ajax, actions, as) {
+		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
 				var data = req.query;
 				data._idp = new mongo.ObjectID(req.params.project);
@@ -186,6 +191,30 @@ module.exports.init = function (ctx, cb) {
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
 				})
+			})
+			// dsn is like http://auth1:auth2@{host}/collect/sentry/{projectid}
+			ctx.router.post( "/sentry/api/store", function( req, res, next ) {
+				safe.run(function(cb) {
+					var zip_buffer = new Buffer( req.body.toString(), 'base64' );
+					zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
+						var getsentry_data = JSON.parse( _buffer_getsentry_data.toString() );
+						var error_parser = new ErrorParser_GetsentryServer();
+						error_parser.add_error( db, new mongo.ObjectID(getsentry_data.project.toString()),
+							getsentry_data, safe.sure( cb, function( error_data ) {
+								action_errors.insert( error_data, cb)
+							})
+						);
+					}));
+				}, function( error ){
+					if (error) {
+						// report getsentry error with newrelic ;)
+						newrelic.noticeError(error);
+						res.writeHead( 500, { 'x-sentry-error': error.toString() } );
+						res.status(500).end( error.toString() );
+					} else {
+						res.status(200).end( "ok" );
+					}
+				});
 			})
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				var ip = req.headers['x-forwarded-for'] ||

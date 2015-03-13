@@ -37,7 +37,7 @@ requirejs.define("bootstrap/dropdown", true);
 requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets','users','collect',"newrelic_server","getsentry_server"];
+module.exports.deps = ['assets','users','collect',"newrelic_server"];
 
 var wires = {};
 
@@ -141,7 +141,7 @@ module.exports.init = function (ctx, cb) {
 			}
 		], safe.sure(cb, function () {
 			// Set up Raven
-			var ravenjs = new raven.Client('http://pushok_public_key:pushok_private_key@localhost/getsentry/'+self_id);
+			var ravenjs = new raven.Client('http://blah:blah@localhost/collect/sentry/'+self_id);
 			ravenjs.captureError(new Error("Tinelic Sentry startup!"));
 			require("newrelic").noticeError( new Error("Tinelic NewRelic startup!"));
 
