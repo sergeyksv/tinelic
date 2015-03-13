@@ -27,7 +27,7 @@ ErrorParser_Newrelic.prototype.add_error = function( db, project_id, error_data,
 				error_parser.set("error_date", new Date() );
 				error_parser.set("error_reporter", "newrelic" );
 				error_parser.set("error_occurred_on_server", _data.newrelic_agent.env.host );
-				error_parser.set("error_in_language", _data.newrelic_agent.env.language );
+				error_parser.set("error_in_logger", _data.newrelic_agent.env.language );
 				error_parser.set("error_occurred_on_request", error_data_item[4].request_uri );
 				error_parser.set("error_details", { error_type: error_data_item[3], error_value: error_data_item[2] } );
 				// parse stack trace

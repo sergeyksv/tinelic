@@ -146,8 +146,11 @@ module.exports.init = function (ctx, cb) {
 								events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
 									$set: {
 										_idpv: _id,
-										_s_route: data._s_route,
-										_s_uri: data._s_uri}
+										request: {
+											route: data._s_route,
+											uri: data._s_uri
+										}
+									}
 								}, {multi: true}, safe.sure(cb, function (updates) {
 									if (updates)
 										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
@@ -211,6 +214,21 @@ module.exports.init = function (ctx, cb) {
 				// when error happens try to link it with current page
 				// which is latest page from same client (chash)
 				// which is registered not later than current event
+				data._s_culprit = data.culprit; delete data.culprit;
+				data._s_message = data.message; delete data.message;
+				data._s_id = data.event_id; delete data.event_id;
+				data._s_logger = data.logger; delete data.logger;
+				data.exception._s_type = data.exception.type; delete data.exception.type;
+				data.exception._s_value = data.exception.value; delete data.exception.value;
+				_.forEach(data.stacktrace.frames, function(r) {
+					r._s_file = r.filename; delete r.filename;
+					r._i_line = r.lineno; delete r.lineno;
+					r._i_col = r.colno; delete r.colno;
+					r._s_func = r.function; delete r.function;
+					r._b_inapp = r.in_app; delete r.in_app;
+				})
+				delete data.platform;
+
 				safe.run(function (cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
@@ -218,7 +236,6 @@ module.exports.init = function (ctx, cb) {
 							(page._s_route) && (data.request.route = page._s_route);
 							(page._s_uri) && (data.request.uri = page._s_uri);
 						}
-
 						events.insert(data, cb)
 					}))
 				}, function (err) {
@@ -450,7 +467,7 @@ module.exports.init = function (ctx, cb) {
 
 					events.findOne(query, safe.sure(cb, function (event) {
 						var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
-						var query = {_idp:event._idp,logger:event.logger,platform:event.platform,message:event.message,"stacktrace.frames":{$size:st}};
+						var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
 
 						events.mapReduce(function () {
 								var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
@@ -460,7 +477,7 @@ module.exports.init = function (ctx, cb) {
 								var sessions = {}; sessions[this.shash]=1;
 								var views = {}; views[this._idpv]=1;
 								var ids = [this._id];
-								emit(this.logger+this.platform+this.message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids})
+								emit(this._s_logger+this._s_message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids})
 							},
 							function (k, v) {
 								var r=null;
@@ -516,7 +533,7 @@ module.exports.init = function (ctx, cb) {
 							var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
 							var s = {}; s[this.shash]=1;
 							var epm = {}; epm[this._idpv]=1;
-							emit(this.logger+this.platform+this.message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
+							emit(this._s_logger+this._s_message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
 						},
 						function (k, v) {
 							var r=null;
@@ -563,19 +580,19 @@ module.exports.init = function (ctx, cb) {
 					)
 				},
 				getJSByTrace:function (t, p, cb) {
-					var url = p.filename.trim();
+					var url = p._s_file.trim();
 
 					request.get({url:url}, safe.sure(cb, function (res, body) {
 						if (res.statusCode!=200)
 							return cb(new Error("Error, status code " + res.statusCode));
 						var lineno=0,lineidx=0;
-						while (lineno<parseInt(p.lineno)-1) {
+						while (lineno<parseInt(p._i_line)-1) {
 							lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
 							if (lineidx==-1)
-								return cb(new Error("Line number '"+p.lineno+"' is not found"));
+								return cb(new Error("Line number '"+p._i_line+"' is not found"));
 							lineno++;
 						}
-						var idx = lineidx+parseInt(p.colno);
+						var idx = lineidx+parseInt(p._i_col);
 						body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
 						if (idx>=body.length)
 							return cb(new Error("Column number '"+p.colno+"' is not found"));

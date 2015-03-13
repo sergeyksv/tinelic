@@ -10,7 +10,7 @@ module.exports.deps = ['mongo'];
 
 module.exports.init = function ( ctx, cb_main ) {
 	ctx.api.mongo.getDb( {}, safe.sure( cb_main, function( db ) {
-		
+
 		function cb_error( error ) {
 			_log_error( "GETSENTRY_SERVER ERROR: " + (error.stack ? error.stack : error) + "\n" );
 		}
@@ -59,7 +59,7 @@ module.exports.init = function ( ctx, cb_main ) {
 			// parse and add error
 			var error_parser = new ErrorParser_GetsentryServer();
 			error_parser.add_error( db, new mongo.ObjectID(request_data_json.project.toString()), request_data_json, safe.sure( cb_error, function( error_data ) {
-				db.collection("actions_errors").insert( error_data, safe.sure( cb_error, function( records ){
+				db.collection("action_errors").insert( error_data, safe.sure( cb_error, function( records ){
 					// TODO
 				} ) );
 			} ) );
@@ -78,7 +78,7 @@ module.exports.init = function ( ctx, cb_main ) {
 			fs.appendFile( "server_getsentry.log", "\n" );
 			*/
 		}
-		
+
 		function _replace( str, from, to ) {
 			while( str.indexOf(from) >= 0 )
 				str = str.replace( from, to );
