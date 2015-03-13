@@ -96,7 +96,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				var actrpm1 = a.value? a.value.r:0;
 				actrpm.push([d,actrpm1]);
 				apdexActions.push([d,apdex]);
-				ttServer.push([d, a.value?a.value.tt:0]);
+				ttServer.push([d, a.value?(a.value.tt)/1000:0]);
 			})
 
 			var ajloadmax = _.max(ajload, function (v) { return v[1]; })[1];

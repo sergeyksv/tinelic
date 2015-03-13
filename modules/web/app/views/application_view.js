@@ -15,7 +15,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               var trbreak = self.$('#trbreak')
               var transaction = $(e.currentTarget).html()
               var filter = this.data.fr
-              filter.filter.r = transaction;
+              filter.filter._s_name = transaction;
 
               safe.parallel([
                   function(cb) {
@@ -24,9 +24,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                           var sum = data[0].value[transaction].data
                           _.forEach(data[0].value, function(data) {
-                              var count = (data.data[0]/sum[0]).toFixed(2)
-                              var proc = ((data.data[1]/sum[1])*100).toFixed(1)
-                              trbreak.append('<tr><td>'+data.r+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
+                              var count = (data.data._i_cnt/sum._i_cnt).toFixed(2)
+                              var proc = ((data.data._i_tt/sum._i_tt)*100).toFixed(1)
+                              trbreak.append('<tr><td>'+data._s_name+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                           })
                       }))
                       cb()
@@ -61,7 +61,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               d = d.valueOf();
                               var actrpm1 = a.value ? a.value.r : 0;
                               actrpm.push([d, actrpm1]);
-                              ttServer.push([d, a.value?a.value.tt:0]);
+                              ttServer.push([d, a.value?(a.value.tt)/1000:0]);
                           })
 
                           var actrpmmax = _.max(actrpm, function (v) {

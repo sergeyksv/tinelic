@@ -608,14 +608,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var data = {};
 						_.forEach(r.data, function(r) {
 							_.forEach(r.value,function(r) {
-								if (r.r) {
-									if (r.r.search(/MongoDB/) == 0) {
-										if (!data[r.r]) {
-											data[r.r] = r.data
+								if (r._s_name) {
+									if (r._s_type == "Datastore/statement") {
+										if (!data[r._s_name]) {
+											data[r._s_name] = r.data
 										}
 										else {
-											data[r.r][0] += r.data[0];
-											data[r.r][1] += r.data[0];
+											data[r._s_name]._i_cnt += r.data._i_cnt;
+											data[r._s_name]._i_tt += r.data._i_tt;
 										}
 									}
 								}
@@ -625,12 +625,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var sum = 0.0;
 						_.forEach(data, function(r,v) {
 							if (st == 'req')
-								sum += r[0]
+								sum += r._i_cnt
 							if (st == 'mtc')
-								sum += r[1]
-							arr.push({name:v, r: r[0], tt: r[1], avg: r[1]/r[0]})
+								sum += r._i_tt
+							arr.push({name:v, r: r._i_cnt, tt: r._i_tt, avg: r._i_tt/ r._i_cnt})
 							if (st == 'sar')
-								sum += (r[1]/r[0])
+								sum += (r._i_tt/ r._i_cnt)
 						})
 						var procent = sum/100
 						_.forEach(arr, function(r) {
@@ -642,8 +642,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								r.bar = r.avg/procent
 						})
 						arr = _.sortBy(arr, function(r) {
-							r.avg = r.avg.toFixed(4)
-							r.tt = r.tt.toFixed(2)
+							r.avg = parseInt(r.avg)
 							if (st == 'req')
 								return r.r*-1
 							if (st == 'mtc')

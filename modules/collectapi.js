@@ -51,7 +51,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("actions", cb)
 			},
 			function (cb) {
-				db.collection("actions_stats", cb)
+				db.collection("action_stats", cb)
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as) {
 			ctx.router.get("/ajax/:project", function (req, res, next) {
@@ -251,7 +251,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					actions.mapReduce(
 						"function() {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._itt})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._i_tt})\
 						}",
 						function (k,v) {
 							var t = 200; //apdex T
@@ -285,10 +285,10 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					actions.mapReduce(
 						"function() {\
-							emit(this.r, {tt: this._itt*(1.0/"+q+"), tta: Number(this._itt.toFixed(3)), r: 1.0/"+q+"})\
+							emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+"})\
 						}",
 						function (k,v) {
-							var t = 0.2; //apdex T
+							var t = 200; //apdex T
 							var f = 4*t;
 							var r=null;
 							v.forEach(function (v) {
@@ -298,7 +298,7 @@ module.exports.init = function (ctx, cb) {
 								}
 								else {
 									r.tt += v.tt;
-									r.tta = Number(((r.tta+v.tta)/2).toFixed(3));
+									r.tta = parseInt(((r.tta+v.tta)/2));
 									r.r += v.r
 									r.apdex[0] += (v.tta <= t)?1:0;
 									r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
@@ -674,7 +674,7 @@ module.exports.init = function (ctx, cb) {
 					var q = p.quant || 1;
 					as.mapReduce(
 						"function() {\
-							emit(this.r, {data: this.data} )\
+							emit(this._s_name, {data: this.data} )\
 						}",
 						function (k,v) {
 							var r=null;
@@ -692,16 +692,16 @@ module.exports.init = function (ctx, cb) {
 							})
 							var int = {}
 							r.data.forEach(function(data){
-								if (int[data.r]) {
-									int[data.r].data[0] += data.data[0]
-									int[data.r].data[1] += data.data[1]
-									int[data.r].data[2] += data.data[2]
-									int[data.r].data[3] += data.data[3]
-									int[data.r].data[4] += data.data[4]
-									int[data.r].data[5] += data.data[5]
+								if (int[data._s_name]) {
+									int[data._s_name].data._i_cnt += data.data._i_cnt
+									int[data._s_name].data._i_tt += data.data._i_tt
+									int[data._s_name].data._i_own += data.data._i_own
+									int[data._s_name].data._i_min += data.data._i_min
+									int[data._s_name].data._i_max += data.data._i_max
+									int[data._s_name].data._i_sqr += data.data._i_sqr
 								}
 								else {
-									int[data.r] = data
+									int[data._s_name] = data
 								}
 							})
 							return int;
@@ -788,16 +788,16 @@ module.exports.init = function (ctx, cb) {
 								else {
 									var data={}
 									v.data.forEach(function(v){
-										data[v.r] = v
+										data[v._s_name] = v
 									})
 									r.data.forEach(function(r){
-										if (data[r.r]) {
-											r.data[0] += data[r.r].data[0]
-											r.data[1] += data[r.r].data[1]
-											r.data[2] += data[r.r].data[2]
-											r.data[3] += data[r.r].data[3]
-											r.data[4] += data[r.r].data[4]
-											r.data[5] += data[r.r].data[5]
+										if (data[r._s_name]) {
+											r.data._i_cnt += data[r._s_name].data._i_cnt
+											r.data._i_tt += data[r._s_name].data._i_tt
+											r.data._i_own += data[r._s_name]._i_own
+											r.data._i_min += data[r._s_name]._i_min
+											r.data._i_max += data[r._s_name]._i_max
+											r.data._i_sqr += data[r._s_name]._i_sqr
 										}
 									})
 								}
@@ -815,7 +815,7 @@ module.exports.init = function (ctx, cb) {
 					var query = queryfix(p.filter);
 					var q = p.quant || 1;
 					as.mapReduce("function () {\
-							emit(this.r,{data: this.data})\
+							emit(this._s_name,{data: this.data})\
 						}",
 						function (k, v) {
 							var r=null;
@@ -827,16 +827,16 @@ module.exports.init = function (ctx, cb) {
 								else {
 									var data={}
 									v.data.forEach(function(v){
-										data[v.r] = v
+										data[v._s_name] = v
 									})
 									r.data.forEach(function(r){
-										if (data[r.r]) {
-											r.data[0] += data[r.r].data[0]
-											r.data[1] += data[r.r].data[1]
-											r.data[2] += data[r.r].data[2]
-											r.data[3] += data[r.r].data[3]
-											r.data[4] += data[r.r].data[4]
-											r.data[5] += data[r.r].data[5]
+										if (data[r._s_name]) {
+											r.data._i_cnt += data[r._s_name].data._i_cnt
+											r.data._i_tt += data[r._s_name].data._i_tt
+											r.data._i_own += data[r._s_name].data._i_own
+											r.data._i_min += data[r._s_name].data._i_min
+											r.data._i_max += data[r._s_name].data._i_max
+											r.data._i_sqr += data[r._s_name].data._i_sqr
 										}
 									})
 								}

@@ -15,15 +15,15 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 var trbreak = self.$('#trbreak')
                 var p = $(e.currentTarget).html()
                 var filter = this.data.fr
-                filter.filter['data.r'] = p;
+                filter.filter['data._s_name'] = p;
 
                 safe.parallel([
                     function(cb) {
                         api("collect.postDbBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = []
                             _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r.r == p)})[0].data
-                                views.push({_id:v._id, value: {r: data[0], tt: data[1]}})
+                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0].data
+                                views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
                             })
                             trbreak.empty();
                             trbreak.append('<tr class=\"info\"><th>Part</th><th>avg*req</th><th>Time</th></tr>');
@@ -32,7 +32,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 sum += r.value.tt
                             })
                             _.forEach(_.sortBy(views,function(r){return -1*r.value.tt}), function(data) {
-                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.tt.toFixed(2)+'</td><td>'+((data.value.tt/sum)*100).toFixed(2)+' %</td></tr>')
+                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.tt+'</td><td>'+((data.value.tt/sum)*100).toFixed(2)+' %</td></tr>')
                             })
                         }))
                         cb()
@@ -41,8 +41,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         api("collect.postDbViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = [];
                             _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r.r == p)})[0].data
-                                views.push({_id:v._id, value: {r: data[0], tt: data[1]}})
+                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0].data
+                                views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
                             })
                             var flat = [], prev = null
                             var quant = filter.quant;
