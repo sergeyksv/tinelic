@@ -6,13 +6,13 @@ function ErrorParser() {
 
 ErrorParser.prototype._error = {
 	project_id: /* project id */
-		{ db: "_id_p", value: null, defnied: false,
+		{ db: "_idp", value: null, defnied: false,
 			set: function( value ) {
 				this.value = value;
 				this.defnied = true;
 			},
 			verify: function() {
-				if( !this.defnied ) throw new Error( "\"project_id\" is not defnied" );
+				if( !this.defnied ) throw new Error( "\"project_id\" is not defined" );
 				if( !this.value ) throw new Error( "\"project_id\" cannot be null" );
 			}
 		},
@@ -46,8 +46,8 @@ ErrorParser.prototype._error = {
 			},
 			verify: function() {}
 		},
-	error_in_language: /* nodejs, java, .net, etc... */
-		{ db: "_s_language", value: "", defnied: false,
+	error_in_logger: /* nodejs, java, .net, etc... */
+		{ db: "_s_logger", value: "", defnied: false,
 			set: function( value ) {
 				this.value = value ? value : "";
 				this.defnied = true;
@@ -55,7 +55,7 @@ ErrorParser.prototype._error = {
 			verify: function() {}
 		},
 	error_occurred_on_request: /* error occurred on server during request with this url  */
-		{ db: "_s_request", value: "", defnied: false,
+		{ db: "request", value: "", defnied: false,
 			set: function( value ) {
 				this.value = value ? value : "";
 				this.defnied = true;
@@ -63,7 +63,7 @@ ErrorParser.prototype._error = {
 			verify: function() {}
 		},
 	error_details: /* ... */
-		{ db: "_o_exception", value: { }, defnied: false,
+		{ db: "exception", value: { }, defnied: false,
 			set: function( value ) {
 				this.value["_s_type"] = value["error_type"] ? value["error_type"] : "";
 				this.value["_s_value"] = value["error_value"] ? value["error_value"] : "";
@@ -76,19 +76,19 @@ ErrorParser.prototype._error = {
 			}
 		},
 	error_stack_trace: /* ... */
-		{ db: "_o_stack_trace", value: { _ar_frames: [] }, defnied: false,
+		{ db: "stack_trace", value: { frames: [] }, defnied: false,
 			set: function( value ) {
 				var _stack_item = {
-					  _s_filename: value["file_name"] ? value["file_name"] : ""
+					  _s_file: value["file_name"] ? value["file_name"] : ""
 					, _i_line: value["line_number"] ? value["line_number"] : 0
 					, _i_col: value["column_number"] ? value["column_number"] : 0
 					, _s_func: value["function_name"] ? value["function_name"] : ""
-					, _b_in_app: value["in_app"] != null && value["in_app"] != "" ? value["in_app"] : true
-					, _ar_pre_context: value["pre_context"] ? value["pre_context"] : ""
-					, _s_context_line: value["context_line"] ? value["context_line"] : ""
-					, _ar_post_context: value["post_context"] ? value["post_context"] : ""
+					, _b_inapp: value["in_app"] != null && value["in_app"] != "" ? value["in_app"] : true
+					, pre_context: value["pre_context"] ? value["pre_context"] : ""
+					, _s_context: value["context_line"] ? value["context_line"] : ""
+					, post_context: value["post_context"] ? value["post_context"] : ""
 				};
-				this.value._ar_frames.push( _stack_item );
+				this.value.frames.push( _stack_item );
 				this.defnied = true;
 			},
 			verify: function() {}
