@@ -13,6 +13,7 @@
     "geoip-lite": "~1.1.5",
     "less-middleware": "~1.0.4",
     "lodash": "~2.4.1",
+    "lx-valid": "^0.5.2",
     "moment": "~2.9.0",
     "mongodb": "~1.4.28",
     "multer": "~0.1.7",

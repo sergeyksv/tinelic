@@ -46,7 +46,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                 var self = this;
                 $this = $(e.currentTarget);
                 var data = $this.data('del').split(',');
-                api("assets.pullData", "public", {idt: data[0], idtt: data[1], id: data[2]}, function(err) {
+                api("assets.pullData", "public", {idt: data[0], _idtt: data[1], _id: data[2]}, function(err) {
                     if (err) {
                         alert(err)
                     }
@@ -69,15 +69,15 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                     var n = val.value.split(',');
                     $.each(input, function(i, val1) {
                         if (n[0] == val1.name) {
-                            data.users.push({_idu: n[0], role: val1.innerHTML})
+                            data.users.push({_idu: n[0], role: val1.innerHTML.toLowerCase()})
                         }
                     })
                 })
-                data.id = id;
+                data._id = id;
                 if (n.length) {
                   api("assets.addUsers", "public", data, function (err) {
                         if (err) {
-                            dang.html(err);
+                            dang.html(err.message);
                         }
                         else {
                             require(["views/teams_view"],function (Modal) {

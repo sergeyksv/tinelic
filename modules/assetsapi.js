@@ -10,9 +10,26 @@ module.exports.deps = ['mongo','obac'];
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
 	var queryfix = ctx.api.prefixify.queryfix;
+	var token=null;
 
 	ctx.api.obac.register(['team_view','team_edit'],'assets',{permission:'getTeamPermission',grantids:'getGrantedTeamIds'});
 	ctx.api.obac.register(['project_view','project_edit'],'assets',{permission:'getProjectPermission',grantids:'getGrantedProjectIds'});
+
+	ctx.api.validate.register("team", {$set:{properties:{
+		_id:{type:"mongoId"},
+		name:{type:"string",required:true},
+		projects:{type:"array", items:{
+			type:"object", required:false, properties:{
+				_idp:{type:"mongoId"}
+			}
+		}},
+		users:{type:"array", required:true, items:{
+			type:"object", required:false, properties:{
+				_idu:{required:true, type:"mongoId"},
+				role:{required:true, enum: [ "member", "lead"]}
+			}
+		}}
+	}}})
 
     ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
         safe.series({
@@ -26,6 +43,7 @@ module.exports.init = function (ctx, cb) {
 			var projects = tm.projects;
             cb(null, {api:{
 				getTeamPermission:function (t, p, cb) {
+					token=t
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
 						if (p.action == "team_view")
 							tm.teams.findOne({'users._idu':u._id}, safe.sure(cb, function (user) {
@@ -95,7 +113,7 @@ module.exports.init = function (ctx, cb) {
 					var id = new mongo.ObjectID(p.project._id); delete(p.project._id);
 					p.project.name && (p.project.slug = p.project.name.toLowerCase().replace(" ","-"))
 					projects.update({_id:id}, {$set:p.project}, {upsert:true,fullResult:true}, safe.sure(cb, function (obj) {
-						cb(null, id)
+						cb(null, id, p.project.name, p.project.slug)
 					}))
 				},
                 getTeam: function (t,u,cb) {
@@ -108,8 +126,10 @@ module.exports.init = function (ctx, cb) {
                     }))
                 },
                 saveTeam: function (t,u,cb) {
-                    // t = "public", u = {name:"DefaultUser", pass:'123'}
-                    tm.teams.insert(u, cb);
+					u = prefixify(u);
+                    ctx.api.validate.check("team", u, safe.sure(cb, function (u) {
+						tm.teams.insert(u, cb);
+					}))
                 },
                 updateTeam: function (t,u,cb) {
                     var _id = new mongo.ObjectID(u.id)
@@ -125,29 +145,42 @@ module.exports.init = function (ctx, cb) {
                     tm.teams.remove({_id: _id}, cb)
                 },
                 addProjects: function(t, u, cb) {
-                    var _id = new mongo.ObjectID(u.id);
-                    tm.teams.update({_id: _id}, {
-                        $addToSet: {
-                            projects: {$each: u.projects}
-                        }}, {},
+					ctx.api.assets.getProjects(token,{}, safe.sure(cb, function (v) {
+						for(var i=0; i<u.projects.length; i++){
+							v.forEach(function(v){
+								if (v._id == u.projects[0]._idp){
+									u.projects[i]._idp=v._id;
+									u.projects[i].name=v.name;
+									u.projects[i].slug=v.slug;
+								}
+							})
+						}
+						var _id = new mongo.ObjectID(u.id);
+						tm.teams.update({_id: _id}, {
+							$addToSet: {
+								projects: {$each: u.projects}
+							}}, {},
                         cb)
+					}))
                 },
-                addUsers: function(t, u , cb) {
-                    var _id = new mongo.ObjectID(u.id);
-                    tm.teams.update({_id: _id}, {
-                            $addToSet: {
-                                    users: {$each:u.users}
-                            }}, {},
-                        cb)
+                addUsers: function(t, u, cb) {
+					u = prefixify(u);
+					var update = {
+						$addToSet: {
+								users: {$each:u.users}
+						}
+					}
+					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+						tm.teams.update({_id: u._id}, update, {},cb)
+					}))
                 },
                 pullData: function(t, u, cb) {
-                    var _id = new mongo.ObjectID(u.id)
-                    if (u.idt == '_idu') {
-                        tm.teams.update({_id: _id}, {$pull: {users: {_idu: u.idtt}}},{}, cb)
-                    }
-                    else {
-                        tm.teams.update({_id: _id}, {$pull: {projects: {_idp: u.idtt}}},{}, cb)
-                    }
+					u = prefixify(u);
+                    var update = u.idt == '_idu' ? {$pull: {users: {_idu: u._idtt}}} : {$pull: {projects: {_idp: u._idtt}}};
+
+					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+                        tm.teams.update({_id: u._id}, update,{}, cb)
+                    }))
                 }
             }});
         }))
