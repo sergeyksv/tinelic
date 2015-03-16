@@ -135,6 +135,34 @@ module.exports.init = function ( ctx, cb_main ) {
 								cb( null, records[0]._id );
 							} ) );
 						}
+						, function( metric_id, cb) {
+							if ( query.method == 'metric_data' ) {
+								var _time_start = new Date( metric_data[1] * 1000.0 )
+									, _time_end = new Date( metric_data[2] * 1000.0 )
+									, _time_avg = new Date( (_time_start.getTime() + _time_end.getTime()) / 2.0 );
+								var mem = metric_data[3].filter(function(r) {return (r[0].name == "Memory/Physical")})
+								if (mem.length != 0) {
+									var item = mem[0]
+									var data = {
+										_idp: query['run_id']
+										, "_dt": _time_avg
+										, "_dts": _time_start
+										, "_dte": _time_end
+										, "_s_type": item[0].name.split('/')[0]
+										, "_s_name": item[0].name.split('/')[1]
+										, _i_cnt: item[1][0]
+										, _f_val: item[1][1]
+										, _f_own: item[1][2]
+										, _f_min: item[1][3]
+										, _f_max: item[1][4]
+										, _f_sqr: item[1][5]
+									}
+									db.collection("metrics").insert(data, safe.sure(cb, function(records) {
+										// TODO
+									}))
+								}
+							}
+						}
 						, function( metric_id, cb ) {
 							// parse known data
 							if( query.method == "metric_data" ) {
