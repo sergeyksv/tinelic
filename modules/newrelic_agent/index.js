@@ -33,7 +33,7 @@ module.exports.init = function ( ctx, cb_main ) {
 						throw new Error( "Cannot parse body (" + req.url + ")" );
 					// when newrelic accumulated big data it zips requests, but body-parser inflates it
 					var _body = Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString()) : req.body;
-					on_agent_request( res, req.url, _body, tinelic_data );
+					on_agent_request( req, res, req.url, _body, tinelic_data );
 				}, function( error ){
 					cb_error( error );
 					safe.run( function(){
@@ -60,10 +60,11 @@ module.exports.init = function ( ctx, cb_main ) {
 			} )
 		} ));
 
-		function on_agent_request( res, request_url, request_data_json, tinelic_data ) {
+		function on_agent_request( req, res, request_url, request_data_json, tinelic_data ) {
 			var query = url.parse( request_url, true ).query;
 			if( query.method == "get_redirect_host" ) {
-				res.status( 200 ).json( { return_value: "localhost:80" } );
+				var _host_arr = req.headers.host.split( ":" );
+				res.status( 200 ).json( { return_value: _host_arr[0] } );
 			} else if( query.method == "connect" ) {
 				// it request occurred once when agent is connected, just store it's information in database
 				// ...
