@@ -18,11 +18,41 @@ module.exports.deps = ['mongo','prefixify','validate','assets'];
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
 	var queryfix = ctx.api.prefixify.queryfix;
-	ctx.api.validate.register("error", {$set:{properties:{
-		_dt:{type:"date",required:true},
-		_idp:{type:"mongoId",required:true},
-		_id:{type:"mongoId"}
-	}}})
+    ctx.api.validate.register("error", {$set:{properties:{
+        _dt:{type:"date",required:true},
+        _idp:{type:"mongoId",required:true},
+        _id:{type:"mongoId"},
+        _s_reporter:{type:"string",required:true,"maxLength": 64},
+        _s_server:{type:"string",required:true,"maxLength": 256},
+        _s_logger:{type:"string",required:true,"maxLength": 54},
+        _s_message:{type:"string",required:true,"maxLength": 4096},
+        _s_culprit:{type:"string",required:true,"maxLength": 1024},
+        exception:{type:"object",required:true, properties: {
+			_s_type:{type:"string", required:true,"maxLength": 64},
+			_s_value:{type:"string", required:true,"maxLength": 4096}
+		}},
+        action:{type:"object",properties: {
+			_s_type:{type:"string", required:true,"maxLength": 64},
+			_s_name:{type:"string", required:true,"maxLength": 1024}
+		}},
+		stacktrace:{type:"object",required:true, properties: {
+			frames:{type:"array",items:{
+				type:"object", required:true, properties: {
+					_i_col:{type:"integer",required:true},
+					_i_line:{type:"integer",required:true},
+					_s_file:{type:"string",requred:true,"maxLength": 1024},
+					_s_func:{type:"string",requred:true,"maxLength": 256},
+					_s_context:{type:"string",requred:true,"maxLength": 4096},
+					pre_context:{type:"array",required:true, items:{
+						type:"string",required:true,"maxLength": 4096
+					}},
+					post_context:{type:"array",required:true, items:{
+						type:"string",required:true,"maxLength": 4096
+					}}
+				}
+			}}
+		}}
+    }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
@@ -215,10 +245,11 @@ module.exports.init = function (ctx, cb) {
 									stacktrace: { frames: [] }
 								}
 
-								_.each(ne[4]["stack_trace"], function (line) {
-									var si = {pre_context:[],post_context:[],_b_inapp:true,_s_context:""};
+								_.each(ne[4]["stack_trace"][0].split("\n"), function (line) {
+									var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
 									var _TOKEN = "at ";
 									if( line.indexOf( _TOKEN ) >= 0 ) {
+										console.log(line);
 										line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 										_TOKEN = "(";
 										if( line.indexOf( _TOKEN ) >= 0 ) {
@@ -239,13 +270,14 @@ module.exports.init = function (ctx, cb) {
 												}
 											}
 										}
+										te.stacktrace.frames.push(si)
 									} else {
 										te._s_message = line;
 									}
-									te.stacktrace.frames.push(si)
 								})
-
-								action_errors.insert( te, nrNonFatal)
+								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
+									action_errors.insert( te, nrNonFatal)
+								}))
 							})
 
 							res.json( { return_value: "ok" } );
@@ -417,15 +449,15 @@ module.exports.init = function (ctx, cb) {
 									_i_line: frame["lineno"] || 0,
 									_i_col: 0,
 									_s_func: frame["function"] || "",
-									_b_inapp: frame["in_app"] || true,
 									pre_context : frame["pre_context"] || [],
 									_s_context : frame["context_line"] || "",
 									post_context : frame["post_context"] || []
 								})
 							})
 						}
-
-						action_errors.insert( te, cb)
+						ctx.api.validate.check("error",te, safe.sure(cb, function () {
+							action_errors.insert( te, cb)
+						}))
 					}));
 				}, function( error ){
 					if (error) {
