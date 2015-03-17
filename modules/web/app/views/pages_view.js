@@ -19,7 +19,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
                 safe.parallel([
                     function(cb) {
-                        api("collect.pagesBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.pagesBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
                             trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                             var sum = 0;
@@ -34,7 +34,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         cb()
                     },
                     function(cb) {
-                        api("collect.getPageViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.getPageViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
 
                             var views = data;
                             var flat = [], prev = null

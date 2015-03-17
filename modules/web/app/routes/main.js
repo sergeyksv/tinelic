@@ -14,7 +14,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var dtend = new Date();
 						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
 						safe.forEach(project, function (n, cb) {
-							api("collect.getPageViews", res.locals.token, {
+							api("stats.getPageViews", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
 									_dt: {$gt: dtstart,$lte:dtend}
@@ -304,7 +304,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				rpm: function (cb) {
-					api("collect.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
+					api("stats.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}, cb);
@@ -374,7 +374,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getTopTransactions", "public", {
+							api("stats.getTopTransactions", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -448,7 +448,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getTopPages", "public", {
+							api("stats.getTopPages", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -525,7 +525,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
+							api("stats.getErrorStats","public",{_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -590,7 +590,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.asBreakDown", "public", {
+							api("stats.asBreakDown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend}

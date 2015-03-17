@@ -13,7 +13,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
 				var boole=1;
-				api("collect.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
+				api("stats.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
 					trbreak.empty();
                     trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr>');
 					var int=[] , k=null;
@@ -44,7 +44,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
                               trbreak.append('<tr><td>'+data.id+'</td><td>'+data.col+'</td><td>'+data.perc+' %</td></tr>')
                     })
 				}))
-						api("collect.getAjaxRpm","public",{quant:10,_idurl:_id, Graph_bool:boole, filter:{_idp:this.data.project._id,
+						api("stats.getAjaxRpm","public",{quant:10,_idurl:_id, Graph_bool:boole, filter:{_idp:this.data.project._id,
 						_dt:this.data.fr.filter._dt
 						}},safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();

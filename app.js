@@ -16,6 +16,7 @@ var cfg = {
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
+		{name:"stats",require:"./modules/statsapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
 	config:require("./config.js")

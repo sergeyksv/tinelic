@@ -37,7 +37,7 @@ requirejs.define("bootstrap/dropdown", true);
 requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets','users','collect'];
+module.exports.deps = ['assets','users','collect','stats'];
 
 var wires = {};
 
