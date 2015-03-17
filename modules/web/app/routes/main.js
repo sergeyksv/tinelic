@@ -532,8 +532,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						},
 						event: function (cb) {
 							feed.errorInfo(res.locals.token, {_id:req.params.id}, cb)
+						},
+						rpm: function (cb){
+							api("collect.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+								_idp:project._id, _id:req.params.id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}}, cb)
 						}
 					}, safe.sure(cb, function(r){
+						var filter = {
+							_t_age: quant + "m", quant: quant,
+							filter: {
+								_idp: project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}
+						}
 						r.event.headless = true;
 						var data = []
 						if (st == 'terr') {
@@ -551,7 +564,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								data.push({error: {message: "Not errors on this client"}})
 							}
 						}
-						res.renderX({view:r.view,data:{data:data,event:r.event, title:"Errors",st: st}})
+						res.renderX({view:r.view,data:{data:data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter}})
 					})
 				)
 			}))
