@@ -8,8 +8,7 @@ var useragent = require("useragent");
 var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
-var ErrorParser_GetsentryServer = require("./error_parser/parser_getsentry_server.js");
-var ErrorParser_Newrelic = require( "./error_parser/parser_newrelic.js" );
+var newrelic = require("newrelic");
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -195,10 +194,60 @@ module.exports.init = function (ctx, cb) {
 							var body = req.body;
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-							var error_parser = new ErrorParser_Newrelic();
-							error_parser.add_error(run, body[body.length - 1], safe.sure( nrNonFatal, function( error_data ) {
-								action_errors.insert( error_data, nrNonFatal)
-							}));
+							_.each(body[body.length - 1], function (ne) {
+								var trnName = nrParseTransactionName(ne[1]);
+								var te = {
+									_idp:run._idp,
+									_dt: new Date(),
+									_s_reporter: "newrelic",
+									_s_server: run._s_host,
+									_s_logger: run._s_logger,
+									_s_message: "",
+									_s_culprit: ne[1],
+									exception: {
+										_s_type: ne[3],
+										_s_value: ne[2]
+									},
+									action: {
+										_s_name: trnName.name,
+										_s_type: trnName.type
+									},
+									stacktrace: { frames: [] }
+								}
+
+								_.each(ne[4]["stack_trace"], function (line) {
+									var si = {pre_context:[],post_context:[],_b_inapp:true,_s_context:""};
+									var _TOKEN = "at ";
+									if( line.indexOf( _TOKEN ) >= 0 ) {
+										line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+										_TOKEN = "(";
+										if( line.indexOf( _TOKEN ) >= 0 ) {
+											si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+											line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+											_TOKEN = ":";
+											if( line.indexOf( _TOKEN ) >= 0 ) {
+												si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+												line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+												// line number and column number
+												line = line.replace( ")", "" );
+												var arr_line_items = line.split( ":" );
+												if( arr_line_items.length == 2 ) {
+													si["_i_line"] = arr_line_items[0];
+													si["_i_col"] = arr_line_items[1];
+												} else if( arr_line_items.length == 1 ) {
+													si["_i_line"] = arr_line_items[0];
+												}
+											}
+										}
+									} else {
+										te._s_message = line;
+									}
+									te.stacktrace.frames.push(si)
+								})
+
+								action_errors.insert( te, nrNonFatal)
+							})
+
 							res.json( { return_value: "ok" } );
 						}
 					}
@@ -344,13 +393,39 @@ module.exports.init = function (ctx, cb) {
 				safe.run(function(cb) {
 					var zip_buffer = new Buffer( req.body.toString(), 'base64' );
 					zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
-						var getsentry_data = JSON.parse( _buffer_getsentry_data.toString() );
-						var error_parser = new ErrorParser_GetsentryServer();
-						error_parser.add_error( db, new mongo.ObjectID(getsentry_data.project.toString()),
-							getsentry_data, safe.sure( cb, function( error_data ) {
-								action_errors.insert( error_data, cb)
+						var ge = JSON.parse( _buffer_getsentry_data.toString() );
+
+						var te = {
+							_idp:new mongo.ObjectID(ge.project),
+							_dt: new Date(ge.timestamp),
+							_s_reporter: "raven",
+							_s_server: ge.server_name,
+							_s_logger: ge.platform,
+							_s_message: ge.message,
+							_s_culprit: ge.culprit,
+							exception: {
+								_s_type: ge.exception[0].type,
+								_s_value: ge.exception[0].value
+							},
+							stacktrace: { frames: [] }
+						}
+
+						if (ge.exception[0].stacktrace) {
+							_.each(ge.exception[0].stacktrace.frames, function (frame) {
+								te.stacktrace.frames.push({
+									_s_file: frame["filename"] || "",
+									_i_line: frame["lineno"] || 0,
+									_i_col: 0,
+									_s_func: frame["function"] || "",
+									_b_inapp: frame["in_app"] || true,
+									pre_context : frame["pre_context"] || [],
+									_s_context : frame["context_line"] || "",
+									post_context : frame["post_context"] || []
+								})
 							})
-						);
+						}
+
+						action_errors.insert( te, cb)
 					}));
 				}, function( error ){
 					if (error) {

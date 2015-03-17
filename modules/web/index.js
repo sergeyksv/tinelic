@@ -141,11 +141,10 @@ module.exports.init = function (ctx, cb) {
 			}
 		], safe.sure(cb, function () {
 			// Set up Raven
-			var ravenjs = new raven.Client('http://blah:blah@localhost/collect/sentry/'+self_id);
-			if (!ctx.locals)
-				ctx.locals = {};
 			ctx.locals.ravenjs = new raven.Client('http://blah:blah@localhost/collect/sentry/'+self_id);
-			ctx.locals.ravenjs.captureError(new Error("Tinelic Sentry startup!"));
+			setTimeout(function () {
+				ctx.locals.ravenjs.captureError(new Error("Tinelic Sentry startup!"));
+			}, 1000);
 			require("newrelic").noticeError( new Error("Tinelic NewRelic startup!"));
 
 			cb(null,{api:{
