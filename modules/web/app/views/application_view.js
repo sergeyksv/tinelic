@@ -19,7 +19,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
               safe.parallel([
                   function(cb) {
-                      api("collect.asBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                      api("stats.asBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                           trbreak.empty();
                           trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                           var sum = data[0].value[transaction]
@@ -32,7 +32,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                       cb()
                   },
                   function(cb) {
-                      api("collect.getActions", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                      api("stats.getActions", $.cookie("token"), filter, safe.sure(cb, function(data) {
 
                           var actions = data;
                           var actflat = [], actprev = null

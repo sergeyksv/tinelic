@@ -37,7 +37,9 @@ requirejs.define("bootstrap/dropdown", true);
 requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets','users','collect',"newrelic_server","getsentry_server"];
+module.exports.deps = ['assets','users','collect','stats', "newrelic_server","getsentry_server"];
+
+
 
 var wires = {};
 

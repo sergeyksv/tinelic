@@ -162,6 +162,7 @@ module.exports.init = function ( ctx, cb_main ) {
 									}))
 								}
 							}
+							cb( null, metric_id );
 						}
 						, function( metric_id, cb ) {
 							// parse known data

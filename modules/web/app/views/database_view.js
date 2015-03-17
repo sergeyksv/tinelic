@@ -19,7 +19,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
                 safe.parallel([
                     function(cb) {
-                        api("collect.postDbBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.postDbBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = []
                             _.forEach(data, function(v){
                                 var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
@@ -38,7 +38,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         cb()
                     },
                     function(cb) {
-                        api("collect.postDbViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.postDbViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             var views = [];
                             _.forEach(data, function(v){
                                 var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
