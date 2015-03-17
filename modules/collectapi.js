@@ -51,6 +51,22 @@ module.exports.init = function (ctx, cb) {
 					}}
 				}
 			}}
+		}},
+		// client side related data
+        _dtc:{type:"date",required:true},
+        _dtp:{type:"date"},
+        _dtr:{type:"date"},
+        agent:{type:"object"},
+        chash:{type:"string","maxLength": 256},
+        shash:{type:"string","maxLength": 256},
+        _idpv:{type:"mongoId"},
+        request:{type:"object",properties: {
+			_s_route:{type:"string","maxLength": 1024},
+			_s_uri:{type:"string", "maxLength": 4096},
+			_s_url:{type:"string", "maxLength": 4096},
+			headers:{type:"object", patternProperties:{
+				".*":{type:"string","maxLength": 1024}
+			}}
 		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
@@ -281,7 +297,11 @@ module.exports.init = function (ctx, cb) {
 							})
 
 							res.json( { return_value: "ok" } );
-						}
+						},
+						transaction_sample_data:function () {
+							// ???? transaction trace, not suppored now
+							res.json( { return_value: "ok" } );
+						},
 					}
 					var fn = nrpc[req.query.method];
 					if (!fn)
@@ -334,8 +354,9 @@ module.exports.init = function (ctx, cb) {
 							ajax.insert(data, cb)
 						}))
 				}, function (err) {
-					if (err)
-						return console.log(err);
+					if (err) {
+						newrelic.noticeError(err);
+					}
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
 				})
@@ -385,8 +406,8 @@ module.exports.init = function (ctx, cb) {
 									$set: {
 										_idpv: _id,
 										request: {
-											route: data._s_route,
-											uri: data._s_uri
+											_s_route: data._s_route,
+											_s_uri: data._s_uri
 										}
 									}
 								}, {multi: true}, safe.sure(cb, function (updates) {
@@ -414,8 +435,9 @@ module.exports.init = function (ctx, cb) {
 						], cb)
 					}))
 				}, function (err) {
-					if (err)
-						return console.log(err);
+					if (err) {
+						newrelic.noticeError(err);
+					}
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
 				})
@@ -504,8 +526,11 @@ module.exports.init = function (ctx, cb) {
 				// which is registered not later than current event
 				data._s_culprit = data.culprit; delete data.culprit;
 				data._s_message = data.message; delete data.message;
-				data._s_id = data.event_id; delete data.event_id;
+				delete data.event_id;
 				data._s_logger = data.logger; delete data.logger;
+				data._s_server = "rum";
+				data._s_reporter = "raven";
+
 				data.exception._s_type = data.exception.type; delete data.exception.type;
 				data.exception._s_value = data.exception.value; delete data.exception.value;
 				_.forEach(data.stacktrace.frames, function(r) {
@@ -513,22 +538,32 @@ module.exports.init = function (ctx, cb) {
 					r._i_line = r.lineno; delete r.lineno;
 					r._i_col = r.colno; delete r.colno;
 					r._s_func = r.function; delete r.function;
-					r._b_inapp = r.in_app; delete r.in_app;
+					r.pre_context = [];
+					r.post_context = [];
+					r._s_context = "";
+					delete r.in_app;
 				})
 				delete data.platform;
+				if (data.request && data.request.url) {
+					data.request._s_url=data.request.url;
+					delete data.request.url;
+				}
 
 				safe.run(function (cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
-							(page._s_route) && (data.request.route = page._s_route);
-							(page._s_uri) && (data.request.uri = page._s_uri);
+							(page._s_route) && (data.request._s_route = page._s_route);
+							(page._s_uri) && (data.request._s_uri = page._s_uri);
 						}
-						events.insert(data, cb)
+						ctx.api.validate.check("error",data, safe.sure(cb, function () {
+							events.insert(data, cb)
+						}))
 					}))
 				}, function (err) {
-					if (err)
-						return console.log(err);
+					if (err) {
+						newrelic.noticeError(err);
+					}
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
 				})
