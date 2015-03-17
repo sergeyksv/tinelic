@@ -9,11 +9,12 @@ var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
 var ErrorParser_GetsentryServer = require("./error_parser/parser_getsentry_server.js");
+var ErrorParser_Newrelic = require( "./error_parser/parser_newrelic.js" );
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
 
-module.exports.deps = ['mongo','prefixify','validate'];
+module.exports.deps = ['mongo','prefixify','validate','assets'];
 
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
@@ -62,8 +63,154 @@ module.exports.init = function (ctx, cb) {
 			},
 			function (cb) {
 				db.collection("action_errors", cb)
+			},
+			function (cb) {
+				db.collection("metrics", cb)
 			}
-		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors) {
+		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
+			ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next ) {
+				function nrParseTransactionName( value ) {
+					var _value_array = value.split( "/" );
+					var _type = _value_array.length > 1 ? _value_array[0] + "/" + _value_array[1] : ""
+						, _name = "";
+					for( var i = 2; i < _value_array.length; i++ )
+						_name += (_name.length > 0 ? "/" : "") + _value_array[i];
+					return { name: _name.length ? _name : "-unknown-", type: _type.length ? _type : "-unknown-" };
+				}
+				function nrNonFatal(err) {
+					// capture NewRelic errors with GetSentry, cool to be doublec backed up
+					if (err) {
+						if (ctx.locals && ctx.locals.ravenjs)
+							ctx.locals.ravenjs.captureError(err);
+						else
+							console.log(err);
+					}
+				}
+				safe.run(function (cb) {
+					var nrpc = {
+						get_redirect_host:function () {
+							// agent ask for reporting host, return by ourselves
+							var _host_arr = req.headers.host.split( ":" );
+							res.json( { return_value: _host_arr[0] } );
+						},
+						connect:function () {
+							// on connect we should link agent with its project id when available
+							var body = req.body[0];
+							var agent_name = body.app_name[0];
+							ctx.api.assets.getProject("public", {name:agent_name}, safe.sure(cb, function (project) {
+								if (!project)
+									throw new Error( "Project \"" + agent_name + "\" not found" );
+
+								var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
+								res.json({return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}});
+							}))
+						},
+						agent_settings:function () {
+							// seems to be hook to alter agent settings
+							// not supported now, just mirror back
+							res.json(req.body)
+						},
+						metric_data:function () {
+							var body = req.body;
+							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+
+							var _dts = new Date( body[1] * 1000.0 )
+								, _dte = new Date( body[2] * 1000.0 )
+								, _dt = new Date( (_dts.getTime() + _dte.getTime()) / 2.0 );
+
+							var action_stats = {};
+							_.each(body[body.length-1], function (item) {
+								// grab memory metrics
+								if (item[0].name == "Memory/Physical") {
+									metrics.insert({
+										_idp: run._idp
+										, "_dt": _dt
+										, "_dts": _dts
+										, "_dte": _dte
+										, "_s_type": item[0].name
+										, "_s_name": ""
+										, "_s_pid": run._s_pid
+										, "_s_host": run._s_host
+										, _i_cnt: item[1][0]
+										, _f_val: item[1][1]
+										, _f_own: item[1][2]
+										, _f_min: item[1][3]
+										, _f_max: item[1][4]
+										, _f_sqr: item[1][5]
+									}, nrNonFatal)
+								}
+								// grab transaction segments stats
+								var scope = item[0]["scope"];
+								if (!scope) return;
+
+								var trnScope = nrParseTransactionName(scope)
+								var trnName = nrParseTransactionName(item[0]["name"])
+
+								if( !action_stats[scope] ) {
+									action_stats[scope] = {
+										"_idp": run._idp
+										, "_s_name": trnScope.name
+										, "_s_type": trnScope.type
+										, "_dt": _dt
+										, "_dts": _dts
+										, "_dte": _dte
+										, data: []
+									}
+								}
+								action_stats[scope].data.push( {
+									_s_name: trnName.name,
+									_s_type: trnName.type,
+									_i_cnt: item[1][0],
+									_i_tt: Math.round(item[1][1]*1000),
+									_i_own: Math.round(item[1][2]*1000),
+									_i_min: Math.round(item[1][3]*1000),
+									_i_max: Math.round(item[1][4]*1000),
+									_i_sqr: Math.round(item[1][5]*1000)
+								})
+							})
+							if (_.size(action_stats)) {
+								as.insert( _.values(action_stats), nrNonFatal)
+							}
+							res.json( { return_value: "ok" } );
+						},
+						analytic_event_data:function () {
+							var body = req.body;
+							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+
+							_.each(body[body.length - 1], function (item) {
+								item = item[0];
+								var trnName = nrParseTransactionName(item["name"]);
+								actions.insert({
+									"_idp": run._idp
+									, "_s_name": trnName.name
+									, "_s_type": trnName.type
+									, "_dt": new Date(item["timestamp"] )
+									, "_i_wt": Math.round(item["webDuration"]*1000)
+									, "_i_tt": Math.round(item["duration"]*1000)
+								}, nrNonFatal);
+							})
+							res.json( { return_value: "ok" } );
+						},
+						error_data:function () {
+							var body = req.body;
+							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+
+							var error_parser = new ErrorParser_Newrelic();
+							error_parser.add_error(run, body[body.length - 1], safe.sure( nrNonFatal, function( error_data ) {
+								action_errors.insert( error_data, nrNonFatal)
+							}));
+							res.json( { return_value: "ok" } );
+						}
+					}
+					var fn = nrpc[req.query.method];
+					if (!fn)
+						throw new Error("NewRelic: unknown method " + req.query.method)
+					fn();
+				}, function (err) {
+					nrNonFatal(err)
+					res.json({exception:{message:err.message}});
+				})
+			})
 			ctx.router.get("/ajax/:project", function (req, res, next) {
 				var data = req.query;
 				data._idp = new mongo.ObjectID(req.params.project);

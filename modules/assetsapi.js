@@ -106,8 +106,7 @@ module.exports.init = function (ctx, cb) {
                     }))
 				},
 				getProject:function (t, p, cb) {
-					p.filter._id && (p.filter._id =  mongo.ObjectID(p._id));
-					projects.findOne(p.filter,cb);
+					projects.findOne(queryfix(p.filter),cb);
 				},
 				saveProject:function (t, p, cb) {
 					var id = new mongo.ObjectID(p.project._id); delete(p.project._id);
