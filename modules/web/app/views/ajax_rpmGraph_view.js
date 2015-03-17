@@ -1,5 +1,4 @@
-define(['tinybone/base','safe','tinybone/backadapter','highcharts',
-'dustc!templates/ajax_rpmGraph.dust'],function (tb,safe,api) {
+define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templates/ajax_rpmGraph.dust'],function (tb,safe,api) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"templates/ajax_rpmGraph",
@@ -12,9 +11,9 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts',
 				var trbreak = self.$('#trbreak')
 				var transaction = $(evt.currentTarget).html()
 				var filter = this.data.fr
-				filter.filter.r = transaction;
+				filter.filter._s_name = transaction;
 				var boole=1;
-				api("collect.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
+				api("stats.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
 					trbreak.empty();
                     trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr>');
 					var int=[] , k=null;
@@ -28,7 +27,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts',
 									delete data[0].value.pag[i]
 								}
 							}
-						}	
+						}
 					}
 					int =_.sortBy(int, function(v){
 						return -1*v.col;
@@ -45,7 +44,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts',
                               trbreak.append('<tr><td>'+data.id+'</td><td>'+data.col+'</td><td>'+data.perc+' %</td></tr>')
                     })
 				}))
-						api("collect.getAjaxRpm","public",{quant:10,_idurl:_id, Graph_bool:boole, filter:{_idp:this.data.project._id,
+						api("stats.getAjaxRpm","public",{quant:10,_idurl:_id, Graph_bool:boole, filter:{_idp:this.data.project._id,
 						_dt:this.data.fr.filter._dt
 						}},safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();
@@ -171,7 +170,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts',
                                   }
                               ]
 							})
-							
+
 						}))
 			},this);
 		}

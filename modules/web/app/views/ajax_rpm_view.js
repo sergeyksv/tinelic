@@ -1,15 +1,10 @@
-define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust',
-'views/ajax_rpmGraph_view'],function (tb,_) {
+define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust', 'views/ajax_rpmGraph_view'],function (tb,_) {
 	var view = tb.View;
-	var GraphView=null
 	var View = view.extend({
 		id:"templates/ajax_rpm",
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var ajax = this.data.rpm;
-			GraphView = _.find(this.views,function(v){
-				return v.name == "views/ajax_rpmGraph_view";
-			});
 		},
 		events:{
 			'click .do-stats': function(e) {
@@ -20,6 +15,10 @@ define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust',
               return false;
 			},
 			"click .do-get-ajax": function (evt){
+				var GraphView=null
+				GraphView = _.find(this.views,function(v){
+					return v.name == "views/ajax_rpmGraph_view";
+				});
 				if (GraphView) {
 					GraphView.trigger("CallGraph", evt.currentTarget.innerHTML, evt)
 				}

@@ -37,7 +37,7 @@ requirejs.define("bootstrap/dropdown", true);
 requirejs.define("bootstrap/modal", true);
 requirejs.define("highcharts",true);
 
-module.exports.deps = ['assets','users','collect',"newrelic_server","getsentry_server"];
+module.exports.deps = ['assets','users','collect','stats'];
 
 var wires = {};
 
@@ -126,7 +126,7 @@ module.exports.init = function (ctx, cb) {
 				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
 					if (self) return cb()
 
-					ctx.api.users.saveUser("public", {login:"admin",firstname: 'user', lastname: 'default', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
+					ctx.api.users.saveUser("public", {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
 						usr_admin[0]._idu=self[0]._id;
 						usr_admin[0].role="lead";
 					cb()
@@ -141,8 +141,10 @@ module.exports.init = function (ctx, cb) {
 			}
 		], safe.sure(cb, function () {
 			// Set up Raven
-			var ravenjs = new raven.Client('http://pushok_public_key:pushok_private_key@localhost/getsentry/'+self_id);
-			ravenjs.captureError(new Error("Tinelic Sentry startup!"));
+			ctx.locals.ravenjs = new raven.Client('http://blah:blah@localhost/collect/sentry/'+self_id);
+			setTimeout(function () {
+				ctx.locals.ravenjs.captureError(new Error("Tinelic Sentry startup!"));
+			}, 1000);
 			require("newrelic").noticeError( new Error("Tinelic NewRelic startup!"));
 
 			cb(null,{api:{

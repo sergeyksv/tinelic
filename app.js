@@ -16,8 +16,7 @@ var cfg = {
 		{name:"restapi",object:tinyback.restapi()},
 		{name:"assets",require:"./modules/assetsapi.js"},
 		{name:"collect",require:"./modules/collectapi.js"},
-		{name:"newrelic_server",require:"./modules/newrelic_agent"},
-		{name:"getsentry_server",require:"./modules/getsentry_agent"},
+		{name:"stats",require:"./modules/statsapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
 	config:require("./config.js")
@@ -28,8 +27,9 @@ if(fs.existsSync(lcfgPath)){
 	cfg.config = _.merge(cfg.config,require(lcfgPath));
 }
 
+console.time("Live !")
 tinyback.createApp(cfg, function (err, app) {
-
+	console.timeEnd("Live !")
 	if (err) {
 		console.log(err.stack);
 		if (err.originalError)

@@ -14,7 +14,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var dtend = new Date();
 						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
 						safe.forEach(project, function (n, cb) {
-							api("collect.getPageViews", res.locals.token, {
+							api("stats.getPageViews", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: n._id,
 									_dt: {$gt: dtstart,$lte:dtend}
@@ -304,7 +304,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				rpm: function (cb) {
-					api("collect.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
+					api("stats.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}, cb);
@@ -374,7 +374,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getTopTransactions", "public", {
+							api("stats.getTopTransactions", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -448,7 +448,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getTopPages", "public", {
+							api("stats.getTopPages", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -525,7 +525,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.getErrorStats","public",{_t_age:quant+"m",filter:{
+							api("stats.getErrorStats","public",{_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -534,7 +534,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.errorInfo(res.locals.token, {_id:req.params.id}, cb)
 						},
 						rpm: function (cb){
-							api("collect.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+							api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
 								_idp:project._id, _id:req.params.id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
@@ -564,6 +564,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								data.push({error: {message: "Not errors on this client"}})
 							}
 						}
+						var sum = 0.0
+						_.forEach(data, function(r) {
+							sum += r.stats.epm
+						})
+						var percent = sum/100
+						_.forEach(data, function(r) {
+							r.bar = r.stats.epm/percent
+						})
 						res.renderX({view:r.view,data:{data:data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter}})
 					})
 				)
@@ -595,7 +603,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("collect.asBreakDown", "public", {
+							api("stats.asBreakDown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend}
@@ -613,14 +621,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var data = {};
 						_.forEach(r.data, function(r) {
 							_.forEach(r.value,function(r) {
-								if (r.r) {
-									if (r.r.search(/MongoDB/) == 0) {
-										if (!data[r.r]) {
-											data[r.r] = r.data
+								if (r._s_name) {
+									if (r._s_type == "Datastore/statement") {
+										if (!data[r._s_name]) {
+											data[r._s_name] = r
 										}
 										else {
-											data[r.r][0] += r.data[0];
-											data[r.r][1] += r.data[0];
+											data[r._s_name]._i_cnt += r._i_cnt;
+											data[r._s_name]._i_tt += r._i_tt;
 										}
 									}
 								}
@@ -630,12 +638,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var sum = 0.0;
 						_.forEach(data, function(r,v) {
 							if (st == 'req')
-								sum += r[0]
+								sum += r._i_cnt
 							if (st == 'mtc')
-								sum += r[1]
-							arr.push({name:v, r: r[0], tt: r[1], avg: r[1]/r[0]})
+								sum += r._i_tt
+							arr.push({name:v, r: r._i_cnt, tt: r._i_tt, avg: r._i_tt/ r._i_cnt})
 							if (st == 'sar')
-								sum += (r[1]/r[0])
+								sum += (r._i_tt/ r._i_cnt)
 						})
 						var procent = sum/100
 						_.forEach(arr, function(r) {
@@ -647,8 +655,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								r.bar = r.avg/procent
 						})
 						arr = _.sortBy(arr, function(r) {
-							r.avg = r.avg.toFixed(4)
-							r.tt = r.tt.toFixed(2)
+							r.avg = parseInt(r.avg)
 							if (st == 'req')
 								return r.r*-1
 							if (st == 'mtc')
