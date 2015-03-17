@@ -67,7 +67,8 @@ module.exports.init = function (ctx, cb) {
 			headers:{type:"object", patternProperties:{
 				".*":{type:"string","maxLength": 1024}
 			}}
-		}}
+		}},
+		geo:{type:"object"}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
