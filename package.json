@@ -22,7 +22,7 @@
     "request": "^2.51.0",
     "requirejs": "~2.1.15",
     "requirejs-text": "^2.0.12",
-    "safe": "~0.2.1",
+    "safe": "git://github.com/sergeyksv/safejs.git",
     "serve-static": "~1.8.0",
     "useragent": "~2.1.3"
   },
