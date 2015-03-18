@@ -183,11 +183,11 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
 
                     serverErrors.findOne(query, safe.sure(cb, function (err) {
-                        var st = (err.stack_trace && err.stack_trace.frames && err.stack_trace.frames.length) || 0;
-                        var query = {_idp:err._idp,_s_logger:err._s_logger,"exception._s_value": err.exception._s_value,"stack_trace.frames":{$size:st}};
+                        var st = (err.stacktrace && err.stacktrace.frames && err.stacktrace.frames.length) || 0;
+                        var query = {_idp:err._idp,_s_logger:err._s_logger,"exception._s_value": err.exception._s_value,"stacktrace.frames":{$size:st}};
 
                         serverErrors.mapReduce(function () {
-                                var st = (this.stac_ktrace && this.stack_trace.frames && this.stack_trace.frames.length) || 0;
+                                var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                                 var route = {}; route[this.request]=1;
                                 var reporter = {}; reporter[this._s_reporter]=1;
                                 var os = {}; os[this._s_server]=1;
@@ -433,7 +433,7 @@ module.exports.init = function (ctx, cb) {
                 getServerErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
                     serverErrors.mapReduce(function () {
-                            var st = (this.stack_trace && this.stack_trace.frames && this.stack_trace.frames.length) || 0;
+                            var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             emit(this._s_logger+this.exception._s_value+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
                         },
                         function (k, v) {

@@ -29,7 +29,7 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe','dustc!templates/
 				if ($li.find("pre").length) {
 					$li.find("pre").remove()
 				} else {
-					var trace = this.data.event.stack_trace.frames[$this.data('idx')];
+					var trace = this.data.event.stacktrace.frames[$this.data('idx')];
 					var data = []
 					_.forEach(trace.pre_context, function(r) {
 						data.push(r + "<br>")

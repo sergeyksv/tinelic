@@ -53,7 +53,7 @@ module.exports.init = function (ctx, cb) {
 			}}
 		}},
 		// client side related data
-        _dtc:{type:"date",required:true},
+        _dtc:{type:"date"},
         _dtp:{type:"date"},
         _dtr:{type:"date"},
         agent:{type:"object"},

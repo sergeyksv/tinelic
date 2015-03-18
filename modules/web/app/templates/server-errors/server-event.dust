@@ -21,9 +21,9 @@
 --- {_id} - {request}
 <br><br>
 <ul>
-{#stack_trace.frames}
+{#stacktrace.frames}
 <li><a href="#" data-idx='{$idx}' class='do-get-trace'>{_s_file}:{_i_line}:{_i_col}</a></li>
-{/stack_trace.frames}
+{/stacktrace.frames}
 </ul>
 {/event}
 </div>
