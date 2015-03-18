@@ -318,7 +318,20 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					views.total.metrics = r.data.metrics
 				}
 
-				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views})})
+				if (r.data.views.length || r.data.ajax.length || r.data.actions.length)
+					var graphOn = {}
+
+				if (r.data.views.length)
+					graphOn.browser = 1
+
+				if (r.data.ajax.length)
+					graphOn.ajax = 1
+
+				if (r.data.actions.length)
+					graphOn.server = 1
+
+
+				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})
 			}))
 		},
 		ajax_rpm:function (req, res, cb) {
@@ -377,6 +390,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "mtc") {
 						r.value.bar = Math.round(r.value.tt/percent);
 						r.value.tt = r.value.tt.toFixed(1);
+						r.value.r = quant*(r.value.r.toFixed(1))
 					}
 					if (st == "sar") {
 						r.value.bar = Math.round(r.value.tta/percent);
@@ -450,6 +464,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "mtc") {
 								r.value.bar = Math.round(r.value.tt/percent);
 								r.value.tt = r.value.tt.toFixed(1);
+								r.value.r = quant*(r.value.r.toFixed(1))
+								r.value.tta = (r.value.tta/1000).toFixed(2)
 							}
 							if (st == "sar") {
 								r.value.bar = Math.round(r.value.tta/percent);
@@ -524,6 +540,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "mtc") {
 								r.value.bar = Math.round(r.value.tt/percent);
 								r.value.tt = r.value.tt.toFixed(1);
+								r.value.r = quant*(r.value.r.toFixed(1))
+								r.value.tta = (r.value.tta/1000).toFixed(2)
 							}
 							if (st == "sar") {
 								r.value.bar = Math.round(r.value.tta/percent);
