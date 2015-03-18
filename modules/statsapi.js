@@ -34,8 +34,11 @@ module.exports.init = function (ctx, cb) {
             },
             function (cb) {
                 db.collection("action_stats", cb)
+            },
+            function (cb) {
+                db.collection("action_errors", cb)
             }
-        ],safe.sure_spread(cb, function (events,pages,ajax, actions, as) {
+        ],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors) {
             cb(null, {api:{
                 getActions: function(t, p, cb) {
                     var query = queryfix(p.filter);
@@ -180,6 +183,67 @@ module.exports.init = function (ctx, cb) {
                 getEvent:function (t, p, cb) {
                     // dummy, just get it all out
                     events.findOne({_id:new mongo.ObjectID(p._id)},cb);
+                },
+                getServerErrorInfo:function (t, p, cb) {
+                    var query = queryfix(p.filter);
+
+                    serverErrors.findOne(query, safe.sure(cb, function (err) {
+                        var st = (err.stack_trace && err.stack_trace.frames && err.stack_trace.frames.length) || 0;
+                        var query = {_idp:err._idp,_s_logger:err._s_logger,"exception._s_value": err.exception._s_value,"stack_trace.frames":{$size:st}};
+
+                        serverErrors.mapReduce(function () {
+                                var st = (this.stac_ktrace && this.stack_trace.frames && this.stack_trace.frames.length) || 0;
+                                var route = {}; route[this.request]=1;
+                                var reporter = {}; reporter[this._s_reporter]=1;
+                                var os = {}; os[this._s_server]=1;
+                                var ids = [this._id];
+                                emit(this._s_logger+this.exception._s_value+st,{c:1,route:route,reporter:reporter,os:os,ids:ids})
+                            },
+                            function (k, v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r)
+                                        r = v
+                                    else {
+                                        r.ids = r.ids.concat(v.ids);
+                                        r.c+=v.c;
+                                        for (var k in v.route) {
+                                            r.route[k]=(r.route[k] || 0) + v.route[k];
+                                        }
+                                        for (var k in v.browser) {
+                                            r.reporter[k]=(r.reporter[k] || 0) + v.reporter[k];
+                                        }
+                                        for (var k in v.os) {
+                                            r.os[k]=(r.os[k] || 0) + v.os[k];
+                                        }
+                                    }
+                                })
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1}
+                            },
+                            safe.sure(cb, function (stats) {
+                                var res = stats[0].value;
+                                var res1 = {route:[],os:[],reporter:[], count:res.c,ids:_.sortBy(res.ids)}
+                                _.each(res.route, function (v,k) {
+                                    res1.route.push({k:k,v:v})
+                                })
+                                _.each(res.os, function (v,k) {
+                                    res1.os.push({k:k,v:v})
+                                })
+                                _.each(res.reporter, function (v,k) {
+                                    res1.reporter.push({k:k,v:v})
+                                })
+                                cb(null,res1);
+                            })
+                        )
+                    }))
+                },
+                getServerError:function (t, p, cb) {
+                    // dummy, just get it all out
+                    serverErrors.findOne({_id:new mongo.ObjectID(p._id)},cb);
                 },
                 getAjaxStats:function(t, p, cb) {
                     var query = queryfix(p.filter);
@@ -360,6 +424,46 @@ module.exports.init = function (ctx, cb) {
                             var ids = {};
                             _.each(stats, function (s) {
                                 ids[s.value._id]={stats:s.value};
+                            } );
+                            events.find(queryfix({_id:{$in:_.keys(ids)}}))
+                                .toArray(safe.sure(cb, function (errors) {
+                                    _.each(errors, function (e) {
+                                        ids[e._id].error = e;
+                                    })
+                                    cb(null, _.values(ids));
+                                }))
+                        })
+                    )
+                },
+                getServerErrorStats:function (t, p, cb) {
+                    var query = queryfix(p.filter);
+                    serverErrors.mapReduce(function () {
+                            var st = (this.stack_trace && this.stack_trace.frames && this.stack_trace.frames.length) || 0;
+                            emit(this._s_logger+this.exception._s_value+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
+                        },
+                        function (k, v) {
+                            var r=null;
+                            v.forEach(function (v) {
+                                if (!r)
+                                    r = v
+                                else {
+                                    r.c+=v.c;
+                                    r._dtmin = Math.min(r._dtmin, v._dtmin);
+                                    r._dtmax = Math.min(r._dtmax, v._dtmax);
+                                    (r._dtmax==v._dtmax) && (r._id = v._id);
+                                }
+                            })
+                            return r;
+                        },
+                        {
+                            query: query,
+                            out: {inline:1}
+                        },
+                        safe.sure(cb, function (stats) {
+                            stats = _.sortBy(stats, function (s) { return (-1*s.value.c) } );
+                            var ids = {};
+                            _.each(stats, function (s) {
+                                ids[s.value._id]={stats:s.value, error: s._id};
                             } );
                             events.find(queryfix({_id:{$in:_.keys(ids)}}))
                                 .toArray(safe.sure(cb, function (errors) {
