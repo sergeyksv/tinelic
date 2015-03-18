@@ -313,7 +313,7 @@ module.exports.init = function (ctx, cb) {
 										} else {
 											te._s_message = line;
 										}
-										te.stacktrace.frames = _.reverse(te.stacktrace.frames);
+										te.stacktrace.frames = te.stacktrace.frames.reverse();
 									})
 								}
 								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
@@ -501,7 +501,7 @@ module.exports.init = function (ctx, cb) {
 									post_context : frame["post_context"] || []
 								})
 							})
-							te.stacktrace.frames = _.reverse(te.stacktrace.frames);
+							te.stacktrace.frames = te.stacktrace.frames.reverse();
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							action_errors.insert( te, cb)
