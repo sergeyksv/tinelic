@@ -27,8 +27,9 @@ if(fs.existsSync(lcfgPath)){
 	cfg.config = _.merge(cfg.config,require(lcfgPath));
 }
 
+console.time("Live !")
 tinyback.createApp(cfg, function (err, app) {
-
+	console.timeEnd("Live !")
 	if (err) {
 		console.log(err.stack);
 		if (err.originalError)
