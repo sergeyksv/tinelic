@@ -116,11 +116,11 @@ module.exports.init = function (ctx, cb) {
 		_s_pid: {type:"string",required:true,"maxLength": 64},
 		_s_host: {type:"string",required:true,"maxLength": 1024},
 		_i_cnt: {type:"integer",required:true},
-		_f_val: {type:"float",required:true},
-		_f_own: {type:"float",required:true},
-		_f_min: {type:"float",required:true},
-		_f_max: {type:"float",required:true},
-		_f_sqr: {type:"float",required:true}
+		_f_val: {type:"number",required:true},
+		_f_own: {type:"number",required:true},
+		_f_min: {type:"number",required:true},
+		_f_max: {type:"number",required:true},
+		_f_sqr: {type:"number",required:true}
 	}}})
 	ctx.api.validate.register("ajax", {$set:{properties:{
 		_i_nt: {type: "integer", required: true},
@@ -340,7 +340,7 @@ module.exports.init = function (ctx, cb) {
 							_.each(body[body.length-1], function (item) {
 								// grab memory metrics
 								if (item[0].name == "Memory/Physical") {
-									var te = {
+									var te = prefixify({
 										_idp: run._idp
 										, _dt: _dt
 										, _dts: _dts
@@ -355,7 +355,7 @@ module.exports.init = function (ctx, cb) {
 										, _f_min: item[1][3]
 										, _f_max: item[1][4]
 										, _f_sqr: item[1][5]
-									}
+									})
 									ctx.api.validate.check("metrics",te, safe.sure(nrNonFatal, function () {
 										metrics.insert(te, nrNonFatal)
 									}))
@@ -511,20 +511,19 @@ module.exports.init = function (ctx, cb) {
 					delete data.url
 					delete data.r
 
-					pages.findAndModify(
-						{
-							chash: data.chash,
-							_dt: {$lte: data._dt}
-						}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
-							if (page) {
-								data._idpv = page._id;
-								(page._s_route) && (data._s_route = page._s_route);
-								(page._s_uri) && (data._s_uri = page._s_uri);
-							}
-							ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
-								ajax.insert(data, cb)
-							}))
+					pages.findAndModify({
+						chash: data.chash,
+						_dt: {$lte: data._dt}
+					}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+						if (page) {
+							data._idpv = page._id;
+							(page._s_route) && (data._s_route = page._s_route);
+							(page._s_uri) && (data._s_uri = page._s_uri);
+						}
+						ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
+							ajax.insert(data, cb)
 						}))
+					}))
 				}, function (err) {
 					if (err) {
 						console.log("BAD ajax: " + JSON.stringify(data));
