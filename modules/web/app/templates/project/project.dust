@@ -106,9 +106,23 @@
 					</div>
 				</div>
 			{/topp}
-				<ul class="col-md-2 list-unstyled">
-					<li><a href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a></li>
-				</ul>
+
+			{#database}
+				<div class="col-md-2">
+					<div class="panel panel-default">
+						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a></div>
+						<div class="panel-body" >
+							{#db}
+								<div class="progress" style="margin: 2px 0 0 0;">
+									<div class="progress-bar-info" role="progressbar" style="width: {bar}%;">
+											{avg} {name}
+									</div>
+								</div>
+							{/db}
+						</div>
+					</div>
+				</div>
+			{/database}
         </div>
     {/stats}
 	{#graphOn}

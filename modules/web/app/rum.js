@@ -110,13 +110,24 @@
 			m.p = window.location.pathname+window.location.hash;
 			m._dt = new Date();
 			m._dtp = this._dtp;
-			m.r = m.r || this.route;
-			m._i_tt = m._i_nt+m._i_dt+m._i_lt;
+			m.r = m.r || m.p;
+			m._i_tt = m._i_tt || m._i_nt + m._i_dt + m._i_lt;
 			sendPixel(m, this.url+"/collect/browser/"+this.project)
 		},
-		clientRequest:function(s){
+		clientRequest:function (s) {
+			// route, url and total time or all time components are required
+			if (!(s.r && s.url && (!isNaN(s._i_tt) || (!isNaN(s._i_nt) && !isNaN(s._i_pt)))))
+				return;
 			s._dtp = this._dtp;
-			s.r = s.r || this.route;
+			s._dtc = new Date();
+			s._i_code = s._i_code || 200;
+
+			if (s._i_tt) {
+				s._i_pt = s._i_pt || 0;
+				s._i_nt = s._i_nt || s._i_tt-s._i_pt;
+			} else {
+				s._i_tt = s._i_nt + s._i_pt;
+			}
 			sendPixel(s, this.url + "/collect/ajax/" + this.project);
 		}
 	}
@@ -168,7 +179,7 @@
 							s.r += (s.r[s.r.length-1] == "/" ? "" : "/") +jsonrpcMethod;
 						}
 						if (typeof window.Tinelic.ajaxCallback != 'undefined'){
-							window.Tinelic.ajaxCallback(s, XHR)
+							window.Tinelic.ajaxCallback(s, XHR, data)
 						}
 						s._i_code = self.status
 						s._dtc = new Date();

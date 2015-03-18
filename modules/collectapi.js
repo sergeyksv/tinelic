@@ -483,33 +483,34 @@ module.exports.init = function (ctx, cb) {
 			})
 			ctx.router.get("/ajax/:project", function (req, res, next) {
 				var data = req.query;
-				data._idp = new mongo.ObjectID(req.params.project);
-				data._dtr = new Date();
-				data._dt = data._dtr;
-
-				var ip = req.headers['x-forwarded-for'] ||
-					req.connection.remoteAddress ||
-					req.socket.remoteAddress ||
-					req.connection.socket.remoteAddress;
-
-				data = prefixify(data,{strict:1});
-				var md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
-				data.shash = md5sum.digest('hex');
-				md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dtp.toString());
-				data.chash = md5sum.digest('hex');
-				data._s_name = data.r
-				data._s_url = data.url
-				delete data.url
-				delete data.r
 				safe.run(function (cb) {
+					data._idp = new mongo.ObjectID(req.params.project);
+					data._dtr = new Date();
+					data._dt = data._dtr;
+
+					var ip = req.headers['x-forwarded-for'] ||
+						req.connection.remoteAddress ||
+						req.socket.remoteAddress ||
+						req.connection.socket.remoteAddress;
+
+					data = prefixify(data,{strict:1});
+					var md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
+					data.shash = md5sum.digest('hex');
+					md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(data._dtp.toString());
+					data.chash = md5sum.digest('hex');
+					data._s_name = data.r
+					data._s_url = data.url
+					delete data.url
+					delete data.r
+
 					pages.findAndModify(
 						{
 							chash: data.chash,
@@ -526,6 +527,7 @@ module.exports.init = function (ctx, cb) {
 						}))
 				}, function (err) {
 					if (err) {
+						console.log("BAD ajax: " + JSON.stringify(data));
 						newrelic.noticeError(err);
 					}
 					res.set('Content-Type', 'image/gif');
