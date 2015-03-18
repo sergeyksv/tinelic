@@ -107,7 +107,7 @@
 			}
 		},
 		pageLoad:function (m) {
-			m.p = window.location.pathname;
+			m.p = window.location.pathname+window.location.hash;
 			m._dt = new Date();
 			m._dtp = this._dtp;
 			m.r = m.r || this.route;
