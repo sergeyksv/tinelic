@@ -517,6 +517,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "mtc") {
 								r.value.bar = Math.round(r.value.tt/percent);
 								r.value.tt = r.value.tt.toFixed(1);
+								r.value.r = quant*(r.value.r.toFixed(1))
+								r.value.tta = (r.value.tta/1000).toFixed(2)
 							}
 							if (st == "sar") {
 								r.value.bar = Math.round(r.value.tta/percent);
