@@ -71,6 +71,9 @@ module.exports.init = function (ctx, cb) {
 		geo:{type:"object"},
         user:{type:"object", patternProperties:{
 				".*":{type:"string","maxLength": 1024}
+		}},
+        extra:{type:"object", patternProperties:{
+				".*":{type:"string","maxLength": 1024}
 		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
