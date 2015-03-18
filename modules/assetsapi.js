@@ -62,7 +62,7 @@ module.exports.init = function (ctx, cb) {
 								cb(null,!!user);
 							}))
 						else if (p.action == "project_edit")
-							tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"}},"projects._idp":p._id}}), safe.sure(cb, function (user) {
+							tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"}},"projects._idp":p._id}), safe.sure(cb, function (user) {
 								cb(null,!!user);
 							}))
 						else
