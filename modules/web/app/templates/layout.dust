@@ -7,7 +7,7 @@
 {:else}
 <script src="{_t_prefix}/app/rum.js"></script>
 <script src="//code.jquery.com/jquery-2.1.3.js"></script>
-<script src="{_t_prefix}/js/raven.min.js"></script>
+<script src="{_t_prefix}/js/raven.js"></script>
 {/_t_env_production}
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">

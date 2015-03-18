@@ -65,7 +65,7 @@ module.exports = function(grunt) {
         uglify: {
 			tinelic: {
 				files: {
-					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.min.js','./modules/web/app/rum.js']
+					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.js','./modules/web/app/rum.js']
 					},
 				options: {
 					preserveComments: false,
