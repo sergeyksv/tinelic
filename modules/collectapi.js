@@ -77,9 +77,7 @@ module.exports.init = function (ctx, cb) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) },
-						function (cb) { col.ensureIndex({_idpv:1}, cb) },
-						function (cb) { col.ensureIndex({message:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
@@ -102,16 +100,36 @@ module.exports.init = function (ctx, cb) {
 				}))
 			},
 			function (cb) {
-				db.collection("actions", cb)
+				db.collection("actions", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			},
 			function (cb) {
-				db.collection("action_stats", cb)
+				db.collection("action_stats", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			},
 			function (cb) {
-				db.collection("action_errors", cb)
+				db.collection("action_errors", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			},
 			function (cb) {
-				db.collection("metrics", cb)
+				db.collection("metrics", safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { col.ensureIndex({_dt:1}, cb) },
+						function (cb) { col.ensureIndex({_idp:1}, cb) }
+					], safe.sure(cb, col))
+				}))
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
 			ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next ) {
