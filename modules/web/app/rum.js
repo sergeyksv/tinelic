@@ -107,7 +107,7 @@
 			}
 		},
 		pageLoad:function (m) {
-			m.p = window.location.pathname;
+			m.p = window.location.pathname+window.location.hash;
 			m._dt = new Date();
 			m._dtp = this._dtp;
 			m.r = m.r || this.route;
@@ -115,6 +115,8 @@
 			sendPixel(m, this.url+"/collect/browser/"+this.project)
 		},
 		clientRequest:function(s){
+			s._dtp = this._dtp;
+			s.r = s.r || this.route;
 			sendPixel(s, this.url + "/collect/ajax/" + this.project);
 		}
 	}
