@@ -71,6 +71,9 @@ module.exports.init = function (ctx, cb) {
 		geo:{type:"object"},
         user:{type:"object", patternProperties:{
 				".*":{type:"string","maxLength": 1024}
+		}},
+        extra:{type:"object", patternProperties:{
+				".*":{type:"string","maxLength": 1024}
 		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
@@ -566,7 +569,7 @@ module.exports.init = function (ctx, cb) {
 					r._s_func = r.function; delete r.function;
 					r.pre_context = [];
 					r.post_context = [];
-					r._s_context = "";
+					r._s_context = r.context_line || ""; delete r.context_line;
 					delete r.in_app;
 				})
 				delete data.platform;
