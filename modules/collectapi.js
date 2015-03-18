@@ -68,7 +68,10 @@ module.exports.init = function (ctx, cb) {
 				".*":{type:"string","maxLength": 1024}
 			}}
 		}},
-		geo:{type:"object"}
+		geo:{type:"object"},
+        user:{type:"object", patternProperties:{
+				".*":{type:"string","maxLength": 1024}
+		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
@@ -280,36 +283,39 @@ module.exports.init = function (ctx, cb) {
 									stacktrace: { frames: [] }
 								}
 
-								_.each(ne[4]["stack_trace"][0].split("\n"), function (line) {
-									var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
-									var _TOKEN = "at ";
-									if( line.indexOf( _TOKEN ) >= 0 ) {
-										console.log(line);
-										line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-										_TOKEN = "(";
+								if (!ne[4]["stack_trace"]) {
+									_.each(ne[4]["stack_trace"][0].split("\n"), function (line) {
+										var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
+										var _TOKEN = "at ";
 										if( line.indexOf( _TOKEN ) >= 0 ) {
-											si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+											console.log(line);
 											line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-											_TOKEN = ":";
+											_TOKEN = "(";
 											if( line.indexOf( _TOKEN ) >= 0 ) {
-												si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+												si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 												line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-												// line number and column number
-												line = line.replace( ")", "" );
-												var arr_line_items = line.split( ":" );
-												if( arr_line_items.length == 2 ) {
-													si["_i_line"] = arr_line_items[0];
-													si["_i_col"] = arr_line_items[1];
-												} else if( arr_line_items.length == 1 ) {
-													si["_i_line"] = arr_line_items[0];
+												_TOKEN = ":";
+												if( line.indexOf( _TOKEN ) >= 0 ) {
+													si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+													line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+													// line number and column number
+													line = line.replace( ")", "" );
+													var arr_line_items = line.split( ":" );
+													if( arr_line_items.length == 2 ) {
+														si["_i_line"] = arr_line_items[0];
+														si["_i_col"] = arr_line_items[1];
+													} else if( arr_line_items.length == 1 ) {
+														si["_i_line"] = arr_line_items[0];
+													}
 												}
 											}
+											te.stacktrace.frames.push(si)
+										} else {
+											te._s_message = line;
 										}
-										te.stacktrace.frames.push(si)
-									} else {
-										te._s_message = line;
-									}
-								})
+										te.stacktrace.frames = _.reverse(te.stacktrace.frames);
+									})
+								}
 								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
 									action_errors.insert( te, nrNonFatal)
 								}))
@@ -495,6 +501,7 @@ module.exports.init = function (ctx, cb) {
 									post_context : frame["post_context"] || []
 								})
 							})
+							te.stacktrace.frames = _.reverse(te.stacktrace.frames);
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							action_errors.insert( te, cb)
