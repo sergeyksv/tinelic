@@ -77,6 +77,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				res.renderX({view:r.view,data:_.extend(r.res,{title:"Event "+r.res.event.message, st: st})})
 			}))
 		},
+		serror:function (req, res, next) {
+			var st = req.params.st
+			safe.parallel({
+				view:function (cb) {
+					requirejs(["views/server-errors/server-event_view"], function (view) {
+						safe.back(cb, null, view)
+					},cb)
+				},
+				res:function (cb) {
+					feed.serverErrorInfo(res.locals.token, {_id:req.params.id}, cb)
+				}
+			}, safe.sure( next, function (r) {
+				res.renderX({view:r.view,data:_.extend(r.res,{title:"Server error"+'-'+r.res.event.exception._s_value, st: st})})
+			}))
+		},
 		page:function (req, res, cb) {
 			requirejs(["views/page_view"], safe.trap(cb, function (view) {
 				res.renderX({view:view,data:{title:"Page Page"}})
@@ -224,6 +239,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 
 					var data = _.take(r.data.errors, 10)
 					views.browser.err = data;
+				}
+				if (r.data.serverErrors.length != 0) {
+					views.serverErr = {};
+
+					var data = _.take(r.data.serverErrors, 10)
+					views.serverErr.sErr = data;
 				}
 				if (r.data.topAjax.length != 0) {
 					views.topa = {}
@@ -651,6 +672,50 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								return r.avg*-1
 						})
 						res.renderX({view:r.view,route:req.route.path,data:{data:arr, title:"Database/Statements", st: st, fr: filter}})
+					})
+				)
+			}))
+		},
+		server_errors: function(req,res,cb) {
+			// we want to server on folder style url
+			if (req.path.substr(-1) != "/" && !req.params.id)
+				return res.redirect(req.baseUrl+req.path+"/");
+			var st = req.params.sort
+			var quant = 10;
+			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				safe.parallel({
+						view: function (cb) {
+							requirejs(["views/server-errors/server-err_view"], function (view) {
+								safe.back(cb, null, view)
+							},cb)
+						},
+						data: function (cb) {
+							api("stats.getServerErrorStats","public",{_t_age:quant+"m",filter:{
+								_idp:project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}}, cb);
+						},
+						event: function (cb) {
+							feed.serverErrorInfo(res.locals.token, {_id:req.params.id}, cb)
+						}
+					}, safe.sure(cb, function(r){
+						r.event.headless = true;
+						var data = []
+						if (st == 'terr') {
+							data = r.data
+						}
+						if (data.length == 0) {
+							data.push({error: {message: "Not errors on this client"}})
+						}
+						var sum = 0.0
+						_.forEach(data, function(r) {
+							sum += r.stats.c
+						})
+						var percent = sum/100
+						_.forEach(data, function(r) {
+							r.bar = r.stats.c/percent
+						})
+						res.renderX({view:r.view,data:{data:data,event:r.event, title:"Server-errors",st: st}})
 					})
 				)
 			}))

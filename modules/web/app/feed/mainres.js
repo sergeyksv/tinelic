@@ -10,6 +10,16 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				}
 			}, cb)
 		},
+		serverErrorInfo: function (token, params, cb) {
+			safe.parallel({
+				event:function (cb) {
+					api("stats.getServerError",token, _.extend({_t_age:"30d"},params), cb)
+				},
+				info:function (cb) {
+					api("stats.getServerErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
+				}
+			}, cb)
+		},
 		projectInfo:function (token, params, cb) {
 			safe.parallel({
 				views: function (cb) {
@@ -32,6 +42,9 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				},
 				topTransactions: function(cb) {
 					api("stats.getTopTransactions", token, params, cb);
+				},
+				serverErrors: function (cb) {
+					api("stats.getServerErrorStats",token, params, cb);
 				}
 			}, cb)
 		}
