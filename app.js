@@ -40,7 +40,11 @@ tinyback.createApp(cfg, function (err, app) {
 				if (_.isFunction(cb)) {
 					var args = safe.args.apply(0, arguments);
 					// redefined callback to one wrapped by new relic
-					args[args.length-1] = newrelic.createTracer("api/api/"+ns+"/"+name, cb)
+					args[args.length-1] = newrelic.createTracer("api/api/"+ns+"/"+name, function (err) {
+						if (err)
+							newrelic.noticeError(err);
+						cb.apply(this, arguments);
+					})
 					func.apply(this,args)
 				} else {
 					func.apply(this,arguments)
