@@ -115,6 +115,8 @@
 			sendPixel(m, this.url+"/collect/browser/"+this.project)
 		},
 		clientRequest:function(s){
+			s._dtp = this._dtp;
+			s.r = s.r || this.route;
 			sendPixel(s, this.url + "/collect/ajax/" + this.project);
 		}
 	}
