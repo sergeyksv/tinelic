@@ -287,7 +287,7 @@ module.exports.init = function (ctx, cb) {
 									stacktrace: { frames: [] }
 								}
 
-								if (!ne[4]["stack_trace"]) {
+								if (ne[4]["stack_trace"]) {
 									_.each(ne[4]["stack_trace"][0].split("\n"), function (line) {
 										var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
 										var _TOKEN = "at ";
