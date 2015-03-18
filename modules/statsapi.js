@@ -707,7 +707,7 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         "function() {\
-                            emit(this._s_name, { uri: this._s_uri, pag: [], count:{}} )\
+                            emit(this._s_name, { route: this._s_route, pag: []} )\
                         }",
                         function (k,v) {
                             var r=null;
@@ -715,7 +715,7 @@ module.exports.init = function (ctx, cb) {
                                 if (!r)
                                     r = v
                                 else {
-                                    r.pag.push(v.uri)
+                                    r.pag.push(v.route)
                                 }
                             })
                             return r;
