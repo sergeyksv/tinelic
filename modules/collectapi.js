@@ -73,7 +73,8 @@ module.exports.init = function (ctx, cb) {
 				".*":{type:"string","maxLength": 1024}
 		}},
         extra:{type:"object", patternProperties:{
-				".*":{type:"string","maxLength": 1024}
+			".*":[{type:"string","maxLength": 1024},
+				{type:"ineteger"}]
 		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
