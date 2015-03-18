@@ -566,7 +566,7 @@ module.exports.init = function (ctx, cb) {
 					r._s_func = r.function; delete r.function;
 					r.pre_context = [];
 					r.post_context = [];
-					r._s_context = "";
+					r._s_context = r.context_line || ""; delete r.context_line;
 					delete r.in_app;
 				})
 				delete data.platform;
