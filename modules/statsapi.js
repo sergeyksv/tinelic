@@ -32,9 +32,43 @@ module.exports.init = function (ctx, cb) {
             },
             function (cb) {
                 db.collection("action_errors", cb)
+            },
+            function (cb) {
+                db.collection("metrics", cb)
             }
-        ],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors) {
+        ],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors, metrics) {
             cb(null, {api:{
+                getMetrics: function(t, p, cb) {
+                    var query = queryfix(p.filter)
+                    metrics.mapReduce(
+                        function() {
+                            emit(this._s_pid, {mem: (this._f_val/this._i_cnt)})
+                        },
+                        function(k,v) {
+                            var r = null
+                            v.forEach(function(v) {
+                                if (!r) {
+                                    r = v
+                                }
+                                else {
+                                    r.mem = (r.mem + v.mem)/2
+                                }
+                            })
+                            return r
+                        },
+                        {
+                            query: query,
+                            out:{inline: 1}
+                        },
+                        safe.sure(cb, function(data) {
+                            var memtt = 0;
+                            _.forEach(data,function(r) {
+                                memtt += parseInt(r.value.mem)
+                            })
+                            cb(null,{proc: data.length, mem: memtt})
+                        })
+                    )
+                },
                 getActions: function(t, p, cb) {
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;

@@ -231,7 +231,7 @@ module.exports.init = function (ctx, cb) {
 							// on connect we should link agent with its project id when available
 							var body = nrParseBody(req)[0];
 							var agent_name = body.app_name[0];
-							ctx.api.assets.getProject("public", {name:agent_name}, safe.sure(cb, function (project) {
+							ctx.api.assets.getProject("public", {filter:{name:agent_name}}, safe.sure(cb, function (project) {
 								if (!project)
 									throw new Error( "Project \"" + agent_name + "\" not found" );
 
@@ -411,7 +411,7 @@ module.exports.init = function (ctx, cb) {
 						{
 							chash: data.chash,
 							_dt: {$lte: data._dt}
-						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+						}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
 								(page._s_route) && (data._s_route = page._s_route);
@@ -490,7 +490,7 @@ module.exports.init = function (ctx, cb) {
 										_s_route: data._s_route,
 										_s_uri: data._s_uri}
 								}, {multi: true}, safe.sure(cb, function() {
-									ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+									ajax.find({chash: data.chash, _i_code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
 										if (count > 0)
 											pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
 										else
