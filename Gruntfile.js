@@ -62,6 +62,33 @@ module.exports = function(grunt) {
             "options": {},
             "main": {}
         },
+        uglify: {
+			tinelic: {
+				files: {
+					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.js','./modules/web/app/rum.js']
+					},
+				options: {
+					preserveComments: false,
+					beautify: {
+						ascii_only: true,
+						quote_keys: true
+					},
+					compress: {
+						hoist_funs: true,
+						join_vars: true,
+						loops: true,
+						conditionals: true,
+						if_return: true,
+						unused: true,
+						comparisons: true
+					},
+					report: "min",
+					mangle: {
+						except: [ "undefined" ]
+					}
+				}
+			}
+		},
         nodemon: {
             dev: {
                 script: 'app.js'
@@ -82,11 +109,12 @@ module.exports = function(grunt) {
 
     grunt.registerTask('default', []);
 
-    grunt.registerTask('build', ['git-describe', 'ensureLocalConfig', 'requirejs:compile']);
+    grunt.registerTask('build', ['git-describe', 'ensureLocalConfig', 'requirejs:compile','uglify']);
 
     grunt.registerTask('server', ['build', 'nodemon']);
 
     grunt.loadNpmTasks('grunt-contrib-requirejs');
     grunt.loadNpmTasks('grunt-git-describe');
     grunt.loadNpmTasks('grunt-nodemon');
+    grunt.loadNpmTasks('grunt-contrib-uglify');
 };
