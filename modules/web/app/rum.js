@@ -23,8 +23,8 @@
 				softStart = _t_rum;
 		}
 
-		var _t_start = (performance && performance.timing && performance.timing.navigationStart) || softStart;
-		var _t_ready = (performance && performance.timing && performance.timing.domComplete) || domReady;
+		var _t_start = (window.performance && performance.timing && performance.timing.navigationStart) || softStart;
+		var _t_ready = (window.performance && performance.timing && performance.timing.domComplete) || domReady;
 
 		var m = {
 			_i_nt:_t_page.valueOf()-_t_start.valueOf(),
@@ -75,7 +75,7 @@
 	}
 
 	window.addEventListener("beforeunload", function (e) {
-		if (performance && performance.timing && performance.timing.navigationStart)
+		if (window.performance && performance.timing && performance.timing.navigationStart)
 			return;
 		var start = new Date().valueOf();
 		var ttl = new Date(start+60000);
