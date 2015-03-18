@@ -2,21 +2,17 @@
 <html lang="en">
 <head>
 {#_t_env_production}
-<script src="{_t_prefix}/js/build/rum.js?rev={_t_rev}"></script>
+<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
+<script src="{_t_prefix}/js/build/tinelic.js?rev={_t_rev}"></script>
 {:else}
 <script src="{_t_prefix}/app/rum.js"></script>
+<script src="//code.jquery.com/jquery-2.1.3.js"></script>
+<script src="{_t_prefix}/js/raven.js"></script>
 {/_t_env_production}
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="{_t_prefix}/css/style.css?rev={_t_rev}" rel="stylesheet">
-{#_t_env_production}
-<script src="//code.jquery.com/jquery-2.1.3.min.js"></script>
-<script src="//cdn.ravenjs.com/1.1.15/jquery,native/raven.min.js"></script>
-{:else}
-<script src="//code.jquery.com/jquery-2.1.3.js"></script>
-<script src="//cdn.ravenjs.com/1.1.15/jquery,native/raven.js"></script>
-{/_t_env_production}
 <script>
 (function () {
 	var _t_page = new Date();

@@ -1,0 +1,25 @@
+{@view name="views/header_view" data="header"/}
+
+<div class="starter-template container-fluid">
+<div class="row">
+	<div class="col-sm-4">
+		<div class="dropdown">
+			{title} <span class="btn btn-xs btn-info" data-toggle="dropdown">
+				{@select key="{st}"}
+					{@eq value="serr"}User-agent errors{/eq}
+					{@eq value="terr"}Total errors{/eq}
+				{/select}
+			<span class="caret"></span></span><br><br>
+			<ul class="dropdown-menu" role="menu">
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Total errors</a></li>
+			</ul>
+		</div>
+		{@view name="views/server-errors/server-err_list_view" data="data"/}
+	</div>
+	<div class="col-sm-8">
+		<div class="row">
+			{@view name="views/server-errors/server-event_view" data="event"/}
+    	</div>
+    </div>
+</div>
+</div>
