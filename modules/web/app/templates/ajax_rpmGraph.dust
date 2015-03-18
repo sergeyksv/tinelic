@@ -1,9 +1,9 @@
 <div class="starter-template container-fluid">
 <div class="row">
     	<hr></hr>
-       	<div id="time-one" style="width:100%; height:150px;"></div>
+       	<div id="rpm-one" style="width:100%; height:150px;"></div>
        	<hr></hr>
-        <div id="rpm-one" style="width:100%; height:150px; "></div>
+        <div id="time-one" style="width:100%; height:150px; "></div>
         <table class="table table-hover" id="trbreak">
         </table>
 </div>

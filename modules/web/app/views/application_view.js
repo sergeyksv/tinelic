@@ -78,10 +78,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   text: ''
                               },
                               xAxis: {
-                                  type: 'datetime',
-                                  title: {
-                                      text: 'Date'
-                                  }
+                                  type: 'datetime'
                               },
                               yAxis: [{
                                   title: {
@@ -102,6 +99,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               legend: {
                                   enabled: false
                               },
+                              credits: {
+										enabled: false
+							  },
                               series: [
                                   {
                                       name: 'rpm',
@@ -133,14 +133,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   text: ''
                               },
                               xAxis: {
-                                  type: 'datetime',
-                                  title: {
-                                      text: 'Date'
-                                  }
+                                  type: 'datetime'
                               },
                               yAxis: [{
                                   title: {
-                                      text: 'Throughput(time)'
+                                      text: 'Timing(s)'
                                   },
                                   min: 0,
                                   max: ttServerMax
@@ -157,6 +154,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               legend: {
                                   enabled: false
                               },
+                              credits: {
+										enabled: false
+							  },
                               series: [
                                   {
                                       name: 'rpm',
