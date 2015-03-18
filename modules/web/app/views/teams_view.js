@@ -101,7 +101,7 @@ define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','
                     var n = val.value.split(',');
                     data.projects.push({_idp: n[0]})
                 })
-                data.id = id;
+                data._id = id;
                 if (n.length) {
                     api("assets.addProjects", "public", data, function (err, data) {
                         if (err) {

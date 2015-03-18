@@ -430,6 +430,36 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
+                getErrorRpm:function(t, p, cb) {
+					var query1 = queryfix(p.filter);
+					var q = p.quant || 1;
+					events.findOne(query1, safe.sure(cb, function (event) {
+						var query = {_idp:event._idp, message:event.message,_dt:query1._dt};
+						events.mapReduce(
+							"function() {\
+								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
+							}",
+							function (k,v) {
+								var r=null;
+								v.forEach(function (v) {
+									if (!r){
+										r = v
+									}
+									else {
+										r.r+=v.r;
+
+									}
+								})
+								return r;
+							},
+							{
+								query: query,
+								out: {inline:1}
+							},
+							cb
+						)
+					}))
+				},
                 getServerErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
                     serverErrors.mapReduce(function () {
