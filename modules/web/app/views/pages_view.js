@@ -87,7 +87,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'rpm'
+                                        text: 'Throughput(rpm)'
                                     },
                                     min: 0,
                                     max: rpmmax
@@ -142,7 +142,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'time'
+                                        text: 'Throughput(time)'
                                     },
                                     min: 0,
                                     max: ttBrowserMax
