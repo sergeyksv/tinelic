@@ -5,7 +5,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
         postRender:function () {
 			view.prototype.postRender.call(this);
 			if (this.parent.data.event.event) {
-				var message=this.parent.data.event.event.message
+				var message=this.parent.data.event.event._s_message
 				var quant = this.parent.data.fr.quant;
 				var offset = new Date().getTimezoneOffset();
 				var errflat = [], errprev = null;
