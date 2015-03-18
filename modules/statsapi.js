@@ -138,7 +138,7 @@ module.exports.init = function (ctx, cb) {
                     var f = 4*t;
                     pages.mapReduce(
                         "function() {\
-                            emit(this._s_uri, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+                            emit(this._s_route, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
                         function (k,v) {
                             var t = 4000; //apdex T
@@ -370,7 +370,7 @@ module.exports.init = function (ctx, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					events.findOne(query1, safe.sure(cb, function (event) {
-						var query = {_idp:event._idp, message:event.message,_dt:query1._dt};
+						var query = {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt};
 						events.mapReduce(
 							"function() {\
 								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
