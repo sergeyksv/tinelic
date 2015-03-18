@@ -23,7 +23,7 @@ module.exports.init = function (ctx, cb) {
 				_idp:{type:"mongoId"}
 			}
 		}},
-		users:{type:"array", required:true, items:{
+		users:{type:"array", items:{
 			type:"object", required:false, properties:{
 				_idu:{required:true, type:"mongoId"},
 				role:{required:true, enum: [ "member", "lead"]}
