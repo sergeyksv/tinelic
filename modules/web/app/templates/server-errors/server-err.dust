@@ -17,6 +17,7 @@
 		{@view name="views/server-errors/server-err_list_view" data="data"/}
 	</div>
 	<div class="col-sm-8">
+		{@view name="views/server-errors/server-err_graph_view" data="rpm"/}
 		<div class="row">
 			{@view name="views/server-errors/server-event_view" data="event"/}
     	</div>
