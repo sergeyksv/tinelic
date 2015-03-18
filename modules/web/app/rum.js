@@ -141,7 +141,19 @@
 				var start = new Date();
 				var oldOnReadyStateChange;
 				var url = this._url;
-				var s = {}
+				var s = {};
+				var jsonrpcMethod;
+				if(data && typeof data == "string"){
+					var jsonData;
+					try{
+						jsonData = JSON.parse(data);
+					}
+					catch(e){
+					}
+					if(jsonData && jsonData.jsonrpc){
+						jsonrpcMethod = jsonData.method;
+					}
+				}
 				function onReadyStateChange() {
 					var time = new Date() - start;
 					if(self.readyState == 2) {
@@ -151,7 +163,10 @@
 						s._i_tt = time;
 						s._i_pt = s._i_tt - s._i_nt;
 						s.url = url;
-						s.r=s.url.replace(/\?.*/,"");
+						s.r=url.replace(/\?.*/,"");
+						if(jsonrpcMethod){
+							s.r += (s.r[s.r.length-1] == "/" ? "" : "/") +jsonrpcMethod;
+						}
 						if (typeof window.Tinelic.ajaxCallback != 'undefined'){
 							window.Tinelic.ajaxCallback(s, XHR)
 						}
