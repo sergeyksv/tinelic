@@ -15,7 +15,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 var trbreak = self.$('#trbreak')
                 var p = $(e.currentTarget).html()
                 var filter = this.data.fr
-                filter.filter._s_uri = p;
+                filter.filter._s_route = p;
 
                 safe.parallel([
                     function(cb) {
