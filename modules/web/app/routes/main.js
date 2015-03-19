@@ -311,6 +311,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					})
 				}
 
+				if (r.data.metrics) {
+					if (!views.total)
+						views.total = {}
+
+					views.total.metrics = r.data.metrics
+				}
+
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views})})
 			}))
 		},

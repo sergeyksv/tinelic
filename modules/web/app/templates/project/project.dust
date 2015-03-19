@@ -18,6 +18,8 @@
 								<li>{#etuajax} Time ajax: {.} s{/etuajax}</li>
 								<li>{#etupage} Time page: {.} s{/etupage}</li>
 								<li>{#ttserver} Time server: {.} s{/ttserver}</li>
+								<li>{#metrics} Processes: {proc}{/metrics}</li>
+								<li>{#metrics} Memory: {mem} Mb{/metrics}</li>
 							</ul>
 						</div>
 					</div>

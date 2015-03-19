@@ -45,6 +45,9 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				},
 				serverErrors: function (cb) {
 					api("stats.getServerErrorStats",token, params, cb);
+				},
+				metrics: function (cb) {
+					api("stats.getMetrics", token, params, cb)
 				}
 			}, cb)
 		}
