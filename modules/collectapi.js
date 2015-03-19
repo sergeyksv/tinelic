@@ -357,7 +357,10 @@ module.exports.init = function (ctx, cb) {
 								} else if( run._s_logger == "dotnet" ) {
 									nrParseStackTrace_dotnet( ne[4]["stack_trace"], te );
 								}
-								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
+								ctx.api.validate.check("error",te, safe.sure(function () {
+										console.log(te);
+										nrNonFatal.apply(this,arguments)
+									}, function () {
 									action_errors.insert( te, nrNonFatal)
 								}))
 							})
