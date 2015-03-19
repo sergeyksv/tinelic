@@ -358,7 +358,7 @@ module.exports.init = function (ctx, cb) {
 									nrParseStackTrace_dotnet( ne[4]["stack_trace"], te );
 								}
 								ctx.api.validate.check("error",te, safe.sure(function () {
-										console.log(te);
+										console.log(JSON.stringify(te), ne[4]["stack_trace"]);
 										nrNonFatal.apply(this,arguments)
 									}, function () {
 									action_errors.insert( te, nrNonFatal)
