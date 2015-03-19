@@ -39,6 +39,22 @@
 					</div>
 				</div>
 			{/browser}
+			{#serverErr}
+				<div class="col-md-2">
+						<div class="panel panel-default">
+							<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/server_errors/terr'>Server errors</a></div>
+							<div class="panel-body">
+							<ul class="list-unstyled h6">
+							{#sErr}
+								<li style="overflow: hidden; text-overflow: ellipsis;">
+									<a href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span> - {error}</a><br>
+								</li>
+							{/sErr}
+							</ul>
+						</div>
+					</div>
+				</div>
+			{/serverErr}
 			{#transactions}
 				<div class="col-md-2">
 					<div class="panel panel-default">
@@ -88,9 +104,9 @@
 					</div>
 				</div>
 			{/topp}
-				<div class="col-md-2">
-					<a href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a>
-				</div>
+				<ul class="col-md-2 list-unstyled">
+					<li><a href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a></li>
+				</ul>
         </div>
     {/stats}
 

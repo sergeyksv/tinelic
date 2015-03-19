@@ -53,7 +53,7 @@ module.exports.init = function (ctx, cb) {
 			}}
 		}},
 		// client side related data
-        _dtc:{type:"date",required:true},
+        _dtc:{type:"date"},
         _dtp:{type:"date"},
         _dtr:{type:"date"},
         agent:{type:"object"},
@@ -68,7 +68,14 @@ module.exports.init = function (ctx, cb) {
 				".*":{type:"string","maxLength": 1024}
 			}}
 		}},
-		geo:{type:"object"}
+		geo:{type:"object"},
+        user:{type:"object", patternProperties:{
+				".*":{type:"string","maxLength": 1024}
+		}},
+        extra:{type:"object", patternProperties:{
+			".*":[{type:"string","maxLength": 1024},
+				{type:"ineteger"}]
+		}}
     }}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
@@ -150,6 +157,69 @@ module.exports.init = function (ctx, cb) {
 							console.log(err);
 					}
 				}
+				// extract json data from http request body
+				function nrParseBody( req ) {
+					return Buffer.isBuffer(req.body) ? JSON.parse(req.body.toString()) : req.body;
+				}
+				function nrParseStackTrace_nodejs( st_source, error_dest ) {
+					if(!st_source)
+						return;
+					_.each(st_source, function (line) {
+						var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
+						var _TOKEN = "at ";
+						if( line.indexOf( _TOKEN ) >= 0 ) {
+							line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+							_TOKEN = "(";
+							if( line.indexOf( _TOKEN ) >= 0 ) {
+								si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+								line = line.replace( ")", "" );
+							}
+							_TOKEN = ":";
+							if( line.indexOf( _TOKEN ) >= 0 ) {
+								si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+								// line number and column number
+								var arr_line_items = line.split( ":" );
+								if( arr_line_items.length == 2 ) {
+									si["_i_line"] = arr_line_items[0] * 1;
+									si["_i_col"] = arr_line_items[1] * 1;
+								} else if( arr_line_items.length == 1 ) {
+									si["_i_line"] = arr_line_items[0] * 1;
+								}
+							}
+							error_dest.stacktrace.frames.push(prefixify(si))
+						} else {
+							error_dest._s_message = line;
+						}
+					})
+				}
+				function nrParseStackTrace_dotnet( st_source, error_dest ) {
+					if(!st_source)
+						return;
+					_.each(st_source, function (line) {
+						var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
+						var _TOKEN = "at ";
+						if( line.indexOf( _TOKEN ) >= 0 ) {
+							line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+							_TOKEN = " in ";
+							if( line.indexOf( _TOKEN ) >= 0 ) {
+								si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+								_TOKEN = ":line";
+								if( line.indexOf( _TOKEN ) >= 0 ) {
+									si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+									line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
+									// line number and column number
+									si["_i_line"] = line.trim() * 1;
+								}
+							} else si["_s_func"] = line;
+							error_dest.stacktrace.frames.push(prefixify(si))
+						} else {
+							error_dest._s_message = line;
+						}
+					})
+				}
 				safe.run(function (cb) {
 					var nrpc = {
 						get_redirect_host:function () {
@@ -159,7 +229,7 @@ module.exports.init = function (ctx, cb) {
 						},
 						connect:function () {
 							// on connect we should link agent with its project id when available
-							var body = req.body[0];
+							var body = nrParseBody(req)[0];
 							var agent_name = body.app_name[0];
 							ctx.api.assets.getProject("public", {name:agent_name}, safe.sure(cb, function (project) {
 								if (!project)
@@ -172,10 +242,13 @@ module.exports.init = function (ctx, cb) {
 						agent_settings:function () {
 							// seems to be hook to alter agent settings
 							// not supported now, just mirror back
-							res.json(req.body)
+							var body = nrParseBody(req);
+							if( Array.isArray(body) && body.length > 0 )
+								res.json(body[0]);
+							else res.json(body);
 						},
 						metric_data:function () {
-							var body = req.body;
+							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
 							var _dts = new Date( body[1] * 1000.0 )
@@ -238,7 +311,7 @@ module.exports.init = function (ctx, cb) {
 							res.json( { return_value: "ok" } );
 						},
 						analytic_event_data:function () {
-							var body = req.body;
+							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
 							_.each(body[body.length - 1], function (item) {
@@ -256,7 +329,7 @@ module.exports.init = function (ctx, cb) {
 							res.json( { return_value: "ok" } );
 						},
 						error_data:function () {
-							var body = req.body;
+							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
 							_.each(body[body.length - 1], function (ne) {
@@ -279,37 +352,11 @@ module.exports.init = function (ctx, cb) {
 									},
 									stacktrace: { frames: [] }
 								}
-
-								_.each(ne[4]["stack_trace"][0].split("\n"), function (line) {
-									var si = {pre_context:[],post_context:[],_s_context:"",_s_func:"",_s_file:"",_i_col:0,_i_line:0};
-									var _TOKEN = "at ";
-									if( line.indexOf( _TOKEN ) >= 0 ) {
-										console.log(line);
-										line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-										_TOKEN = "(";
-										if( line.indexOf( _TOKEN ) >= 0 ) {
-											si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
-											line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-											_TOKEN = ":";
-											if( line.indexOf( _TOKEN ) >= 0 ) {
-												si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
-												line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
-												// line number and column number
-												line = line.replace( ")", "" );
-												var arr_line_items = line.split( ":" );
-												if( arr_line_items.length == 2 ) {
-													si["_i_line"] = arr_line_items[0];
-													si["_i_col"] = arr_line_items[1];
-												} else if( arr_line_items.length == 1 ) {
-													si["_i_line"] = arr_line_items[0];
-												}
-											}
-										}
-										te.stacktrace.frames.push(si)
-									} else {
-										te._s_message = line;
-									}
-								})
+								if( run._s_logger == "node" || run._s_logger == "nodejs" ) {
+									nrParseStackTrace_nodejs( ne[4]["stack_trace"], te );
+								} else if( run._s_logger == "dotnet" ) {
+									nrParseStackTrace_dotnet( ne[4]["stack_trace"], te );
+								}
 								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
 									action_errors.insert( te, nrNonFatal)
 								}))
@@ -495,6 +542,7 @@ module.exports.init = function (ctx, cb) {
 									post_context : frame["post_context"] || []
 								})
 							})
+							te.stacktrace.frames = te.stacktrace.frames.reverse();
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							action_errors.insert( te, cb)
@@ -559,7 +607,7 @@ module.exports.init = function (ctx, cb) {
 					r._s_func = r.function; delete r.function;
 					r.pre_context = [];
 					r.post_context = [];
-					r._s_context = "";
+					r._s_context = r.context_line || ""; delete r.context_line;
 					delete r.in_app;
 				})
 				delete data.platform;

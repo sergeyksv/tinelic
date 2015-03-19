@@ -22,7 +22,7 @@ module.exports.init = function (ctx, cb) {
 				_idp:{type:"mongoId"}
 			}
 		}},
-		users:{type:"array", required:true, items:{
+		users:{type:"array", items:{
 			type:"object", required:false, properties:{
 				_idu:{required:true, type:"mongoId"},
 				role:{required:true, enum: [ "member", "lead"]}
@@ -62,7 +62,7 @@ module.exports.init = function (ctx, cb) {
 								cb(null,!!user);
 							}))
 						else if (p.action == "project_edit")
-							tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"},"projects._idp":p._id}}), safe.sure(cb, function (user) {
+							tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"}},"projects._idp":p._id}), safe.sure(cb, function (user) {
 								cb(null,!!user);
 							}))
 						else
@@ -85,17 +85,26 @@ module.exports.init = function (ctx, cb) {
 					}))
 				},
 				getGrantedProjectIds:function (t, p, cb) {
-					var relmap = {project_edit:"team_edit",project_view:"team_view"};
-					ctx.api.obac.getGrantedIds(t,{action:relmap[p.action]}, safe.sure(cb, function (teamids) {
-						tm.teams.find(queryfix({_id:{$in:teamids}})).toArray(safe.sure(cb, function (teams) {
-							var projectids = _.reduce(teams, function (res,v) {
-								_.each(v.projects, function (project) {
-									res[project._idp]=1;
-								})
-								return res;
-							},{});
-							cb(null,_.keys(projectids));
-						}))
+					ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+						var relmap = {project_edit:"team_edit",project_view:"team_view"};
+						if (u.role!="admin") {
+							ctx.api.obac.getGrantedIds(t,{action:relmap[p.action]}, safe.sure(cb, function (teamids) {
+								tm.teams.find(queryfix({_id:{$in:teamids}})).toArray(safe.sure(cb, function (teams) {
+									var projectids = _.reduce(teams, function (res,v) {
+										_.each(v.projects, function (project) {
+											res[project._idp]=1;
+										})
+										return res;
+									},{});
+									cb(null,_.keys(projectids));
+								}))
+							}))
+						} else {
+							// admin can see all
+							tm.projects.find({},{_id:1}).toArray(safe.sure(cb, function (projects) {
+								cb(null,_.pluck(projects, "_id"));
+							}))
+						}
 					}))
 				},
 				getProjects:function (t, p, cb) {
