@@ -182,10 +182,10 @@ module.exports.init = function (ctx, cb) {
 								// line number and column number
 								var arr_line_items = line.split( ":" );
 								if( arr_line_items.length == 2 ) {
-									si["_i_line"] = arr_line_items[0] * 1;
-									si["_i_col"] = arr_line_items[1] * 1;
+									si["_i_line"] = arr_line_items[0];
+									si["_i_col"] = arr_line_items[1];
 								} else if( arr_line_items.length == 1 ) {
-									si["_i_line"] = arr_line_items[0] * 1;
+									si["_i_line"] = arr_line_items[0];
 								}
 							}
 							error_dest.stacktrace.frames.push(prefixify(si))
@@ -211,7 +211,7 @@ module.exports.init = function (ctx, cb) {
 									si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 									line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 									// line number and column number
-									si["_i_line"] = line.trim() * 1;
+									si["_i_line"] = line.trim();
 								}
 							} else si["_s_func"] = line;
 							error_dest.stacktrace.frames.push(prefixify(si))
