@@ -340,7 +340,7 @@ module.exports.init = function (ctx, cb) {
 							_.each(body[body.length-1], function (item) {
 								// grab memory metrics
 								if (item[0].name == "Memory/Physical") {
-									var te = {
+									var te = prefixify({
 										_idp: run._idp
 										, _dt: _dt
 										, _dts: _dts
@@ -355,7 +355,7 @@ module.exports.init = function (ctx, cb) {
 										, _f_min: item[1][3]
 										, _f_max: item[1][4]
 										, _f_sqr: item[1][5]
-									}
+									})
 									ctx.api.validate.check("metrics",te, safe.sure(nrNonFatal, function () {
 										metrics.insert(te, nrNonFatal)
 									}))
