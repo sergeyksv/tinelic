@@ -573,7 +573,7 @@ module.exports.init = function (ctx, cb) {
 							var _id = docs[0]._id;
 							safe.parallel([
 								function(cb) {
-									events.update({chash: data.chash, _dt:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+									events.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
 										$set: {
 											_idpv: _id,
 											request: {
