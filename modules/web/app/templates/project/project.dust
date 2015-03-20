@@ -111,21 +111,27 @@
 				</ul>
         </div>
     {/stats}
-
-	<div class="row">
-		<div class="col-xs-12 col-sm-8">
-			<h3>Totally</h3><hr>
-            <div id="totally" style="width:100%; height:400px; float: left;"></div>
+	{#graphOn}
+		<div class="row">
+			<div class="col-xs-12 col-sm-4">
+				<h3>Apdex</h3><hr>
+				{#server}<div id="apdex-server" style="width:100%; height:110px; float: left;"></div>{/server}
+				{#browser}<div id="apdex-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
+				{#ajax}<div id="apdex-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+			</div>
+			<div class="col-xs-12 col-sm-4">
+				<h3>Throughput</h3><hr>
+				{#server}<div id="thr-server" style="width:100%; height:110px; float: left;"></div>{/server}
+				{#browser}<div id="thr-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
+				{#ajax}<div id="thr-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+			</div>
+			<div class="col-xs-12 col-sm-4">
+				<h3>Timing</h3><hr>
+				{#server}<div id="tt-server" style="width:100%; height:110px; float: left;"></div>{/server}
+				{#browser}<div id="tt-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
+				{#ajax}<div id="tt-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+			</div>
 		</div>
-		<div class="col-xs-12 col-sm-4">
-			<h3>APDEX</h3><hr>
-            <div id="apdex-server" style="width:100%; height:100px; float: left;"></div>
-            <div id="apdex-browser" style="width:100%; height:100px; float: left;"></div>
-            <div id="apdex-ajax" style="width:100%; height:100px; float: left;"></div>
-            <div id="tt-server" style="width:100%; height:100px; float: left;"></div>
-            <div id="tt-browser" style="width:100%; height:100px; float: left;"></div>
-            <div id="tt-ajax" style="width:100%; height:100px; float: left;"></div>
-			{@view name="views/project/errors_view"/}
-		</div>
-	</div>
+	{/graphOn}
+	{@view name="views/project/errors_view"/}
 </div>
