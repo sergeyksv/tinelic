@@ -371,6 +371,15 @@ module.exports.init = function (ctx, cb) {
 							// ???? transaction trace, not suppored now
 							res.json( { return_value: "ok" } );
 						},
+						get_agent_commands:function () {
+							// .net agent send this request
+							res.json( { return_value: [] } );
+						},
+						shutdown:function () {
+							// .net agent send this request when IIS is stopped or there are no
+							// request to .net applications long time
+							res.json( { return_value: null } );
+						}
 					}
 					var fn = nrpc[req.query.method];
 					if (!fn)
