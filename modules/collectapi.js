@@ -24,7 +24,7 @@ module.exports.init = function (ctx, cb) {
         _id:{type:"mongoId"},
         _s_reporter:{type:"string",required:true,"maxLength": 64},
         _s_server:{type:"string",required:true,"maxLength": 256},
-        _s_logger:{type:"string",required:true,"maxLength": 54},
+        _s_logger:{type:"string",required:true,"maxLength": 64},
         _s_message:{type:"string",required:true,"maxLength": 4096},
         _s_culprit:{type:"string",required:true,"maxLength": 1024},
         exception:{type:"object",required:true, properties: {
@@ -79,8 +79,8 @@ module.exports.init = function (ctx, cb) {
     }}})
 	ctx.api.validate.register("action-stats", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
-		_s_name: {type:"string",required:true,"maxLength": 512},
-		_s_type: {type:"string",required:true,"maxLength": 512},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
 		_dt: {type:"date",required:true},
 		_dts: {type:"date",required:true},
 		_dte: {type:"date",required:true},
@@ -100,8 +100,8 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.validate.register("actions", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_dt: {type:"date",required:true},
-		_s_type: {type:"string",required:true,"maxLength": 512},
-		_s_name: {type:"string",required:true,"maxLength": 512},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
 		_i_wt: {type:"integer",required:true},
 		_i_tt: {type:"integer",required:true}
 
@@ -111,8 +111,8 @@ module.exports.init = function (ctx, cb) {
 		_dt: {type:"date",required:true},
 		_dts:{type:"date",required:true},
 		_dte: {type:"date",required:true},
-		_s_type: {type:"string",required:true,"maxLength": 128},
-		_s_name: {type:"string",required:true,"maxLength": 128},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
 		_s_pid: {type:"string",required:true,"maxLength": 64},
 		_s_host: {type:"string",required:true,"maxLength": 1024},
 		_i_cnt: {type:"integer",required:true},
