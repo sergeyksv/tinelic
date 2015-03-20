@@ -155,7 +155,8 @@ module.exports.init = function (ctx, cb) {
 		_s_route:{type: "string", required: true, "maxLength": 1024},
 		_s_uri: {type: "string", required: true, "maxLength": 4096},
 		_i_err: {type: "integer", required: true},
-		agent: {type: "object", required: true}
+		agent: {type: "object", required: true},
+		geo: {type: "object"}
 	}}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
