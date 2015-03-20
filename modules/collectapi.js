@@ -511,20 +511,19 @@ module.exports.init = function (ctx, cb) {
 					delete data.url
 					delete data.r
 
-					pages.findAndModify(
-						{
-							chash: data.chash,
-							_dt: {$lte: data._dt}
-						}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
-							if (page) {
-								data._idpv = page._id;
-								(page._s_route) && (data._s_route = page._s_route);
-								(page._s_uri) && (data._s_uri = page._s_uri);
-							}
-							ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
-								ajax.insert(data, cb)
-							}))
+					pages.findAndModify({
+						chash: data.chash,
+						_dt: {$lte: data._dt}
+					}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+						if (page) {
+							data._idpv = page._id;
+							(page._s_route) && (data._s_route = page._s_route);
+							(page._s_uri) && (data._s_uri = page._s_uri);
+						}
+						ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
+							ajax.insert(data, cb)
 						}))
+					}))
 				}, function (err) {
 					if (err) {
 						console.log("BAD ajax: " + JSON.stringify(data));
