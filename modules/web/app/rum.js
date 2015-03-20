@@ -108,8 +108,8 @@
 		},
 		pageLoad:function (m) {
 			m.p = window.location.pathname+window.location.hash;
-			m._dt = new Date();
-			m._dtp = this._dtp;
+			m._dt = (new Date()).valueOf();
+			m._dtp = this._dtp.valueOf();
 			m.r = m.r || m.p;
 			m._i_tt = m._i_tt || m._i_nt + m._i_dt + m._i_lt;
 			sendPixel(m, this.url+"/collect/browser/"+this.project)

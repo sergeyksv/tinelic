@@ -116,11 +116,11 @@ module.exports.init = function (ctx, cb) {
 		_s_pid: {type:"string",required:true,"maxLength": 64},
 		_s_host: {type:"string",required:true,"maxLength": 1024},
 		_i_cnt: {type:"integer",required:true},
-		_f_val: {type:"float",required:true},
-		_f_own: {type:"float",required:true},
-		_f_min: {type:"float",required:true},
-		_f_max: {type:"float",required:true},
-		_f_sqr: {type:"float",required:true}
+		_f_val: {type:"number",required:true},
+		_f_own: {type:"number",required:true},
+		_f_min: {type:"number",required:true},
+		_f_max: {type:"number",required:true},
+		_f_sqr: {type:"number",required:true}
 	}}})
 	ctx.api.validate.register("ajax", {$set:{properties:{
 		_i_nt: {type: "integer", required: true},
