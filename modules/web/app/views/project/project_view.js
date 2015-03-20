@@ -65,7 +65,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				ttBrowser.push([d, v.value?(v.value.tt/1000):0]);
 			})
 
-			var ajrpm = [],ajload=[];
+			var ajrpm = [];
 			var apdexAjax = [];
 			var ttAjax = [];
 			_.each(ajflat, function (a) {
@@ -99,12 +99,15 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				ttServer.push([d, a.value?(a.value.tt)/1000:0]);
 			})
 
-			var ajloadmax = _.max(ajload, function (v) { return v[1]; })[1];
+			var rpmMax = _.max(rpm, function (v) { return v[1]; })[1];
+			var ajrpmMax = _.max(ajrpm, function (v) { return v[1]; })[1];
+			var actrpmMax = _.max(actrpm, function (v) { return v[1]; })[1];
 			var ttServerMax = _.max(ttServer, function (v) { return v[1]; })[1];
 			var ttBrowserMax = _.max(ttBrowser, function (v) { return v[1]; })[1];
 			var ttAjaxMax = _.max(ttAjax, function (v) { return v[1]; })[1];
 
-			this.$('#totally').highcharts({
+			// rpm ajrpm actrpm,
+			this.$('#thr-server').highcharts({
 				chart: {
 					type: 'spline',
 					zoomType: 'x'
@@ -120,10 +123,10 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				},
 				yAxis: [{
 					title: {
-						text: 'RPM'
+						text: 'rpm-server'
 					},
 					min:0,
-					max:ajloadmax
+					max:actrpmMax
 				}
 				],
 				plotOptions: {
@@ -134,22 +137,137 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						animation: false
 					}
 				},
+				legend: {
+					enabled: false
+				},
 				series: [
-					{
-						name: 'PAGE',
-						yAxis:0,
-						data:rpm,
-						color: "blue"
-					},
-					{
-						name: 'AJAX',
-						data: ajrpm,
-						color: "red"
-					},
 					{
 						name: 'SERVER',
 						data: actrpm,
-						color: "green"
+						color: "green",
+						type: 'area',
+						fillColor : {
+							linearGradient : {
+								x1: 0,
+								y1: 0,
+								x2: 0,
+								y2: 1
+							},
+							stops : [
+								[0, 'lightgreen'],
+								[1, 'white']
+							]
+						}
+					}
+
+				]
+			})
+			this.$('#thr-browser').highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: [{
+					title: {
+						text: 'rpm-server'
+					},
+					min:0,
+					max:rpmMax
+				}
+				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						},
+						animation: false
+					}
+				},
+				legend: {
+					enabled: false
+				},
+				series: [
+					{
+						name: 'rpm-browser',
+						data: rpm,
+						color: "blue",
+						type: 'area',
+						fillColor : {
+							linearGradient : {
+								x1: 0,
+								y1: 0,
+								x2: 0,
+								y2: 1
+							},
+							stops : [
+								[0, 'lightblue'],
+								[1, 'white']
+							]
+						}
+					}
+
+				]
+			})
+			this.$('#thr-ajax').highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime',
+					title: {
+						text: 'Date'
+					}
+				},
+				yAxis: [{
+					title: {
+						text: 'rpm-server'
+					},
+					min:0,
+					max:ajrpmMax
+				}
+				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						},
+						animation: false
+					}
+				},
+				legend: {
+					enabled: false
+				},
+				series: [
+					{
+						name: 'rpm-ajax',
+						data: ajrpm,
+						color: "brown",
+						type: 'area',
+						fillColor : {
+							linearGradient : {
+								x1: 0,
+								y1: 0,
+								x2: 0,
+								y2: 1
+							},
+							stops : [
+								[0, 'red'],
+								[1, 'white']
+							]
+						}
 					}
 
 				]
