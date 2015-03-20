@@ -84,7 +84,18 @@ module.exports.init = function (ctx, cb) {
 		_dt: {type:"date",required:true},
 		_dts: {type:"date",required:true},
 		_dte: {type:"date",required:true},
-		data:{type:"array",required:true}
+		data:{type:"array", items:{
+			type:"object", required:true, properties: {
+				_s_name: {type: "string", required: true, "maxLength": 4096},
+				_s_type: {type: "string", required: true, "maxLength": 1024},
+				_i_cnt: {type: "integer", required: true},
+				_i_tt: {type: "integer", required: true},
+				_i_own: {type: "integer", required: true},
+				_i_min: {type: "integer", required: true},
+				_i_max: {type: "integer", required: true},
+				_i_sqr: {type: "integer", required: true}
+			}
+		}}
 	}}})
 	ctx.api.validate.register("actions", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
@@ -100,10 +111,10 @@ module.exports.init = function (ctx, cb) {
 		_dt: {type:"date",required:true},
 		_dts:{type:"date",required:true},
 		_dte: {type:"date",required:true},
-		_s_type: {type:"string",required:true,"maxLength": 64},
-		_s_name: {type:"string",required:true,"maxLength": 64},
+		_s_type: {type:"string",required:true,"maxLength": 128},
+		_s_name: {type:"string",required:true,"maxLength": 128},
 		_s_pid: {type:"string",required:true,"maxLength": 64},
-		_s_host: {type:"string",required:true,"maxLength": 64},
+		_s_host: {type:"string",required:true,"maxLength": 1024},
 		_i_cnt: {type:"integer",required:true},
 		_f_val: {type:"float",required:true},
 		_f_own: {type:"float",required:true},
@@ -111,13 +122,11 @@ module.exports.init = function (ctx, cb) {
 		_f_max: {type:"float",required:true},
 		_f_sqr: {type:"float",required:true}
 	}}})
-	ctx.api.validate.register("ajax and page", {$set:{properties:{
+	ctx.api.validate.register("ajax", {$set:{properties:{
 		_i_nt: {type: "integer", required: true},
 		_i_tt: {type: "integer", required: true},
-		_i_pt: {type: "integer"},
-		_i_dt: {type: "integer"},
-		_i_lt: {type: "integer"},
-		_i_code: {type: "integer"},
+		_i_pt: {type: "integer", required: true},
+		_i_code: {type: "integer", required: true},
 		_dtc: {type:"date",required:true},
 		_dtp: {type:"date",required:true},
 		_idp: {type:"mongoId",required:true},
@@ -125,13 +134,28 @@ module.exports.init = function (ctx, cb) {
 		_dt: {type:"date",required:true},
 		shash: {type: "string", required: true, "maxLength": 64},
 		chash: {type: "string", required: true, "maxLength": 64},
-		_s_name: {type: "string", "maxLength": 128},
-		_s_url: {type: "string", "maxLength": 1024},
-		_idpv: {type:"mongoId"},
-		_s_route:{type: "string", required: true, "maxLength": 64},
-		_s_uri: {type: "string", required: true, "maxLength": 64},
-		_i_err: {type: "integer"},
-		agent: {type: "object"}
+		_s_name: {type: "string", required: true, "maxLength": 1024},
+		_s_url: {type: "string", required: true, "maxLength": 4096},
+		_idpv: {type: "mongoId"},
+		_s_route: {type: "string", "maxLength": 1024},
+		_s_uri: {type: "string", "maxLength": 4096}
+	}}})
+	ctx.api.validate.register("page", {$set:{properties:{
+		_i_nt: {type: "integer", required: true},
+		_i_tt: {type: "integer", required: true},
+		_i_dt: {type: "integer", required: true},
+		_i_lt: {type: "integer", required: true},
+		_dtc: {type:"date",required:true},
+		_dtp: {type:"date",required:true},
+		_idp: {type:"mongoId",required:true},
+		_dtr: {type:"date",required:true},
+		_dt: {type:"date",required:true},
+		shash: {type: "string", required: true, "maxLength": 64},
+		chash: {type: "string", required: true, "maxLength": 64},
+		_s_route:{type: "string", required: true, "maxLength": 1024},
+		_s_uri: {type: "string", required: true, "maxLength": 4096},
+		_i_err: {type: "integer", required: true},
+		agent: {type: "object", required: true}
 	}}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
@@ -483,7 +507,7 @@ module.exports.init = function (ctx, cb) {
 								(page._s_route) && (data._s_route = page._s_route);
 								(page._s_uri) && (data._s_uri = page._s_uri);
 							}
-							ctx.api.validate.check("ajax and page", data, safe.sure(cb, function(){
+							ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
 								ajax.insert(data, cb)
 							}))
 						}))
@@ -530,7 +554,7 @@ module.exports.init = function (ctx, cb) {
 				delete data.r
 				delete data.p
 				safe.run(function (cb) {
-					ctx.api.validate.check("ajax and page", data, safe.sure(cb, function(){
+					ctx.api.validate.check("page", data, safe.sure(cb, function(){
 						pages.insert(data, safe.sure(cb, function (docs) {
 							// once after inserting page we need to link
 							// this page events that probably cread earlier
