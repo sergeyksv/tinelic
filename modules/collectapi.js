@@ -262,10 +262,10 @@ module.exports.init = function (ctx, cb) {
 								// line number and column number
 								var arr_line_items = line.split( ":" );
 								if( arr_line_items.length == 2 ) {
-									si["_i_line"] = arr_line_items[0] * 1;
-									si["_i_col"] = arr_line_items[1] * 1;
+									si["_i_line"] = arr_line_items[0];
+									si["_i_col"] = arr_line_items[1];
 								} else if( arr_line_items.length == 1 ) {
-									si["_i_line"] = arr_line_items[0] * 1;
+									si["_i_line"] = arr_line_items[0];
 								}
 							}
 							error_dest.stacktrace.frames.push(prefixify(si))
@@ -291,7 +291,7 @@ module.exports.init = function (ctx, cb) {
 									si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 									line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 									// line number and column number
-									si["_i_line"] = line.trim() * 1;
+									si["_i_line"] = line.trim();
 								}
 							} else si["_s_func"] = line;
 							error_dest.stacktrace.frames.push(prefixify(si))
@@ -447,7 +447,10 @@ module.exports.init = function (ctx, cb) {
 								} else if( run._s_logger == "dotnet" ) {
 									nrParseStackTrace_dotnet( ne[4]["stack_trace"], te );
 								}
-								ctx.api.validate.check("error",te, safe.sure(nrNonFatal, function () {
+								ctx.api.validate.check("error",te, safe.sure(function () {
+										console.log(JSON.stringify(te), ne[4]["stack_trace"]);
+										nrNonFatal.apply(this,arguments)
+									}, function () {
 									action_errors.insert( te, nrNonFatal)
 								}))
 							})
@@ -458,6 +461,15 @@ module.exports.init = function (ctx, cb) {
 							// ???? transaction trace, not suppored now
 							res.json( { return_value: "ok" } );
 						},
+						get_agent_commands:function () {
+							// .net agent send this request
+							res.json( { return_value: [] } );
+						},
+						shutdown:function () {
+							// .net agent send this request when IIS is stopped or there are no
+							// request to .net applications long time
+							res.json( { return_value: null } );
+						}
 					}
 					var fn = nrpc[req.query.method];
 					if (!fn)
@@ -501,7 +513,7 @@ module.exports.init = function (ctx, cb) {
 						{
 							chash: data.chash,
 							_dt: {$lte: data._dt}
-						}, {_dt: -1},{$inc:{_i_err: (data._code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+						}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
 							if (page) {
 								data._idpv = page._id;
 								(page._s_route) && (data._s_route = page._s_route);
@@ -561,7 +573,7 @@ module.exports.init = function (ctx, cb) {
 							var _id = docs[0]._id;
 							safe.parallel([
 								function(cb) {
-									events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
+									events.update({chash: data.chash, _dt:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
 										$set: {
 											_idpv: _id,
 											request: {
@@ -577,13 +589,13 @@ module.exports.init = function (ctx, cb) {
 									}))
 								},
 								function(cb) {
-									ajax.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
+									ajax.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
 										$set: {
 											_idpv: _id,
 											_s_route: data._s_route,
 											_s_uri: data._s_uri}
 									}, {multi: true}, safe.sure(cb, function() {
-										ajax.find({chash: data.chash, _code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
+										ajax.find({chash: data.chash, _i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
 											if (count > 0)
 												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
 											else
