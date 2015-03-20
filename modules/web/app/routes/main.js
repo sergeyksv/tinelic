@@ -330,6 +330,40 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				if (r.data.actions.length)
 					graphOn.server = 1
 
+				if (r.data.database.length != 0) {
+					views.database = {}
+					var database = {};
+					_.forEach(r.data.database, function(r) {
+						_.forEach(r.value,function(r) {
+							if (r._s_name) {
+								if (r._s_type == "Datastore/statement") {
+									if (!database[r._s_name]) {
+										database[r._s_name] = r
+									}
+									else {
+										database[r._s_name]._i_cnt += r._i_cnt;
+										database[r._s_name]._i_tt += r._i_tt;
+									}
+								}
+							}
+						})
+					})
+					var arr = [];
+					var sum = 0.0;
+					_.forEach(database, function(r,v) {
+						sum += r._i_tt
+						arr.push({name:v, r: r._i_cnt, tt: r._i_tt, avg: r._i_tt/ r._i_cnt})
+					})
+					var procent = sum/100
+					_.forEach(arr, function(r) {
+						r.bar = r.tt/procent
+					})
+					arr = _.sortBy(arr, function(r) {
+						r.avg = parseInt(r.avg)
+							return r.tt*-1
+					})
+					views.database.db = _.take(arr, 10)
+				}
 
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})
 			}))
