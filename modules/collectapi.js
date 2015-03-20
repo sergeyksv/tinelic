@@ -24,7 +24,7 @@ module.exports.init = function (ctx, cb) {
         _id:{type:"mongoId"},
         _s_reporter:{type:"string",required:true,"maxLength": 64},
         _s_server:{type:"string",required:true,"maxLength": 256},
-        _s_logger:{type:"string",required:true,"maxLength": 54},
+        _s_logger:{type:"string",required:true,"maxLength": 64},
         _s_message:{type:"string",required:true,"maxLength": 4096},
         _s_culprit:{type:"string",required:true,"maxLength": 1024},
         exception:{type:"object",required:true, properties: {
@@ -40,9 +40,9 @@ module.exports.init = function (ctx, cb) {
 				type:"object", required:true, properties: {
 					_i_col:{type:"integer",required:true},
 					_i_line:{type:"integer",required:true},
-					_s_file:{type:"string",requred:true,"maxLength": 1024},
-					_s_func:{type:"string",requred:true,"maxLength": 256},
-					_s_context:{type:"string",requred:true,"maxLength": 4096},
+					_s_file:{type:"string",required:true,"maxLength": 1024},
+					_s_func:{type:"string",required:true,"maxLength": 256},
+					_s_context:{type:"string",required:true,"maxLength": 4096},
 					pre_context:{type:"array",required:true, items:{
 						type:"string",required:true,"maxLength": 4096
 					}},
@@ -52,7 +52,7 @@ module.exports.init = function (ctx, cb) {
 				}
 			}}
 		}},
-		// client side related data
+		 //client side related data
         _dtc:{type:"date"},
         _dtp:{type:"date"},
         _dtr:{type:"date"},
@@ -77,6 +77,86 @@ module.exports.init = function (ctx, cb) {
 				{type:"ineteger"}]
 		}}
     }}})
+	ctx.api.validate.register("action-stats", {$set:{properties:{
+		_idp: {type:"mongoId",required:true},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
+		_dt: {type:"date",required:true},
+		_dts: {type:"date",required:true},
+		_dte: {type:"date",required:true},
+		data:{type:"array", items:{
+			type:"object", required:true, properties: {
+				_s_name: {type: "string", required: true, "maxLength": 4096},
+				_s_type: {type: "string", required: true, "maxLength": 1024},
+				_i_cnt: {type: "integer", required: true},
+				_i_tt: {type: "integer", required: true},
+				_i_own: {type: "integer", required: true},
+				_i_min: {type: "integer", required: true},
+				_i_max: {type: "integer", required: true},
+				_i_sqr: {type: "integer", required: true}
+			}
+		}}
+	}}})
+	ctx.api.validate.register("actions", {$set:{properties:{
+		_idp: {type:"mongoId",required:true},
+		_dt: {type:"date",required:true},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
+		_i_wt: {type:"integer",required:true},
+		_i_tt: {type:"integer",required:true}
+
+	}}})
+	ctx.api.validate.register("metrics", {$set:{properties:{
+		_idp: {type:"mongoId",required:true},
+		_dt: {type:"date",required:true},
+		_dts:{type:"date",required:true},
+		_dte: {type:"date",required:true},
+		_s_type: {type:"string",required:true,"maxLength": 1024},
+		_s_name: {type:"string",required:true,"maxLength": 4096},
+		_s_pid: {type:"string",required:true,"maxLength": 64},
+		_s_host: {type:"string",required:true,"maxLength": 1024},
+		_i_cnt: {type:"integer",required:true},
+		_f_val: {type:"float",required:true},
+		_f_own: {type:"float",required:true},
+		_f_min: {type:"float",required:true},
+		_f_max: {type:"float",required:true},
+		_f_sqr: {type:"float",required:true}
+	}}})
+	ctx.api.validate.register("ajax", {$set:{properties:{
+		_i_nt: {type: "integer", required: true},
+		_i_tt: {type: "integer", required: true},
+		_i_pt: {type: "integer", required: true},
+		_i_code: {type: "integer", required: true},
+		_dtc: {type:"date",required:true},
+		_dtp: {type:"date",required:true},
+		_idp: {type:"mongoId",required:true},
+		_dtr: {type:"date",required:true},
+		_dt: {type:"date",required:true},
+		shash: {type: "string", required: true, "maxLength": 64},
+		chash: {type: "string", required: true, "maxLength": 64},
+		_s_name: {type: "string", required: true, "maxLength": 1024},
+		_s_url: {type: "string", required: true, "maxLength": 4096},
+		_idpv: {type: "mongoId"},
+		_s_route: {type: "string", "maxLength": 1024},
+		_s_uri: {type: "string", "maxLength": 4096}
+	}}})
+	ctx.api.validate.register("page", {$set:{properties:{
+		_i_nt: {type: "integer", required: true},
+		_i_tt: {type: "integer", required: true},
+		_i_dt: {type: "integer", required: true},
+		_i_lt: {type: "integer", required: true},
+		_dtc: {type:"date",required:true},
+		_dtp: {type:"date",required:true},
+		_idp: {type:"mongoId",required:true},
+		_dtr: {type:"date",required:true},
+		_dt: {type:"date",required:true},
+		shash: {type: "string", required: true, "maxLength": 64},
+		chash: {type: "string", required: true, "maxLength": 64},
+		_s_route:{type: "string", required: true, "maxLength": 1024},
+		_s_uri: {type: "string", required: true, "maxLength": 4096},
+		_i_err: {type: "integer", required: true},
+		agent: {type: "object", required: true}
+	}}})
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
@@ -259,22 +339,25 @@ module.exports.init = function (ctx, cb) {
 							_.each(body[body.length-1], function (item) {
 								// grab memory metrics
 								if (item[0].name == "Memory/Physical") {
-									metrics.insert({
+									var te = {
 										_idp: run._idp
-										, "_dt": _dt
-										, "_dts": _dts
-										, "_dte": _dte
-										, "_s_type": item[0].name
-										, "_s_name": ""
-										, "_s_pid": run._s_pid
-										, "_s_host": run._s_host
+										, _dt: _dt
+										, _dts: _dts
+										, _dte: _dte
+										, _s_type: item[0].name
+										, _s_name: ""
+										, _s_pid: run._s_pid
+										, _s_host: run._s_host
 										, _i_cnt: item[1][0]
 										, _f_val: item[1][1]
 										, _f_own: item[1][2]
 										, _f_min: item[1][3]
 										, _f_max: item[1][4]
 										, _f_sqr: item[1][5]
-									}, nrNonFatal)
+									}
+									ctx.api.validate.check("metrics",te, safe.sure(nrNonFatal, function () {
+										metrics.insert(te, nrNonFatal)
+									}))
 								}
 								// grab transaction segments stats
 								var scope = item[0]["scope"];
@@ -306,7 +389,11 @@ module.exports.init = function (ctx, cb) {
 								})
 							})
 							if (_.size(action_stats)) {
-								as.insert( _.values(action_stats), nrNonFatal)
+								_.forEach(_.values(action_stats), function(v) {
+									ctx.api.validate.check("action-stats",v, safe.sure(nrNonFatal, function () {
+										as.insert(v, nrNonFatal)
+									}))
+								})
 							}
 							res.json( { return_value: "ok" } );
 						},
@@ -317,14 +404,17 @@ module.exports.init = function (ctx, cb) {
 							_.each(body[body.length - 1], function (item) {
 								item = item[0];
 								var trnName = nrParseTransactionName(item["name"]);
-								actions.insert({
+								var te = {
 									"_idp": run._idp
 									, "_s_name": trnName.name
 									, "_s_type": trnName.type
 									, "_dt": new Date(item["timestamp"] )
 									, "_i_wt": Math.round(item["webDuration"]*1000)
 									, "_i_tt": Math.round(item["duration"]*1000)
-								}, nrNonFatal);
+								}
+								ctx.api.validate.check("actions",te, safe.sure(nrNonFatal, function () {
+									actions.insert(te, nrNonFatal);
+								}))
 							})
 							res.json( { return_value: "ok" } );
 						},
@@ -429,7 +519,9 @@ module.exports.init = function (ctx, cb) {
 								(page._s_route) && (data._s_route = page._s_route);
 								(page._s_uri) && (data._s_uri = page._s_uri);
 							}
-							ajax.insert(data, cb)
+							ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
+								ajax.insert(data, cb)
+							}))
 						}))
 				}, function (err) {
 					if (err) {
@@ -474,43 +566,45 @@ module.exports.init = function (ctx, cb) {
 				delete data.r
 				delete data.p
 				safe.run(function (cb) {
-					pages.insert(data, safe.sure(cb, function (docs) {
-						// once after inserting page we need to link
-						// this page events that probably cread earlier
-						var _id = docs[0]._id;
-						safe.parallel([
-							function(cb) {
-								events.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
-									$set: {
-										_idpv: _id,
-										request: {
-											_s_route: data._s_route,
-											_s_uri: data._s_uri
+					ctx.api.validate.check("page", data, safe.sure(cb, function(){
+						pages.insert(data, safe.sure(cb, function (docs) {
+							// once after inserting page we need to link
+							// this page events that probably cread earlier
+							var _id = docs[0]._id;
+							safe.parallel([
+								function(cb) {
+									events.update({chash: data.chash, _dt:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+										$set: {
+											_idpv: _id,
+											request: {
+												_s_route: data._s_route,
+												_s_uri: data._s_uri
+											}
 										}
-									}
-								}, {multi: true}, safe.sure(cb, function (updates) {
-									if (updates)
-										pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-									else
-										cb();
-								}))
-							},
-							function(cb) {
-								ajax.update({chash: data.chash, _dt:{$gte:new Date(data._dt.valueOf()-data._i_tt*2),$lte:data._dt}}, {
-									$set: {
-										_idpv: _id,
-										_s_route: data._s_route,
-										_s_uri: data._s_uri}
-								}, {multi: true}, safe.sure(cb, function() {
-									ajax.find({chash: data.chash, _i_code: {$ne: '200'}}).count(safe.sure(cb, function(count) {
-										if (count > 0)
-											pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+									}, {multi: true}, safe.sure(cb, function (updates) {
+										if (updates)
+											pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
 										else
 											cb();
 									}))
-								}))
-							}
-						], cb)
+								},
+								function(cb) {
+									ajax.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+										$set: {
+											_idpv: _id,
+											_s_route: data._s_route,
+											_s_uri: data._s_uri}
+									}, {multi: true}, safe.sure(cb, function() {
+										ajax.find({chash: data.chash, _i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+											if (count > 0)
+												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+											else
+												cb();
+										}))
+									}))
+								}
+							], cb)
+						}))
 					}))
 				}, function (err) {
 					if (err) {
