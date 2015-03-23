@@ -80,7 +80,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 								},
 								yAxis: [{
 									title: {
-										text: 'Throughput(rpm)'
+										text: 'Throughput (rpm)'
 									},
 									min:0
 								}
@@ -132,7 +132,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
                               },
                               yAxis: [{
                                   title: {
-                                      text: 'Timing(s)'
+                                      text: 'Timing (s)'
                                   },
                                   min: 0
                               }
