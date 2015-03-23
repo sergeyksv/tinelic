@@ -76,14 +76,11 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 									text: ''
 								},
 								xAxis: {
-									type:'datetime',
-									title: {
-										text: 'Date'
-									}
+									type:'datetime'
 								},
 								yAxis: [{
 									title: {
-										text: 'rpm'
+										text: 'Throughput (rpm)'
 									},
 									min:0
 								}
@@ -95,6 +92,12 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 										},
 										animation: false
 									}
+								},
+								legend: {
+                                  enabled: false
+								},
+								credits: {
+										enabled: false
 								},
 								series: [{
 									name: _id,
@@ -125,14 +128,11 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
                                   text: ''
                               },
                               xAxis: {
-                                  type: 'datetime',
-                                  title: {
-                                      text: 'Date'
-                                  }
+                                  type: 'datetime'
                               },
                               yAxis: [{
                                   title: {
-                                      text: 'time'
+                                      text: 'Timing (s)'
                                   },
                                   min: 0
                               }
@@ -148,6 +148,9 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
                               legend: {
                                   enabled: false
                               },
+                              credits: {
+										enabled: false
+							  },
                               series: [
                                   {
                                       name: _id,
