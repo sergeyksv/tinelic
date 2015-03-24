@@ -51,7 +51,7 @@
 							<ul class="list-unstyled h6">
 							{#sErr}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span> - {error}</a><br>
+									<a class="text-default" href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span> - {error._s_message}</a><br>
 								</li>
 							{/sErr}
 							</ul>
@@ -59,6 +59,22 @@
 					</div>
 				</div>
 			{/serverErr}
+			{#topp}
+				<div class="col-md-6">
+					<div class="panel panel-success">
+						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a><span class="h6" style="margin-left: 5px;">{total.rpm} rpm / {total.errorpage} epm / {total.etupage} s</span></div>
+						<div class="panel-body" >
+							{#p}
+								<div class="progress" style="margin: 2px 0 0 0;">
+									<div class="progress-bar-success" role="progressbar" style="width: {value.progress}%;">
+											{_id} <span class="text-success numRight">{value.tta}</span>
+									</div>
+								</div>
+							{/p}
+						</div>
+					</div>
+				</div>
+			{/topp}
 			{#transactions}
 				<div class="col-md-6">
 					<div class="panel panel-danger">
@@ -91,22 +107,6 @@
 					</div>
 				</div>
 			{/topa}
-			{#topp}
-				<div class="col-md-6">
-					<div class="panel panel-success">
-						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a><span class="h6" style="margin-left: 5px;">{total.rpm} rpm / {total.errorpage} epm / {total.etupage} s</span></div>
-						<div class="panel-body" >
-							{#p}
-								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-success" role="progressbar" style="width: {value.progress}%;">
-											{_id} <span class="text-success numRight">{value.tta}</span>
-									</div>
-								</div>
-							{/p}
-						</div>
-					</div>
-				</div>
-			{/topp}
 
 			{#database}
 				<div class="col-md-6">

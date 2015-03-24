@@ -524,7 +524,7 @@ module.exports.init = function (ctx, cb) {
                             _.each(stats, function (s) {
                                 ids[s.value._id]={stats:s.value, error: s._id};
                             } );
-                            events.find(queryfix({_id:{$in:_.keys(ids)}}))
+                            serverErrors.find(queryfix({_id:{$in:_.keys(ids)}}))
                                 .toArray(safe.sure(cb, function (errors) {
                                     _.each(errors, function (e) {
                                         ids[e._id].error = e;
