@@ -262,9 +262,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					})
 					_.forEach(views.topa.a, function(r) {
 						r.value.progress = (r.value.tt/progress)*100
-						var split = r._id.split('/')
-						if (split.length > 3)
-							r._id = '../'+split[split.length-1];
+						r._id = r._id.replace(/(^https:\/\/www.)?(^http:\/\/www.)?/,"")
 					})
 				}
 				if (r.data.topPages.length != 0) {
@@ -284,9 +282,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					_.forEach(views.topp.p, function(r) {
 						r.value.progress = (r.value.tt/progress)*100
 						r.value.tta = (r.value.tta/1000).toFixed(2)
-						var split = r._id.split('/')
-						if (split.length > 3)
-							r._id = '../'+split[split.length-1]
 					})
 				}
 				if (r.data.topTransactions.length != 0) {
@@ -305,9 +300,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					})
 					_.forEach(views.transactions.top, function(r) {
 						r.value.progress = (r.value.tt/progress)*100
-						var split = r._id.split('/')
-						if (split.length > 3)
-							r._id = '../'+split[split.length - 2]+'/'+split[split.length-1]
+						r._id = r._id.replace(/(^GET)?(^POST)?/,'')
 					})
 				}
 
