@@ -30,6 +30,7 @@
 			_i_nt:_t_page.valueOf()-_t_start.valueOf(),
 			_i_dt:_t_ready.valueOf()-_t_page.valueOf(),
 			_i_lt:_t_load.valueOf()-_t_ready.valueOf(),
+			r: window.Tinelic.route
 		}
 
 		window.Tinelic.pageLoad(m);
