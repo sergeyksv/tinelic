@@ -26,7 +26,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 					var errrpm1 = a.value? a.value.r:0;
 					rpmerr.push([d,errrpm1]);
 				})
-		console.log('rpmerr',rpmerr)
 				this.$('#rpm-server_err').highcharts({
 					chart:{
 						type: 'spline',
@@ -36,14 +35,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 						text: ''
 					},
 					xAxis: {
-						type:'datetime',
-						title: {
-							text: 'Date'
-						}
+						type:'datetime'
 					},
 					yAxis: [{
 						title: {
-							text: 'rpm'
+							text: 'Throughput(rpm)'
 						},
 						min:0
 					}
@@ -59,6 +55,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 					legend: {
                                   enabled: false
                     },
+                    credits: {
+							enabled: false
+					},
 					series: [{
 						name: "rpm",
 						data:rpmerr,
