@@ -149,53 +149,56 @@
 			};
 			XHR.prototype.send = function(data) {
 				var self = this;
-				var start = (new Date()).valueOf();
-				var oldOnReadyStateChange;
 				var url = this._url;
-				var s = {_i_nt:0};
-				var jsonrpcMethod;
-				if(data && typeof data == "string"){
-					var jsonData;
-					try{
-						jsonData = JSON.parse(data);
-					}
-					catch(e){
-					}
-					if(jsonData && jsonData.jsonrpc){
-						jsonrpcMethod = jsonData.method;
-					}
-				}
-				function onReadyStateChange() {
-					var time = new Date() - start;
-					if (self.readyState == 2) {
-						s._i_nt = time;
-					}
-					if (self.readyState == 4) {
-						s._i_tt = time;
-						s._i_pt = s._i_tt - s._i_nt;
-						s.url = url;
-						s.r=url.replace(/\?.*/,"");
-						if(jsonrpcMethod){
-							s.r += (s.r[s.r.length-1] == "/" ? "" : "/") +jsonrpcMethod;
+				// bypass instrumentation for some specific urls
+				if (!(url.match(/localhost:0/) || url.match(/optimizely\.com/))) {
+					var start = (new Date()).valueOf();
+					var oldOnReadyStateChange;
+					var s = {_i_nt:0};
+					var jsonrpcMethod;
+					if(data && typeof data == "string"){
+						var jsonData;
+						try{
+							jsonData = JSON.parse(data);
 						}
-						if (typeof window.Tinelic.ajaxCallback != 'undefined'){
-							window.Tinelic.ajaxCallback(s, XHR, data)
+						catch(e){
 						}
-						s._i_code = self.status
-						s._dtc = (new Date()).valueOf();
-						s._dtp = window.Tinelic._dtp.valueOf();
-						sendPixel(s, window.Tinelic.url + "/collect/ajax/" + window.Tinelic.project);
+						if(jsonData && jsonData.jsonrpc){
+							jsonrpcMethod = jsonData.method;
+						}
+					}
+					function onReadyStateChange() {
+						var time = new Date() - start;
+						if (self.readyState == 2) {
+							s._i_nt = time;
+						}
+						if (self.readyState == 4) {
+							s._i_tt = time;
+							s._i_pt = s._i_tt - s._i_nt;
+							s.url = url;
+							s.r=url.replace(/\?.*/,"");
+							if(jsonrpcMethod){
+								s.r += (s.r[s.r.length-1] == "/" ? "" : "/") +jsonrpcMethod;
+							}
+							if (typeof window.Tinelic.ajaxCallback != 'undefined'){
+								window.Tinelic.ajaxCallback(s, XHR, data)
+							}
+							s._i_code = self.status
+							s._dtc = (new Date()).valueOf();
+							s._dtp = window.Tinelic._dtp.valueOf();
+							sendPixel(s, window.Tinelic.url + "/collect/ajax/" + window.Tinelic.project);
 
+						}
+						if(oldOnReadyStateChange) {
+							oldOnReadyStateChange();
+						}
 					}
-					if(oldOnReadyStateChange) {
-						oldOnReadyStateChange();
+					if(this.addEventListener) {
+						this.addEventListener("readystatechange", onReadyStateChange, false);
+					} else {
+						oldOnReadyStateChange = this.onreadystatechange;
+						this.onreadystatechange = onReadyStateChange;
 					}
-				}
-				if(this.addEventListener) {
-					this.addEventListener("readystatechange", onReadyStateChange, false);
-				} else {
-					oldOnReadyStateChange = this.onreadystatechange;
-					this.onreadystatechange = onReadyStateChange;
 				}
 
 				send.call(this, data);
