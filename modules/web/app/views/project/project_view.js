@@ -116,17 +116,17 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
+
 				},
 				yAxis: [{
-					title: {
-						text: 'rpm-server'
-					},
 					min:0,
-					max:actrpmMax
+					max:actrpmMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -144,6 +144,61 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					{
 						name: 'SERVER',
 						data: actrpm,
+						color: "brown",
+						type: 'area',
+						fillColor : {
+							linearGradient : {
+								x1: 0,
+								y1: 0,
+								x2: 0,
+								y2: 1
+							},
+							stops : [
+								[0, '#F2CAC8'],
+								[1, 'white']
+							]
+						}
+					}
+
+				]
+			})
+			this.$('#thr-browser').highcharts({
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type:'datetime'
+
+				},
+				yAxis: [{
+					min:0,
+					max:rpmMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
+				}
+				],
+				plotOptions: {
+					series: {
+						marker: {
+							enabled: false
+						},
+						animation: false
+					}
+				},
+				legend: {
+					enabled: false
+				},
+				series: [
+					{
+						name: 'rpm-browser',
+						data: rpm,
 						color: "green",
 						type: 'area',
 						fillColor : {
@@ -162,61 +217,6 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 
 				]
 			})
-			this.$('#thr-browser').highcharts({
-				chart: {
-					type: 'spline',
-					zoomType: 'x'
-				},
-				title: {
-					text: ''
-				},
-				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
-				},
-				yAxis: [{
-					title: {
-						text: 'rpm-server'
-					},
-					min:0,
-					max:rpmMax
-				}
-				],
-				plotOptions: {
-					series: {
-						marker: {
-							enabled: false
-						},
-						animation: false
-					}
-				},
-				legend: {
-					enabled: false
-				},
-				series: [
-					{
-						name: 'rpm-browser',
-						data: rpm,
-						color: "blue",
-						type: 'area',
-						fillColor : {
-							linearGradient : {
-								x1: 0,
-								y1: 0,
-								x2: 0,
-								y2: 1
-							},
-							stops : [
-								[0, 'lightblue'],
-								[1, 'white']
-							]
-						}
-					}
-
-				]
-			})
 			this.$('#thr-ajax').highcharts({
 				chart: {
 					type: 'spline',
@@ -226,17 +226,17 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
+
 				},
 				yAxis: [{
-					title: {
-						text: 'rpm-server'
-					},
 					min:0,
-					max:ajrpmMax
+					max:ajrpmMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -254,7 +254,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					{
 						name: 'rpm-ajax',
 						data: ajrpm,
-						color: "brown",
+						color: "lightblue",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -264,7 +264,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'red'],
+								[0, "#CBE0F7"],
 								[1, 'white']
 							]
 						}
@@ -281,17 +281,17 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
+
 				},
 				yAxis: [{
-					title: {
-						text: 'ajax'
-					},
 					min:0,
-					max:1
+					max:1,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -310,7 +310,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'apdex-ajax',
 						yAxis:0,
 						data:apdexAjax,
-						color: "brown",
+						color: "lightblue",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -320,7 +320,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'red'],
+								[0, "#CBE0F7"],
 								[1, 'white']
 							]
 						}
@@ -336,17 +336,17 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
+
 				},
 				yAxis: [{
-					title: {
-						text: 'browser'
-					},
 					min:0,
-					max:1
+					max:1,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -365,7 +365,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'apdex-browser',
 						yAxis:0,
 						data:apdexBrowser,
-						color: "blue",
+						color: "green",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -375,7 +375,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'lightblue'],
+								[0, 'lightgreen'],
 								[1, 'white']
 							]
 						}
@@ -391,17 +391,17 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
+
 				},
 				yAxis: [{
-					title: {
-						text: 'server'
-					},
 					min:0,
-					max:1
+					max:1,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -420,7 +420,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'apdex-server',
 						yAxis:0,
 						data:apdexActions,
-						color: "green",
+						color: "brown",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -430,7 +430,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'lightgreen'],
+								[0, '#F2CAC8'],
 								[1, 'white']
 							]
 						}
@@ -446,17 +446,16 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
 				},
 				yAxis: [{
-					title: {
-						text: 'tt-server'
-					},
 					min:0,
-					max:ttServerMax
+					max:ttServerMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -475,7 +474,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'tt-server',
 						yAxis:0,
 						data:ttServer,
-						color: "green",
+						color: "brown",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -485,7 +484,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'lightgreen'],
+								[0, '#F2CAC8'],
 								[1, 'white']
 							]
 						}
@@ -501,17 +500,16 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
 				},
 				yAxis: [{
-					title: {
-						text: 'tt-browser'
-					},
 					min:0,
-					max:ttBrowserMax
+					max:ttBrowserMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -530,7 +528,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'tt-browser',
 						yAxis:0,
 						data:ttBrowser,
-						color: "blue",
+						color: "green",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -540,7 +538,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'lightblue'],
+								[0, 'lightgreen'],
 								[1, 'white']
 							]
 						}
@@ -556,17 +554,16 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					text: ''
 				},
 				xAxis: {
-					type:'datetime',
-					title: {
-						text: 'Date'
-					}
+					type:'datetime'
 				},
 				yAxis: [{
-					title: {
-						text: 'tt-ajax'
-					},
 					min:0,
-					max:ttAjaxMax
+					max:ttAjaxMax,
+					title: {
+						style: {
+							"display":"none"
+						}
+					}
 				}
 				],
 				plotOptions: {
@@ -585,7 +582,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 						name: 'tt.ajax',
 						yAxis:0,
 						data:ttAjax,
-						color: "brown",
+						color: "lightblue",
 						type: 'area',
 						fillColor : {
 							linearGradient : {
@@ -595,7 +592,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 								y2: 1
 							},
 							stops : [
-								[0, 'red'],
+								[0, "#CBE0F7"],
 								[1, 'white']
 							]
 						}
