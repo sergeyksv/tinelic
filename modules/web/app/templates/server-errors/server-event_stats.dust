@@ -5,7 +5,7 @@
   </div>
 </div>
 <div class="panel panel-default">
-  <div class="panel-heading">Error requests</div>
+  <div class="panel-heading">Action</div>
   <div class="panel-body">
 	{#route}
 		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
@@ -13,7 +13,15 @@
   </div>
 </div>
 <div class="panel panel-default">
-  <div class="panel-heading">Error Server</div>
+  <div class="panel-heading">Server</div>
+  <div class="panel-body">
+	{#server}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/server}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Reporter</div>
   <div class="panel-body">
 	{#reporter}
 		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
@@ -21,10 +29,10 @@
   </div>
 </div>
 <div class="panel panel-default">
-  <div class="panel-heading">Error OS</div>
+  <div class="panel-heading">Language</div>
   <div class="panel-body">
-	{#os}
+	{#lang}
 		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
-	{/os}
+	{/lang}
   </div>
 </div>

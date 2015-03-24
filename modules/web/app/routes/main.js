@@ -761,7 +761,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.serverErrorInfo(res.locals.token, {_id:req.params.id}, cb)
+							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
 							api("stats.getServerErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{

@@ -18,7 +18,7 @@
 <br>
 {#event}
 <h1>{exception._s_value}</h1>
---- {_id} - {request}
+--- {_id} - {_s_culprit}
 <br><br>
 <ul>
 {#stacktrace.frames}

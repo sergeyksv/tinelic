@@ -13,7 +13,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		serverErrorInfo: function (token, params, cb) {
 			safe.parallel({
 				event:function (cb) {
-					api("stats.getServerError",token, _.extend({_t_age:"30d"},params), cb)
+					api("stats.getServerError",token, _.extend({_t_age:"30d"},params.filter), cb)
 				},
 				info:function (cb) {
 					api("stats.getServerErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
