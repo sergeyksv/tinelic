@@ -668,63 +668,64 @@ module.exports.init = function (ctx, cb) {
 				});
 			})
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
-				var ip = req.headers['x-forwarded-for'] ||
-					 req.connection.remoteAddress ||
-					 req.socket.remoteAddress ||
-					 req.connection.socket.remoteAddress;
-
-				var data = JSON.parse(req.query.sentry_data);
-				var _dtp = data._dtp || data._dtInit;
-				data.project && (delete data.project);
-				data._idp = req.params.project;
-				data._dtr = new Date();
-				data._dtc = data._dt;
-				data._dt = data._dtr;
-				data._dtp = _dtp;
-				data._dtInit && (delete data._dtInit);
-				data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
-				data = prefixify(data,{strict:1});
-				var md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))))
-				data.shash = md5sum.digest('hex');
-				md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dtp.toString());
-				data.chash = md5sum.digest('hex');
-				// when error happens try to link it with current page
-				// which is latest page from same client (chash)
-				// which is registered not later than current event
-				data._s_culprit = data.culprit; delete data.culprit;
-				data._s_message = data.message; delete data.message;
-				delete data.event_id;
-				data._s_logger = data.logger; delete data.logger;
-				data._s_server = "rum";
-				data._s_reporter = "raven";
-
-				data.exception._s_type = data.exception.type; delete data.exception.type;
-				data.exception._s_value = data.exception.value; delete data.exception.value;
-				_.forEach(data.stacktrace.frames, function(r) {
-					r._s_file = r.filename; delete r.filename;
-					r._i_line = r.lineno; delete r.lineno;
-					r._i_col = r.colno; delete r.colno;
-					r._s_func = r.function; delete r.function;
-					r.pre_context = [];
-					r.post_context = [];
-					r._s_context = r.context_line || ""; delete r.context_line;
-					delete r.in_app;
-				})
-				delete data.platform;
-				if (data.request && data.request.url) {
-					data.request._s_url=data.request.url;
-					delete data.request.url;
-				}
-
+				var data = {};
 				safe.run(function (cb) {
+					data = JSON.parse(req.query.sentry_data);
+					var ip = req.headers['x-forwarded-for'] ||
+						 req.connection.remoteAddress ||
+						 req.socket.remoteAddress ||
+						 req.connection.socket.remoteAddress;
+
+					var _dtp = data._dtp || data._dtInit;
+					data.project && (delete data.project);
+					data._idp = req.params.project;
+					data._dtr = new Date();
+					data._dtc = data._dt;
+					data._dt = data._dtr;
+					data._dtp = _dtp;
+					data._dtInit && (delete data._dtInit);
+					data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
+					data = prefixify(data,{strict:1});
+					var md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))))
+					data.shash = md5sum.digest('hex');
+					md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(data._dtp.toString());
+					data.chash = md5sum.digest('hex');
+					// when error happens try to link it with current page
+					// which is latest page from same client (chash)
+					// which is registered not later than current event
+					data._s_culprit = data.culprit; delete data.culprit;
+					data._s_message = data.message; delete data.message;
+					delete data.event_id;
+					data._s_logger = data.logger; delete data.logger;
+					data._s_server = "rum";
+					data._s_reporter = "raven";
+
+					data.exception._s_type = data.exception.type; delete data.exception.type;
+					data.exception._s_value = data.exception.value; delete data.exception.value;
+					_.forEach(data.stacktrace.frames, function(r) {
+						r._s_file = r.filename; delete r.filename;
+						r._i_line = r.lineno; delete r.lineno;
+						r._i_col = r.colno; delete r.colno;
+						r._s_func = r.function; delete r.function;
+						r.pre_context = [];
+						r.post_context = [];
+						r._s_context = r.context_line || ""; delete r.context_line;
+						delete r.in_app;
+					})
+					delete data.platform;
+					if (data.request && data.request.url) {
+						data.request._s_url=data.request.url;
+						delete data.request.url;
+					}
+
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
@@ -738,6 +739,7 @@ module.exports.init = function (ctx, cb) {
 				}, function (err) {
 					if (err) {
 						newrelic.noticeError(err);
+						console.log(data);
 					}
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
