@@ -22,13 +22,13 @@
 				<div class="progress" style="border-radius:20px">
 					<span style="text-align:right;position:absolute; right:20px">
 						{@select key="{st}"}
-							{@eq value="req"}{r} <span class="text-info">req</span>{/eq}
-							{@eq value="mtc"}{tt} <span class="text-info">avgt*req</span>{/eq}
-							{@eq value="sar"}{avg} <span class="text-info">ms</span>{/eq}
+							{@eq value="req"}{value.r} <span class="text-info">req</span>{/eq}
+							{@eq value="mtc"}{value.tt} <span class="text-info">avgt*req</span>{/eq}
+							{@eq value="sar"}{value.avg} <span class="text-info">ms</span>{/eq}
 						{/select}
 					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
-						<div style="text-align:left; padding-left:20px""><span style="cursor: pointer;" class="more">{name}</span> </div>
+					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {value.bar}%;color:black;white-space: nowrap;">
+						<div style="text-align:left; padding-left:20px""><span style="cursor: pointer;" class="more">{_id}</span> </div>
 					</div>
 				</div>
 			{/data}

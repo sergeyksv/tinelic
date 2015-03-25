@@ -115,8 +115,8 @@
 						<div class="panel-body" >
 							{#db}
 								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-danger" role="progressbar" style="width: {bar}%;">
-										{name} <span class="text-danger numRight">{avg}</span>
+									<div class="progress-bar-danger" role="progressbar" style="width: {value.bar}%;">
+										{_id} <span class="text-danger numRight">{value.avg}</span>
 									</div>
 								</div>
 							{/db}

@@ -50,7 +50,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("stats.getMetrics", token, params, cb)
 				},
 				database: function (cb) {
-					api("stats.asBreakDown", token, params, cb)
+					params.filter["data._s_type"] = "Datastore/statement";
+					api("stats.getActionsCategoryStats", token, params, cb)
 				}
 			}, cb)
 		}

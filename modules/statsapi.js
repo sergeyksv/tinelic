@@ -105,11 +105,12 @@ module.exports.init = function (ctx, cb) {
                 },
                 getTopTransactions: function(t, p , cb) {
                     var query = queryfix(p.filter);
-
                     var q = p.quant || 1;
+                    var t = 200; //apdex T
+                    var f = 4*t;
                     actions.mapReduce(
                         "function() {\
-                            emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+"})\
+                            emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+",apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
                         function (k,v) {
                             var t = 200; //apdex T
@@ -136,7 +137,74 @@ module.exports.init = function (ctx, cb) {
                             query: query,
                             out: {inline:1}
                         },
-                        cb
+                        safe.sure(cb, function(data) {
+                            var st = p.st
+                            if (st) {
+                                data =_.sortBy(data, function(v){
+                                    if (st == "rpm")
+                                        return -1*v.value.r;
+                                    if (st == "mtc")
+                                        return -1* v.value.tt;
+                                    if (st == "sar")
+                                        return -1* v.value.tta;
+                                    if (st == "wa")
+                                        return 1* v.value.apdex;
+                                })
+
+                                var sum=0;
+                                _.each(data, function(r){
+                                    if (st == "rpm")
+                                        sum+=r.value.r
+                                    if (st == "mtc")
+                                        sum += r.value.tt
+                                    if (st == "sar")
+                                        sum += r.value.tta
+                                    if (st == "wa") {
+                                        sum = 1;
+                                        (r.value.apdex < sum) ?	(sum = r.value.apdex) : null
+                                    }
+                                })
+                                var percent = sum/100;
+                                _.each(data, function (r) {
+                                    if (st == "rpm") {
+                                        r.value.bar = Math.round(r.value.r/percent);
+                                        r.value.r = r.value.r.toFixed(2)
+                                    }
+                                    if (st == "mtc") {
+                                        r.value.bar = Math.round(r.value.tt/percent);
+                                        r.value.tt = r.value.tt.toFixed(1);
+                                        r.value.r = p.quant*(r.value.r.toFixed(1))
+                                        r.value.tta = (r.value.tta/1000).toFixed(2)
+                                    }
+                                    if (st == "sar") {
+                                        r.value.bar = Math.round(r.value.tta/percent);
+                                    }
+                                    if (st == "wa") {
+                                        r.value.bar = Math.round(r.value.apdex/percent);
+                                        r.value.apdex = r.value.apdex.toFixed(2);
+                                    }
+                                })
+                            }
+                            else {
+                                data = _.take(_.sortBy(data, function(r) {
+                                    return r.value.tt*-1
+                                }),10)
+                                var progress = null;
+                                _.forEach(data,function(r) {
+                                    if (!progress) {
+                                        progress = r.value.tt
+                                    }
+                                    else {
+                                        progress += r.value.tt
+                                    }
+                                })
+                                _.forEach(data, function(r) {
+                                    r.value.progress = (r.value.tt/progress)*100
+                                    r._id = r._id.replace(/(^GET)?(^POST)?/,'')
+                                })
+                            }
+                            cb(null, data)
+                        })
                     )
                 },
                 getTopAjax: function(t, p, cb) {
@@ -654,48 +722,97 @@ module.exports.init = function (ctx, cb) {
                         )
                     }
                 },
-                asBreakDown: function(t,p, cb) {
+                getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;
                     as.mapReduce(
-                        "function() {\
-                            emit(this._s_name, {data: this.data} )\
-                        }",
+                        function() {
+                                this.data.forEach(function(k,v) {
+                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})
+                                })
+                        },
                         function (k,v) {
                             var r=null;
-                            v.forEach(function (v) {
-                                if (!r)
+                            v.forEach(function(v) {
+                                if (!r) {
                                     r = v
-                                else {
-                                    if (!r.data) {
-                                        r.data = [];
-                                    }
-                                    v.data.forEach(function(data) {
-                                        r.data.push(data)
-                                    })
-                                }
-                            })
-                            var int = {}
-                            r.data.forEach(function(data){
-                                if (int[data._s_name]) {
-                                    int[data._s_name]._i_cnt += data._i_cnt
-                                    int[data._s_name]._i_tt += data._i_tt
-                                    int[data._s_name]._i_own += data._i_own
-                                    int[data._s_name]._i_min += data._i_min
-                                    int[data._s_name]._i_max += data._i_max
-                                    int[data._s_name]._i_sqr += data._i_sqr
                                 }
                                 else {
-                                    int[data._s_name] = data
+                                    r.cnt += v.cnt
+                                    r.tt += v.tt
                                 }
                             })
-                            return int;
+                            return r;
                         },
                         {
                             query: query,
                             out: {inline:1}
                         },
                         cb
+                    )
+                },
+                getActionsCategoryStats: function(t,p, cb) {
+                    var query = queryfix(p.filter);
+                    var st = p.st
+                    var q = p.quant || 1;
+                    as.mapReduce(
+                        "function() {\
+                            this.data.forEach(function(k) {\
+                                if (k._s_type == '"+query['data._s_type']+"') {\
+                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt});\
+                                }\
+                            })}",
+                        function (k,v) {
+                            var r = null;
+                            v.forEach(function(v) {
+                                if (!r) {
+                                    r = v
+                                }
+                                else {
+                                    r.tt += v.tt;
+                                    r.avg = (r.avg + v.avg)/2
+                                    r.r += v.r
+                                }
+                            });
+                            return r;
+                        },
+                        {
+                            query: query,
+                            out: {inline:1}
+                        },
+                        safe.sure(cb, function(data) {
+                            var sum = 0;
+                            _.forEach(data, function(r) {
+                                if (st == "req")
+                                    sum += r.value.r
+                                if (st == 'mtc' || st == undefined)
+                                    sum += r.value.tt
+                                if (st == 'sar')
+                                    sum += r.value.avg
+                            })
+                            var procent = sum/100
+                            _.forEach(data, function(r) {
+                                if (st == 'req')
+                                    r.value.bar = r.value.r/procent
+                                if (st == 'mtc'|| st == undefined)
+                                    r.value.bar = r.value.tt/procent
+                                if (st == 'sar')
+                                    r.value.bar = r.value.avg/procent
+                            })
+                            data = _.sortBy(data, function(r) {
+                                r.value.avg = parseInt(r.value.avg)
+                                if (st == 'req')
+                                    return r.value.r*-1
+                                if (st == 'mtc' || st == undefined)
+                                    return r.value.tt*-1
+                                if (st == 'sar')
+                                    return r.value.avg*-1
+                            })
+                            if (st == undefined) {
+                                data = _.take(data,10)
+                            }
+                            cb(null, data)
+                        })
                     )
                 },
                 pagesBreakDown: function(t,p,cb){
@@ -757,73 +874,59 @@ module.exports.init = function (ctx, cb) {
                         cb
                     )
                 },
-                postDbViews:function (t, p, cb) {
+                getActionsCategoryTimings:function (t, p, cb) {
                     var query = queryfix(p.filter);
+                    var name = query["data._s_name"]
                     var q = p.quant || 1;
-                    as.mapReduce("function () {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{data: this.data})\
-						}",
+                    as.mapReduce(function () {
+                            var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
+                            this.data.forEach(function(k) {
+                                if (k._s_name == NAME) {
+                                    emit(dt,{r: k._i_cnt, tt: k._i_tt});
+                                }
+                            })
+						},
                         function (k, v) {
                             var r=null;
-
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v
                                 }
                                 else {
-                                    var data={}
-                                    v.data.forEach(function(v){
-                                        data[v._s_name] = v
-                                    })
-                                    r.data.forEach(function(r){
-                                        if (data[r._s_name]) {
-                                            r._i_cnt += data[r._s_name]._i_cnt
-                                            r._i_tt += data[r._s_name]._i_tt
-                                            r._i_own += data[r._s_name]._i_own
-                                            r._i_min += data[r._s_name]._i_min
-                                            r._i_max += data[r._s_name]._i_max
-                                            r._i_sqr += data[r._s_name]._i_sqr
-                                        }
-                                    })
+                                    r.r += v.r
+                                    r.tt += v.tt
                                 }
                             })
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
+                            out: {inline:1},
+                            scope: {NAME: name, QUANT: q}
                         },
                         cb
                     )
                 },
-                postDbBreakdown:function (t, p, cb) {
+                getActionsCallees: function(t,p, cb) {
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;
-                    as.mapReduce("function () {\
-							emit(this._s_name,{data: this.data})\
-						}",
-                        function (k, v) {
+                    as.mapReduce(
+                        "function() {\
+                            this.data.forEach(function(k,v) {\
+                                if (k._s_type == '"+query['data._s_type']+"') {\
+                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})\
+                                }\
+                            })\
+                        }",
+                        function (k,v) {
                             var r=null;
-
-                            v.forEach(function (v) {
+                            v.forEach(function(v) {
                                 if (!r) {
                                     r = v
                                 }
                                 else {
-                                    var data={}
-                                    v.data.forEach(function(v){
-                                        data[v._s_name] = v
-                                    })
-                                    r.data.forEach(function(r){
-                                        if (data[r._s_name]) {
-                                            r._i_cnt += data[r._s_name]._i_cnt
-                                            r._i_tt += data[r._s_name]._i_tt
-                                            r._i_own += data[r._s_name]._i_own
-                                            r._i_min += data[r._s_name]._i_min
-                                            r._i_max += data[r._s_name]._i_max
-                                            r._i_sqr += data[r._s_name]._i_sqr
-                                        }
-                                    })
+                                    r.cnt += v.cnt
+                                    r.tt += v.tt
                                 }
                             })
                             return r;

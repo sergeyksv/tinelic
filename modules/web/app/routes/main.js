@@ -286,22 +286,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				}
 				if (r.data.topTransactions.length != 0) {
 					views.transactions = {}
-					views.transactions.top = _.take(_.sortBy(r.data.topTransactions, function(r) {
-						return r.value.tt
-					}).reverse(),10)
-					var progress = null;
-					_.forEach(views.transactions.top,function(r) {
-						if (!progress) {
-							progress = r.value.tt
-						}
-						else {
-							progress += r.value.tt
-						}
-					})
-					_.forEach(views.transactions.top, function(r) {
-						r.value.progress = (r.value.tt/progress)*100
-						r._id = r._id.replace(/(^GET)?(^POST)?/,'')
-					})
+					views.transactions.top = r.data.topTransactions
 				}
 
 				if (r.data.metrics) {
@@ -325,37 +310,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 
 				if (r.data.database.length != 0) {
 					views.database = {}
-					var database = {};
-					_.forEach(r.data.database, function(r) {
-						_.forEach(r.value,function(r) {
-							if (r._s_name) {
-								if (r._s_type == "Datastore/statement") {
-									if (!database[r._s_name]) {
-										database[r._s_name] = r
-									}
-									else {
-										database[r._s_name]._i_cnt += r._i_cnt;
-										database[r._s_name]._i_tt += r._i_tt;
-									}
-								}
-							}
-						})
-					})
-					var arr = [];
-					var sum = 0.0;
-					_.forEach(database, function(r,v) {
-						sum += r._i_tt
-						arr.push({name:v, r: r._i_cnt, tt: r._i_tt, avg: r._i_tt/ r._i_cnt})
-					})
-					var procent = sum/100
-					_.forEach(arr, function(r) {
-						r.bar = r.tt/procent
-					})
-					arr = _.sortBy(arr, function(r) {
-						r.avg = parseInt(r.avg)
-							return r.tt*-1
-					})
-					views.database.db = _.take(arr, 10)
+					views.database.db = r.data.database
 				}
 
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})
@@ -447,7 +402,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}
+								},
+								st: st
 							}, cb)
 						}
 					}, safe.sure(cb, function(r){
@@ -458,51 +414,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
-						r.data =_.sortBy(r.data, function(v){
-							if (st == "rpm")
-								return -1*v.value.r;
-							if (st == "mtc")
-								return -1* v.value.tt;
-							if (st == "sar")
-								return -1* v.value.tta;
-							if (st == "wa")
-								return 1* v.value.apdex;
-						})
-
-						var sum=0;
-						_.each(r.data, function(r){
-							if (st == "rpm")
-								sum+=r.value.r
-							if (st == "mtc")
-								sum += r.value.tt
-							if (st == "sar")
-								sum += r.value.tta
-							if (st == "wa") {
-								sum = 1;
-								(r.value.apdex < sum) ?	(sum = r.value.apdex) : null
-							}
-						})
-						var percent = sum/100;
-						_.each(r.data, function (r) {
-							if (st == "rpm") {
-								r.value.bar = Math.round(r.value.r/percent);
-								r.value.r = r.value.r.toFixed(2)
-							}
-							if (st == "mtc") {
-								r.value.bar = Math.round(r.value.tt/percent);
-								r.value.tt = r.value.tt.toFixed(1);
-								r.value.r = quant*(r.value.r.toFixed(1))
-								r.value.tta = (r.value.tta/1000).toFixed(2)
-							}
-							if (st == "sar") {
-								r.value.bar = Math.round(r.value.tta/percent);
-							}
-							if (st == "wa") {
-								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex.toFixed(2);
-							}
-						})
-
 						res.renderX({view:r.view,data:{data:r.data, title:"Application", st: st, fr: filter}})
 					})
 				)
@@ -676,11 +587,15 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.asBreakDown", "public", {
-								_t_age: quant + "m", quant: quant, filter: {
+							api("stats.getActionsCategoryStats", "public", {
+								_t_age: quant + "m",
+								quant: quant,
+								filter: {
 									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend}
-								}
+									_dt: {$gt: dtstart, $lte: dtend},
+									"data._s_type": "Datastore/statement"
+								},
+								st: st
 							}, cb)
 						}
 					}, safe.sure(cb, function(r){
@@ -691,52 +606,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_dt: {$gt: dtstart, $lte: dtend}
 							}
 						}
-						var data = {};
-						_.forEach(r.data, function(r) {
-							_.forEach(r.value,function(r) {
-								if (r._s_name) {
-									if (r._s_type == "Datastore/statement") {
-										if (!data[r._s_name]) {
-											data[r._s_name] = r
-										}
-										else {
-											data[r._s_name]._i_cnt += r._i_cnt;
-											data[r._s_name]._i_tt += r._i_tt;
-										}
-									}
-								}
-							})
-						})
-						var arr = [];
-						var sum = 0.0;
-						_.forEach(data, function(r,v) {
-							if (st == 'req')
-								sum += r._i_cnt
-							if (st == 'mtc')
-								sum += r._i_tt
-							arr.push({name:v, r: r._i_cnt, tt: r._i_tt, avg: r._i_tt/ r._i_cnt})
-							if (st == 'sar')
-								sum += (r._i_tt/ r._i_cnt)
-						})
-						var procent = sum/100
-						_.forEach(arr, function(r) {
-							if (st == 'req')
-								r.bar = r.r/procent
-							if (st == 'mtc')
-								r.bar = r.tt/procent
-							if (st == 'sar')
-								r.bar = r.avg/procent
-						})
-						arr = _.sortBy(arr, function(r) {
-							r.avg = parseInt(r.avg)
-							if (st == 'req')
-								return r.r*-1
-							if (st == 'mtc')
-								return r.tt*-1
-							if (st == 'sar')
-								return r.avg*-1
-						})
-						res.renderX({view:r.view,route:req.route.path,data:{data:arr, title:"Database/Statements", st: st, fr: filter}})
+						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, title:"Database/Statements", st: st, fr: filter}})
 					})
 				)
 			}))
