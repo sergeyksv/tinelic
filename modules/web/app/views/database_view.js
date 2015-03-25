@@ -19,32 +19,29 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
                 safe.parallel([
                     function(cb) {
-                        api("stats.postDbBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                            var views = []
-                            _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
-                                views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
-                            })
+                        filter.filter['data._s_type'] = "WebTransaction/Expressjs"
+                        api("stats.getActionsCallees", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
-                            trbreak.append('<tr class=\"info\"><th>Part</th><th>avg*req</th><th>Time</th></tr>');
-                            var sum = 0;
-                            _.forEach(views, function(r){
+                            trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
+                            data = _.sortBy(data, function(r) {
+                                return r.value.tt*-1
+                            })
+                            var sum = 0
+                            _.forEach(data, function(r) {
                                 sum += r.value.tt
                             })
-                            _.forEach(_.sortBy(views,function(r){return -1*r.value.tt}), function(data) {
-                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.tt+'</td><td>'+((data.value.tt/sum)*100).toFixed(2)+' %</td></tr>')
+                            _.forEach(data, function(r) {
+                                var count = (r.value.cnt)
+                                var proc = ((r.value.tt/sum)*100).toFixed(1)
+                                trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                             })
                         }))
                         cb()
                     },
                     function(cb) {
-                        api("stats.postDbViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                            var views = [];
-                            _.forEach(data, function(v){
-                                var data = v.value.data.filter(function(r){return (r._s_name == p)})[0]
-                                views.push({_id:v._id, value: {r: data._i_cnt, tt: data._i_tt}})
-                            })
-                            var flat = [], prev = null
+                        api("stats.getActionsCategoryTimings", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                            var views = data;
+                            var flat = [], prev = null;
                             var quant = filter.quant;
                             var offset = new Date().getTimezoneOffset();
                             _.each(views, function (a) {
@@ -56,7 +53,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 prev = a;
                                 flat.push(a);
                             })
-
                             var rpm1;
                             var rpm = [];
                             var ttBrowser = [];
