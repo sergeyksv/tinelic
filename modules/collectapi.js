@@ -431,7 +431,7 @@ module.exports.init = function (ctx, cb) {
 									_s_reporter: "newrelic",
 									_s_server: run._s_host,
 									_s_logger: run._s_logger,
-									_s_message: "",
+									_s_message: ne[2],
 									_s_culprit: ne[1],
 									exception: {
 										_s_type: ne[3],
