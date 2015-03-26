@@ -180,6 +180,7 @@ module.exports.init = function (ctx, cb) {
                                     }
                                     if (st == "sar") {
                                         r.value.bar = Math.round(r.value.tta/percent);
+                                        r.value.tta = (r.value.tta/1000).toFixed(2)
                                     }
                                     if (st == "wa") {
                                         r.value.bar = Math.round(r.value.apdex/percent);
