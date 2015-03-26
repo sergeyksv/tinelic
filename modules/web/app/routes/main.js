@@ -71,7 +71,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				res:function (cb) {
-					feed.errorInfo(res.locals.token, {_id:req.params.id}, cb)
+					feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
 				res.renderX({view:r.view,data:_.extend(r.res,{title:"Event "+r.res.event.message, st: st})})
@@ -86,7 +86,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				res:function (cb) {
-					feed.serverErrorInfo(res.locals.token, {_id:req.params.id}, cb)
+					feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 				}
 			}, safe.sure( next, function (r) {
 				res.renderX({view:r.view,data:_.extend(r.res,{title:"Server error"+'-'+r.res.event.exception._s_value, st: st})})
@@ -515,13 +515,18 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.errorInfo(res.locals.token, {_id:req.params.id}, cb)
+							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-							api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
-								_idp:project._id, _id:req.params.id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb)
+							if (!req.params.id) {
+									cb()
+							}
+							else {
+								api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+									_idp:project._id, _id:req.params.id,
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								}}, cb)
+							}
 						}
 					}, safe.sure(cb, function(r){
 						var filter = {
@@ -630,7 +635,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.serverErrorInfo(res.locals.token, {_id:req.params.id}, cb)
+							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
 							api("stats.getServerErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{

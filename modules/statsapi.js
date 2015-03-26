@@ -292,11 +292,15 @@ module.exports.init = function (ctx, cb) {
 
                         serverErrors.mapReduce(function () {
                                 var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-                                var route = {}; route[this.request]=1;
+                                var route = {};
+                                if (this.action){
+									route[this.action._s_name]=1;
+								}
                                 var reporter = {}; reporter[this._s_reporter]=1;
-                                var os = {}; os[this._s_server]=1;
+                                var server = {}; server[this._s_server]=1;
+                                var lang = {}; lang[this._s_logger]=1;
                                 var ids = [this._id];
-                                emit(this._s_logger+this.exception._s_value+st,{c:1,route:route,reporter:reporter,os:os,ids:ids})
+                                emit(this._s_logger+this.exception._s_value+st,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids})
                             },
                             function (k, v) {
                                 var r=null;
@@ -309,11 +313,14 @@ module.exports.init = function (ctx, cb) {
                                         for (var k in v.route) {
                                             r.route[k]=(r.route[k] || 0) + v.route[k];
                                         }
-                                        for (var k in v.browser) {
+                                        for (var k in v.reporter) {
                                             r.reporter[k]=(r.reporter[k] || 0) + v.reporter[k];
                                         }
-                                        for (var k in v.os) {
-                                            r.os[k]=(r.os[k] || 0) + v.os[k];
+                                        for (var k in v.server) {
+                                            r.server[k]=(r.server[k] || 0) + v.server[k];
+                                        }
+                                        for (var k in v.lang) {
+                                            r.lang[k]=(r.lang[k] || 0) + v.lang[k];
                                         }
                                     }
                                 })
@@ -325,15 +332,18 @@ module.exports.init = function (ctx, cb) {
                             },
                             safe.sure(cb, function (stats) {
                                 var res = stats[0].value;
-                                var res1 = {route:[],os:[],reporter:[], count:res.c,ids:_.sortBy(res.ids)}
+                                var res1 = {route:[],server:[],reporter:[],lang:[], count:res.c,ids:_.sortBy(res.ids)}
                                 _.each(res.route, function (v,k) {
                                     res1.route.push({k:k,v:v})
                                 })
-                                _.each(res.os, function (v,k) {
-                                    res1.os.push({k:k,v:v})
+                                _.each(res.server, function (v,k) {
+                                    res1.server.push({k:k,v:v})
                                 })
                                 _.each(res.reporter, function (v,k) {
                                     res1.reporter.push({k:k,v:v})
+                                })
+                                _.each(res.lang, function (v,k) {
+                                    res1.lang.push({k:k,v:v})
                                 })
                                 cb(null,res1);
                             })
@@ -598,7 +608,7 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     serverErrors.mapReduce(function () {
                             var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-                            emit(this._s_logger+this.exception._s_value+st,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
+                            emit(this._s_message,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id})
                         },
                         function (k, v) {
                             var r=null;
