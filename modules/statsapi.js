@@ -71,6 +71,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActions: function(t, p, cb) {
                     var query = queryfix(p.filter);
+                    query._s_cat = "WebTransaction"
                     var q = p.quant || 1;
                     actions.mapReduce(
                         "function() {\
@@ -105,6 +106,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getTopTransactions: function(t, p , cb) {
                     var query = queryfix(p.filter);
+                    query._s_cat = "WebTransaction"
                     var q = p.quant || 1;
                     var t = 200; //apdex T
                     var f = 4*t;
@@ -724,6 +726,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);
+                    query._s_cat = "WebTransaction"
                     var q = p.quant || 1;
                     as.mapReduce(
                         function() {
@@ -753,15 +756,16 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActionsCategoryStats: function(t,p, cb) {
                     var query = queryfix(p.filter);
+                    query['data._s_cat'] = "Datastore"
                     var st = p.st
                     var q = p.quant || 1;
                     as.mapReduce(
-                        "function() {\
-                            this.data.forEach(function(k) {\
-                                if (k._s_type == '"+query['data._s_type']+"') {\
-                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt});\
-                                }\
-                            })}",
+                        function() {
+                            this.data.forEach(function(k) {
+                                if (k._s_cat == CAT) {
+                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt});
+                                }
+                            })},
                         function (k,v) {
                             var r = null;
                             v.forEach(function(v) {
@@ -778,7 +782,8 @@ module.exports.init = function (ctx, cb) {
                         },
                         {
                             query: query,
-                            out: {inline:1}
+                            out: {inline:1},
+                            scope: {CAT: query['data._s_cat']}
                         },
                         safe.sure(cb, function(data) {
                             var sum = 0;
@@ -911,13 +916,13 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;
                     as.mapReduce(
-                        "function() {\
-                            this.data.forEach(function(k,v) {\
-                                if (k._s_type == '"+query['data._s_type']+"') {\
-                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})\
-                                }\
-                            })\
-                        }",
+                        function() {
+                            this.data.forEach(function(k,v) {
+                                if (k._s_cat == CAT) {
+                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})
+                                }
+                            })
+                        },
                         function (k,v) {
                             var r=null;
                             v.forEach(function(v) {
@@ -933,7 +938,8 @@ module.exports.init = function (ctx, cb) {
                         },
                         {
                             query: query,
-                            out: {inline:1}
+                            out: {inline:1},
+                            scope: {CAT: query['data._s_cat']}
                         },
                         cb
                     )

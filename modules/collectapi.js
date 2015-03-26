@@ -33,6 +33,7 @@ module.exports.init = function (ctx, cb) {
 		}},
         action:{type:"object",properties: {
 			_s_type:{type:"string", required:true,"maxLength": 64},
+			_s_cat:{type:"string", required:true,"maxLength": 1024},
 			_s_name:{type:"string", required:true,"maxLength": 1024}
 		}},
 		stacktrace:{type:"object",required:true, properties: {
@@ -80,6 +81,7 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.validate.register("action-stats", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_s_name: {type:"string",required:true,"maxLength": 4096},
+		_s_cat: {type:"string",required:true,"maxLength": 1024},
 		_s_type: {type:"string",required:true,"maxLength": 1024},
 		_dt: {type:"date",required:true},
 		_dts: {type:"date",required:true},
@@ -87,6 +89,7 @@ module.exports.init = function (ctx, cb) {
 		data:{type:"array", items:{
 			type:"object", required:true, properties: {
 				_s_name: {type: "string", required: true, "maxLength": 4096},
+				_s_cat: {type: "string", required: true, "maxLength": 1024},
 				_s_type: {type: "string", required: true, "maxLength": 1024},
 				_i_cnt: {type: "integer", required: true},
 				_i_tt: {type: "integer", required: true},
@@ -100,6 +103,7 @@ module.exports.init = function (ctx, cb) {
 	ctx.api.validate.register("actions", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_dt: {type:"date",required:true},
+		_s_cat: {type:"string",required:true,"maxLength": 1024},
 		_s_type: {type:"string",required:true,"maxLength": 1024},
 		_s_name: {type:"string",required:true,"maxLength": 4096},
 		_i_wt: {type:"integer",required:true},
@@ -371,7 +375,8 @@ module.exports.init = function (ctx, cb) {
 									action_stats[scope] = {
 										"_idp": run._idp
 										, "_s_name": trnScope.name
-										, "_s_type": trnScope.type
+										, "_s_cat": trnScope.type.split("/", 2)[0]
+										, "_s_type": trnScope.type.split("/", 2)[1]
 										, "_dt": _dt
 										, "_dts": _dts
 										, "_dte": _dte
@@ -380,7 +385,8 @@ module.exports.init = function (ctx, cb) {
 								}
 								action_stats[scope].data.push( {
 									_s_name: trnName.name,
-									_s_type: trnName.type,
+									_s_cat: trnName.type.split("/", 2)[0],
+									_s_type: trnName.type.split("/", 2)[1],
 									_i_cnt: item[1][0],
 									_i_tt: Math.round(item[1][1]*1000),
 									_i_own: Math.round(item[1][2]*1000),
@@ -405,10 +411,12 @@ module.exports.init = function (ctx, cb) {
 							_.each(body[body.length - 1], function (item) {
 								item = item[0];
 								var trnName = nrParseTransactionName(item["name"]);
+								var ct = trnName.type.split("/",2)
 								var te = {
 									"_idp": run._idp
 									, "_s_name": trnName.name
-									, "_s_type": trnName.type
+									, "_s_cat": ct[0]
+									, "_s_type": ct[1]
 									, "_dt": new Date(item["timestamp"] )
 									, "_i_wt": Math.round(item["webDuration"]*1000)
 									, "_i_tt": Math.round(item["duration"]*1000)
@@ -439,7 +447,8 @@ module.exports.init = function (ctx, cb) {
 									},
 									action: {
 										_s_name: trnName.name,
-										_s_type: trnName.type
+										_s_cat: trnName.type.split("/",2)[0],
+										_s_type: trnName.type.split("/",2)[1]
 									},
 									stacktrace: { frames: [] }
 								}
