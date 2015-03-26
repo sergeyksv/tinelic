@@ -592,8 +592,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								quant: quant,
 								filter: {
 									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend},
-									"data._s_type": "Datastore/statement"
+									_dt: {$gt: dtstart, $lte: dtend}
 								},
 								st: st
 							}, cb)
