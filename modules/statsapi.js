@@ -774,7 +774,7 @@ module.exports.init = function (ctx, cb) {
                         function() {
                             this.data.forEach(function(k) {
                                 if (k._s_cat == CAT) {
-                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt});
+                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt, tta:k._i_tt});
                                 }
                             })},
                         function (k,v) {
@@ -787,6 +787,7 @@ module.exports.init = function (ctx, cb) {
                                     r.tt += v.tt;
                                     r.avg = (r.avg + v.avg)/2
                                     r.r += v.r
+                                    r.tta = parseInt(((r.tta+v.tta)/2))
                                 }
                             });
                             return r;
@@ -810,8 +811,10 @@ module.exports.init = function (ctx, cb) {
                             _.forEach(data, function(r) {
                                 if (st == 'req')
                                     r.value.bar = r.value.r/procent
-                                if (st == 'mtc'|| st == undefined)
+                                if (st == 'mtc'|| st == undefined) {
                                     r.value.bar = r.value.tt/procent
+                                    r.value.tta = (r.value.tta/1000).toFixed(2)
+								}
                                 if (st == 'sar')
                                     r.value.bar = r.value.avg/procent
                             })

@@ -79,14 +79,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                     text: ''
                                 },
                                 xAxis: {
-                                    type: 'datetime',
-                                    title: {
-                                        text: 'Date'
-                                    }
+                                    type: 'datetime'
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'rpm'
+                                        text: 'Throughput (rpm)'
                                     },
                                     min: 0,
                                     max: rpmmax
@@ -103,6 +100,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 legend: {
                                     enabled: false
                                 },
+                                credits: {
+									enabled: false
+								},
                                 series: [
                                     {
                                         name: 'rpm',
@@ -134,14 +134,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                     text: ''
                                 },
                                 xAxis: {
-                                    type: 'datetime',
-                                    title: {
-                                        text: 'Date'
-                                    }
+                                    type: 'datetime'
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'time'
+                                        text: 'Timing (s)'
                                     },
                                     min: 0,
                                     max: ttBrowserMax
@@ -158,6 +155,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 legend: {
                                     enabled: false
                                 },
+                                credits: {
+									enabled: false
+								},
                                 series: [
                                     {
                                         name: 'time',
