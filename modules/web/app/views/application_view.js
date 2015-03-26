@@ -19,14 +19,17 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
               safe.parallel([
                   function(cb) {
-                      api("stats.asBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                      api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                           trbreak.empty();
                           trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
-                          var sum = data[0].value[transaction]
-                          _.forEach(data[0].value, function(data) {
-                              var count = (data._i_cnt/sum._i_cnt).toFixed(2)
-                              var proc = ((data._i_tt/sum._i_tt)*100).toFixed(1)
-                              trbreak.append('<tr><td>'+data._s_name+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
+                          data = _.sortBy(data, function(r) {
+                              return r.value.tt*-1
+                          })
+                          var sum = data[0].value
+                          _.forEach(data, function(r) {
+                              var count = (r.value.cnt/sum.cnt).toFixed(2)
+                              var proc = ((r.value.tt/sum.tt)*100).toFixed(1)
+                              trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                           })
                       }))
                       cb()
