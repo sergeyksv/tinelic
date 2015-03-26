@@ -224,7 +224,7 @@ module.exports.init = function (ctx, cb) {
 				}))
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
-			var cleaner = function() {
+			setInterval(function() {
 				var dtlw = new Date(Date.parse(Date()) - 1000*60*60*24*7)
 				var q = {_dt: {$lte: dtlw}}
 				safe.parallel([
@@ -250,8 +250,8 @@ module.exports.init = function (ctx, cb) {
 						metrics.remove(q)
 					}
 				])
-			}
-			setInterval(cleaner(),1000*60*60);
+			},1000*60*60);
+
 			ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next ) {
 				function nrParseTransactionName( value ) {
 					var _value_array = value.split( "/" );
