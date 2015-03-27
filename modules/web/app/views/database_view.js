@@ -16,7 +16,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 var p = $(e.currentTarget).html()
                 var filter = this.data.fr
                 filter.filter['data._s_name'] = p;
-                filter.all = false;
 
                 safe.parallel([
                     function(cb) {
@@ -190,7 +189,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         postRender:function () {
             view.prototype.postRender.call(this);
             var filter = this.data.fr;
-            filter.all = true;
             api("stats.getActionsCategoryTimings", $.cookie("token"), filter, safe.sure(this.app.errHandler, function(data) {
                             var views = data;
                             var flat = [], prev = null;

@@ -897,14 +897,10 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     var name = query["data._s_name"]
                     var q = p.quant || 1;
-                    var all = p.all;
                     as.mapReduce(function () {
                             var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
                             this.data.forEach(function(k) {
-								if (ALL == "true") {
-									emit(dt,{r: k._i_cnt, tt: k._i_tt});
-								}
-                                else if (k._s_name == NAME) {
+								if (!NAME || k._s_name == NAME) {
                                     emit(dt,{r: k._i_cnt, tt: k._i_tt});
                                 }
                             })
@@ -925,7 +921,7 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1},
-                            scope: {NAME: name, QUANT: q, ALL: all}
+                            scope: {NAME: name, QUANT: q}
                         },
                         cb
                     )
