@@ -189,7 +189,155 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         },
         postRender:function () {
             view.prototype.postRender.call(this);
-            var ajax = this.data.rpm;
+            var filter1 = this.data.fr;
+			api("stats.getPageViews", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
+
+                            var views = data;
+                            var flat = [], prev = null
+                            var quant = filter1.quant;
+                            var offset = new Date().getTimezoneOffset();
+                            _.each(views, function (a) {
+                                if (prev) {
+                                    for (var i = prev._id + 1; i < a._id; i++) {
+                                        flat.push({_id: i, value: null});
+                                    }
+                                }
+                                prev = a;
+                                flat.push(a);
+                            })
+
+                            var rpm1;
+                            var rpm = [];
+                            var ttBrowser = [];
+                            _.each(flat, function (v) {
+                                var apdex = v.value ? v.value.apdex : null
+                                if (isFinite(apdex) == false) {
+                                    apdex = null;
+                                }
+                                var d = new Date(v._id * quant * 60000);
+                                d.setMinutes(d.getMinutes() - offset);
+                                d = d.valueOf();
+                                var rpm1 = v.value ? v.value.r : 0;
+                                rpm.push([d, rpm1]);
+                                ttBrowser.push([d, v.value?(v.value.tt/1000):0]);
+                            })
+
+                            var rpmmax = _.max(rpm, function (v) {
+                                return v[1];
+                            })[1];
+                            var ttBrowserMax = _.max(ttBrowser, function (v) { return v[1]; })[1];
+
+                            self.$('#rpm-one').highcharts({
+                                chart: {
+                                    type: 'spline',
+                                    zoomType: 'x'
+                                },
+                                title: {
+                                    text: ''
+                                },
+                                xAxis: {
+                                    type: 'datetime'
+                                },
+                                yAxis: [{
+                                    title: {
+                                        text: 'Throughput (rpm)'
+                                    },
+                                    min: 0,
+                                    max: rpmmax
+                                }
+                                ],
+                                plotOptions: {
+                                    series: {
+                                        marker: {
+                                            enabled: false
+                                        },
+                                        animation: false
+                                    }
+                                },
+                                legend: {
+                                    enabled: false
+                                },
+                                credits: {
+										enabled: false
+								},
+                                series: [
+                                    {
+                                        name: 'rpm',
+                                        yAxis: 0,
+                                        data: rpm,
+                                        color: "green",
+                                        type: 'area',
+                                        fillColor: {
+                                            linearGradient: {
+                                                x1: 0,
+                                                y1: 0,
+                                                x2: 0,
+                                                y2: 1
+                                            },
+                                            stops: [
+                                                [0, 'lightgreen'],
+                                                [1, 'white']
+                                            ]
+                                        }
+                                    }
+                                ]
+                            })
+                            self.$('#time-one').highcharts({
+                                chart: {
+                                    type: 'spline',
+                                    zoomType: 'x'
+                                },
+                                title: {
+                                    text: ''
+                                },
+                                xAxis: {
+                                    type: 'datetime'
+                                },
+                                yAxis: [{
+                                    title: {
+                                        text: 'Timing (s)'
+                                    },
+                                    min: 0,
+                                    max: ttBrowserMax
+                                }
+                                ],
+                                plotOptions: {
+                                    series: {
+                                        marker: {
+                                            enabled: false
+                                        },
+                                        animation: false
+                                    }
+                                },
+                                legend: {
+                                    enabled: false
+                                },
+                                credits: {
+										enabled: false
+								},
+                                series: [
+                                    {
+                                        name: 'rpm',
+                                        yAxis: 0,
+                                        data: ttBrowser,
+                                        color: "blue",
+                                        type: 'area',
+                                        fillColor: {
+                                            linearGradient: {
+                                                x1: 0,
+                                                y1: 0,
+                                                x2: 0,
+                                                y2: 1
+                                            },
+                                            stops: [
+                                                [0, 'lightblue'],
+                                                [1, 'white']
+                                            ]
+                                        }
+                                    }
+                                ]
+                            })
+                        }))
         }
     })
     View.id = "views/pages_view";
