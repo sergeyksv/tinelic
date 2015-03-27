@@ -749,8 +749,8 @@ module.exports.init = function (ctx, cb) {
 					data.exception._s_value = data.exception.value; delete data.exception.value;
 					_.forEach(data.stacktrace.frames, function(r) {
 						r._s_file = r.filename; delete r.filename;
-						r._i_line = r.lineno; delete r.lineno;
-						r._i_col = r.colno; delete r.colno;
+						r._i_line = r.lineno || 0; delete r.lineno;
+						r._i_col = r.colno || 0; delete r.colno;
 						r._s_func = r.function; delete r.function;
 						r.pre_context = [];
 						r.post_context = [];
