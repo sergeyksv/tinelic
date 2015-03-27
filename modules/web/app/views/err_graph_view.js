@@ -3,9 +3,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
     var View = view.extend({
         id:"templates/err_graph",
         postRender:function () {
-			view.prototype.postRender.call(this);
-			if (this.parent.data.event.event) {
-				var message=this.parent.data.event.event._s_message
+				view.prototype.postRender.call(this);
+				var message=(this.parent.data.event.event)? this.parent.data.event.event._s_message : "err";
 				var quant = this.parent.data.fr.quant;
 				var offset = new Date().getTimezoneOffset();
 				var errflat = [], errprev = null;
@@ -75,7 +74,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 					}
 					]
 				})
-		}
 		}
     })
     View.id = "views/err_graph_view";

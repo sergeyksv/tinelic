@@ -176,6 +176,135 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 
 						}))
 			},this);
+			api("stats.getAjaxStats","public", this.data.fr ,safe.sure(this.app.errHandler, function (r) {
+							var offset = new Date().getTimezoneOffset();
+							var ajflat = [], ajprev = null;
+							_.each(r, function (a) {
+								if (ajprev) {
+									for (var i=ajprev._id+1; i< a._id; i++) {
+										ajflat.push({_id: i, value:null});
+									}
+								}
+								ajprev = a;
+								ajflat.push(a);
+							})
+							var ajrpm = [], ttTime=[];
+							_.each(ajflat, function (a) {
+								var d = new Date(a._id*quant*60000);
+								d.setMinutes(d.getMinutes()-offset);
+								d = d.valueOf();
+								var ajrpm1 = a.value? a.value.r:0;
+								ajrpm.push([d,ajrpm1]);
+								ttTime.push([d, a.value?(a.value.tt/1000):0]);
+							})
+							this.$('#rpm-one').highcharts({
+								chart: {
+									type: 'spline',
+									zoomType: 'x'
+								},
+								title: {
+									text: ''
+								},
+								xAxis: {
+									type:'datetime'
+								},
+								yAxis: [{
+									title: {
+										text: 'Throughput (rpm)'
+									},
+									min:0
+								}
+								],
+								plotOptions: {
+									series: {
+										marker: {
+											enabled: false
+										},
+										animation: false
+									}
+								},
+								legend: {
+                                  enabled: false
+								},
+								credits: {
+										enabled: false
+								},
+								series: [{
+									name: "rpm",
+									data:ajrpm,
+									color:"green",
+									type: 'area',
+									fillColor: {
+                                          linearGradient: {
+                                              x1: 0,
+                                              y1: 0,
+                                              x2: 0,
+                                              y2: 1
+                                          },
+                                          stops: [
+                                              [0, 'lightgreen'],
+                                              [1, 'white']
+                                          ]
+                                      }
+								}
+								]
+							})
+							this.$('#time-one').highcharts({
+                              chart: {
+                                  type: 'spline',
+                                  zoomType: 'x'
+                              },
+                              title: {
+                                  text: ''
+                              },
+                              xAxis: {
+                                  type: 'datetime'
+                              },
+                              yAxis: [{
+                                  title: {
+                                      text: 'Timing (s)'
+                                  },
+                                  min: 0
+                              }
+                              ],
+                              plotOptions: {
+                                  series: {
+                                      marker: {
+                                          enabled: false
+                                      },
+                                      animation: false
+                                  }
+                              },
+                              legend: {
+                                  enabled: false
+                              },
+                              credits: {
+										enabled: false
+							  },
+                              series: [
+                                  {
+                                      name: "time",
+                                      yAxis: 0,
+                                      data: ttTime,
+                                      color: "blue",
+                                      type: 'area',
+                                      fillColor: {
+                                          linearGradient: {
+                                              x1: 0,
+                                              y1: 0,
+                                              x2: 0,
+                                              y2: 1
+                                          },
+                                          stops: [
+                                              [0, 'lightblue'],
+                                              [1, 'white']
+                                          ]
+                                      }
+                                  }
+                              ]
+							})
+
+			}))
 		}
 	})
 	View.id = "views/ajax_rpmGraph_view";
