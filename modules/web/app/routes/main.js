@@ -518,18 +518,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-							if (!req.params.id) {
-								api("stats.getErrorAllTransctions", "public", {_t_age:quant+"m",quant:quant, filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb)
-							}
-							else {
 								api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
 									_idp:project._id, _id:req.params.id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb)
-							}
 						}
 					}, safe.sure(cb, function(r){
 						var filter = {
@@ -641,18 +633,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-							if (!req.params.id) {
-								api("stats.getServerErrorAllTransctions", "public", {_t_age:quant+"m",quant:quant, filter:{
-									_idp:project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}}, cb)
-							}
-							else {
 								api("stats.getServerErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
 									_idp:project._id, _id:req.params.id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb)
-							}
 						}
 					}, safe.sure(cb, function(r){
 						var filter = {

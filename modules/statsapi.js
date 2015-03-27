@@ -549,7 +549,7 @@ module.exports.init = function (ctx, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					events.findOne(query1, safe.sure(cb, function (event) {
-						var query = {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt};
+						var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
 						events.mapReduce(
 							"function() {\
 								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
@@ -575,65 +575,11 @@ module.exports.init = function (ctx, cb) {
 						)
 					}))
 				},
-				getErrorAllTransctions:function(t, p, cb) {
-					var query = queryfix(p.filter);
-					var q = p.quant || 1;
-						events.mapReduce(
-							"function() {\
-								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
-							}",
-							function (k,v) {
-								var r=null;
-								v.forEach(function (v) {
-									if (!r){
-										r = v
-									}
-									else {
-										r.r+=v.r;
-
-									}
-								})
-								return r;
-							},
-							{
-								query: query,
-								out: {inline:1}
-							},
-							cb
-						)
-				},
-				getServerErrorAllTransctions:function(t, p, cb) {
-					var query = queryfix(p.filter);
-					var q = p.quant || 1;
-						serverErrors.mapReduce(
-							"function() {\
-								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
-							}",
-							function (k,v) {
-								var r=null;
-								v.forEach(function (v) {
-									if (!r){
-										r = v
-									}
-									else {
-										r.r+=v.r;
-
-									}
-								})
-								return r;
-							},
-							{
-								query: query,
-								out: {inline:1}
-							},
-							cb
-						)
-				},
 				getServerErrorRpm:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					serverErrors.findOne(query1, safe.sure(cb, function (event) {
-						var query = {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt};
+						var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
 						serverErrors.mapReduce(
 							"function() {\
 								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
@@ -948,10 +894,14 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     var name = query["data._s_name"]
                     var q = p.quant || 1;
+                    var all = p.all;
                     as.mapReduce(function () {
                             var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
                             this.data.forEach(function(k) {
-                                if (k._s_name == NAME) {
+								if (ALL == "true") {
+									emit(dt,{r: k._i_cnt, tt: k._i_tt});
+								}
+                                else if (k._s_name == NAME) {
                                     emit(dt,{r: k._i_cnt, tt: k._i_tt});
                                 }
                             })
@@ -972,38 +922,7 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1},
-                            scope: {NAME: name, QUANT: q}
-                        },
-                        cb
-                    )
-                },
-                getActionsAllTransactions:function (t, p, cb) {
-                    var query = queryfix(p.filter);
-                    var q = p.quant || 1;
-                    as.mapReduce(
-						function () {
-                            var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
-                            this.data.forEach(function(k) {
-								emit(dt,{r: k._i_cnt, tt: k._i_tt});
-                            })
-						},
-                        function (k, v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v
-                                }
-                                else {
-                                    r.r += v.r
-                                    r.tt += v.tt
-                                }
-                            })
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {QUANT: q}
+                            scope: {NAME: name, QUANT: q, ALL: all}
                         },
                         cb
                     )
