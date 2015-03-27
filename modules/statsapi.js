@@ -437,7 +437,7 @@ module.exports.init = function (ctx, cb) {
 
                         events.mapReduce(function () {
                                 var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-                                var route = {}; route[this.request.route]=1;
+                                var route = {}; route[this.request._s_url]=1;
                                 var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
                                 var os = {}; os[this.agent.os.family]=1;
                                 var sessions = {}; sessions[this.shash]=1;
@@ -499,7 +499,7 @@ module.exports.init = function (ctx, cb) {
                             var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             var s = {}; s[this.shash]=1;
                             var epm = {}; epm[this._idpv]=1;
-                            emit(this._s_logger+this._s_message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
+                            emit(this._s_message,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
                         },
                         function (k, v) {
                             var r=null;
@@ -530,7 +530,7 @@ module.exports.init = function (ctx, cb) {
                                 s.value.s = _.size(s.value.s);
                                 s.value.epm = _.size(s.value.epm);
                             } );
-                            stats = _.sortBy(stats, function (s) { return -1*s.value.s*s.value.epm; } );
+                            stats = _.sortBy(stats, function (s) { return -1*s.value.c; } );
                             var ids = {};
                             _.each(stats, function (s) {
                                 ids[s.value._id]={stats:s.value};
