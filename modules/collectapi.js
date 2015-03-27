@@ -344,7 +344,13 @@ module.exports.init = function (ctx, cb) {
 							// on connect we should link agent with its project id when available
 							var body = nrParseBody(req)[0];
 							var agent_name = body.app_name[0];
-							ctx.api.assets.getProject("public", {filter:{name:agent_name}}, safe.sure(cb, function (project) {
+							// agent name is either project id or name
+							var query = prefixify({_id:agent_name});
+							if (!query._id)
+								query.name = agent_name;
+
+							// check that project exist
+							ctx.api.assets.getProject("public", {filter:query}, safe.sure(cb, function (project) {
 								if (!project)
 									throw new Error( "Project \"" + agent_name + "\" not found" );
 
