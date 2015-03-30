@@ -751,18 +751,21 @@ module.exports.init = function (ctx, cb) {
 					data._s_server = "rum";
 					data._s_reporter = "raven";
 
-					data.exception._s_type = data.exception.type; delete data.exception.type;
+					data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
 					data.exception._s_value = data.exception.value; delete data.exception.value;
-					_.forEach(data.stacktrace.frames, function(r) {
-						r._s_file = r.filename; delete r.filename;
-						r._i_line = r.lineno || 0; delete r.lineno;
-						r._i_col = r.colno || 0; delete r.colno;
-						r._s_func = r.function; delete r.function;
-						r.pre_context = [];
-						r.post_context = [];
-						r._s_context = r.context_line || ""; delete r.context_line;
-						delete r.in_app;
-					})
+					if (data.stacktrace) {
+						_.forEach(data.stacktrace.frames, function(r) {
+							r._s_file = r.filename; delete r.filename;
+							r._i_line = r.lineno || 0; delete r.lineno;
+							r._i_col = r.colno || 0; delete r.colno;
+							r._s_func = r.function; delete r.function;
+							r.pre_context = [];
+							r.post_context = [];
+							r._s_context = r.context_line || ""; delete r.context_line;
+							delete r.in_app;
+						})
+					} else
+						data.stacktrace = {frames:[]};
 					delete data.platform;
 					if (data.request && data.request.url) {
 						data.request._s_url=data.request.url;
