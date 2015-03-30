@@ -146,7 +146,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         return -1*v.value.r;
                                     if (st == "mtc")
-                                        return -1* v.value.tt;
+                                        return -1* (v.value.tta*v.value.r);
                                     if (st == "sar")
                                         return -1* v.value.tta;
                                     if (st == "wa")
@@ -158,7 +158,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         sum+=r.value.r
                                     if (st == "mtc")
-                                        sum += r.value.tt
+                                        sum += r.value.tta*r.value.r
                                     if (st == "sar")
                                         sum += r.value.tta
                                     if (st == "wa") {
@@ -173,8 +173,7 @@ module.exports.init = function (ctx, cb) {
                                         r.value.r = r.value.r.toFixed(2)
                                     }
                                     if (st == "mtc") {
-                                        r.value.bar = Math.round(r.value.tt/percent);
-                                        r.value.tt = r.value.tt.toFixed(1);
+                                        r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
                                         r.value.r = p.quant*(r.value.r.toFixed(1))
                                         r.value.tta = (r.value.tta/1000).toFixed(2)
                                     }
@@ -493,13 +492,14 @@ module.exports.init = function (ctx, cb) {
                         )
                     }))
                 },
-                getErrorStats:function (t, p, cb) {
+                getPagesErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
+                    var st = p.st
                     events.mapReduce(function () {
                             var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             var s = {}; s[this.shash]=1;
                             var epm = {}; epm[this._idpv]=1;
-                            emit(this._s_message,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
+                            emit(this._s_logger+this._s_message+st,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm})
                         },
                         function (k, v) {
                             var r=null;
@@ -507,13 +507,13 @@ module.exports.init = function (ctx, cb) {
                                 if (!r)
                                     r = v
                                 else {
-                                    for (var k in v.s) {
-                                        r.s[k]=1;
+                                    for (var k in v.session) {
+                                        r.session[k]=1;
                                     }
-                                    for (var k in v.epm) {
-                                        r.epm[k]=1;
+                                    for (var k in v.pages) {
+                                        r.pages[k]=1;
                                     }
-                                    r.c+=v.c;
+                                    r.count+=v.count;
                                     r._dtmin = Math.min(r._dtmin, v._dtmin);
                                     r._dtmax = Math.min(r._dtmax, v._dtmax);
                                     (r._dtmax==v._dtmax) && (r._id = v._id);
@@ -527,10 +527,10 @@ module.exports.init = function (ctx, cb) {
                         },
                         safe.sure(cb, function (stats) {
                             _.each(stats, function (s) {
-                                s.value.s = _.size(s.value.s);
-                                s.value.epm = _.size(s.value.epm);
+                                s.value.session = _.size(s.value.session);
+                                s.value.pages = _.size(s.value.pages);
                             } );
-                            stats = _.sortBy(stats, function (s) { return -1*s.value.c; } );
+                            stats = _.sortBy(stats, function (s) { return -1*s.value.session*s.value.pages; } );
                             var ids = {};
                             _.each(stats, function (s) {
                                 ids[s.value._id]={stats:s.value};
@@ -540,12 +540,31 @@ module.exports.init = function (ctx, cb) {
                                     _.each(errors, function (e) {
                                         ids[e._id].error = e;
                                     })
-                                    cb(null, _.values(ids));
+                                    var data = _.values(ids)
+                                    var p = null
+                                    if (st == "terr" || st == undefined)
+                                        p = 'count';
+                                    if (st == "perr")
+                                        p = 'pages'
+                                    if (st == "serr")
+                                        p = 'session'
+                                    var sum = 0.0
+                                    _.forEach(data, function(r) {
+                                        if (p)
+                                            sum += r.stats[p]
+                                    })
+                                    var percent = sum/100
+                                    _.forEach(data, function(r) {
+                                        if (p)
+                                            r.bar = r.stats[p]/percent
+                                    })
+                                    data = _.sortBy(data, function(r) {return r.stats[p]*-1})
+                                    cb(null, data);
                                 }))
                         })
                     )
                 },
-                getErrorRpm:function(t, p, cb) {
+                getPagesErrorTiming:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					events.findOne(query1, safe.sure(cb, function (event) {
@@ -688,7 +707,7 @@ module.exports.init = function (ctx, cb) {
                                     else {
                                         r.r+=v.r;
                                         r.dt=v.dt;
-                                        r.tt = (r.tt + v.tt)/2;
+                                        r.tt = Number((r.tt + v.tt)/2);
                                         r.tta = Number((r.tta+v.tt)/2);
                                         r.apdex[0] += (v.tt <= t)?1:0;
                                         r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;

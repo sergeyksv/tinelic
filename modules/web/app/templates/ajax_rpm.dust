@@ -26,7 +26,7 @@
 					<span style="text-align:right;position:absolute; right:20px">
 						{@select key="{st}"}
 							{@eq value="rpm"}{r} <span class="text-info">rpm</span>{/eq}
-							{@eq value="mtc"}{r} x {tta} <span class="text-info">s</span>{/eq}
+							{@eq value="mtc"}{r} x {tt} <span class="text-info">s</span>{/eq}
 							{@eq value="sar"}{tta} <span class="text-info">s</span>{/eq}
 							{@eq value="wa"}{apdex} <span class="text-info">apdex</span>{/eq}
 						{/select}
