@@ -3,9 +3,9 @@
 		<span style="text-align:right;position:absolute; right:20px">
 			<span class="text-info">
 				{@select key="{st}"}
-					{@eq value="serr"}{stats.s}{/eq}
-                    {@eq value="perr"}{stats.epm}{/eq}
-                    {@eq value="terr"}{stats.c}{/eq}
+					{@eq value="serr"}{stats.session}{/eq}
+                    {@eq value="perr"}{stats.pages}{/eq}
+                    {@eq value="terr"}{stats.count}{/eq}
 				{/select}
 			</span>
 		</span>

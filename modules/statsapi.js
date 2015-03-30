@@ -500,7 +500,7 @@ module.exports.init = function (ctx, cb) {
                             var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             var s = {}; s[this.shash]=1;
                             var epm = {}; epm[this._idpv]=1;
-                            emit(this._s_logger+this._s_message+st,{c:1,s:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,epm:epm})
+                            emit(this._s_logger+this._s_message+st,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm})
                         },
                         function (k, v) {
                             var r=null;
@@ -508,13 +508,13 @@ module.exports.init = function (ctx, cb) {
                                 if (!r)
                                     r = v
                                 else {
-                                    for (var k in v.s) {
-                                        r.s[k]=1;
+                                    for (var k in v.session) {
+                                        r.session[k]=1;
                                     }
-                                    for (var k in v.epm) {
-                                        r.epm[k]=1;
+                                    for (var k in v.pages) {
+                                        r.pages[k]=1;
                                     }
-                                    r.c+=v.c;
+                                    r.count+=v.count;
                                     r._dtmin = Math.min(r._dtmin, v._dtmin);
                                     r._dtmax = Math.min(r._dtmax, v._dtmax);
                                     (r._dtmax==v._dtmax) && (r._id = v._id);
@@ -528,10 +528,10 @@ module.exports.init = function (ctx, cb) {
                         },
                         safe.sure(cb, function (stats) {
                             _.each(stats, function (s) {
-                                s.value.s = _.size(s.value.s);
-                                s.value.epm = _.size(s.value.epm);
+                                s.value.session = _.size(s.value.session);
+                                s.value.pages = _.size(s.value.pages);
                             } );
-                            stats = _.sortBy(stats, function (s) { return -1*s.value.s*s.value.epm; } );
+                            stats = _.sortBy(stats, function (s) { return -1*s.value.session*s.value.pages; } );
                             var ids = {};
                             _.each(stats, function (s) {
                                 ids[s.value._id]={stats:s.value};
@@ -544,11 +544,11 @@ module.exports.init = function (ctx, cb) {
                                     var data = _.values(ids)
                                     var p = null
                                     if (st == "terr" || st == undefined)
-                                        p = 'c';
+                                        p = 'count';
                                     if (st == "perr")
-                                        p = 'epm'
+                                        p = 'pages'
                                     if (st == "serr")
-                                        p = 's'
+                                        p = 'session'
                                     var sum = 0.0
                                     _.forEach(data, function(r) {
                                         if (p)
