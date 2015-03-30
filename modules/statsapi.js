@@ -436,7 +436,7 @@ module.exports.init = function (ctx, cb) {
 
                         events.mapReduce(function () {
                                 var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-                                var route = {}; route[this.request.route]=1;
+                                var route = {}; route[this.request._s_url]=1;
                                 var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
                                 var os = {}; os[this.agent.os.family]=1;
                                 var sessions = {}; sessions[this.shash]=1;

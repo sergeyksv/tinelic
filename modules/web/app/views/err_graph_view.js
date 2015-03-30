@@ -34,14 +34,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 						text: ''
 					},
 					xAxis: {
-						type:'datetime',
-						title: {
-							text: 'Date'
-						}
+						type:'datetime'
 					},
 					yAxis: [{
 						title: {
-							text: 'rpm'
+							text: 'Throughput(rpm)'
 						},
 						min:0
 					}
@@ -53,6 +50,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 							},
 							animation: false
 						}
+					},
+					legend: {
+                            enabled: false
+                    },
+                    credits: {
+							enabled: false
 					},
 					series: [{
 						name: message,
