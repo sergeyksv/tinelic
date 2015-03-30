@@ -146,7 +146,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         return -1*v.value.r;
                                     if (st == "mtc")
-                                        return -1* v.value.tt;
+                                        return -1* (v.value.tta*v.value.r);
                                     if (st == "sar")
                                         return -1* v.value.tta;
                                     if (st == "wa")
@@ -158,7 +158,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         sum+=r.value.r
                                     if (st == "mtc")
-                                        sum += r.value.tt
+                                        sum += r.value.tta*r.value.r
                                     if (st == "sar")
                                         sum += r.value.tta
                                     if (st == "wa") {
@@ -173,8 +173,7 @@ module.exports.init = function (ctx, cb) {
                                         r.value.r = r.value.r.toFixed(2)
                                     }
                                     if (st == "mtc") {
-                                        r.value.bar = Math.round(r.value.tt/percent);
-                                        r.value.tt = r.value.tt.toFixed(1);
+                                        r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
                                         r.value.r = p.quant*(r.value.r.toFixed(1))
                                         r.value.tta = (r.value.tta/1000).toFixed(2)
                                     }
@@ -688,7 +687,7 @@ module.exports.init = function (ctx, cb) {
                                     else {
                                         r.r+=v.r;
                                         r.dt=v.dt;
-                                        r.tt = (r.tt + v.tt)/2;
+                                        r.tt = Number((r.tt + v.tt)/2);
                                         r.tta = Number((r.tta+v.tt)/2);
                                         r.apdex[0] += (v.tt <= t)?1:0;
                                         r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;

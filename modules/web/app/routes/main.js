@@ -344,7 +344,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						return -1*v.value.r;
 					if (st == "mtc")
-						return -1* v.value.tt;
+						return -1* (v.value.tt*v.value.r);
 					if (st == "sar")
 						return -1* v.value.tta;
 					if (st == "wa")
@@ -355,7 +355,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						sum+=r.value.r
 					if (st == "mtc")
-						sum += r.value.tt
+						sum += r.value.tt*r.value.r
 					if (st == "sar")
 						sum += r.value.tta
 					if (st == "wa") {
@@ -370,8 +370,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r.value.r = r.value.r.toFixed(2)
 					}
 					if (st == "mtc") {
-						r.value.bar = Math.round(r.value.tt/percent);
-						r.value.tt = r.value.tt.toFixed(1);
+						r.value.bar = Math.round((r.value.tt*r.value.r)/percent);
+						r.value.tt = Number((r.value.tt/1000).toFixed(2))
 						r.value.r = quant*(r.value.r.toFixed(1))
 					}
 					if (st == "sar") {
@@ -449,7 +449,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								return -1*v.value.r;
 							if (st == "mtc")
-								return -1* v.value.tt;
+								return -1* (v.value.tta*v.value.r);
 							if (st == "sar")
 								return -1* v.value.tta;
 							if (st == "wa")
@@ -461,7 +461,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								sum+=r.value.r
 							if (st == "mtc")
-								sum += r.value.tt
+								sum += r.value.tta*r.value.r
 							if (st == "sar")
 								sum += r.value.tta
 							if (st == "wa") {
@@ -476,8 +476,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								r.value.r = r.value.r.toFixed(2)
 							}
 							if (st == "mtc") {
-								r.value.bar = Math.round(r.value.tt/percent);
-								r.value.tt = r.value.tt.toFixed(1);
+								r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
 								r.value.r = quant*(r.value.r.toFixed(1))
 								r.value.tta = (r.value.tta/1000).toFixed(2)
 							}
