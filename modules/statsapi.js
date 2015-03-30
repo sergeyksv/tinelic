@@ -495,6 +495,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
+                    var st = p.st
                     events.mapReduce(function () {
                             var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             var s = {}; s[this.shash]=1;
@@ -540,7 +541,26 @@ module.exports.init = function (ctx, cb) {
                                     _.each(errors, function (e) {
                                         ids[e._id].error = e;
                                     })
-                                    cb(null, _.values(ids));
+                                    var data = _.values(ids)
+                                    var p = null
+                                    if (st == "terr" || st == undefined)
+                                        p = 'c';
+                                    if (st == "perr")
+                                        p = 'epm'
+                                    if (st == "serr")
+                                        p = 's'
+                                    var sum = 0.0
+                                    _.forEach(data, function(r) {
+                                        if (p)
+                                            sum += r.stats[p]
+                                    })
+                                    var percent = sum/100
+                                    _.forEach(data, function(r) {
+                                        if (p)
+                                            r.bar = r.stats[p]/percent
+                                    })
+                                    data = _.sortBy(data, function(r) {return r.stats[p]*-1})
+                                    cb(null, data);
                                 }))
                         })
                     )
