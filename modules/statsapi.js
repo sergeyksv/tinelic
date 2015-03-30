@@ -493,7 +493,7 @@ module.exports.init = function (ctx, cb) {
                         )
                     }))
                 },
-                getErrorStats:function (t, p, cb) {
+                getPagesErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
                     var st = p.st
                     events.mapReduce(function () {
@@ -565,7 +565,7 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
-                getErrorRpm:function(t, p, cb) {
+                getPagesErrorTiming:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					events.findOne(query1, safe.sure(cb, function (event) {

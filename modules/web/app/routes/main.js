@@ -509,7 +509,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getErrorStats","public",{st:st,_t_age:quant+"m",filter:{
+							api("stats.getPagesErrorStats","public",{st:st,_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -518,7 +518,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-								api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+								api("stats.getPagesErrorTiming", "public", {_t_age:quant+"m",quant:quant, filter:{
 									_idp:project._id, _id:req.params.id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb)
