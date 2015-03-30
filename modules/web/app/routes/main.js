@@ -13,28 +13,33 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var quant = 1; var period = 15;
 						var dtend = new Date();
 						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
-						safe.forEach(project, function (n, cb) {
-							api("stats.getPageViews", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: n._id,
-									_dt: {$gt: dtstart,$lte:dtend}
-								}
-							}, safe.sure(cb, function (v) {
-								var vall = null; var vale = null; var valr = null;
-								if (v.length) {
-									vall = vale = valr = 0;
-									_.each(v, function (v) {
-										valr+=v.value?v.value.r:0;
-										vall+=v.value?(v.value.tt/1000):0;
-										vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
-									})
+						safe.forEach(project, function (projectN, cb) {
+							api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
+								_idp:projectN._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								}}}, safe.sure(cb, function (r) {
+									var vall = null; var vale = null; var valr = null; var vala = null;
+									var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
+									if (r.views.length) {
+										Client.r = Client.e = Client.etu = 0;
+										Apdex.client = Apdex.server = Apdex.ajax = 0;
+										vall = vale = valr = vala = 0;
+										_.each(r.views, function (v) {
+											valr+=v.value?v.value.r:0;
+											Client.r+=v.value?v.value.r:0;
+											vall+=v.value?(v.value.tt/1000):0;
+											Client.etu+=v.value?(v.value.tt/1000):0;
+											vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+											Client.e=100*(v.value?(1.0*v.value.e/v.value.r):0);
+											vala+=v.value.apdex?v.value.apdex:0;
+											Apdex.client+=v.value.apdex?v.value.apdex:0;
+										})
 
-									vall=(vall/period).toFixed(2);
-									vale=(vale/period).toFixed(2);
-									valr=(valr/period).toFixed(2);
-								}
-
-								cb(null,_.extend(n, {views: valr, errors: vale, etu: vall}))
+										vall=(vall/period).toFixed(2);
+										vale=(vale/period).toFixed(2);
+										valr=(valr/period).toFixed(2);
+									}
+									cb(null,_.extend(projectN, {views: valr, errors: vale, etu: vall, apdexCl: vala}))
 							}))
 						}, safe.sure(cb, function() {
 							cb(null, project)

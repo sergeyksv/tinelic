@@ -8,10 +8,10 @@
                 Team
             </th>
             <th>
-                <span class="col-md-3">Project</span><span class="col-md-3">Page views</span><span class="col-md-3">Error rate (%)</span><span class="col-md-3">End user time (s)</span>
+                <span class="col-md-3">Project</span><span class="col-md-3">Apdex</span><span class="col-md-3">Error rate (%)</span><span class="col-md-3">End user time (s)</span>
             </th>
            <!-- <th data-field="price">
-                 Page views (n)
+                Apdex
             </th>
             <th data-field="price">
                  Error rate (%)
@@ -44,7 +44,7 @@
                             </a>
                          </td>
                          <td data-field="views" class="col-md-3">
-                           {#views}{.} ppm{/views}
+                           {#apdexCl}{.} {/apdexCl}
                          </td>
                          <td data-field="errors" class="col-md-3">
                            {#errors}{.} %{/errors}
