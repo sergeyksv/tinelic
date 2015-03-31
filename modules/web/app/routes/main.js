@@ -382,7 +382,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						return -1*v.value.r;
 					if (st == "mtc")
-						return -1* v.value.tt;
+						return -1* (v.value.tt*v.value.r);
 					if (st == "sar")
 						return -1* v.value.tta;
 					if (st == "wa")
@@ -393,7 +393,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						sum+=r.value.r
 					if (st == "mtc")
-						sum += r.value.tt
+						sum += r.value.tt*r.value.r
 					if (st == "sar")
 						sum += r.value.tta
 					if (st == "wa") {
@@ -408,8 +408,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r.value.r = r.value.r.toFixed(2)
 					}
 					if (st == "mtc") {
-						r.value.bar = Math.round(r.value.tt/percent);
-						r.value.tt = r.value.tt.toFixed(1);
+						r.value.bar = Math.round((r.value.tt*r.value.r)/percent);
+						r.value.tt = Number((r.value.tt/1000).toFixed(2))
 						r.value.r = quant*(r.value.r.toFixed(1))
 					}
 					if (st == "sar") {
@@ -487,7 +487,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								return -1*v.value.r;
 							if (st == "mtc")
-								return -1* v.value.tt;
+								return -1* (v.value.tta*v.value.r);
 							if (st == "sar")
 								return -1* v.value.tta;
 							if (st == "wa")
@@ -499,7 +499,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								sum+=r.value.r
 							if (st == "mtc")
-								sum += r.value.tt
+								sum += r.value.tta*r.value.r
 							if (st == "sar")
 								sum += r.value.tta
 							if (st == "wa") {
@@ -514,8 +514,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								r.value.r = r.value.r.toFixed(2)
 							}
 							if (st == "mtc") {
-								r.value.bar = Math.round(r.value.tt/percent);
-								r.value.tt = r.value.tt.toFixed(1);
+								r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
 								r.value.r = quant*(r.value.r.toFixed(1))
 								r.value.tta = (r.value.tta/1000).toFixed(2)
 							}
@@ -547,7 +546,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getErrorStats","public",{_t_age:quant+"m",filter:{
+							api("stats.getPagesErrorStats","public",{st:st,_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -556,7 +555,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-								api("stats.getErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+								api("stats.getPagesErrorTiming", "public", {_t_age:quant+"m",quant:quant, filter:{
 									_idp:project._id, _id:req.params.id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb)
@@ -570,31 +569,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							}
 						}
 						r.event.headless = true;
-						var data = []
-						if (st == 'terr') {
-							data = r.data
-						}
-						else {
-							_.forEach(r.data, function (r) {
-								if (r.error.request.headers) {
-									if (r.error.request.headers['User-Agent'] == req.headers['user-agent']) {
-										data.push(r)
-									}
-								}
-							})
-							if (data.length == 0) {
-								data.push({error: {message: "Not errors on this client"}})
-							}
-						}
-						var sum = 0.0
-						_.forEach(data, function(r) {
-							sum += r.stats.epm
-						})
-						var percent = sum/100
-						_.forEach(data, function(r) {
-							r.bar = r.stats.epm/percent
-						})
-						res.renderX({view:r.view,data:{data:data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter}})
+						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter}})
 					})
 				)
 			}))

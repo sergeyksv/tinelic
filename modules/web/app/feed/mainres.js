@@ -26,7 +26,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("stats.getPageViews",token, params, cb);
 				},
 				errors: function (cb) {
-					api("stats.getErrorStats",token, params, cb);
+					api("stats.getPagesErrorStats",token, params, cb);
 				},
 				ajax: function (cb) {
 					api("stats.getAjaxStats",token,params, cb);

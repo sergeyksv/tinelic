@@ -6,13 +6,15 @@
 		<div class="dropdown">
 			{title} <span class="btn btn-xs btn-info" data-toggle="dropdown">
 				{@select key="{st}"}
-					{@eq value="serr"}User-agent errors{/eq}
-					{@eq value="terr"}Total errors{/eq}
+					{@eq value="serr"}Most session concerning{/eq}
+                    {@eq value="perr"}Most page concerning{/eq}
+                    {@eq value="terr"}Most concerning{/eq}
 				{/select}
 			<span class="caret"></span></span><br><br>
 			<ul class="dropdown-menu" role="menu">
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="serr" class="do-stats" href="#">User-agent errors</a></li>
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Total errors</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="serr" class="do-stats" href="#">Most session concerning</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="perr" class="do-stats" href="#">Most page concerning</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Most concerning</a></li>
 			</ul>
 		</div>
 		{@view name="views/err_list_view" data="data"/}

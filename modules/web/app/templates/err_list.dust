@@ -1,10 +1,18 @@
 {#.}
 	<div class="progress" style="border-radius:20px">
 		<span style="text-align:right;position:absolute; right:20px">
-			<span class="text-info">{stats.epm}</span>
+			<span class="text-info">
+				{@select key="{st}"}
+					{@eq value="serr"}{stats.session}{/eq}
+                    {@eq value="perr"}{stats.pages}{/eq}
+                    {@eq value="terr"}{stats.count}{/eq}
+				{/select}
+			</span>
 		</span>
 		<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
-			<div style="text-align:left; padding-left:20px""><a href="./{stats._id}"  style="color: black;">{error._s_message}</a> </div>
+			<div style="border: 1px solid white;text-align:left;height:23px;position: absolute;width:93%;padding-left:5px;padding-right:25px;white-space: nowrap;overflow: hidden; text-overflow: ellipsis;">
+				<a href="./{stats._id}"  style="color: black;">{error._s_message}</a> 
+			</div>
 		</div>
 	</div>
 {/.}
