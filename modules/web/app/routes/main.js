@@ -18,28 +18,61 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_idp:projectN._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}}, safe.sure(cb, function (r) {
-									var vall = null; var vale = null; var valr = null; var vala = null;
 									var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
-									if (r.views.length) {
-										Client.r = Client.e = Client.etu = 0;
-										Apdex.client = Apdex.server = Apdex.ajax = 0;
-										vall = vale = valr = vala = 0;
+									Client.r = Client.e = Client.etu = 0;
+									Apdex.client = Apdex.server = Apdex.ajax = 0;
+									Ajax.r = Ajax.e = Ajax.etu = 0;
+									Server.r = Server.e = Server.etu = Server.proc = Server.mem = 0;
+									if (r.views.length != 0) {
 										_.each(r.views, function (v) {
-											valr+=v.value?v.value.r:0;
 											Client.r+=v.value?v.value.r:0;
-											vall+=v.value?(v.value.tt/1000):0;
 											Client.etu+=v.value?(v.value.tt/1000):0;
-											vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
-											Client.e=100*(v.value?(1.0*v.value.e/v.value.r):0);
-											vala+=v.value.apdex?v.value.apdex:0;
+											Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 											Apdex.client+=v.value.apdex?v.value.apdex:0;
 										})
 
-										vall=(vall/period).toFixed(2);
-										vale=(vale/period).toFixed(2);
-										valr=(valr/period).toFixed(2);
+										Client.r=(Client.r/period).toFixed(2);
+										Client.etu=(Client.etu/period).toFixed(2);
+										Client.e=(Client.e/period).toFixed(2);
 									}
-									cb(null,_.extend(projectN, {views: valr, errors: vale, etu: vall, apdexCl: vala}))
+									if (r.ajax.length != 0) {
+										_.forEach(r.ajax, function (v) {
+											Ajax.r+=v.value?v.value.r:0;
+											Ajax.etu+=v.value?(v.value.tt/1000):0;
+											Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+											Apdex.ajax+=v.value.apdex?v.value.apdex:0;
+										})
+
+										Ajax.etu=(Ajax.etu/period).toFixed(2);
+										Ajax.e=(Ajax.e/period).toFixed(2);
+										Ajax.r=(Ajax.r/period).toFixed(2);
+										Apdex.ajax=Apdex.ajax.toFixed(2);
+									}
+									var trans = 0;
+									if (r.actions.length != 0) {
+										_.forEach(r.actions, function (v) {
+											trans+=v.value?v.value.r:0;
+											Server.r+=v.value?v.value.r:0;
+											Server.etu+=v.value?(v.value.tt):0;
+											Apdex.server+=v.value.apdex?v.value.apdex:0;
+										})
+
+										Server.etu=(Server.etu/period).toFixed(2);
+										Server.r=(Server.r/period).toFixed(2);
+										Apdex.server=Apdex.server.toFixed(2);
+									}
+									var absSE = 0;
+									if (r.serverErrors.length != 0) {
+										_.forEach(r.serverErrors, function (v) {
+											absSE+=v.stats?v.stats.c:0
+										})
+										Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period).toFixed(2);
+									}
+									if (r.metrics) {
+										Server.proc = r.metrics.proc;
+										Server.mem = r.metrics.mem;
+									}
+									cb(null,_.extend(projectN, {apdex: Apdex, server: Server, client: Client, ajax: Ajax}))
 							}))
 						}, safe.sure(cb, function() {
 							cb(null, project)

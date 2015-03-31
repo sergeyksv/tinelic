@@ -360,7 +360,7 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
+                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._i_code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
                         function (k,v) {
                             var t = 400; //apdex T
