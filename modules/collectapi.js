@@ -744,7 +744,7 @@ module.exports.init = function (ctx, cb) {
 					// when error happens try to link it with current page
 					// which is latest page from same client (chash)
 					// which is registered not later than current event
-					data._s_culprit = data.culprit; delete data.culprit;
+					data._s_culprit = data.culprit || 'undefined'; delete data.culprit;
 					data._s_message = data.message; delete data.message;
 					delete data.event_id;
 					data._s_logger = data.logger; delete data.logger;
@@ -758,7 +758,7 @@ module.exports.init = function (ctx, cb) {
 							r._s_file = r.filename; delete r.filename;
 							r._i_line = r.lineno || 0; delete r.lineno;
 							r._i_col = r.colno || 0; delete r.colno;
-							r._s_func = r.function; delete r.function;
+							r._s_func = r.function || 'undefined'; delete r.function;
 							r.pre_context = [];
 							r.post_context = [];
 							r._s_context = r.context_line || ""; delete r.context_line;
