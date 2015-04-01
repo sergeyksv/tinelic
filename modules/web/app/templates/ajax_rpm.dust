@@ -25,10 +25,10 @@
 				<div class="progress" style="border-radius:20px">
 					<span style="text-align:right;position:absolute; right:20px">
 						{@select key="{st}"}
-							{@eq value="rpm"}{r} <span class="text-info">rpm</span>{/eq}
-							{@eq value="mtc"}{r} x {tt} <span class="text-info">s</span>{/eq}
-							{@eq value="sar"}{tta} <span class="text-info">s</span>{/eq}
-							{@eq value="wa"}{apdex} <span class="text-info">apdex</span>{/eq}
+							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
+							{@eq value="mtc"}{@formatnumber val=r type="reqs"/} x {@formatnumber val=tt type="tm"/}{/eq}
+							{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
+							{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
 						{/select}
 					</span>
 					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
