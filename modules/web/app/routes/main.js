@@ -220,21 +220,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				data:function (cb) {
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						var projects=[]; projects[0]=project;
-						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,projects:projects,filter:{
+						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
 							_idp:project._id,
 							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 						}}}, safe.sure(cb, function (r) {
-							 cb(null,_.extend(r[0], {project:project}))
+							 cb(null,_.extend(r, {project:project}))
 						}))
 					}))
 				}
 			}, safe.sure(cb, function (r) {
 				var views = {}; // total | server | browser | transaction | page | ajax
 				var valtt; var vale; var valr; var period;
-				if (r.data.result.views.length != 0) {
+				if (r.data.views.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.result.views.length;
-					_.forEach(r.data.result.views, function (v) {
+					period = r.data.views.length;
+					_.forEach(r.data.views, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt/1000):0;
 						vale+=v.value?v.value.e:0;
@@ -246,10 +246,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
 
 				}
-				if (r.data.result.actions.length != 0) {
+				if (r.data.actions.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.result.actions.length;
-					_.forEach(r.data.result.actions, function (v) {
+					period = r.data.actions.length;
+					_.forEach(r.data.actions, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt):0;
 					})
@@ -259,10 +259,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					_.extend(views.total,{rsm: valr, ttserver: valtt});
 
 				}
-				if (r.data.result.ajax.length != 0) {
+				if (r.data.ajax.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.result.ajax.length;
-					_.forEach(r.data.result.ajax, function (v) {
+					period = r.data.ajax.length;
+					_.forEach(r.data.ajax, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt/1000):0;
 						vale+=v.value?v.value.e:0;
@@ -274,21 +274,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
 
 				}
-				if (r.data.result.errors.length != 0) {
+				if (r.data.errors.length != 0) {
 					views.browser = {};
 
-					var data = _.take(r.data.result.errors, 10)
+					var data = _.take(r.data.errors, 10)
 					views.browser.err = data;
 				}
-				if (r.data.result.serverErrors.length != 0) {
+				if (r.data.serverErrors.length != 0) {
 					views.serverErr = {};
 
-					var data = _.take(r.data.result.serverErrors, 10)
+					var data = _.take(r.data.serverErrors, 10)
 					views.serverErr.sErr = data;
 				}
-				if (r.data.result.topAjax.length != 0) {
+				if (r.data.topAjax.length != 0) {
 					views.topa = {}
-					views.topa.a = _.take(_.sortBy(r.data.result.topAjax, function(r) {
+					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
 						return r.value.tt
 					}).reverse(),10)
 					var progress = null;
@@ -305,9 +305,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r._id = r._id.replace(/(^https:\/\/www.)?(^http:\/\/www.)?/,"")
 					})
 				}
-				if (r.data.result.topPages.length != 0) {
+				if (r.data.topPages.length != 0) {
 					views.topp = {}
-					views.topp.p = _.take(_.sortBy(r.data.result.topPages,function(r) {
+					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
 						return r.value.tt
 					}).reverse(),10)
 					var progress = null;
@@ -324,33 +324,33 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r.value.tta = (r.value.tta/1000).toFixed(2)
 					})
 				}
-				if (r.data.result.topTransactions.length != 0) {
+				if (r.data.topTransactions.length != 0) {
 					views.transactions = {}
-					views.transactions.top = r.data.result.topTransactions
+					views.transactions.top = r.data.topTransactions
 				}
 
-				if (r.data.result.metrics) {
+				if (r.data.metrics) {
 					if (!views.total)
 						views.total = {}
 
-					views.total.metrics = r.data.result.metrics
+					views.total.metrics = r.data.metrics
 				}
 
-				if (r.data.result.views.length || r.data.result.ajax.length || r.data.result.actions.length)
+				if (r.data.views.length || r.data.ajax.length || r.data.actions.length)
 					var graphOn = {}
 
-				if (r.data.result.views.length)
+				if (r.data.views.length)
 					graphOn.browser = 1
 
-				if (r.data.result.ajax.length)
+				if (r.data.ajax.length)
 					graphOn.ajax = 1
 
-				if (r.data.result.actions.length)
+				if (r.data.actions.length)
 					graphOn.server = 1
 
-				if (r.data.result.database.length != 0) {
+				if (r.data.database.length != 0) {
 					views.database = {}
-					views.database.db = r.data.result.database
+					views.database.db = r.data.database
 				}
 
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})

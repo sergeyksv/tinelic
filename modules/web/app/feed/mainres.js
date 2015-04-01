@@ -20,6 +20,40 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 				}
 			}, cb)
 		},
+		projectInfo:function (token, params, cb) {
+			safe.parallel({
+				views: function (cb) {
+					api("stats.getPageViews",token, params, cb);
+				},
+				errors: function (cb) {
+					api("stats.getPagesErrorStats",token, params, cb);
+				},
+				ajax: function (cb) {
+					api("stats.getAjaxStats",token,params, cb);
+				},
+				actions: function (cb) {
+					api("stats.getActions", token, params, cb);
+				},
+				topAjax: function (cb) {
+					api("stats.getTopAjax", token, params, cb);
+				},
+				topPages: function (cb) {
+					api("stats.getTopPages", token, params, cb);
+				},
+				topTransactions: function(cb) {
+					api("stats.getTopTransactions", token, params, cb);
+				},
+				serverErrors: function (cb) {
+					api("stats.getServerErrorStats",token, params, cb);
+				},
+				metrics: function (cb) {
+					api("stats.getMetrics", token, params, cb)
+				},
+				database: function (cb) {
+					api("stats.getActionsCategoryStats", token, params, cb)
+				}
+			}, cb)
+		},
 		homeInfo:function (token, params1, cb) {
 			api("assets.getProjects", token, {_t_age:"30d"}, safe.sure(cb, function (projects) {
 				safe.forEach(projects, function (projectN, cb) {
