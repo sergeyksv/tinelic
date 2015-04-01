@@ -13,70 +13,75 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						var quant = 1; var period = 15;
 						var dtend = new Date();
 						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
-						safe.forEach(project, function (projectN, cb) {
-							api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
-								_idp:projectN._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,projects:project,filter:{
+								_idp:project[0]._id,
+								_dt: {$gt: dtstart,$lte:dtend}
 								}}}, safe.sure(cb, function (r) {
+								r.forEach(function (r){
+									var period;
 									var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
 									Client.r = Client.e = Client.etu = 0;
 									Apdex.client = Apdex.server = Apdex.ajax = 0;
 									Ajax.r = Ajax.e = Ajax.etu = 0;
 									Server.r = Server.e = Server.etu = Server.proc = Server.mem = 0;
-									if (r.views.length != 0) {
-										_.each(r.views, function (v) {
+									if (r.result.views.length != 0) {
+										period = r.result.views.length;
+										_.each(r.result.views, function (v) {
 											Client.r+=v.value?v.value.r:0;
 											Client.etu+=v.value?(v.value.tt/1000):0;
 											Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 											Apdex.client+=v.value.apdex?v.value.apdex:0;
 										})
 
-										Client.r=(Client.r/period).toFixed(2);
-										Client.etu=(Client.etu/period).toFixed(2);
-										Client.e=(Client.e/period).toFixed(2);
+										Client.r=(Client.r/period);
+										Client.etu=(Client.etu/period);
+										Client.e=(Client.e/period);
+										Apdex.client=(Apdex.client/period);
 									}
-									if (r.ajax.length != 0) {
-										_.forEach(r.ajax, function (v) {
+									if (r.result.ajax.length != 0) {
+										period = r.result.ajax.length;
+										_.forEach(r.result.ajax, function (v) {
 											Ajax.r+=v.value?v.value.r:0;
 											Ajax.etu+=v.value?(v.value.tt/1000):0;
 											Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 											Apdex.ajax+=v.value.apdex?v.value.apdex:0;
 										})
 
-										Ajax.etu=(Ajax.etu/period).toFixed(2);
-										Ajax.e=(Ajax.e/period).toFixed(2);
-										Ajax.r=(Ajax.r/period).toFixed(2);
-										Apdex.ajax=Apdex.ajax.toFixed(2);
+										Ajax.etu=(Ajax.etu/period);
+										Ajax.e=(Ajax.e/period);
+										Ajax.r=(Ajax.r/period);
+										Apdex.ajax=(Apdex.ajax/period);
 									}
 									var trans = 0;
-									if (r.actions.length != 0) {
-										_.forEach(r.actions, function (v) {
+									if (r.result.actions.length != 0) {
+										period = r.result.actions.length;
+										_.forEach(r.result.actions, function (v) {
 											trans+=v.value?v.value.r:0;
 											Server.r+=v.value?v.value.r:0;
 											Server.etu+=v.value?(v.value.tt):0;
 											Apdex.server+=v.value.apdex?v.value.apdex:0;
 										})
 
-										Server.etu=(Server.etu/period).toFixed(2);
-										Server.r=(Server.r/period).toFixed(2);
-										Apdex.server=Apdex.server.toFixed(2);
+										Server.etu=(Server.etu/period);
+										Server.r=(Server.r/period);
+										Apdex.server=(Apdex.server/period);
 									}
 									var absSE = 0;
-									if (r.serverErrors.length != 0) {
-										_.forEach(r.serverErrors, function (v) {
+									if (r.result.serverErrors.length != 0) {
+										period = r.result.serverErrors.length;
+										_.forEach(r.result.serverErrors, function (v) {
 											absSE+=v.stats?v.stats.c:0
 										})
-										Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period).toFixed(2);
+										Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period);
 									}
-									if (r.metrics) {
-										Server.proc = r.metrics.proc;
-										Server.mem = r.metrics.mem;
+									if (r.result.metrics) {
+										Server.proc = r.result.metrics.proc;
+										Server.mem = r.result.metrics.mem;
 									}
-									cb(null,_.extend(projectN, {apdex: Apdex, server: Server, client: Client, ajax: Ajax}))
+									_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax})
+								})
+								cb(null, r)
 							}))
-						}, safe.sure(cb, function() {
-							cb(null, project)
-						}))
 					}))
 				},
 				teams: function (cb) {
@@ -218,21 +223,22 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				},
 				data:function (cb) {
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
+						var projects=[]; projects[0]=project;
+						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,projects:projects,filter:{
 							_idp:project._id,
 							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 						}}}, safe.sure(cb, function (r) {
-							 cb(null,_.extend(r, {project:project}))
+							 cb(null,_.extend(r[0], {project:project}))
 						}))
 					}))
 				}
 			}, safe.sure(cb, function (r) {
 				var views = {}; // total | server | browser | transaction | page | ajax
 				var valtt; var vale; var valr; var period;
-				if (r.data.views.length != 0) {
+				if (r.data.result.views.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.views.length;
-					_.forEach(r.data.views, function (v) {
+					period = r.data.result.views.length;
+					_.forEach(r.data.result.views, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt/1000):0;
 						vale+=v.value?v.value.e:0;
@@ -244,10 +250,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
 
 				}
-				if (r.data.actions.length != 0) {
+				if (r.data.result.actions.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.actions.length;
-					_.forEach(r.data.actions, function (v) {
+					period = r.data.result.actions.length;
+					_.forEach(r.data.result.actions, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt):0;
 					})
@@ -257,10 +263,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					_.extend(views.total,{rsm: valr, ttserver: valtt});
 
 				}
-				if (r.data.ajax.length != 0) {
+				if (r.data.result.ajax.length != 0) {
 					valtt = vale = valr = 0;
-					period = r.data.ajax.length;
-					_.forEach(r.data.ajax, function (v) {
+					period = r.data.result.ajax.length;
+					_.forEach(r.data.result.ajax, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tt/1000):0;
 						vale+=v.value?v.value.e:0;
@@ -272,21 +278,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
 
 				}
-				if (r.data.errors.length != 0) {
+				if (r.data.result.errors.length != 0) {
 					views.browser = {};
 
-					var data = _.take(r.data.errors, 10)
+					var data = _.take(r.data.result.errors, 10)
 					views.browser.err = data;
 				}
-				if (r.data.serverErrors.length != 0) {
+				if (r.data.result.serverErrors.length != 0) {
 					views.serverErr = {};
 
-					var data = _.take(r.data.serverErrors, 10)
+					var data = _.take(r.data.result.serverErrors, 10)
 					views.serverErr.sErr = data;
 				}
-				if (r.data.topAjax.length != 0) {
+				if (r.data.result.topAjax.length != 0) {
 					views.topa = {}
-					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
+					views.topa.a = _.take(_.sortBy(r.data.result.topAjax, function(r) {
 						return r.value.tt
 					}).reverse(),10)
 					var progress = null;
@@ -303,9 +309,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r._id = r._id.replace(/(^https:\/\/www.)?(^http:\/\/www.)?/,"")
 					})
 				}
-				if (r.data.topPages.length != 0) {
+				if (r.data.result.topPages.length != 0) {
 					views.topp = {}
-					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
+					views.topp.p = _.take(_.sortBy(r.data.result.topPages,function(r) {
 						return r.value.tt
 					}).reverse(),10)
 					var progress = null;
@@ -322,33 +328,33 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r.value.tta = (r.value.tta/1000).toFixed(2)
 					})
 				}
-				if (r.data.topTransactions.length != 0) {
+				if (r.data.result.topTransactions.length != 0) {
 					views.transactions = {}
-					views.transactions.top = r.data.topTransactions
+					views.transactions.top = r.data.result.topTransactions
 				}
 
-				if (r.data.metrics) {
+				if (r.data.result.metrics) {
 					if (!views.total)
 						views.total = {}
 
-					views.total.metrics = r.data.metrics
+					views.total.metrics = r.data.result.metrics
 				}
 
-				if (r.data.views.length || r.data.ajax.length || r.data.actions.length)
+				if (r.data.result.views.length || r.data.result.ajax.length || r.data.result.actions.length)
 					var graphOn = {}
 
-				if (r.data.views.length)
+				if (r.data.result.views.length)
 					graphOn.browser = 1
 
-				if (r.data.ajax.length)
+				if (r.data.result.ajax.length)
 					graphOn.ajax = 1
 
-				if (r.data.actions.length)
+				if (r.data.result.actions.length)
 					graphOn.server = 1
 
-				if (r.data.database.length != 0) {
+				if (r.data.result.database.length != 0) {
 					views.database = {}
-					views.database.db = r.data.database
+					views.database.db = r.data.result.database
 				}
 
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})
@@ -405,19 +411,17 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				_.each(r.rpm, function (r) {
 					if (st == "rpm") {
 						r.value.bar = Math.round(r.value.r/percent);
-						r.value.r = r.value.r.toFixed(2)
 					}
 					if (st == "mtc") {
 						r.value.bar = Math.round((r.value.tt*r.value.r)/percent);
-						r.value.tt = Number((r.value.tt/1000).toFixed(2))
-						r.value.r = quant*(r.value.r.toFixed(1))
+						r.value.tt = Number(r.value.tt/1000)
+						r.value.r = quant*r.value.r
 					}
 					if (st == "sar") {
 						r.value.bar = Math.round(r.value.tta/percent);
 					}
 					if (st == "wa") {
 						r.value.bar = Math.round(r.value.apdex/percent);
-						r.value.apdex = r.value.apdex.toFixed(2);
 					}
 				})
 				 res.renderX({view:r.view,data:{rpm:r.rpm, project:project, st: st, fr: filter, title:"Ajax"}})
@@ -511,20 +515,18 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						_.each(r.data, function (r) {
 							if (st == "rpm") {
 								r.value.bar = Math.round(r.value.r/percent);
-								r.value.r = r.value.r.toFixed(2)
 							}
 							if (st == "mtc") {
 								r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-								r.value.r = quant*(r.value.r.toFixed(1))
-								r.value.tta = (r.value.tta/1000).toFixed(2)
+								r.value.r = quant*r.value.r
+								r.value.tta = r.value.tta/1000
 							}
 							if (st == "sar") {
 								r.value.bar = Math.round(r.value.tta/percent);
-								r.value.tta = (r.value.tta/1000).toFixed(2)
+								r.value.tta = r.value.tta/1000
 							}
 							if (st == "wa") {
 								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex.toFixed(2);
 							}
 						})
 						res.renderX({view:r.view,data:{data:r.data, title:"Pages", st: st, fr: filter}})
