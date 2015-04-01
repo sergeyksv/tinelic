@@ -19,7 +19,7 @@ define(['views/layout','module','safe',"dust"
 				var output = (Math.round(params.val/10000)).toString()+"k rpm"
 			}
 			else {
-				var output = params.val.toFixed(2).toString()+" rpm ";
+				var output = params.val.toFixed(1).toString()+" rpm";
 			}
 			return chunk.write(output);
 		}
@@ -33,17 +33,17 @@ define(['views/layout','module','safe',"dust"
 			return chunk.write(output);
 		}
 		if (params.type == "tm") {
-			var output = params.val.toFixed(2).toString();
-			if (output == "0.00"){
-				output = (Math.round(params.val*1000)).toString()+" ms "
+			if (params.val <0.1) {
+				output = (Math.round(params.val*1000)).toString()+" ms"
 			}
 			else {
-				output = output+" s "
+				output = params.val.toFixed(1).toString()+" s"
 			}
 			return chunk.write(output);
 		}
 		if (params.type == "erate") {
-			var output = params.val.toFixed(2).toString()+" % ";
+			var output = params.val.toFixed(params.val<10?2:0).toString()+" %";
+
 			return chunk.write(output);
 		}
 		if (params.type == "apdex") {
@@ -55,7 +55,7 @@ define(['views/layout','module','safe',"dust"
 				var output = ((params.val/1024).toFixed(2)).toString()+" Gb";
 			}
 			else {
-				var output = params.val.toString()+" mb";
+				var output = params.val.toString()+" Mb";
 			}
 			return chunk.write(output);
 		}
