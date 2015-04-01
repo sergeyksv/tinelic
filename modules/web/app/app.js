@@ -13,6 +13,53 @@ define(['views/layout','module','safe',"dust"
         var output = m.format(params.format || 'lll');
         return chunk.write(output);
 	}
+	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
+		if (params.type == "rpm") {
+			if ((params.val/10000)>1.0){
+				var output = (Math.round(params.val/10000)).toString()+"k rpm"
+			}
+			else {
+				var output = params.val.toFixed(1).toString()+" rpm";
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "reqs") {
+			if ((params.val/10000)>1.0){
+				var output = (Math.round(params.val/10000)).toString()+"k";
+			}
+			else {
+				var output = Math.round(params.val).toString();
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "tm") {
+			if (params.val <0.1) {
+				output = (Math.round(params.val*1000)).toString()+" ms"
+			}
+			else {
+				output = params.val.toFixed(1).toString()+" s"
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "erate") {
+			var output = params.val.toFixed(params.val<10?2:0).toString()+" %";
+
+			return chunk.write(output);
+		}
+		if (params.type == "apdex") {
+			var output = params.val.toFixed(2).toString();
+			return chunk.write(output);
+		}
+		if (params.type == "memory") {
+			if ((params.val/1024) > 1.0){
+				var output = ((params.val/1024).toFixed(2)).toString()+" Gb";
+			}
+			else {
+				var output = params.val.toString()+" Mb";
+			}
+			return chunk.write(output);
+		}
+	}
 
 	return tb.Application.extend({
 		getLocalPath:function () {

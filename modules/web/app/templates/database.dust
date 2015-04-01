@@ -22,8 +22,8 @@
 				<div class="progress" style="border-radius:20px">
 					<span style="text-align:right;position:absolute; right:20px">
 						{@select key="{st}"}
-							{@eq value="req"}{value.r} <span class="text-info">req</span>{/eq}
-							{@eq value="mtc"}{value.r} x {value.tta} <span class="text-info">s</span>{/eq}
+							{@eq value="req"}{@formatnumber val=value.r type="reqs"/} <span class="text-info">req</span>{/eq}
+							{@eq value="mtc"}{@formatnumber val=value.r type="reqs"/} x {@formatnumber val=value.tta type="tm"/}{/eq}
 							{@eq value="sar"}{value.avg} <span class="text-info">ms</span>{/eq}
 						{/select}
 					</span>

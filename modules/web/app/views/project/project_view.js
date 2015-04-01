@@ -10,9 +10,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				return v.name == "views/project/errors_view";
 			});
 			var rpm = [];
-			var views = this.data.views;
-			var ajax = this.data.ajax;
-			var actions = this.data.actions;
+			var views = this.data.result.views;
+			var ajax = this.data.result.ajax;
+			var actions = this.data.result.actions;
 
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;

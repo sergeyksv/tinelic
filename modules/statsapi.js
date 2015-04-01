@@ -170,20 +170,20 @@ module.exports.init = function (ctx, cb) {
                                 _.each(data, function (r) {
                                     if (st == "rpm") {
                                         r.value.bar = Math.round(r.value.r/percent);
-                                        r.value.r = r.value.r.toFixed(2)
+                                        r.value.r = r.value.r
                                     }
                                     if (st == "mtc") {
                                         r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-                                        r.value.r = p.quant*(r.value.r.toFixed(1))
-                                        r.value.tta = (r.value.tta/1000).toFixed(2)
+                                        r.value.r = p.quant*(r.value.r)
+                                        r.value.tta = (r.value.tta/1000)
                                     }
                                     if (st == "sar") {
                                         r.value.bar = Math.round(r.value.tta/percent);
-                                        r.value.tta = (r.value.tta/1000).toFixed(2)
+                                        r.value.tta = (r.value.tta/1000)
                                     }
                                     if (st == "wa") {
                                         r.value.bar = Math.round(r.value.apdex/percent);
-                                        r.value.apdex = r.value.apdex.toFixed(2);
+                                        r.value.apdex = r.value.apdex;
                                     }
                                 })
                             }
@@ -359,7 +359,7 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
+                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._i_code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
                         function (k,v) {
                             var t = 400; //apdex T
@@ -692,7 +692,7 @@ module.exports.init = function (ctx, cb) {
                     if (!p.Graph_bool) {
                         ajax.mapReduce(
                             "function() {\
-                                emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+                                emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000)})\
 							}",
                             function (k,v) {
                                 var t = 400; //apdex T
@@ -714,7 +714,7 @@ module.exports.init = function (ctx, cb) {
                                         r.apdex[2] += 1;
                                     }
                                 })
-                                r.tta = Number((r.tta/1000).toFixed(2))
+                                r.tta = Number((r.tta/1000))
                                 r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                                 return r;
                             },
@@ -832,7 +832,7 @@ module.exports.init = function (ctx, cb) {
                                     r.value.bar = r.value.r/procent
                                 if (st == 'mtc'|| st == undefined) {
                                     r.value.bar = r.value.tt/procent
-                                    r.value.tta = (r.value.tta/1000).toFixed(2)
+                                    r.value.tta = (r.value.tta/1000)
 								}
                                 if (st == 'sar')
                                     r.value.bar = r.value.avg/procent
