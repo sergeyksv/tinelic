@@ -30,6 +30,13 @@ if(fs.existsSync(lcfgPath)){
 
 console.time("Live !")
 tinyback.createApp(cfg, function (err, app) {
+	if (err) {
+		console.log(err);
+		if (err.originalError)
+			console.log(err.originalError);
+		process.exit(0);
+	}
+
 	app.locals.newrelic = newrelic;
 	_.each(app.api, function (module, ns) {
 		_.each(module, function (func, name) {
@@ -53,12 +60,6 @@ tinyback.createApp(cfg, function (err, app) {
 		})
 	})
 	console.timeEnd("Live !")
-	if (err) {
-		console.log(err.stack);
-		if (err.originalError)
-			console.log(err.originalError.stack);
-		process.exit(0);
-	}
 	try {
 		var options = {
 			key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),

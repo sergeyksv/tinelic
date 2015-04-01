@@ -8,80 +8,76 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				data: function (cb) {
-
-					api("assets.getProjects",res.locals.token, {_t_age:"30d"}, safe.sure(cb, function (project) {
-						var quant = 1; var period = 15;
-						var dtend = new Date();
-						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
-							api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,projects:project,filter:{
-								_idp:project[0]._id,
-								_dt: {$gt: dtstart,$lte:dtend}
-								}}}, safe.sure(cb, function (r) {
-								r.forEach(function (r){
-									var period;
-									var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
-									Client.r = Client.e = Client.etu = 0;
-									Apdex.client = Apdex.server = Apdex.ajax = 0;
-									Ajax.r = Ajax.e = Ajax.etu = 0;
-									Server.r = Server.e = Server.etu = Server.proc = Server.mem = 0;
-									if (r.result.views.length != 0) {
-										period = r.result.views.length;
-										_.each(r.result.views, function (v) {
-											Client.r+=v.value?v.value.r:0;
-											Client.etu+=v.value?(v.value.tt/1000):0;
-											Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
-											Apdex.client+=v.value.apdex?v.value.apdex:0;
-										})
-
-										Client.r=(Client.r/period);
-										Client.etu=(Client.etu/period);
-										Client.e=(Client.e/period);
-										Apdex.client=(Apdex.client/period);
-									}
-									if (r.result.ajax.length != 0) {
-										period = r.result.ajax.length;
-										_.forEach(r.result.ajax, function (v) {
-											Ajax.r+=v.value?v.value.r:0;
-											Ajax.etu+=v.value?(v.value.tt/1000):0;
-											Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
-											Apdex.ajax+=v.value.apdex?v.value.apdex:0;
-										})
-
-										Ajax.etu=(Ajax.etu/period);
-										Ajax.e=(Ajax.e/period);
-										Ajax.r=(Ajax.r/period);
-										Apdex.ajax=(Apdex.ajax/period);
-									}
-									var trans = 0;
-									if (r.result.actions.length != 0) {
-										period = r.result.actions.length;
-										_.forEach(r.result.actions, function (v) {
-											trans+=v.value?v.value.r:0;
-											Server.r+=v.value?v.value.r:0;
-											Server.etu+=v.value?(v.value.tt):0;
-											Apdex.server+=v.value.apdex?v.value.apdex:0;
-										})
-
-										Server.etu=(Server.etu/period);
-										Server.r=(Server.r/period);
-										Apdex.server=(Apdex.server/period);
-									}
-									var absSE = 0;
-									if (r.result.serverErrors.length != 0) {
-										period = r.result.serverErrors.length;
-										_.forEach(r.result.serverErrors, function (v) {
-											absSE+=v.stats?v.stats.c:0
-										})
-										Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period);
-									}
-									if (r.result.metrics) {
-										Server.proc = r.result.metrics.proc;
-										Server.mem = r.result.metrics.mem;
-									}
-									_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax})
+					var quant = 1; var period = 15;
+					var dtend = new Date();
+					var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
+					api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant,filter:{
+						_dt: {$gt: dtstart,$lte:dtend}
+						}}}, safe.sure(cb, function (r) {
+						r.forEach(function (r){
+							var period;
+							var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
+							Client.r = Client.e = Client.etu = 0;
+							Apdex.client = Apdex.server = Apdex.ajax = 0;
+							Ajax.r = Ajax.e = Ajax.etu = 0;
+							Server.r = Server.e = Server.etu = Server.proc = Server.mem = 0;
+							if (r.result.views.length != 0) {
+								period = r.result.views.length;
+								_.each(r.result.views, function (v) {
+									Client.r+=v.value?v.value.r:0;
+									Client.etu+=v.value?(v.value.tt/1000):0;
+									Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+									Apdex.client+=v.value.apdex?v.value.apdex:0;
 								})
-								cb(null, r)
-							}))
+
+								Client.r=(Client.r/period);
+								Client.etu=(Client.etu/period);
+								Client.e=(Client.e/period);
+								Apdex.client=(Apdex.client/period);
+							}
+							if (r.result.ajax.length != 0) {
+								period = r.result.ajax.length;
+								_.forEach(r.result.ajax, function (v) {
+									Ajax.r+=v.value?v.value.r:0;
+									Ajax.etu+=v.value?(v.value.tt/1000):0;
+									Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+									Apdex.ajax+=v.value.apdex?v.value.apdex:0;
+								})
+
+								Ajax.etu=(Ajax.etu/period);
+								Ajax.e=(Ajax.e/period);
+								Ajax.r=(Ajax.r/period);
+								Apdex.ajax=(Apdex.ajax/period);
+							}
+							var trans = 0;
+							if (r.result.actions.length != 0) {
+								period = r.result.actions.length;
+								_.forEach(r.result.actions, function (v) {
+									trans+=v.value?v.value.r:0;
+									Server.r+=v.value?v.value.r:0;
+									Server.etu+=v.value?(v.value.tt):0;
+									Apdex.server+=v.value.apdex?v.value.apdex:0;
+								})
+
+								Server.etu=(Server.etu/period);
+								Server.r=(Server.r/period);
+								Apdex.server=(Apdex.server/period);
+							}
+							var absSE = 0;
+							if (r.result.serverErrors.length != 0) {
+								period = r.result.serverErrors.length;
+								_.forEach(r.result.serverErrors, function (v) {
+									absSE+=v.stats?v.stats.c:0
+								})
+								Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period);
+							}
+							if (r.result.metrics) {
+								Server.proc = r.result.metrics.proc;
+								Server.mem = r.result.metrics.mem;
+							}
+							_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax})
+						})
+						cb(null, r)
 					}))
 				},
 				teams: function (cb) {
