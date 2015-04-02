@@ -1,7 +1,7 @@
 {@view name="views/header_view" data="header"/}
 <div class="container">
-<br>
 {#teams}
+<br>
 <div class="row bg-success">
 	<div data-field="views" class="col-xs-12">
 		{name}
@@ -18,34 +18,45 @@
 					{/gt}
 					</a>
 				</div>
-				<div class="col-md-9 col-xs-12"><div class="row-fluid">
-				<div data-field="views" class="col-md-3 col-md-offset-0 col-xs-offset-1 col-xs-11">
-					<span class="text-danger">{@gt key=apdex.server value=0} {@formatnumber val=apdex.server type="apdex"/} {:else} -.-- {/gt}</span>/
-					<span class="text-success">{@gt key=apdex.client value=0} {@formatnumber val=apdex.client type="apdex"/} {:else} -.-- {/gt}</span>/
-					<span class="text-info">{@gt key=apdex.ajax value=0} {@formatnumber val=apdex.ajax type="apdex"/} {:else} -.-- {/gt}</span>
-				</div>
+				<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
 				{@gt key=server.r value=0}
-				<div data-field="errors" class="col-md-3 col-md-offset-0 col-xs-offset-1 col-xs-11">
-					<span class="text-danger">{#server.r}{@formatnumber val=. type="rpm"/} {/server.r}</span>/
-					<span class="text-danger">{#server.etu}{@formatnumber val=. type="tm"/} {/server.etu}</span>/
-					<span class="text-danger">{#server.e}{@formatnumber val=. type="erate"/} {/server.e}</span>
-				</div>
+					<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
 				{/gt}
-				{@gt key=client.r value=0}
-				<div data-field="etu" class="col-md-3 col-md-offset-0 col-xs-offset-1 col-xs-11">
-					<span class="text-success">{#client.r}{@formatnumber val=. type="rpm"/} {/client.r}</span>/
-					<span class="text-success">{#client.etu}{@formatnumber val=. type="tm"/} {/client.etu}</span>/
-					<span class="text-success">{#client.e}{@formatnumber val=. type="erate"/} {/client.e}</span>
-				</div>
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}</span> /
+					<span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
 				{/gt}
-				{@gt key=ajax.r value=0}
-				<div data-field="aj" class="col-md-3 col-md-offset-0 col-xs-offset-1 col-xs-11">
-					<span class="text-info">{#ajax.r}{@formatnumber val=. type="rpm"/} {/ajax.r}</span>/
-					<span class="text-info">{#ajax.etu}{@formatnumber val=. type="tm"/} {/ajax.etu}</span>/
-					<span class="text-info">{#ajax.e}{@formatnumber val=. type="erate"/} {/ajax.e}</span>
-				</div>
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+				<span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.r type="rpm"/}</span>
 				{/gt}
-				</div></div>
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.r type="rpm"/}</span> /
+					<span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
+				{/gt}
+				</span>
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+				<span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.etu type="tm"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.etu type="tm"/}</span> /
+					<span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
+				{/gt}
+				</span>
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
+				<span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.e type="erate"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.e type="erate"/}</span> /
+					<span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
+				{/gt}
+				</span>
+				</div>
 			{/_t_proj}
 			</div>
 		{/projects}
