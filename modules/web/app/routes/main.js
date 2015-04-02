@@ -55,7 +55,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_.forEach(r.result.actions, function (v) {
 									trans+=v.value?v.value.r:0;
 									Server.r+=v.value?v.value.r:0;
-									Server.etu+=v.value?(v.value.tt):0;
+									Server.etu+=v.value?(v.value.tt/1000):0;
 									Apdex.server+=v.value.apdex?v.value.apdex:0;
 								})
 
@@ -251,7 +251,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					period = r.data.actions.length;
 					_.forEach(r.data.actions, function (v) {
 						valr+=v.value?v.value.r:0;
-						valtt+=v.value?(v.value.tt):0;
+						valtt+=v.value?(v.value.tt/1000):0;
 					})
 
 					valtt=(valtt/period).toFixed(2);

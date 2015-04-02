@@ -23,8 +23,8 @@
 					<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
 				{/gt}
 				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-					<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}</span> /
-					<span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
+					<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}
+					</span> / <span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
 				{/gt}
 				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
 				<span style="white-space: nowrap;">
@@ -32,8 +32,8 @@
 					<span class="text-danger">{@formatnumber val=server.r type="rpm"/}</span>
 				{/gt}
 				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-					<span class="text-success">{@formatnumber val=client.r type="rpm"/}</span> /
-					<span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
+					<span class="text-success">{@formatnumber val=client.r type="rpm"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
 				{/gt}
 				</span>
 				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
@@ -42,8 +42,8 @@
 					<span class="text-danger">{@formatnumber val=server.etu type="tm"/}</span>
 				{/gt}
 				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-					<span class="text-success">{@formatnumber val=client.etu type="tm"/}</span> /
-					<span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
+					<span class="text-success">{@formatnumber val=client.etu type="tm"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
 				{/gt}
 				</span>
 				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
@@ -52,8 +52,8 @@
 					<span class="text-danger">{@formatnumber val=server.e type="erate"/}</span>
 				{/gt}
 				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-					<span class="text-success">{@formatnumber val=client.e type="erate"/}</span> /
-					<span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
+					<span class="text-success">{@formatnumber val=client.e type="erate"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 				{/gt}
 				</span>
 				</div>
