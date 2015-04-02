@@ -16,7 +16,7 @@ define(['views/layout','module','safe',"dust"
 	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
 		if (params.type == "rpm") {
 			if ((params.val/10000)>1.0){
-				var output = (Math.round(params.val/10000)).toString()+"k&nbsp;rpm"
+				var output = (Math.round(params.val/1000)).toString()+"k&nbsp;rpm"
 			}
 			else {
 				var output = params.val.toFixed(1).toString()+"&nbsp;rpm";
@@ -25,7 +25,7 @@ define(['views/layout','module','safe',"dust"
 		}
 		if (params.type == "reqs") {
 			if ((params.val/10000)>1.0){
-				var output = (Math.round(params.val/10000)).toString()+"k";
+				var output = (Math.round(params.val/1000)).toString()+"k";
 			}
 			else {
 				var output = Math.round(params.val).toString();

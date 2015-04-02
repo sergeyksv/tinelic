@@ -71,39 +71,43 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActions: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    query._s_cat = "WebTransaction"
-                    var q = p.quant || 1;
+                    query._s_cat = "WebTransaction";
+                    var ApdexT = 200;
+
                     actions.mapReduce(
-                        "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r: 1.0/"+q+", tt: this._i_tt, tta: this._i_tt})\
-						}",
+                        function() {
+                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k,v) {
-                            var t = 200; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.r += v.r;
-                                    r.tt = (r.tt*r.c+v.tt*v.c)/(r.c+v.c);
-                                    r.tta = (r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+                                    r.tt+=v.tt;
+                                    r.r+=v.r;
                                     r.c+=v.c;
-                                    r.apdex[0] += (v.tt <= t)?1:0;
-                                    r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
-                                    r.apdex[2] += 1;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
-                        },
-                        cb
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                        }, safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getTopTransactions: function(t, p , cb) {
