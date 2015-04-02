@@ -75,7 +75,7 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     actions.mapReduce(
                         "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._i_tt})\
+                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r: 1.0/"+q+", tt: this._i_tt, tta: this._i_tt})\
 						}",
                         function (k,v) {
                             var t = 200; //apdex T
@@ -88,7 +88,9 @@ module.exports.init = function (ctx, cb) {
                                 }
                                 else {
                                     r.r += v.r;
-                                    r.tt = (r.tt + v.tt)/2;
+                                    r.tt = (r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+                                    r.tta = (r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+                                    r.c+=v.c;
                                     r.apdex[0] += (v.tt <= t)?1:0;
                                     r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
                                     r.apdex[2] += 1;
@@ -112,7 +114,7 @@ module.exports.init = function (ctx, cb) {
                     var f = 4*t;
                     actions.mapReduce(
                         "function() {\
-                            emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+",apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+                            emit(this._s_name, {c:1, tt: this._i_tt, tta: this._i_tt, r: 1.0/"+q+",apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
                         function (k,v) {
                             var t = 200; //apdex T
@@ -121,18 +123,20 @@ module.exports.init = function (ctx, cb) {
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v
-                                    r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
+                                  //  r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt += v.tt;
-                                    r.tta = parseInt(((r.tta+v.tta)/2));
+                                    r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
+                                    r.apdex = (r.apdex*r.c+(((v.tta <= t) ? 1:0)+((v.tta > t && v.tta <= f)?1:0)/2)*v.c)/(r.c+v.c);
+                                    r.c+=v.c;
+                                    r.tt = (r.tt+v.tt)/2;
                                     r.r += v.r
-                                    r.apdex[0] += (v.tta <= t)?1:0;
+                                 /*   r.apdex[0] += (v.tta <= t)?1:0;
                                     r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
-                                    r.apdex[2] += 1;
+                                    r.apdex[2] += 1;*/
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
+                           // r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
@@ -146,7 +150,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         return -1*v.value.r;
                                     if (st == "mtc")
-                                        return -1* (v.value.tta*v.value.r);
+                                        return -1* (v.value.tta*v.value.c);
                                     if (st == "sar")
                                         return -1* v.value.tta;
                                     if (st == "wa")
@@ -158,7 +162,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         sum+=r.value.r
                                     if (st == "mtc")
-                                        sum += r.value.tta*r.value.r
+                                        sum += r.value.tta*r.value.c
                                     if (st == "sar")
                                         sum += r.value.tta
                                     if (st == "wa") {
@@ -170,11 +174,9 @@ module.exports.init = function (ctx, cb) {
                                 _.each(data, function (r) {
                                     if (st == "rpm") {
                                         r.value.bar = Math.round(r.value.r/percent);
-                                        r.value.r = r.value.r
                                     }
                                     if (st == "mtc") {
-                                        r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-                                        r.value.r = p.quant*(r.value.r)
+                                        r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
                                         r.value.tta = (r.value.tta/1000)
                                     }
                                     if (st == "sar") {
@@ -189,19 +191,20 @@ module.exports.init = function (ctx, cb) {
                             }
                             else {
                                 data = _.take(_.sortBy(data, function(r) {
-                                    return r.value.tt*-1
+                                    return r.value.tta*-1
                                 }),10)
                                 var progress = null;
                                 _.forEach(data,function(r) {
                                     if (!progress) {
-                                        progress = r.value.tt
+                                        progress = r.value.tta*r.value.c
                                     }
                                     else {
-                                        progress += r.value.tt
+                                        progress += r.value.tta*r.value.c
                                     }
                                 })
                                 _.forEach(data, function(r) {
-                                    r.value.progress = (r.value.tt/progress)*100
+                                    r.value.progress = (r.value.tta*r.value.c/progress)*100
+                                    r.value.tta = r.value.tta/1000
                                     r._id = r._id.replace(/(^GET)?(^POST)?/,'')
                                 })
                             }
@@ -214,21 +217,20 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         "function() {\
-                            emit(this._s_name, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
+                            emit(this._s_name, {c:1, tta: this._i_tt, tt: (this._i_tt/1000)})\
                         }",
                         function (k,v) {
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.tta = v.tt;
                                 }
                                 else {
                                     r.tt += v.tt;
-                                    r.tta = (r.tta+v.tt)/2;
+                                    r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
+                                    r.c+=v.c;
                                 }
                             })
-                            r.tta = (r.tta/1000).toFixed(2)
                             return r;
                         },
                         {
@@ -245,7 +247,7 @@ module.exports.init = function (ctx, cb) {
                     var f = 4*t;
                     pages.mapReduce(
                         "function() {\
-                            emit(this._s_route, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
+                            emit(this._s_route, {c:1, tt: this._i_tt, tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
 						}",
                         function (k,v) {
                             var t = 4000; //apdex T
@@ -254,13 +256,14 @@ module.exports.init = function (ctx, cb) {
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v
-                                    r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
+                                   r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt += v.tt;
-                                    r.tta = Number(((r.tta+v.tta)/2).toFixed(3));
+                                    r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
+                                    r.c+=v.c;
+                                    r.tt = ((r.tt+v.tt)/2).toFixed(3);
                                     r.r += v.r
-                                    r.apdex[0] += (v.tta <= t)?1:0;
+									r.apdex[0] += (v.tta <= t)?1:0;
                                     r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
                                     r.apdex[2] += 1;
                                 }
@@ -359,7 +362,7 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._i_code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
+                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tta:this._i_tt, code: this._i_code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
 						}",
                         function (k,v) {
                             var t = 400; //apdex T
@@ -368,16 +371,16 @@ module.exports.init = function (ctx, cb) {
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
+                                    r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt = (r.tt + v.tt)/2;
+                                    r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
                                     r.c+=v.c;
                                     r.e+=v.e;
                                     r.r+=v.r;
                                     r.pt+= v.pt;
-                                    r.apdex[0] += (v.tt <= t)?1:0;
-                                    r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
+                                    r.apdex[0] += (v.tta <= t)?1:0;
+                                    r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
                                     r.apdex[2] += 1;
                                 }
                             })
@@ -395,7 +398,7 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;
                     pages.mapReduce("function () {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
+							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tta:this._i_tt, tt:this._i_tt})\
 						}",
                         function (k, v) {
                             var t = 4000; //apdex T
@@ -408,7 +411,8 @@ module.exports.init = function (ctx, cb) {
 
                                 }
                                 else {
-                                    r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+									r.tt+=v.tt;
+                                    r.tta=(r.tta*r.c+v.tta*v.c)/(r.c+v.c);
                                     r.c+=v.c;
                                     r.e+=v.e;
                                     r.r+=v.r;
@@ -692,7 +696,7 @@ module.exports.init = function (ctx, cb) {
                     if (!p.Graph_bool) {
                         ajax.mapReduce(
                             "function() {\
-                                emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000)})\
+                                emit(this._s_name, {c:1, r:1.0/"+q+", tta:this._i_tt, tt: (this._i_tt/1000)})\
 							}",
                             function (k,v) {
                                 var t = 400; //apdex T
@@ -701,20 +705,18 @@ module.exports.init = function (ctx, cb) {
                                 v.forEach(function (v) {
                                     if (!r){
                                         r = v
-                                        r.tta = v.tt;
                                         r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
                                     }
                                     else {
                                         r.r+=v.r;
-                                        r.dt=v.dt;
-                                        r.tt = Number((r.tt + v.tt)/2);
-                                        r.tta = Number((r.tta+v.tt)/2);
+                                        r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
+                                        r.c+=v.c;
+                                        r.tt = (r.tt+v.tt)/2;
                                         r.apdex[0] += (v.tt <= t)?1:0;
                                         r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
                                         r.apdex[2] += 1;
                                     }
                                 })
-                                r.tta = Number((r.tta/1000))
                                 r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                                 return r;
                             },
@@ -729,7 +731,7 @@ module.exports.init = function (ctx, cb) {
                         query._s_name=p._idurl;
                         ajax.mapReduce(
                             "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tt:this._i_tt})\
+                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tta:this._i_tt})\
 							}",
                             function (k,v) {
                                 var t = 400; //apdex T
@@ -739,7 +741,7 @@ module.exports.init = function (ctx, cb) {
                                     if (!r)
                                         r = v
                                     else {
-                                        r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+                                        r.tta=(r.tta*r.c+v.tta*v.c)/(r.c+v.c);
                                         r.c+=v.c;
                                         r.r+=v.r;
                                     }
@@ -761,7 +763,7 @@ module.exports.init = function (ctx, cb) {
                     as.mapReduce(
                         function() {
                                 this.data.forEach(function(k,v) {
-                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})
+                                    emit(k._s_name, {cnt: k._i_cnt, tta: k._i_tt})
                                 })
                         },
                         function (k,v) {
@@ -771,8 +773,8 @@ module.exports.init = function (ctx, cb) {
                                     r = v
                                 }
                                 else {
+									r.tta = (r.tta*r.cnt+v.tta*v.cnt)/(r.cnt+v.cnt);
                                     r.cnt += v.cnt
-                                    r.tt += v.tt
                                 }
                             })
                             return r;
@@ -804,9 +806,9 @@ module.exports.init = function (ctx, cb) {
                                 }
                                 else {
                                     r.tt += v.tt;
-                                    r.avg = (r.avg + v.avg)/2
+                                    r.avg = (r.avg*r.r + v.avg*v.r)/(r.r+v.r)
+                                    r.tta = (r.tta*r.r+v.tta*v.r)/(r.r+v.r);
                                     r.r += v.r
-                                    r.tta = parseInt(((r.tta+v.tta)/2))
                                 }
                             });
                             return r;
@@ -822,7 +824,7 @@ module.exports.init = function (ctx, cb) {
                                 if (st == "req")
                                     sum += r.value.r
                                 if (st == 'mtc' || st == undefined)
-                                    sum += r.value.tt
+                                    sum += r.value.tta*r.value.r
                                 if (st == 'sar')
                                     sum += r.value.avg
                             })
@@ -831,18 +833,18 @@ module.exports.init = function (ctx, cb) {
                                 if (st == 'req')
                                     r.value.bar = r.value.r/procent
                                 if (st == 'mtc'|| st == undefined) {
-                                    r.value.bar = r.value.tt/procent
+                                    r.value.bar = (r.value.tta*r.value.r)/procent
                                     r.value.tta = (r.value.tta/1000)
 								}
                                 if (st == 'sar')
                                     r.value.bar = r.value.avg/procent
                             })
                             data = _.sortBy(data, function(r) {
-                                r.value.avg = parseInt(r.value.avg)
+                                r.value.avg = r.value.avg/1000
                                 if (st == 'req')
                                     return r.value.r*-1
                                 if (st == 'mtc' || st == undefined)
-                                    return r.value.tt*-1
+                                    return (r.value.tta*r.value.r)*-1
                                 if (st == 'sar')
                                     return r.value.avg*-1
                             })
@@ -865,7 +867,7 @@ module.exports.init = function (ctx, cb) {
                         query._idpv = {$in: idpv}
                         ajax.mapReduce(
                             "function() {\
-                                emit(this._s_name, {r: 1.0/"+q+", tt: this._i_tt} )\
+                                emit(this._s_name, {c:1, r: 1.0/"+q+", tta: this._i_tt} )\
                             }",
                             function (k,v) {
                                 var r=null;
@@ -874,7 +876,8 @@ module.exports.init = function (ctx, cb) {
                                         r = v
                                     else {
                                         r.r += v.r
-                                        r.tt = (r.tt + v.tt)/2
+                                        r.tta = (r.tta*r.c+v.tta*v.c)/(r.c+v.c);
+                                        r.c+=v.c;
                                     }
                                 })
                                 return r;
@@ -920,7 +923,7 @@ module.exports.init = function (ctx, cb) {
                             var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
                             this.data.forEach(function(k) {
 								if (!NAME || k._s_name == NAME) {
-                                    emit(dt,{r: k._i_cnt, tt: k._i_tt});
+                                    emit(dt,{r: k._i_cnt, tta: k._i_tt});
                                 }
                             })
 						},
@@ -932,7 +935,7 @@ module.exports.init = function (ctx, cb) {
                                 }
                                 else {
                                     r.r += v.r
-                                    r.tt += v.tt
+                                    r.tta = (r.tta*r.r+v.tta*v.r)/(r.r+v.r);
                                 }
                             })
                             return r;
@@ -952,7 +955,7 @@ module.exports.init = function (ctx, cb) {
                         function() {
                             this.data.forEach(function(k,v) {
                                 if (k._s_cat == CAT) {
-                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})
+                                    emit(k._s_name, {cnt: k._i_cnt, tta: k._i_tt})
                                 }
                             })
                         },
@@ -963,8 +966,8 @@ module.exports.init = function (ctx, cb) {
                                     r = v
                                 }
                                 else {
+									r.tta = (r.tta*r.cnt+v.tta*v.cnt)/(r.cnt+v.cnt);
                                     r.cnt += v.cnt
-                                    r.tt += v.tt
                                 }
                             })
                             return r;

@@ -62,12 +62,12 @@
 			{#topp}
 				<div class="col-md-6">
 					<div class="panel panel-success">
-						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a><span class="h6" style="margin-left: 5px;">{total.rpm} rpm / {total.errorpage} epm / {total.etupage} s</span></div>
+						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rpm type="rpm"/} / {total.errorpage} epm / {@formatnumber val=total.etupage type="tm"/}</span></div>
 						<div class="panel-body" >
 							{#p}
 								<div class="progress" style="margin: 2px 0 0 0;">
 									<div class="progress-bar-success" role="progressbar" style="width: {value.progress}%;">
-											{_id} <span class="text-success numRight">{value.tta}</span>
+											{_id} <span class="text-success numRight">{@formatnumber val=value.tta type="tm"/}</span>
 									</div>
 								</div>
 							{/p}
@@ -78,12 +78,12 @@
 			{#transactions}
 				<div class="col-md-6">
 					<div class="panel panel-danger">
-						<div class="panel-heading"><a class="text-danger" href="{_t_prefix}/project/{project.slug}/application/rpm">Application</a><span class="h6" style="margin-left: 5px;">{total.rsm} rpm / {total.ttserver} ms</span></div>
+						<div class="panel-heading"><a class="text-danger" href="{_t_prefix}/project/{project.slug}/application/rpm">Application</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rsm type="rpm"/} / {@formatnumber val=total.ttserver type="tm"/}</span></div>
 						<div class="panel-body">
 							{#top}
 								<div class="progress" style="margin: 2px 0 0 0;">
 									<div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
-										{_id} <span class="text-danger numRight">{value.tta}</span>
+										{_id} <span class="text-danger numRight">{@formatnumber val=value.tta type="tm"/}</span>
 									</div>
 								</div>
 							{/top}
@@ -94,12 +94,12 @@
 			{#topa}
 				<div class="col-md-6">
 					<div class="panel panel-info">
-						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a><span class="h6" style="margin-left: 5px;">{total.ram} rpm / {total.errorajax} epm / {total.etuajax} s</span></div>
+						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.ram type="rpm"/} / {total.errorajax} epm / {@formatnumber val=total.etuajax type="tm"/}</span></div>
 						<div class="panel-body">
 							{#a}
 								<div class="progress" style="margin: 2px 0 0 0;">
 									<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
-										{_id} <span class="text-info numRight">{value.tta}</span>
+										{_id} <span class="text-info numRight">{@formatnumber val=value.tta type="tm"/}</span>
 									</div>
 								</div>
 							{/a}
@@ -116,7 +116,7 @@
 							{#db}
 								<div class="progress" style="margin: 2px 0 0 0;">
 									<div class="progress-bar-danger" role="progressbar" style="width: {value.bar}%;">
-										{_id} <span class="text-danger numRight">{value.avg}</span>
+										{_id} <span class="text-danger numRight">{@formatnumber val=value.avg type="tm"/}</span>
 									</div>
 								</div>
 							{/db}
