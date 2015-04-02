@@ -26,8 +26,7 @@
 					<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}
 					</span> / <span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
 				{/gt}
-				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
-				<span style="white-space: nowrap;">
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 				{@gt key=server.r value=0}
 					<span class="text-danger">{@formatnumber val=server.r type="rpm"/}</span>
 				{/gt}
@@ -36,8 +35,7 @@
 					</span> / <span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
 				{/gt}
 				</span>
-				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
-				<span style="white-space: nowrap;">
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 				{@gt key=server.r value=0}
 					<span class="text-danger">{@formatnumber val=server.etu type="tm"/}</span>
 				{/gt}
@@ -46,8 +44,7 @@
 					</span> / <span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
 				{/gt}
 				</span>
-				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;
-				<span style="white-space: nowrap;">
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
 				{@gt key=server.r value=0}
 					<span class="text-danger">{@formatnumber val=server.e type="erate"/}</span>
 				{/gt}

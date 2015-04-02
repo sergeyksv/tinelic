@@ -64,6 +64,7 @@
 			"dustc":"../tinybone/dustc",
 			"text":"../js/text",
 			"jquery-cookie": "../js/jquery-cookie",
+			"jquery.blockUI": "../js/jquery.blockUI",
 			"bootstrap":"../js/bootstrap"
 		},
 		shim: {

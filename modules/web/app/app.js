@@ -3,6 +3,7 @@ define(['views/layout','module','safe',"dust"
 	,"moment/moment"
 	,"lodash"
 	,"tinybone/backadapter" // Important to get it on top level dependancy
+	,"jquery.blockUI"
 ],function (Layout,module,safe,dust,tb,moment,_) {
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
@@ -140,12 +141,16 @@ define(['views/layout','module','safe',"dust"
 			},cb)
 		},
 		init:function(wire, next) {
+			$.blockUI.defaults.message = "Loading ...";
+			$.blockUI.defaults.showOverlay = false;
+
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
 				prefix:module.uri.replace("/app/app.js","")
 			})
 			this.router.on("start", function (route) {
+				$.blockUI();
 				self._pageLoad = {start:new Date(),route:route.route};
 			})
 			next || (next = this.errHandler);
