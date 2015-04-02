@@ -16,10 +16,10 @@ define(['views/layout','module','safe',"dust"
 	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
 		if (params.type == "rpm") {
 			if ((params.val/10000)>1.0){
-				var output = (Math.round(params.val/10000)).toString()+"k rpm"
+				var output = (Math.round(params.val/10000)).toString()+"k&nbsp;rpm"
 			}
 			else {
-				var output = params.val.toFixed(1).toString()+" rpm";
+				var output = params.val.toFixed(1).toString()+"&nbsp;rpm";
 			}
 			return chunk.write(output);
 		}
@@ -34,15 +34,15 @@ define(['views/layout','module','safe',"dust"
 		}
 		if (params.type == "tm") {
 			if (params.val <0.1) {
-				output = (Math.round(params.val*1000)).toString()+" ms"
+				output = (Math.round(params.val*1000)).toString()+"&nbsp;ms"
 			}
 			else {
-				output = params.val.toFixed(1).toString()+" s"
+				output = params.val.toFixed(1).toString()+"&nbsp;s"
 			}
 			return chunk.write(output);
 		}
 		if (params.type == "erate") {
-			var output = params.val.toFixed(params.val<10?2:0).toString()+" %";
+			var output = params.val.toFixed(params.val<10?2:0).toString()+"&nbsp;%";
 
 			return chunk.write(output);
 		}
@@ -52,10 +52,10 @@ define(['views/layout','module','safe',"dust"
 		}
 		if (params.type == "memory") {
 			if ((params.val/1024) > 1.0){
-				var output = ((params.val/1024).toFixed(2)).toString()+" Gb";
+				var output = ((params.val/1024).toFixed(2)).toString()+"&nbsp;Gb";
 			}
 			else {
-				var output = params.val.toString()+" Mb";
+				var output = params.val.toString()+"&nbsp;Mb";
 			}
 			return chunk.write(output);
 		}
