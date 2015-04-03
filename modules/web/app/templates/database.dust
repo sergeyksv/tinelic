@@ -24,7 +24,7 @@
 						{@select key="{st}"}
 							{@eq value="req"}{@formatnumber val=value.r type="reqs"/} <span class="text-info">req</span>{/eq}
 							{@eq value="mtc"}{@formatnumber val=value.r type="reqs"/} x {@formatnumber val=value.tta type="tm"/}{/eq}
-							{@eq value="sar"}{value.avg} <span class="text-info">ms</span>{/eq}
+							{@eq value="sar"}{@formatnumber val=value.avg type="tm"/}{/eq}
 						{/select}
 					</span>
 					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {value.bar}%;color:black;white-space: nowrap;">

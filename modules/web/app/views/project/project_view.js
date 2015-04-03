@@ -62,7 +62,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				var rpm1 = v.value?v.value.r:0;
 				rpm.push([d,rpm1]);
 				apdexBrowser.push([d,apdex]);
-				ttBrowser.push([d, v.value?(v.value.tt/1000):0]);
+				ttBrowser.push([d, v.value?(v.value.tta/1000):0]);
 			})
 
 			var ajrpm = [];
@@ -79,7 +79,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				var ajrpm1 = a.value? a.value.r:0;
 				ajrpm.push([d,ajrpm1]);
 				apdexAjax.push([d,apdex]);
-				ttAjax.push([d, a.value?(a.value.tt/1000):0]);
+				ttAjax.push([d, a.value?(a.value.tta/1000):0]);
 			})
 
 			var apdexActions = [];
@@ -96,7 +96,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				var actrpm1 = a.value? a.value.r:0;
 				actrpm.push([d,actrpm1]);
 				apdexActions.push([d,apdex]);
-				ttServer.push([d, a.value?(a.value.tt)/1000:0]);
+				ttServer.push([d, a.value?(a.value.tta)/1000:0]);
 			})
 
 			var rpmMax = _.max(rpm, function (v) { return v[1]; })[1];
