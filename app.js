@@ -75,4 +75,8 @@ tinyback.createApp(cfg, function (err, app) {
 	var httpServer = http.createServer(app.express);
 
 	httpServer.listen(80);
+
+	if (process.argv[2] == "automated") {
+		process.send({c: "startapp_repl", data: err})
+	}
 })

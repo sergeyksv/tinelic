@@ -5,3 +5,4 @@ local-config.js
 *.pem
 dump
 .idea
+test/snapshots

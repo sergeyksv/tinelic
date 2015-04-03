@@ -33,6 +33,13 @@
     "grunt-git-describe": "~2.3.2",
     "grunt-nodemon": "~0.4.0"
   },
-  "optionalDependencies": {},
-  "scripts": {}
+  "optionalDependencies": {
+    "mongo-utils": "^0.4.5",
+    "selenium-webdriver": "^2.42.x",
+    "phantomjs": "~1.9.13",
+    "chromedriver": "~2.10.x"
+  },
+  "scripts": {
+    "test": "mocha -bR spec test/test.js"
+  }
 }
