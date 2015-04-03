@@ -8,6 +8,7 @@ var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
+
 module.exports.deps = ['assets','users','collect','stats'];
 
 var wires = {};
