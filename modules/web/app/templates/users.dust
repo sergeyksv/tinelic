@@ -78,7 +78,7 @@
               </div>
               <div class="dropdown" style="margin-bottom: 10px;">
                   <label for="name">Role</label>
-                  <button type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
+                  <button id="role" type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                      <li role="presentation" data-role="admin" class="li-role"><a role="menuitem" tabindex="-1" href="#">admin</a></li>
                      <li role="presentation" data-role="user" class="li-role"><a role="menuitem" tabindex="-1" href="#">user</a></li>
