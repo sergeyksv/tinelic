@@ -289,7 +289,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				if (r.data.topAjax.length != 0) {
 					views.topa = {}
 					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
-						return r.value.tta
+						return r.value.tta*r.value.c
 					}).reverse(),10)
 					var progress = null;
 					_.forEach(views.topa.a,function(r) {
@@ -309,7 +309,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				if (r.data.topPages.length != 0) {
 					views.topp = {}
 					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
-						return r.value.tta
+						return r.value.tta*r.value.c
 					}).reverse(),10)
 					var progress = null;
 					_.forEach(views.topp.p,function(r) {
