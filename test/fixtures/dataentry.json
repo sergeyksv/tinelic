@@ -1,0 +1,9 @@
+{
+	"users":[
+		{
+			"login":"test1",
+			"pass":"123456",
+			"role":"admin"
+		}
+	]
+}
