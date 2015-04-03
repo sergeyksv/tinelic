@@ -41,6 +41,7 @@ module.exports = function(grunt) {
                         "highcharts": "empty:",
                         "jquery": "empty:",
                         "jquery-cookie": "../public/js/jquery-cookie",
+                        "jquery.blockUI": "../public/js/jquery.blockUI",
                     },
                     shim: {
                         'dust-helpers': {

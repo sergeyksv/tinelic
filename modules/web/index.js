@@ -8,6 +8,7 @@ var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
+
 module.exports.deps = ['assets','users','collect','stats'];
 
 var wires = {};
@@ -29,7 +30,7 @@ module.exports.init = function (ctx, cb) {
 				env:"node"
 			},
 			"tinybone/base":{
-				debug:cfg.env=="production"
+				debug:cfg.env!="production"
 			}
 		}
 	})
@@ -44,6 +45,7 @@ module.exports.init = function (ctx, cb) {
 	// server stubs
 	requirejs.define("jquery", true);
 	requirejs.define("jquery-cookie", true);
+	requirejs.define("jquery.blockUI", true);
 	requirejs.define("bootstrap/dropdown", true);
 	requirejs.define("bootstrap/modal", true);
 	requirejs.define("highcharts",true);

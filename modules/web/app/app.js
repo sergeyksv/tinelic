@@ -3,6 +3,7 @@ define(['views/layout','module','safe',"dust"
 	,"moment/moment"
 	,"lodash"
 	,"tinybone/backadapter" // Important to get it on top level dependancy
+	,"jquery.blockUI"
 ],function (Layout,module,safe,dust,tb,moment,_) {
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
@@ -140,12 +141,16 @@ define(['views/layout','module','safe',"dust"
 			},cb)
 		},
 		init:function(wire, next) {
+			$.blockUI.defaults.message = "Loading ...";
+			$.blockUI.defaults.showOverlay = false;
+
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
 				prefix:module.uri.replace("/app/app.js","")
 			})
 			this.router.on("start", function (route) {
+				$.blockUI();
 				self._pageLoad = {start:new Date(),route:route.route};
 			})
 			next || (next = this.errHandler);
@@ -164,6 +169,7 @@ define(['views/layout','module','safe',"dust"
 			this.initRoutes(safe.sure(next, function () {
 				mainView.bindWire(wire, null, null, safe.sure(next, function () {
 					mainView.postRender();
+					$('body').attr('data-id',(new Date()).valueOf());
 				}))
 			}))
 		},
@@ -184,6 +190,7 @@ define(['views/layout','module','safe',"dust"
 				view.bindDom($dom, oldView)
 				oldView.remove();
 				mainView.attachSubView(view)
+				$('body').attr('data-id',(new Date()).valueOf());
 				self._pageLoad.dom = new Date();
 				var m = {
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
