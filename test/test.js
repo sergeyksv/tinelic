@@ -26,7 +26,7 @@ Frequently called functions should be defined in helpers
 var tutils = require('./utils');
 
 describe("Let the test begins!",function () {
-	this.timeout(30000);
+	this.timeout(300000);
 
 	before(tutils.setupContext);
 	before(function (done) {

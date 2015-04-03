@@ -59,7 +59,7 @@ module.exports.getApp = function (opts, cb) {
 		else
 			cb();
 	}, safe.sure(cb,function () {
-		var app = childProcess.fork(__dirname+"/../app.js",['--config','./test/config.js'],{/*silent:true*/});
+		var app = childProcess.fork(__dirname+"/../app.js",['--config','./test/config.js'],{silent:true});
 		app.on('message',function (msg) {
 			if (msg.c=='startapp_repl')
 				cb(msg.data);
@@ -68,7 +68,7 @@ module.exports.getApp = function (opts, cb) {
 	}))
 }
 
-var browser = "chrome";
+var browser = "phantomjs";
 module.exports.getBrowser = function(cb) {
 	safe.run(function (cb) {
 		if (browser === "firefox") {
@@ -88,9 +88,7 @@ module.exports.getBrowser = function(cb) {
 		}
 
 		if (browser === "phantomjs") {
-			var phantom = childProcess.spawn(require("phantomjs").path, ["--webdriver=127.0.0.1:9134"
-				,"--webdriver-loglevel=DEBUG","--remote-debugger-port=9000","--debug=yes"
-			]);
+			var phantom = childProcess.spawn(require("phantomjs").path, ["--webdriver=127.0.0.1:9134"/*,"--remote-debugger-port=9000"*/]);
 			var driver = null;
 			var error = null;
 			phantom.stdout.on('data', function (data) {
@@ -105,14 +103,13 @@ module.exports.getBrowser = function(cb) {
 					} else if (/Error/.test(line))
 						cb(new Error("Browser can't be started"));
 				} else {
-					console.log(line);
 					if (error)
 						error+=line;
 					if (/Error/.test(line)) {
-						//error = line;
-						//setTimeout(function () {
-						//	driver.controlFlow().abortNow_(new Error(error))
-						//},100)
+						error = line;
+						setTimeout(function () {
+							driver.controlFlow().abortNow_(new Error(error))
+						},100)
 					}
 				}
 			});
@@ -127,12 +124,12 @@ module.exports.getBrowser = function(cb) {
 }
 
 module.exports.makeDbSnapshot = function (snapname, cb) {
-	mutils.dumpDatabase("tcp://localhost:27017/tqa",__dirname+"/snapshots/"+snapname,cb);
+	mutils.dumpDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
 }
 
 module.exports.restoreDbSnapshot = function (snapname, cb) {
 	dropDb(safe.sure(cb,function(){
-		mutils.restoreDatabase("tcp://localhost:27017/tqa",__dirname+"/snapshots/"+snapname,cb);
+		mutils.restoreDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
 	}));
 }
 

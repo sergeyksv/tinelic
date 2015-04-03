@@ -6,23 +6,28 @@ var safe = require('safe');
 var _ = require('lodash');
 var helpers = require('../helpers');
 
-// for phantomjs not use By.linkText
-
 module.exports.block = function(){
 	return function(dir){
 		describe("Log-in", function(){
-			it("Log-in as test1", function (done) {
-				var self = this, b = self.browser;
+			it("Log-in as admin", function (done) {
+				var self = this, b = self.browser, pid = null;
 				self.trackError(done);
-				b.get("http://localhost/web");
-				helpers.waitElementVisible.call(self,By.css("#login"));
-				helpers.fillInput.call(self,b.findElement(By.css("#login")),"admin");
-				helpers.fillInput.call(self,b.findElement(By.css("#pass")),"tinelic");
-				b.findElement(By.css("button[class='btn btn-default']")).click();
-				helpers.waitElementVisible.call(self,By.css("#logout"))
-				b.findElement(By.css("#logout")).click();
-				helpers.waitElementVisible.call(self,By.css("#login"));
-				self.done();
+				b.get("http://localhost/web/");
+				helpers.waitPageReload.call(self, null).then(function (pid) {
+					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#login")).sendKeys("admin");
+					b.findElement(By.css("button.btn")).click();
+
+					helpers.waitPageReload.call(self, pid).then(function (pid) {
+						b.findElement(By.css("#logout")).click();
+
+						helpers.waitPageReload.call(self, pid).then(function (pid) {
+
+							helpers.waitElementVisible.call(self,By.css("#login"));
+							self.done();
+						})
+					})
+				})
 			});
 		});
 	}

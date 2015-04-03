@@ -6,3 +6,4 @@ local-config.js
 dump
 .idea
 test/snapshots
+screenshot*

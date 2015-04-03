@@ -5,18 +5,17 @@ var assert = require("assert");
 var _ = require("lodash");
 var fs = require('fs');
 
+var defTimeout = 15000;
 
 module.exports.fillInput = function(input,val) {
 	var self = this;
 	var i = 0;
-	self.browser.wait(function () {
-		return input.isDisplayed();
-	});
-	input.getAttribute("class").then(function (cl){
+	return input.getAttribute("class").then(function (cl) {
+		console.log(cl)
 		if (cl && cl.indexOf("date") !== -1)
-			self.browser.executeScript("$(arguments[0]).val(arguments[1]).keyup().change()",input,moment.utc(val, 'L').format('DD MMM YYYY'));
+			return self.browser.executeScript("$(arguments[0]).val(arguments[1]).keyup().change()",input,moment.utc(val, 'L').format('DD MMM YYYY'));
 		else
-			self.browser.executeScript("$(arguments[0]).val(arguments[1]).keyup().change()",input,val);
+			return self.browser.executeScript("$(arguments[0]).val(arguments[1]).keyup().change()",input,val);
 	});
 };
 
@@ -58,7 +57,7 @@ module.exports.waitNoElement = function (element) {
 
 module.exports.waitElementExist = function (selector, hint, timeout) {
 	var self = this;
-	hint = hint || '';	timeout = timeout || 10000;
+	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
 		return self.browser.isElementPresent(selector)
 	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
@@ -79,7 +78,8 @@ module.exports.waitElementVisible = function (selector, hint, timeout) {
 	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
 };
 
-module.exports.waitPageReload = function (old_id) {
+module.exports.waitPageReload = function (old_id, timeout) {
+	timeout = timeout || 15000;
 	var b = this.browser;
 	var new_id;
 	return b.wait(function() {
@@ -91,7 +91,7 @@ module.exports.waitPageReload = function (old_id) {
 		}).then(null, function (err) {
 			return false;
 		})
-	}).then(function () {
+	},timeout).then(function () {
 		return new_id;
 	})
 }
