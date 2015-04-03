@@ -30,20 +30,10 @@ function STOP (err) {
 
 
 function dropDb(cb){
-	var tag = "tqa";
+	var tag = "tinelic_test";
 	var dbs = new Db(tag, new Server('localhost', 27017), {w:1});
 	dbs.open(safe.sure(cb, function (db) {
-		db.dropDatabase(safe.sure(cb, function () {
-			dbs = new Db(tag, new Server('localhost', 27017), {w:1});
-			dbs.open(safe.sure(cb, function (db) {
-				Doby = db;
-				async.parallel([
-					function(cb) {
-						db.collection('users').insert({login: 'test1', pass: '123456',role: "admin", firstname: 'test',lastname: "TEST"},cb)
-					}
-				], cb);
-			}))
-		}))
+		db.dropDatabase(cb)
 	}))
 }
 
@@ -61,7 +51,7 @@ module.exports.shutdownContext = function (done) {
 
 module.exports.getApp = function (opts, cb) {
 	var fixture = opts.fixture || false;
-	var tag = "tqa";
+	var tag = "tinelic_test";
 	var dbs = new Db(tag, new Server('localhost', 27017),{w:1});
 	safe.run(function(cb) {
 		if (fixture=="empty")
@@ -69,7 +59,7 @@ module.exports.getApp = function (opts, cb) {
 		else
 			cb();
 	}, safe.sure(cb,function () {
-		var app = childProcess.fork(__dirname+"/../app.js",['automated'],{/*silent:true*/});
+		var app = childProcess.fork(__dirname+"/../app.js",['--config','./test/config.js'],{/*silent:true*/});
 		app.on('message',function (msg) {
 			if (msg.c=='startapp_repl')
 				cb(msg.data);

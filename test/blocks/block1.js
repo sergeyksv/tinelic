@@ -16,8 +16,8 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web");
 				helpers.waitElementVisible.call(self,By.css("#login"));
-				helpers.fillInput.call(self,b.findElement(By.css("#login")),"test1");
-				helpers.fillInput.call(self,b.findElement(By.css("#pass")),"123456");
+				helpers.fillInput.call(self,b.findElement(By.css("#login")),"admin");
+				helpers.fillInput.call(self,b.findElement(By.css("#pass")),"tinelic");
 				b.findElement(By.css("button[class='btn btn-default']")).click();
 				helpers.waitElementVisible.call(self,By.css("#logout"))
 				b.findElement(By.css("#logout")).click();
