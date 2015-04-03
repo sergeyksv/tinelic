@@ -45,6 +45,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
+                          var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+                          var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+                          if (dtstart != actions[0]._id) {
+							actflat[0]={_id: dtstart, value:null}
+							actflat[1]={_id: actions[0]._id-1, value:null}
+						  }
                           _.each(actions, function (a) {
                               if (actprev) {
                                   for (var i = actprev._id + 1; i < a._id; i++) {
@@ -54,6 +60,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               actprev = a;
                               actflat.push(a);
                           })
+                          if (actions[actions.length-1]._id != dtend) {
+							actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null}
+							actflat[actflat.length]={_id: dtend, value:null}
+						  }
 
                           var actrpm1;
                           var actrpm = [];
@@ -194,6 +204,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         },
         postRender:function () {
             view.prototype.postRender.call(this);
+            var self = this;
 			var filter = this.data.fr;
 			api("stats.getActions", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
 
@@ -201,6 +212,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
+                          var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+                          var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+                          if (dtstart != actions[0]._id) {
+							actflat[0]={_id: dtstart, value:null}
+							actflat[1]={_id: actions[0]._id-1, value:null}
+						  }
                           _.each(actions, function (a) {
                               if (actprev) {
                                   for (var i = actprev._id + 1; i < a._id; i++) {
@@ -210,6 +227,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               actprev = a;
                               actflat.push(a);
                           })
+                          if (actions[actions.length-1]._id != dtend) {
+							actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null}
+							actflat[actflat.length]={_id: dtend, value:null}
+						  }
 
                           var actrpm1;
                           var actrpm = [];
