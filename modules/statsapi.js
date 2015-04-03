@@ -249,7 +249,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getTopPages: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var ApdexT = 400;
+                    var ApdexT = 7000;
                     pages.mapReduce(
                         function() {
                            emit(this._s_route, {c:1, r: 1.0/Q, tt: this._i_tt
@@ -408,7 +408,7 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPageViews:function (t, p, cb) {
                     var query = queryfix(p.filter);
-					var ApdexT = 400;
+					var ApdexT = 7000;
                     pages.mapReduce(function () {
 							emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q
 								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
