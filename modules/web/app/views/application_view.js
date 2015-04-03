@@ -23,12 +23,16 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           trbreak.empty();
                           trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                           data = _.sortBy(data, function(r) {
-                              return r.value.tt*-1
+                              return r.value.tta*-1
                           })
+                           var sumtta = 0
+                            _.forEach(data, function(r) {
+                                sumtta += r.value.tta
+                            })
                           var sum = data[0].value
                           _.forEach(data, function(r) {
                               var count = (r.value.cnt/sum.cnt).toFixed(2)
-                              var proc = ((r.value.tt/sum.tt)*100).toFixed(1)
+                              var proc = ((r.value.tta/sumtta)*100).toFixed(1)
                               trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                           })
                       }))
@@ -64,7 +68,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               d = d.valueOf();
                               var actrpm1 = a.value ? a.value.r : 0;
                               actrpm.push([d, actrpm1]);
-                              ttServer.push([d, a.value?(a.value.tt)/1000:0]);
+                              ttServer.push([d, a.value?(a.value.tta)/1000:0]);
                           })
 
                           var actrpmmax = _.max(actrpm, function (v) {
@@ -220,7 +224,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               d = d.valueOf();
                               var actrpm1 = a.value ? a.value.r : 0;
                               actrpm.push([d, actrpm1]);
-                              ttServer.push([d, a.value?(a.value.tt)/1000:0]);
+                              ttServer.push([d, a.value?(a.value.tta)/1000:0]);
                           })
 
                           var actrpmmax = _.max(actrpm, function (v) {

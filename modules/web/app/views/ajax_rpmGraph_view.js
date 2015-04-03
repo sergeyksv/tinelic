@@ -65,7 +65,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 								d = d.valueOf();
 								var ajrpm1 = a.value? a.value.r:0;
 								ajrpm.push([d,ajrpm1]);
-								ttTime.push([d, a.value?(a.value.tt/1000):0]);
+								ttTime.push([d, a.value?(a.value.tta/1000):0]);
 							})
 							this.$('#rpm-one').highcharts({
 								chart: {
@@ -195,7 +195,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 								d = d.valueOf();
 								var ajrpm1 = a.value? a.value.r:0;
 								ajrpm.push([d,ajrpm1]);
-								ttTime.push([d, a.value?(a.value.tt/1000):0]);
+								ttTime.push([d, a.value?(a.value.tta/1000):0]);
 							})
 							this.$('#rpm-one').highcharts({
 								chart: {

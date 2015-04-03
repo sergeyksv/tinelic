@@ -25,10 +25,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                             var sum = 0;
                             _.forEach(data, function(r){
                                 r.value.r = r.value.r.toFixed(2)
-                                sum += r.value.tt
+                                sum += r.value.tta
                             })
-                            _.forEach(_.sortBy(data,function(r){return -1*r.value.tt}), function(data) {
-                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.r+'</td><td>'+((data.value.tt/sum)*100).toFixed(2)+' %</td></tr>')
+                            _.forEach(_.sortBy(data,function(r){return -1*r.value.tta}), function(data) {
+                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.r+'</td><td>'+((data.value.tta/sum)*100).toFixed(2)+' %</td></tr>')
                             })
                         }))
                         cb()
@@ -63,7 +63,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 d = d.valueOf();
                                 var rpm1 = v.value ? v.value.r : 0;
                                 rpm.push([d, rpm1]);
-                                ttBrowser.push([d, v.value?(v.value.tt/1000):0]);
+                                ttBrowser.push([d, v.value?(v.value.tta/1000):0]);
                             })
 
                             var rpmmax = _.max(rpm, function (v) {
@@ -225,7 +225,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 d = d.valueOf();
                                 var rpm1 = v.value ? v.value.r : 0;
                                 rpm.push([d, rpm1]);
-                                ttBrowser.push([d, v.value?(v.value.tt/1000):0]);
+                                ttBrowser.push([d, v.value?(v.value.tta/1000):0]);
                             })
 
                             var rpmmax = _.max(rpm, function (v) {
