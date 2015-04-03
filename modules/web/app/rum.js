@@ -157,8 +157,15 @@
             XHR.prototype.send = function(data) {
                 var self = this;
                 var url = this._url;
+                var should = true;
+
                 // bypass instrumentation for some specific urls
-                if (!(url.match(/localhost:0/) || url.match(/optimizely\.com/))) {
+                should = !(url.match(/localhost:0/) || url.match(/optimizely\.com/));
+
+				// bypass CORS calls
+                should = should && !(url.indexOf("://")!=-1 && url.indexOf(window.location.host)==-1);
+
+                if (should) {
                     var start = (new Date()).valueOf();
                     var oldOnReadyStateChange;
                     var s = {
