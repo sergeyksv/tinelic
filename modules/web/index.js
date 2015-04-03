@@ -8,35 +8,6 @@ var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
-requirejs.config({
-    baseUrl: __dirname+"/app",
-    paths:{
-		"tinybone":path.resolve(__dirname,"../tinybone"),
-		'dustc': path.resolve(__dirname,'../tinybone/dustc'),
-		'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
-		"md5":"../public/js/md5",
-	},
-	config:{
-		"text":{
-			env:"node"
-		}
-	}
-})
-
-requirejs.onError = function (err) {
-	console.log(err.trace);
-}
-
-requirejs.define("dust",dust);
-requirejs.define("dust-helpers", require('dustjs-helpers'));
-
-// server stubs
-requirejs.define("jquery", true);
-requirejs.define("jquery-cookie", true);
-requirejs.define("bootstrap/dropdown", true);
-requirejs.define("bootstrap/modal", true);
-requirejs.define("highcharts",true);
-
 module.exports.deps = ['assets','users','collect','stats'];
 
 var wires = {};
@@ -44,7 +15,41 @@ var wires = {};
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
 	var cfg = ctx.cfg;
+
+	requirejs.config({
+		baseUrl: __dirname+"/app",
+		paths:{
+			"tinybone":path.resolve(__dirname,"../tinybone"),
+			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
+			'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
+			"md5":"../public/js/md5",
+		},
+		config:{
+			"text":{
+				env:"node"
+			},
+			"tinybone/base":{
+				debug:cfg.env!="production"
+			}
+		}
+	})
+
+	requirejs.onError = function (err) {
+		console.log(err.trace);
+	}
+
+	requirejs.define("dust",dust);
+	requirejs.define("dust-helpers", require('dustjs-helpers'));
+
+	// server stubs
+	requirejs.define("jquery", true);
+	requirejs.define("jquery-cookie", true);
+	requirejs.define("jquery.blockUI", true);
+	requirejs.define("bootstrap/dropdown", true);
+	requirejs.define("bootstrap/modal", true);
+	requirejs.define("highcharts",true);
 	requirejs.define("backctx",ctx);
+
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
 	ctx.router.use(static(__dirname+"/public"));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {

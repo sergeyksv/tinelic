@@ -8,37 +8,76 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				data: function (cb) {
+					var quant = 1; var period = 15;
+					var dtend = new Date();
+					var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
+					api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant,filter:{
+						_dt: {$gt: dtstart,$lte:dtend}
+						}}}, safe.sure(cb, function (r) {
+						r.forEach(function (r){
+							var period;
+							var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
+							Client.r = Client.e = Client.etu = 0;
+							Apdex.client = Apdex.server = Apdex.ajax = 0;
+							Ajax.r = Ajax.e = Ajax.etu = 0;
+							Server.r = Server.e = Server.etu = Server.proc = Server.mem = 0;
+							if (r.result.views.length != 0) {
+								period = r.result.views.length;
+								_.each(r.result.views, function (v) {
+									Client.r+=v.value?v.value.r:0;
+									Client.etu+=v.value?(v.value.tt/1000):0;
+									Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+									Apdex.client+=v.value.apdex?v.value.apdex:0;
+								})
 
-					api("assets.getProjects",res.locals.token, {_t_age:"30d"}, safe.sure(cb, function (project) {
-						var quant = 1; var period = 15;
-						var dtend = new Date();
-						var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
-						safe.forEach(project, function (n, cb) {
-							api("stats.getPageViews", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: n._id,
-									_dt: {$gt: dtstart,$lte:dtend}
-								}
-							}, safe.sure(cb, function (v) {
-								var vall = null; var vale = null; var valr = null;
-								if (v.length) {
-									vall = vale = valr = 0;
-									_.each(v, function (v) {
-										valr+=v.value?v.value.r:0;
-										vall+=v.value?(v.value.tt/1000):0;
-										vale+=100*(v.value?(1.0*v.value.e/v.value.r):0);
-									})
+								Client.r=(Client.r/period);
+								Client.etu=(Client.etu/period);
+								Client.e=(Client.e/period);
+								Apdex.client=(Apdex.client/period);
+							}
+							if (r.result.ajax.length != 0) {
+								period = r.result.ajax.length;
+								_.forEach(r.result.ajax, function (v) {
+									Ajax.r+=v.value?v.value.r:0;
+									Ajax.etu+=v.value?(v.value.tt/1000):0;
+									Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
+									Apdex.ajax+=v.value.apdex?v.value.apdex:0;
+								})
 
-									vall=(vall/period).toFixed(2);
-									vale=(vale/period).toFixed(2);
-									valr=(valr/period).toFixed(2);
-								}
+								Ajax.etu=(Ajax.etu/period);
+								Ajax.e=(Ajax.e/period);
+								Ajax.r=(Ajax.r/period);
+								Apdex.ajax=(Apdex.ajax/period);
+							}
+							var trans = 0;
+							if (r.result.actions.length != 0) {
+								period = r.result.actions.length;
+								_.forEach(r.result.actions, function (v) {
+									trans+=v.value?v.value.r:0;
+									Server.r+=v.value?v.value.r:0;
+									Server.etu+=v.value?(v.value.tt/1000):0;
+									Apdex.server+=v.value.apdex?v.value.apdex:0;
+								})
 
-								cb(null,_.extend(n, {views: valr, errors: vale, etu: vall}))
-							}))
-						}, safe.sure(cb, function() {
-							cb(null, project)
-						}))
+								Server.etu=(Server.etu/period);
+								Server.r=(Server.r/period);
+								Apdex.server=(Apdex.server/period);
+							}
+							var absSE = 0;
+							if (r.result.serverErrors.length != 0) {
+								period = r.result.serverErrors.length;
+								_.forEach(r.result.serverErrors, function (v) {
+									absSE+=v.stats?v.stats.c:0
+								})
+								Server.e = ((100*(absSE?(1.0*absSE/trans):0))/period);
+							}
+							if (r.result.metrics) {
+								Server.proc = r.result.metrics.proc;
+								Server.mem = r.result.metrics.mem;
+							}
+							_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax})
+						})
+						cb(null, r)
 					}))
 				},
 				teams: function (cb) {
@@ -180,6 +219,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				},
 				data:function (cb) {
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+						var projects=[]; projects[0]=project;
 						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
 							_idp:project._id,
 							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -211,7 +251,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					period = r.data.actions.length;
 					_.forEach(r.data.actions, function (v) {
 						valr+=v.value?v.value.r:0;
-						valtt+=v.value?(v.value.tt):0;
+						valtt+=v.value?(v.value.tt/1000):0;
 					})
 
 					valtt=(valtt/period).toFixed(2);
@@ -367,19 +407,17 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				_.each(r.rpm, function (r) {
 					if (st == "rpm") {
 						r.value.bar = Math.round(r.value.r/percent);
-						r.value.r = r.value.r.toFixed(2)
 					}
 					if (st == "mtc") {
 						r.value.bar = Math.round((r.value.tt*r.value.r)/percent);
-						r.value.tt = Number((r.value.tt/1000).toFixed(2))
-						r.value.r = quant*(r.value.r.toFixed(1))
+						r.value.tt = Number(r.value.tt/1000)
+						r.value.r = quant*r.value.r
 					}
 					if (st == "sar") {
 						r.value.bar = Math.round(r.value.tta/percent);
 					}
 					if (st == "wa") {
 						r.value.bar = Math.round(r.value.apdex/percent);
-						r.value.apdex = r.value.apdex.toFixed(2);
 					}
 				})
 				 res.renderX({view:r.view,data:{rpm:r.rpm, project:project, st: st, fr: filter, title:"Ajax"}})
@@ -473,20 +511,18 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						_.each(r.data, function (r) {
 							if (st == "rpm") {
 								r.value.bar = Math.round(r.value.r/percent);
-								r.value.r = r.value.r.toFixed(2)
 							}
 							if (st == "mtc") {
 								r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-								r.value.r = quant*(r.value.r.toFixed(1))
-								r.value.tta = (r.value.tta/1000).toFixed(2)
+								r.value.r = quant*r.value.r
+								r.value.tta = r.value.tta/1000
 							}
 							if (st == "sar") {
 								r.value.bar = Math.round(r.value.tta/percent);
-								r.value.tta = (r.value.tta/1000).toFixed(2)
+								r.value.tta = r.value.tta/1000
 							}
 							if (st == "wa") {
 								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex.toFixed(2);
 							}
 						})
 						res.renderX({view:r.view,data:{data:r.data, title:"Pages", st: st, fr: filter}})

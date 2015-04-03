@@ -22,12 +22,12 @@
 		route:"{_t_route}",
 		_dtp:_t_page,
 		ajaxCallback: function(s, XHR){
-			var re=/(^\/restapi\/[A-Za-z]+[0-9]+\w+\/)|(^\/restapi\/[0-9]+[A-Za-z]+\w+\/)/
+			var re=/(^\/restapi\/[A-Za-z]+[0-9]+\w+\/)|(^\/restapi\/[0-9]+[A-Za-z]+\w+\/)/;
 			s.r=s.r.replace(/\/wire\/w[0-9]+/,"/wire")
 				.replace(/^\/restapi\/([^\/]+)\//,"/restapi/token/")
 				.replace(re,"/restapi/");
 		}
-	})
+	});
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
 		dataCallback: function(data) {
 			data._dtp = _t_page;
@@ -64,6 +64,7 @@
 			"dustc":"../tinybone/dustc",
 			"text":"../js/text",
 			"jquery-cookie": "../js/jquery-cookie",
+			"jquery.blockUI": "../js/jquery.blockUI",
 			"bootstrap":"../js/bootstrap"
 		},
 		shim: {
@@ -75,10 +76,10 @@
 				exports: 'dust'
 			}
 		}
-	})
+	});
 	requirejs.onError = function (err) {
 		console.log(err.trace);
-	}
+	};
 	define("backctx","/restapi/");
 	define("jquery", [], function() {
 		return window.jQuery;
@@ -92,11 +93,13 @@
 	// error simulation
 	var _t_page = new Date();
 	setTimeout(function () {
-		if (_t_page.valueOf()%2)
+		if (_t_page.valueOf()%2) {
 			throw new Error("Test Error"+(new Date()).getDay());
+		};
 	},1000);
-	if (_t_page.valueOf()%2)
+	if (_t_page.valueOf()%2) {
 		throw new Error("Test Error1"+(new Date()).getDay());
+	};
 {/_t_env_production}
 </script>
 </body>

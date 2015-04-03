@@ -3,6 +3,7 @@ define(['views/layout','module','safe',"dust"
 	,"moment/moment"
 	,"lodash"
 	,"tinybone/backadapter" // Important to get it on top level dependancy
+	,"jquery.blockUI"
 ],function (Layout,module,safe,dust,tb,moment,_) {
     // Make sure dust.helpers is an object before adding a new helper.
     if (!dust.helpers)
@@ -12,6 +13,53 @@ define(['views/layout','module','safe',"dust"
         var m = moment(new Date(params.date));
         var output = m.format(params.format || 'lll');
         return chunk.write(output);
+	}
+	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
+		if (params.type == "rpm") {
+			if ((params.val/10000)>1.0){
+				var output = (Math.round(params.val/10000)).toString()+"k&nbsp;rpm"
+			}
+			else {
+				var output = params.val.toFixed(1).toString()+"&nbsp;rpm";
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "reqs") {
+			if ((params.val/10000)>1.0){
+				var output = (Math.round(params.val/10000)).toString()+"k";
+			}
+			else {
+				var output = Math.round(params.val).toString();
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "tm") {
+			if (params.val <0.1) {
+				output = (Math.round(params.val*1000)).toString()+"&nbsp;ms"
+			}
+			else {
+				output = params.val.toFixed(1).toString()+"&nbsp;s"
+			}
+			return chunk.write(output);
+		}
+		if (params.type == "erate") {
+			var output = params.val.toFixed(params.val<10?2:0).toString()+"&nbsp;%";
+
+			return chunk.write(output);
+		}
+		if (params.type == "apdex") {
+			var output = params.val.toFixed(2).toString();
+			return chunk.write(output);
+		}
+		if (params.type == "memory") {
+			if ((params.val/1024) > 1.0){
+				var output = ((params.val/1024).toFixed(2)).toString()+"&nbsp;Gb";
+			}
+			else {
+				var output = params.val.toString()+"&nbsp;Mb";
+			}
+			return chunk.write(output);
+		}
 	}
 
 	return tb.Application.extend({
@@ -93,12 +141,16 @@ define(['views/layout','module','safe',"dust"
 			},cb)
 		},
 		init:function(wire, next) {
+			$.blockUI.defaults.message = "Loading ...";
+			$.blockUI.defaults.showOverlay = false;
+
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
 				prefix:module.uri.replace("/app/app.js","")
 			})
 			this.router.on("start", function (route) {
+				$.blockUI();
 				self._pageLoad = {start:new Date(),route:route.route};
 			})
 			next || (next = this.errHandler);

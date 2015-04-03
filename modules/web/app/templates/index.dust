@@ -1,66 +1,65 @@
 {@view name="views/header_view" data="header"/}
 <div class="container">
-
-
-    <table class="table table-hover" style="margin-top: 40px;">
-        <tr class="info">
-            <th class="col-md-3">
-                Team
-            </th>
-            <th>
-                <span class="col-md-3">Project</span><span class="col-md-3">Page views</span><span class="col-md-3">Error rate (%)</span><span class="col-md-3">End user time (s)</span>
-            </th>
-           <!-- <th data-field="price">
-                 Page views (n)
-            </th>
-            <th data-field="price">
-                 Error rate (%)
-            </th>
-            <th data-field="price">
-                 End user time (s)
-            </th> -->
-        </tr>
-        {#teams}
-        <tr class="success">
-            <td>
-            </td>
-            <td>
-            </td>
-        </tr>
-        <tr>
-            <td class="col-md-3">
-                {name}
-            </td>
-            <td>
-                <table>
-                    {#projects}
-                      {#_t_proj}
-                       <tr>
-                         <td>
-                         </td>
-                         <td data-field="name" class="col-md-3">
-                            <a href='{_t_prefix}/project/{slug}'>
-                               {name}
-                            </a>
-                         </td>
-                         <td data-field="views" class="col-md-3">
-                           {#views}{.} ppm{/views}
-                         </td>
-                         <td data-field="errors" class="col-md-3">
-                           {#errors}{.} %{/errors}
-                         </td>
-                         <td data-field="etu" class="col-md-3">
-                           {#etu}{.} s{/etu}
-                         </td>
-                       </tr>
-                      {/_t_proj}
-                    {/projects}
-                </table>
-            </td>
-        </tr>
-
-        {/teams}
-    </table>
-<button class="do-newproject btn btn-default" style="margin-top: 5px;">Add new project</button>
+{#teams}
+<br>
+<div class="row bg-success">
+	<div data-field="views" class="col-xs-12">
+		{name}
+	</div>
+</div>
+	{#projects}
+		<div class="row">
+			{#_t_proj}
+				<div data-field="name" class="col-md-3 col-xs-12">
+					<a href='{_t_prefix}/project/{slug}'>
+						{name}
+					{@gt key=server.proc value=0}
+					<span class="text-danger"> ( {#server.proc}{.} x{/server.proc} {#server.mem}{@formatnumber val=. type="memory"/} {/server.mem} )</span>
+					{/gt}
+					</a>
+				</div>
+				<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}
+					</span> / <span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
+				{/gt}
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.r type="rpm"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.r type="rpm"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
+				{/gt}
+				</span>
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.etu type="tm"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.etu type="tm"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
+				{/gt}
+				</span>
+				&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
+				{@gt key=server.r value=0}
+					<span class="text-danger">{@formatnumber val=server.e type="erate"/}</span>
+				{/gt}
+				{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+					<span class="text-success">{@formatnumber val=client.e type="erate"/}
+					</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
+				{/gt}
+				</span>
+				</div>
+			{/_t_proj}
+			</div>
+		{/projects}
+    {/teams}
+<div class="row">
+	<button class="do-newproject btn btn-default col-md-2" style="margin-top: 10px;padding-left:0px;">Add new project</button>
+</div>
 </div>
 
