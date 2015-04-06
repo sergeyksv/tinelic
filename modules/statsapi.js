@@ -91,8 +91,13 @@ module.exports.init = function (ctx, cb) {
 
                     actions.mapReduce(
                         function() {
-                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt
-								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {
+                                c:1,
+                                r: 1.0/Q,
+                                tt: this._i_tt,
+                                ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
+                            })
 						},
                         function (k,v) {
                             var r=null;
@@ -426,7 +431,8 @@ module.exports.init = function (ctx, cb) {
 					var ApdexT = 7000;
                     pages.mapReduce(function () {
 							emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q
-								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+								, ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)})
 						},
                         function (k, v) {
                             var r=null;

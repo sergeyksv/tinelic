@@ -495,7 +495,15 @@ module.exports.init = function (ctx, cb) {
 										console.log(JSON.stringify(te), ne[4]["stack_trace"]);
 										nrNonFatal.apply(this,arguments)
 									}, function () {
-									action_errors.insert( te, nrNonFatal)
+									safe.parallel([
+										function() {
+											action_errors.insert( te )
+										},
+										function() {
+											var q = {_dt: {$gte: te._dt}}
+											actions.update(q,{$inc: {_i_err: 1}},{multi: false})
+										}
+									],nrNonFatal)
 								}))
 							})
 
@@ -705,7 +713,15 @@ module.exports.init = function (ctx, cb) {
 							te.stacktrace.frames = te.stacktrace.frames.reverse();
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
-							action_errors.insert( te, cb)
+							safe.parallel([
+								function() {
+									action_errors.insert(te)
+								},
+								function() {
+									var q = {_dt: {$gte: te._dt}}
+									actions.update(q,{$inc: {_i_err: 1}},{multi: false})
+								}
+							],cb)
 						}))
 					}));
 				}, function( error ){
