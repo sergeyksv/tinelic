@@ -6,6 +6,7 @@ var fs = require('fs');
 var path = require('path');
 var _ = require("lodash");
 var safe = require("safe");
+var argv = require('yargs').argv;
 
 var cfg = {
 	modules:[
@@ -23,7 +24,7 @@ var cfg = {
 	config:require("./config.js")
 }
 
-var lcfgPath = "./local-config.js";
+var lcfgPath = argv.config || "./local-config.js";
 if(fs.existsSync(lcfgPath)){
 	cfg.config = _.merge(cfg.config,require(lcfgPath));
 }
@@ -76,4 +77,8 @@ tinyback.createApp(cfg, function (err, app) {
 	var httpServer = http.createServer(app.express);
 
 	httpServer.listen(80);
+
+	if (cfg.config.automated && process.send) {
+		process.send({c: "startapp_repl", data: err})
+	}
 })

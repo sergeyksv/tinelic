@@ -86,82 +86,89 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActions: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    query._s_cat = "WebTransaction"
-                    var q = p.quant || 1;
+                    query._s_cat = "WebTransaction";
+                    var ApdexT = 200;
+
                     actions.mapReduce(
-                        "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {r: 1.0/"+q+", tt: this._i_tt})\
-						}",
+                        function() {
+                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k,v) {
-                            var t = 200; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.r += v.r;
-                                    r.tt = (r.tt + v.tt)/2;
-                                    r.apdex[0] += (v.tt <= t)?1:0;
-                                    r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
-                                    r.apdex[2] += 1;
+                                    r.tt+=v.tt;
+                                    r.r+=v.r;
+                                    r.c+=v.c;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
-                        },
-                        cb
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                        }, safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getTopTransactions: function(t, p , cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction"
-                    var q = p.quant || 1;
-                    var t = 200; //apdex T
-                    var f = 4*t;
+					var ApdexT = 200;
                     actions.mapReduce(
-                        "function() {\
-                            emit(this._s_name, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+",apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
-						}",
+                        function() {
+							emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k,v) {
-                            var t = 200; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v
-                                    r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt += v.tt;
-                                    r.tta = parseInt(((r.tta+v.tta)/2));
-                                    r.r += v.r
-                                    r.apdex[0] += (v.tta <= t)?1:0;
-                                    r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
-                                    r.apdex[2] += 1;
+                                    r.tt+=v.tt;
+                                    r.r+=v.r;
+                                    r.c+=v.c;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
                         },
                         safe.sure(cb, function(data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
                             var st = p.st
                             if (st) {
                                 data =_.sortBy(data, function(v){
                                     if (st == "rpm")
                                         return -1*v.value.r;
                                     if (st == "mtc")
-                                        return -1* (v.value.tta*v.value.r);
+                                        return -1* (v.value.tta*v.value.c);
                                     if (st == "sar")
                                         return -1* v.value.tta;
                                     if (st == "wa")
@@ -173,7 +180,7 @@ module.exports.init = function (ctx, cb) {
                                     if (st == "rpm")
                                         sum+=r.value.r
                                     if (st == "mtc")
-                                        sum += r.value.tta*r.value.r
+                                        sum += r.value.tta*r.value.c
                                     if (st == "sar")
                                         sum += r.value.tta
                                     if (st == "wa") {
@@ -185,11 +192,9 @@ module.exports.init = function (ctx, cb) {
                                 _.each(data, function (r) {
                                     if (st == "rpm") {
                                         r.value.bar = Math.round(r.value.r/percent);
-                                        r.value.r = r.value.r
                                     }
                                     if (st == "mtc") {
-                                        r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-                                        r.value.r = p.quant*(r.value.r)
+                                        r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
                                         r.value.tta = (r.value.tta/1000)
                                     }
                                     if (st == "sar") {
@@ -204,19 +209,20 @@ module.exports.init = function (ctx, cb) {
                             }
                             else {
                                 data = _.take(_.sortBy(data, function(r) {
-                                    return r.value.tt*-1
+                                    return (r.value.tta*r.value.c)*-1
                                 }),10)
                                 var progress = null;
                                 _.forEach(data,function(r) {
                                     if (!progress) {
-                                        progress = r.value.tt
+                                        progress = r.value.tta*r.value.c
                                     }
                                     else {
-                                        progress += r.value.tt
+                                        progress += r.value.tta*r.value.c
                                     }
                                 })
                                 _.forEach(data, function(r) {
-                                    r.value.progress = (r.value.tt/progress)*100
+                                    r.value.progress = (r.value.tta*r.value.c/progress)*100
+                                    r.value.tta = r.value.tta/1000
                                     r._id = r._id.replace(/(^GET)?(^POST)?/,'')
                                 })
                             }
@@ -226,68 +232,73 @@ module.exports.init = function (ctx, cb) {
                 },
                 getTopAjax: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
                     ajax.mapReduce(
-                        "function() {\
-                            emit(this._s_name, {tt: this._i_tt, tta: (this._i_tt/1000).toFixed(2)})\
-                        }",
+                        function() {
+                            emit(this._s_name, {c:1, tt: this._i_tt})
+                        },
                         function (k,v) {
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.tta = v.tt;
                                 }
                                 else {
                                     r.tt += v.tt;
-                                    r.tta = (r.tta+v.tt)/2;
+                                    r.c+=v.c;
                                 }
                             })
-                            r.tta = (r.tta/1000).toFixed(2)
                             return r;
                         },
                         {
                             query: query,
                             out: {inline:1}
-                        },
-                        cb
+                        },safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getTopPages: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
-                    var t = 4000; //apdex T
-                    var f = 4*t;
+                    var ApdexT = 7000;
                     pages.mapReduce(
-                        "function() {\
-                            emit(this._s_route, {tt: this._i_tt*(1.0/"+q+"), tta: this._i_tt, r: 1.0/"+q+", apdex:(((this._i_tt <= "+t+")?1:0)+((this._i_tt>"+t+"&&this._i_tt <= "+f+")?1:0)/2)/1})\
-						}",
+                        function() {
+                           emit(this._s_route, {c:1, r: 1.0/Q, tt: this._i_tt
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k,v) {
-                            var t = 4000; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v
-                                    r.apdex = [(v.tta <= t) ? 1 : 0, (v.tta > t && v.tta <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt += v.tt;
-                                    r.tta = Number(((r.tta+v.tta)/2).toFixed(3));
-                                    r.r += v.r
-                                    r.apdex[0] += (v.tta <= t)?1:0;
-                                    r.apdex[1] += (v.tta > t && v.tta <= f)?1:0;
-                                    r.apdex[2] += 1;
+									r.tt+=v.tt;
+                                    r.r+=v.r;
+                                    r.c+=v.c;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
-                        },
-                        cb
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                        }, safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getEvents:function (t, p, cb) {
@@ -371,75 +382,82 @@ module.exports.init = function (ctx, cb) {
                 },
                 getAjaxStats:function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
+                    var ApdexT = 400;
                     ajax.mapReduce(
-                        "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1,pt: this._i_pt,tt:this._i_tt, code: this._i_code, r:1.0/"+q+", e:1.0*(this._i_code != 200 ? 1:0 )/"+q+"})\
-						}",
+                        function() {
+                           emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code
+								, e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k,v) {
-                            var t = 400; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
                                 }
                                 else {
-                                    r.tt = (r.tt + v.tt)/2;
-                                    r.c+=v.c;
-                                    r.e+=v.e;
+									r.tt+=v.tt;
                                     r.r+=v.r;
+                                    r.c+=v.c;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
+                                    r.e+=v.e;
                                     r.pt+= v.pt;
-                                    r.apdex[0] += (v.tt <= t)?1:0;
-                                    r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
-                                    r.apdex[2] += 1;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
-                        },
-                        cb
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                        },safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getPageViews:function (t, p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
-                    pages.mapReduce("function () {\
-							emit(parseInt(this._dt.valueOf()/("+q+"*60000)),{c:1,r:1.0/"+q+",e:1.0*(this._i_err?1:0)/"+q+",tt:this._i_tt})\
-						}",
+					var ApdexT = 7000;
+                    pages.mapReduce(function () {
+							emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+						},
                         function (k, v) {
-                            var t = 4000; //apdex T
-                            var f = 4*t;
                             var r=null;
                             v.forEach(function (v) {
                                 if (!r) {
                                     r = v;
-                                    r.apdex = [(v.tt <= t)?1:0,(v.tt > t && v.tt <= f)?1:0,1]
-
                                 }
                                 else {
-                                    r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
-                                    r.c+=v.c;
-                                    r.e+=v.e;
+									r.tt+=v.tt;
                                     r.r+=v.r;
-                                    r.apdex[0] += (v.tt <= t)?1:0;
-                                    r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
-                                    r.apdex[2] += 1;
+                                    r.c+=v.c;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
+                                    r.e+=v.e;
                                 }
                             })
-                            r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
-                        },
-                        cb
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                        }, safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getEventInfo:function (t, p, cb) {
@@ -705,58 +723,57 @@ module.exports.init = function (ctx, cb) {
                 },
                 getAjaxRpm:function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
+                    var ApdexT = 400;
                     if (!p.Graph_bool) {
                         ajax.mapReduce(
-                            "function() {\
-                                emit(this._s_name, { r:1.0/"+q+", dt:this._dt, tt:this._i_tt, tta: (this._i_tt/1000)})\
-							}",
+                            function() {
+                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt
+									, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+							},
                             function (k,v) {
-                                var t = 400; //apdex T
-                                var f = 4*t;
                                 var r=null;
                                 v.forEach(function (v) {
                                     if (!r){
                                         r = v
-                                        r.tta = v.tt;
-                                        r.apdex = [(v.tt <= t) ? 1 : 0, (v.tt > t && v.tt <= f) ? 1 : 0, 1];
                                     }
                                     else {
-                                        r.r+=v.r;
-                                        r.dt=v.dt;
-                                        r.tt = Number((r.tt + v.tt)/2);
-                                        r.tta = Number((r.tta+v.tt)/2);
-                                        r.apdex[0] += (v.tt <= t)?1:0;
-                                        r.apdex[1] += (v.tt > t && v.tt <= f)?1:0;
-                                        r.apdex[2] += 1;
+										r.tt+=v.tt;
+										r.r+=v.r;
+										r.c+=v.c;
+										r.ag+=v.ag;
+										r.aa+=v.aa;
                                     }
                                 })
-                                r.tta = Number((r.tta/1000))
-                                r.apdex = (r.apdex[0]+ (r.apdex[1]/2))/ r.apdex[2]
                                 return r;
                             },
                             {
                                 query: query,
-                                out: {inline:1}
-                            },
-                            cb
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            }, safe.sure(cb, function (data) {
+							// calculate apdex and average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                         )
                     }
                     else {
                         query._s_name=p._idurl;
                         ajax.mapReduce(
-                            "function() {\
-                            emit(parseInt(this._dt.valueOf()/("+q+"*60000)), {c:1, r:1.0/"+q+",tt:this._i_tt})\
-							}",
+                            function() {
+								emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt})
+							},
                             function (k,v) {
-                                var t = 400; //apdex T
-                                var f = 4*t;
                                 var r=null;
                                 v.forEach(function (v) {
                                     if (!r)
                                         r = v
                                     else {
-                                        r.tt=(r.tt*r.c+v.tt*v.c)/(r.c+v.c);
+                                        r.tt+=v.tt;
                                         r.c+=v.c;
                                         r.r+=v.r;
                                     }
@@ -765,16 +782,22 @@ module.exports.init = function (ctx, cb) {
                             },
                             {
                                 query: query,
-                                out: {inline:1}
-                            },
-                            cb
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            }, safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                         )
                     }
                 },
                 getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction"
-                    var q = p.quant || 1;
                     as.mapReduce(
                         function() {
                                 this.data.forEach(function(k,v) {
@@ -788,8 +811,8 @@ module.exports.init = function (ctx, cb) {
                                     r = v
                                 }
                                 else {
+									r.tt += v.tt;
                                     r.cnt += v.cnt
-                                    r.tt += v.tt
                                 }
                             })
                             return r;
@@ -797,8 +820,14 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1}
-                        },
-                        cb
+                        }, safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.cnt;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getActionsCategoryStats: function(t,p, cb) {
@@ -810,7 +839,7 @@ module.exports.init = function (ctx, cb) {
                         function() {
                             this.data.forEach(function(k) {
                                 if (k._s_cat == CAT) {
-                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg: k._i_tt/k._i_cnt, tta:k._i_tt});
+                                    emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg1: k._i_tt/k._i_cnt});
                                 }
                             })},
                         function (k,v) {
@@ -821,9 +850,8 @@ module.exports.init = function (ctx, cb) {
                                 }
                                 else {
                                     r.tt += v.tt;
-                                    r.avg = (r.avg + v.avg)/2
+                                    r.avg1 += v.avg1
                                     r.r += v.r
-                                    r.tta = parseInt(((r.tta+v.tta)/2))
                                 }
                             });
                             return r;
@@ -834,12 +862,17 @@ module.exports.init = function (ctx, cb) {
                             scope: {CAT: query['data._s_cat']}
                         },
                         safe.sure(cb, function(data) {
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.avg = key.avg1/key.r;
+								key.tta = key.tt/key.r;
+							})
                             var sum = 0;
                             _.forEach(data, function(r) {
                                 if (st == "req")
                                     sum += r.value.r
                                 if (st == 'mtc' || st == undefined)
-                                    sum += r.value.tt
+                                    sum += r.value.tta*r.value.r
                                 if (st == 'sar')
                                     sum += r.value.avg
                             })
@@ -848,18 +881,18 @@ module.exports.init = function (ctx, cb) {
                                 if (st == 'req')
                                     r.value.bar = r.value.r/procent
                                 if (st == 'mtc'|| st == undefined) {
-                                    r.value.bar = r.value.tt/procent
+                                    r.value.bar = (r.value.tta*r.value.r)/procent
                                     r.value.tta = (r.value.tta/1000)
 								}
                                 if (st == 'sar')
                                     r.value.bar = r.value.avg/procent
                             })
                             data = _.sortBy(data, function(r) {
-                                r.value.avg = parseInt(r.value.avg)
+                                r.value.avg = r.value.avg/1000
                                 if (st == 'req')
                                     return r.value.r*-1
                                 if (st == 'mtc' || st == undefined)
-                                    return r.value.tt*-1
+                                    return (r.value.tta*r.value.r)*-1
                                 if (st == 'sar')
                                     return r.value.avg*-1
                             })
@@ -872,7 +905,6 @@ module.exports.init = function (ctx, cb) {
                 },
                 pagesBreakDown: function(t,p,cb){
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
                     pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
                         delete query._s_uri
                         var idpv = []
@@ -881,9 +913,9 @@ module.exports.init = function (ctx, cb) {
                         })
                         query._idpv = {$in: idpv}
                         ajax.mapReduce(
-                            "function() {\
-                                emit(this._s_name, {r: 1.0/"+q+", tt: this._i_tt} )\
-                            }",
+                            function() {
+                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt})
+                            },
                             function (k,v) {
                                 var r=null;
                                 v.forEach(function (v) {
@@ -891,16 +923,24 @@ module.exports.init = function (ctx, cb) {
                                         r = v
                                     else {
                                         r.r += v.r
-                                        r.tt = (r.tt + v.tt)/2
+										r.tt+=v.tt;
+                                        r.c+=v.c;
                                     }
                                 })
                                 return r;
                             },
                             {
                                 query: query,
-                                out: {inline:1}
-                            },
-                            cb
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1}
+                            }, safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.c;
+							})
+							cb(null, data);
+						})
                         )
                     }))
                 },
@@ -932,7 +972,6 @@ module.exports.init = function (ctx, cb) {
                 getActionsCategoryTimings:function (t, p, cb) {
                     var query = queryfix(p.filter);
                     var name = query["data._s_name"]
-                    var q = p.quant || 1;
                     as.mapReduce(function () {
                             var dt = parseInt(this._dt.valueOf()/(QUANT*60000))
                             this.data.forEach(function(k) {
@@ -949,7 +988,7 @@ module.exports.init = function (ctx, cb) {
                                 }
                                 else {
                                     r.r += v.r
-                                    r.tt += v.tt
+                                    r.tt += v.tt;
                                 }
                             })
                             return r;
@@ -957,14 +996,19 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1},
-                            scope: {NAME: name, QUANT: q}
-                        },
-                        cb
+                            scope: {NAME: name, QUANT: p.quant || 1}
+                        }, safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.r;
+							})
+							cb(null, data);
+						})
                     )
                 },
                 getActionsCallees: function(t,p, cb) {
                     var query = queryfix(p.filter);
-                    var q = p.quant || 1;
                     as.mapReduce(
                         function() {
                             this.data.forEach(function(k,v) {
@@ -980,8 +1024,8 @@ module.exports.init = function (ctx, cb) {
                                     r = v
                                 }
                                 else {
+									r.tt += v.tt;
                                     r.cnt += v.cnt
-                                    r.tt += v.tt
                                 }
                             })
                             return r;
@@ -990,8 +1034,14 @@ module.exports.init = function (ctx, cb) {
                             query: query,
                             out: {inline:1},
                             scope: {CAT: query['data._s_cat']}
-                        },
-                        cb
+                        }, safe.sure(cb, function (data) {
+							// calculate average after aggregation
+							_.each(data, function (metric) {
+								var key = metric.value;
+								key.tta = key.tt/key.cnt;
+							})
+							cb(null, data);
+						})
                     )
                 }
             }});

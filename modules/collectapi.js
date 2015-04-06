@@ -578,39 +578,48 @@ module.exports.init = function (ctx, cb) {
 			})
 			ctx.router.get("/browser/:project",function (req, res, next) {
 				var data = req.query;
-				data._idp=req.params.project;
-				data._dtr = new Date();
-				data._dtc = data._dt;
-				data._dt = data._dtr;
-				data.agent = useragent.parse(req.headers['user-agent']).toJSON();
-				var ip = req.headers['x-forwarded-for'] ||
-					 req.connection.remoteAddress ||
-					 req.socket.remoteAddress ||
-					 req.connection.socket.remoteAddress;
-
-				var geo = geoip.lookup(ip);
-				if (geo)
-					data.geo = JSON.parse(JSON.stringify(geo));
-
-				data = prefixify(data,{strict:1});
-				var md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
-				data.shash = md5sum.digest('hex');
-				md5sum = crypto.createHash('md5');
-				md5sum.update(ip);
-				md5sum.update(req.headers['host']);
-				md5sum.update(req.headers['user-agent']);
-				md5sum.update(data._dtp.toString());
-				data.chash = md5sum.digest('hex');
-				data._i_err = 0;
-				data._s_uri = data.p
-				data._s_route = data.r
-				delete data.r
-				delete data.p
 				safe.run(function (cb) {
+					data._idp=req.params.project;
+					data._dtr = new Date();
+					data._dtc = data._dt;
+					data._dt = data._dtr;
+					data.agent = useragent.parse(req.headers['user-agent']).toJSON();
+					var ip = req.headers['x-forwarded-for'] ||
+						 req.connection.remoteAddress ||
+						 req.socket.remoteAddress ||
+						 req.connection.socket.remoteAddress;
+
+					var geo = geoip.lookup(ip);
+					if (geo)
+						data.geo = JSON.parse(JSON.stringify(geo));
+
+					data = prefixify(data,{strict:1});
+
+					// add few data consistance checks
+					if (data._i_tt > 1000 * 60 * 5)
+						return cb(new Error("Page total time is too big > 5 min"))
+
+					if (Math.abs(data._i_tt - data._i_nt - data._i_lt - data._i_dt)>1000)
+						return cb(new Error("Page total time do not match components"))
+
+					var md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))))
+					data.shash = md5sum.digest('hex');
+					md5sum = crypto.createHash('md5');
+					md5sum.update(ip);
+					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers['user-agent']);
+					md5sum.update(data._dtp.toString());
+					data.chash = md5sum.digest('hex');
+					data._i_err = 0;
+					data._s_uri = data.p
+					data._s_route = data.r
+					delete data.r
+					delete data.p
+
 					ctx.api.validate.check("page", data, safe.sure(cb, function(){
 						pages.insert(data, safe.sure(cb, function (docs) {
 							// once after inserting page we need to link

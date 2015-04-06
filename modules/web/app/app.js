@@ -17,7 +17,7 @@ define(['views/layout','module','safe',"dust"
 	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
 		if (params.type == "rpm") {
 			if ((params.val/10000)>1.0){
-				var output = (Math.round(params.val/10000)).toString()+"k&nbsp;rpm"
+				var output = (Math.round(params.val/1000)).toString()+"k&nbsp;rpm"
 			}
 			else {
 				var output = params.val.toFixed(1).toString()+"&nbsp;rpm";
@@ -26,7 +26,7 @@ define(['views/layout','module','safe',"dust"
 		}
 		if (params.type == "reqs") {
 			if ((params.val/10000)>1.0){
-				var output = (Math.round(params.val/10000)).toString()+"k";
+				var output = (Math.round(params.val/1000)).toString()+"k";
 			}
 			else {
 				var output = Math.round(params.val).toString();
@@ -169,6 +169,7 @@ define(['views/layout','module','safe',"dust"
 			this.initRoutes(safe.sure(next, function () {
 				mainView.bindWire(wire, null, null, safe.sure(next, function () {
 					mainView.postRender();
+					$('body').attr('data-id',(new Date()).valueOf());
 				}))
 			}))
 		},
@@ -189,6 +190,7 @@ define(['views/layout','module','safe',"dust"
 				view.bindDom($dom, oldView)
 				oldView.remove();
 				mainView.attachSubView(view)
+				$('body').attr('data-id',(new Date()).valueOf());
 				self._pageLoad.dom = new Date();
 				var m = {
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),

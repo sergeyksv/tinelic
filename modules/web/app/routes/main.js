@@ -26,7 +26,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								period = r.result.views.length;
 								_.each(r.result.views, function (v) {
 									Client.r+=v.value?v.value.r:0;
-									Client.etu+=v.value?(v.value.tt/1000):0;
+									Client.etu+=v.value?(v.value.tta/1000):0;
 									Client.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 									Apdex.client+=v.value.apdex?v.value.apdex:0;
 								})
@@ -40,7 +40,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								period = r.result.ajax.length;
 								_.forEach(r.result.ajax, function (v) {
 									Ajax.r+=v.value?v.value.r:0;
-									Ajax.etu+=v.value?(v.value.tt/1000):0;
+									Ajax.etu+=v.value?(v.value.tta/1000):0;
 									Ajax.e+=100*(v.value?(1.0*v.value.e/v.value.r):0);
 									Apdex.ajax+=v.value.apdex?v.value.apdex:0;
 								})
@@ -56,7 +56,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_.forEach(r.result.actions, function (v) {
 									trans+=v.value?v.value.r:0;
 									Server.r+=v.value?v.value.r:0;
-									Server.etu+=v.value?(v.value.tt/1000):0;
+									Server.etu+=v.value?(v.value.tta/1000):0;
 									Apdex.server+=v.value.apdex?v.value.apdex:0;
 								})
 
@@ -244,13 +244,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					period = r.data.views.length;
 					_.forEach(r.data.views, function (v) {
 						valr+=v.value?v.value.r:0;
-						valtt+=v.value?(v.value.tt/1000):0;
+						valtt+=v.value?(v.value.tta/1000):0;
 						vale+=v.value?v.value.e:0;
 					})
 
-					valtt=(valtt/period).toFixed(2);
+					valtt=(valtt/period);
 					vale=(vale/period).toFixed(2);
-					valr=(valr/period).toFixed(2);
+					valr=(valr/period);
 					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
 
 				}
@@ -259,11 +259,11 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					period = r.data.actions.length;
 					_.forEach(r.data.actions, function (v) {
 						valr+=v.value?v.value.r:0;
-						valtt+=v.value?(v.value.tt/1000):0;
+						valtt+=v.value?(v.value.tta/1000):0;
 					})
 
-					valtt=(valtt/period).toFixed(2);
-					valr=(valr/period).toFixed(2);
+					valtt=(valtt/period);
+					valr=(valr/period);
 					_.extend(views.total,{rsm: valr, ttserver: valtt});
 
 				}
@@ -272,13 +272,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					period = r.data.ajax.length;
 					_.forEach(r.data.ajax, function (v) {
 						valr+=v.value?v.value.r:0;
-						valtt+=v.value?(v.value.tt/1000):0;
+						valtt+=v.value?(v.value.tta/1000):0;
 						vale+=v.value?v.value.e:0;
 					})
 
-					valtt=(valtt/period).toFixed(2);
+					valtt=(valtt/period);
 					vale=(vale/period).toFixed(2);
-					valr=(valr/period).toFixed(2);
+					valr=(valr/period);
 					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
 
 				}
@@ -305,39 +305,40 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				if (r.data.topAjax.length != 0) {
 					views.topa = {}
 					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
-						return r.value.tt
+						return r.value.tta*r.value.c
 					}).reverse(),10)
 					var progress = null;
 					_.forEach(views.topa.a,function(r) {
 						if (!progress) {
-							progress = r.value.tt
+							progress = r.value.tta*r.value.c
 						}
 						else {
-							progress += r.value.tt
+							progress += r.value.tta*r.value.c
 						}
 					})
 					_.forEach(views.topa.a, function(r) {
-						r.value.progress = (r.value.tt/progress)*100
+						r.value.progress = (r.value.tta*r.value.c/progress)*100
+						r.value.tta = r.value.tta/1000
 						r._id = r._id.replace(/(^https:\/\/www.)?(^http:\/\/www.)?/,"")
 					})
 				}
 				if (r.data.topPages.length != 0) {
 					views.topp = {}
 					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
-						return r.value.tt
+						return r.value.tta*r.value.c
 					}).reverse(),10)
 					var progress = null;
 					_.forEach(views.topp.p,function(r) {
 						if (!progress) {
-							progress = r.value.tt
+							progress = r.value.tta*r.value.c
 						}
 						else {
-							progress += r.value.tt
+							progress += r.value.tta*r.value.c
 						}
 					})
 					_.forEach(views.topp.p, function(r) {
-						r.value.progress = (r.value.tt/progress)*100
-						r.value.tta = (r.value.tta/1000).toFixed(2)
+						r.value.progress = (r.value.tta*r.value.c/progress)*100
+						r.value.tta = r.value.tta/1000
 					})
 				}
 				if (r.data.topTransactions.length != 0) {
@@ -400,7 +401,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						return -1*v.value.r;
 					if (st == "mtc")
-						return -1* (v.value.tt*v.value.r);
+						return -1* (v.value.tta*v.value.c);
 					if (st == "sar")
 						return -1* v.value.tta;
 					if (st == "wa")
@@ -411,7 +412,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					if (st == "rpm")
 						sum+=r.value.r
 					if (st == "mtc")
-						sum += r.value.tt*r.value.r
+						sum += r.value.tta*r.value.c
 					if (st == "sar")
 						sum += r.value.tta
 					if (st == "wa") {
@@ -425,12 +426,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						r.value.bar = Math.round(r.value.r/percent);
 					}
 					if (st == "mtc") {
-						r.value.bar = Math.round((r.value.tt*r.value.r)/percent);
-						r.value.tt = Number(r.value.tt/1000)
-						r.value.r = quant*r.value.r
+						r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+						r.value.tta = r.value.tta/1000
 					}
 					if (st == "sar") {
 						r.value.bar = Math.round(r.value.tta/percent);
+						r.value.tta = r.value.tta/1000
 					}
 					if (st == "wa") {
 						r.value.bar = Math.round(r.value.apdex/percent);
@@ -503,7 +504,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								return -1*v.value.r;
 							if (st == "mtc")
-								return -1* (v.value.tta*v.value.r);
+								return -1* (v.value.tta*v.value.c);
 							if (st == "sar")
 								return -1* v.value.tta;
 							if (st == "wa")
@@ -515,7 +516,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							if (st == "rpm")
 								sum+=r.value.r
 							if (st == "mtc")
-								sum += r.value.tta*r.value.r
+								sum += r.value.tta*r.value.c
 							if (st == "sar")
 								sum += r.value.tta
 							if (st == "wa") {
@@ -529,8 +530,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								r.value.bar = Math.round(r.value.r/percent);
 							}
 							if (st == "mtc") {
-								r.value.bar = Math.round((r.value.tta*r.value.r)/percent);
-								r.value.r = quant*r.value.r
+								r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
 								r.value.tta = r.value.tta/1000
 							}
 							if (st == "sar") {
