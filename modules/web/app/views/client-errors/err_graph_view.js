@@ -1,7 +1,7 @@
-define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'dustc!templates/err_graph.dust'],function (tb,_,api, safe) {
+define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'dustc!templates/client-errors/err_graph.dust'],function (tb,_,api, safe) {
     var view = tb.View;
     var View = view.extend({
-        id:"templates/err_graph",
+        id:"templates/client-errors/err_graph",
         postRender:function () {
 				view.prototype.postRender.call(this);
 				var message=(this.parent.data.event.event)? this.parent.data.event.event._s_message : "err";
@@ -89,6 +89,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 				})
 		}
     })
-    View.id = "views/err_graph_view";
+    View.id = "views/client-errors/err_graph_view";
     return View;
 })

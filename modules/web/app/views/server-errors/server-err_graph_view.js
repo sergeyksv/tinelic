@@ -4,7 +4,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
         id:"templates/server-errors/server-err_graph",
         postRender:function () {
 				view.prototype.postRender.call(this);
-				var message=(this.parent.data.event.event)? this.parent.data.event.event._s_message : "server_err";
+				//var message=(this.parent.data.event.event)? this.parent.data.event.event._s_message : "server_err";
 				var quant = this.parent.data.fr.quant;
 				var offset = new Date().getTimezoneOffset();
 				var errflat = [], errprev = null;

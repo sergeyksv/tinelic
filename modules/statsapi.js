@@ -38,6 +38,21 @@ module.exports.init = function (ctx, cb) {
             }
         ],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors, metrics) {
             cb(null, {api:{
+                getErrAck: function(t,p,cb) {
+                    var q = {_idp: p._idp, _dt: {$lte: p._dt.$lte}}
+                    safe.parallel({
+                        actions:function(cb) {
+                            q._dt.$gt = p._dt._dtActionsErrAck,
+                            q = queryfix(q)
+                            serverErrors.find(q).count(cb)
+                        },
+                        pages:function(cb) {
+                            q._dt.$gt = p._dt._dtPagesErrAck,
+                            q = queryfix(q)
+                            events.find(q).count(cb)
+                        }
+                    },cb)
+                },
                 getMetrics: function(t, p, cb) {
                     var query = queryfix(p.filter)
                     metrics.mapReduce(
@@ -76,8 +91,13 @@ module.exports.init = function (ctx, cb) {
 
                     actions.mapReduce(
                         function() {
-                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt
-								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {
+                                c:1,
+                                r: 1.0/Q,
+                                tt: this._i_tt,
+                                ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
+                            })
 						},
                         function (k,v) {
                             var r=null;
@@ -419,7 +439,8 @@ module.exports.init = function (ctx, cb) {
 					var ApdexT = 7000;
                     pages.mapReduce(function () {
 							emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q
-								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
+								, ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)})
 						},
                         function (k, v) {
                             var r=null;
@@ -576,13 +597,11 @@ module.exports.init = function (ctx, cb) {
                                         p = 'session'
                                     var sum = 0.0
                                     _.forEach(data, function(r) {
-                                        if (p)
-                                            sum += r.stats[p]
+                                        sum += r.stats[p]
                                     })
                                     var percent = sum/100
                                     _.forEach(data, function(r) {
-                                        if (p)
-                                            r.bar = r.stats[p]/percent
+                                        r.bar = r.stats[p]/percent
                                     })
                                     data = _.sortBy(data, function(r) {return r.stats[p]*-1})
                                     cb(null, data);
@@ -624,30 +643,34 @@ module.exports.init = function (ctx, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					serverErrors.findOne(query1, safe.sure(cb, function (event) {
-						var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
-						serverErrors.mapReduce(
-							"function() {\
-								emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
+                        if (event) {
+                            var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
+                            serverErrors.mapReduce(
+                                "function() {\
+                                    emit(parseInt(this._dt.valueOf()/("+q+"*60000)), { r:1.0/"+q+"})\
 							}",
-							function (k,v) {
-								var r=null;
-								v.forEach(function (v) {
-									if (!r){
-										r = v
-									}
-									else {
-										r.r+=v.r;
+                                function (k,v) {
+                                    var r=null;
+                                    v.forEach(function (v) {
+                                        if (!r){
+                                            r = v
+                                        }
+                                        else {
+                                            r.r+=v.r;
 
-									}
-								})
-								return r;
-							},
-							{
-								query: query,
-								out: {inline:1}
-							},
-							cb
-						)
+                                        }
+                                    })
+                                    return r;
+                                },
+                                {
+                                    query: query,
+                                    out: {inline:1}
+                                },
+                                cb
+                            )
+                        }
+                        else
+                            cb()
 					}))
 				},
                 getServerErrorStats:function (t, p, cb) {

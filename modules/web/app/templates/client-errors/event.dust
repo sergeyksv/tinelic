@@ -28,7 +28,7 @@
 {/event}
 </div>
 <div class="col-xs-12 col-sm-3"><br>
-{@view name="views/event_stats_view" data="info"/}
+{@view name="views/client-errors/event_stats_view" data="info"/}
 </div>
 {^headless}
 </div>

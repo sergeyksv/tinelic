@@ -178,7 +178,13 @@ module.exports.init = function (ctx, cb) {
 					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
                         tm.teams.update({_id: u._id}, update,{}, cb)
                     }))
-                }
+                },
+				pullErrAck: function(t, data, cb) {
+					data = prefixify(data)
+					var set = {$set:{}}
+					set.$set[data.type] = new Date();
+					tm.projects.update({_id:data._id},set,cb)
+				}
             }});
         }))
     }))
