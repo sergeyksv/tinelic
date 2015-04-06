@@ -49,6 +49,12 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 						}},safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();
 							var ajflat = [], ajprev = null;
+							var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+							var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+							if (dtstart != r[0]._id) {
+								ajflat[0]={_id: dtstart, value:null}
+								ajflat[1]={_id: r[0]._id-1, value:null}
+							}
 							_.each(r, function (a) {
 								if (ajprev) {
 									for (var i=ajprev._id+1; i< a._id; i++) {
@@ -58,6 +64,10 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 								ajprev = a;
 								ajflat.push(a);
 							})
+							if (r[r.length-1]._id != dtend) {
+								ajflat[ajflat.length]={_id: r[r.length-1]._id+1, value:null}
+								ajflat[ajflat.length]={_id: dtend, value:null}
+							}
 							var ajrpm = [], ttTime=[];
 							_.each(ajflat, function (a) {
 								var d = new Date(a._id*quant*60000);
@@ -179,6 +189,12 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 			api("stats.getAjaxStats","public", this.data.fr ,safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();
 							var ajflat = [], ajprev = null;
+							var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+							var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+							if (dtstart != r[0]._id) {
+								ajflat[0]={_id: dtstart, value:null}
+								ajflat[1]={_id: r[0]._id-1, value:null}
+							}
 							_.each(r, function (a) {
 								if (ajprev) {
 									for (var i=ajprev._id+1; i< a._id; i++) {
@@ -188,6 +204,10 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 								ajprev = a;
 								ajflat.push(a);
 							})
+							if (r[r.length-1]._id != dtend) {
+								ajflat[ajflat.length]={_id: r[r.length-1]._id+1, value:null}
+								ajflat[ajflat.length]={_id: dtend, value:null}
+							}
 							var ajrpm = [], ttTime=[];
 							_.each(ajflat, function (a) {
 								var d = new Date(a._id*quant*60000);

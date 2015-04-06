@@ -40,6 +40,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                             var flat = [], prev = null
                             var quant = filter.quant;
                             var offset = new Date().getTimezoneOffset();
+                            var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+                            var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+                            if (dtstart != views[0]._id) {
+								flat[0]={_id: dtstart, value:null}
+								flat[1]={_id: views[0]._id-1, value:null}
+							}
                             _.each(views, function (a) {
                                 if (prev) {
                                     for (var i = prev._id + 1; i < a._id; i++) {
@@ -49,6 +55,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 prev = a;
                                 flat.push(a);
                             })
+                            if (views[views.length-1]._id != dtend) {
+								flat[flat.length]={_id: views[views.length-1]._id+1, value:null}
+								flat[flat.length]={_id: dtend, value:null}
+							}
 
                             var rpm1;
                             var rpm = [];
@@ -189,13 +199,21 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         },
         postRender:function () {
             view.prototype.postRender.call(this);
+            var self = this;
             var filter1 = this.data.fr;
+            var quant = this.data.fr.quant;
 			api("stats.getPageViews", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
 
                             var views = data;
                             var flat = [], prev = null
                             var quant = filter1.quant;
                             var offset = new Date().getTimezoneOffset();
+							var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
+                            var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
+                            if (dtstart != views[0]._id) {
+								flat[0]={_id: dtstart, value:null}
+								flat[1]={_id: views[0]._id-1, value:null}
+							}
                             _.each(views, function (a) {
                                 if (prev) {
                                     for (var i = prev._id + 1; i < a._id; i++) {
@@ -205,6 +223,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 prev = a;
                                 flat.push(a);
                             })
+                            if (views[views.length-1]._id != dtend) {
+								flat[flat.length]={_id: views[views.length-1]._id+1, value:null}
+								flat[flat.length]={_id: dtend, value:null}
+							}
 
                             var rpm1;
                             var rpm = [];
