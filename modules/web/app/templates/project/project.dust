@@ -30,7 +30,7 @@
 			{#browser}
 				<div class="col-md-6">
 						<div class="panel panel-success" style="padding-bottom:20px">
-							<div class="panel-heading"><a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a></div>
+							<div class="panel-heading"><a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a><span class="text-success h6" style="margin-left: 5px;">&nbsp{total} total / {page} page / {session} sess</span></div>
 							<div class="panel-body">
 							<ul class="list-unstyled h6">
 							{#err}
@@ -46,7 +46,7 @@
 			{#serverErr}
 				<div class="col-md-6">
 						<div class="panel panel-danger" style="padding-bottom:20px">
-							<div class="panel-heading"><a class="text-danger" href='{_t_prefix}/project/{project.slug}/server_errors/terr'>Server errors</a></div>
+							<div class="panel-heading"><a class="text-danger" href='{_t_prefix}/project/{project.slug}/server_errors/terr'>Server errors</a> <span class="text-danger h6" style="mrgin-left:5px">&nbsp{total} total</span></div>
 							<div class="panel-body">
 							<ul class="list-unstyled h6">
 							{#sErr}

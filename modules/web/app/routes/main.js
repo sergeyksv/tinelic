@@ -16,6 +16,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						}}}, safe.sure(cb, function (r) {
 						r.forEach(function (r){
 							var period;
+							var errAck = r.result.errAck
 							var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
 							Client.r = Client.e = Client.etu = 0;
 							Apdex.client = Apdex.server = Apdex.ajax = 0;
@@ -75,7 +76,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								Server.proc = r.result.metrics.proc;
 								Server.mem = r.result.metrics.mem;
 							}
-							_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax})
+							_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax, errAck: errAck})
 						})
 						cb(null, r)
 					}))
@@ -105,7 +106,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			var st = req.params.st
 			safe.parallel({
 				view:function (cb) {
-					requirejs(["views/event_view"], function (view) {
+					requirejs(["views/client-errors/event_view"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -220,10 +221,17 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				data:function (cb) {
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						var projects=[]; projects[0]=project;
-						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,filter:{
-							_idp:project._id,
-							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-						}}}, safe.sure(cb, function (r) {
+						var dt = res.locals.dtstart
+						var dta = project._dtActionsErrAck || dt;
+						var dtp = project._dtPagesErrAck || dt;
+						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,
+							filter:{
+								_idp:project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							},
+							_dtActionsErrAck: (dta <= dt)?dt:dta,
+							_dtPagesErrAck: (dtp <= dt)?dt:dtp
+						}}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project}))
 						}))
 					}))
@@ -276,15 +284,23 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 				}
 				if (r.data.errors.length != 0) {
 					views.browser = {};
-
+					var total = 0; var session = 0; var page = 0
+					_.forEach(r.data.errors, function(r){
+						total += r.stats.count;
+						session += r.stats.session;
+						page += r.stats.pages;
+					})
 					var data = _.take(r.data.errors, 10)
-					views.browser.err = data;
+					_.extend(views.browser,{err: data, total: total, session: session, page: page})
 				}
 				if (r.data.serverErrors.length != 0) {
 					views.serverErr = {};
-
+					var total = 0;
+					_.forEach(r.data.serverErrors, function(r) {
+						total += r.stats.c
+					})
 					var data = _.take(r.data.serverErrors, 10)
-					views.serverErr.sErr = data;
+					_.extend(views.serverErr,{sErr:data,total:total})
 				}
 				if (r.data.topAjax.length != 0) {
 					views.topa = {}
@@ -539,7 +555,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
-							requirejs(["views/err_view"], function (view) {
+							requirejs(["views/client-errors/err_view"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -566,8 +582,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
+						var total = 0; var session = 0; var page = 0;
+						_.forEach(r.data, function(r) {
+							total += r.stats.count;
+							session += r.stats.session;
+							page += r.stats.pages;
+						})
 						r.event.headless = true;
-						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter}})
+						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page}})
 					})
 				)
 			}))
@@ -663,7 +685,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							data = r.data
 						}
 						if (data.length == 0) {
-							data.push({error: {message: "Not errors on this client"}})
+							data.push({error: {_s_message: "Not errors on this client"}})
 						}
 						var sum = 0.0
 						_.forEach(data, function(r) {
@@ -673,7 +695,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						_.forEach(data, function(r) {
 							r.bar = r.stats.c/percent
 						})
-						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter}})
+						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: sum}})
 					})
 				)
 			}))
