@@ -237,6 +237,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					}))
 				}
 			}, safe.sure(cb, function (r) {
+				var filter = {
+						_t_age: quant + "m", quant: quant,
+						filter: {
+							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+						}
+					}
 				var views = {}; // total | server | browser | transaction | page | ajax
 				var valtt; var vale; var valr; var period;
 				if (r.data.views.length != 0) {
@@ -370,7 +376,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					views.database.db = r.data.database
 				}
 
-				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn})})
+				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn, fr:filter})})
 			}))
 		},
 		ajax_rpm:function (req, res, cb) {
@@ -384,7 +390,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				rpm: function (cb) {
-					api("stats.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
+					api("stats.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}, cb);

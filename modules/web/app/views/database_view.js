@@ -44,6 +44,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                             var flat = [], prev = null;
                             var quant = filter.quant;
                             var offset = new Date().getTimezoneOffset();
+                            var dtstart = Math.round(new Date(self.data.fr.filter._dt.$gt).getTime()/(quant*60000));
+                            var dtend =  Math.round(new Date(self.data.fr.filter._dt.$lte).getTime()/(quant*60000));
+                            if (dtstart != views[0]._id) {
+								flat[0]={_id: dtstart, value:null}
+								flat[1]={_id: views[0]._id-1, value:null}
+							}
                             _.each(views, function (a) {
                                 if (prev) {
                                     for (var i = prev._id + 1; i < a._id; i++) {
@@ -53,6 +59,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 prev = a;
                                 flat.push(a);
                             })
+                             if (views[views.length-1]._id != dtend) {
+								flat[flat.length]={_id: views[views.length-1]._id+1, value:null}
+								flat[flat.length]={_id: dtend, value:null}
+							}
                             var rpm1;
                             var rpm = [];
                             var ttBrowser = [];
@@ -188,12 +198,19 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         },
         postRender:function () {
             view.prototype.postRender.call(this);
+            var self = this;
             var filter = this.data.fr;
             api("stats.getActionsCategoryTimings", $.cookie("token"), filter, safe.sure(this.app.errHandler, function(data) {
                             var views = data;
                             var flat = [], prev = null;
                             var quant = filter.quant;
                             var offset = new Date().getTimezoneOffset();
+                            var dtstart = Math.round(new Date(self.data.fr.filter._dt.$gt).getTime()/(quant*60000));
+                            var dtend =  Math.round(new Date(self.data.fr.filter._dt.$lte).getTime()/(quant*60000));
+                            if (dtstart != views[0]._id) {
+								flat[0]={_id: dtstart, value:null}
+								flat[1]={_id: views[0]._id-1, value:null}
+							}
                             _.each(views, function (a) {
                                 if (prev) {
                                     for (var i = prev._id + 1; i < a._id; i++) {
@@ -203,6 +220,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 prev = a;
                                 flat.push(a);
                             })
+                            if (views[views.length-1]._id != dtend) {
+								flat[flat.length]={_id: views[views.length-1]._id+1, value:null}
+								flat[flat.length]={_id: dtend, value:null}
+							}
                             var rpm1;
                             var rpm = [];
                             var ttBrowser = [];
@@ -229,14 +250,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                     text: ''
                                 },
                                 xAxis: {
-                                    type: 'datetime',
-                                    title: {
-                                        text: 'Date'
-                                    }
+                                    type: 'datetime'
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'rpm'
+                                        text: 'Throughput (rpm)'
                                     },
                                     min: 0,
                                     max: rpmmax
@@ -253,6 +271,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 legend: {
                                     enabled: false
                                 },
+                                credits: {
+									enabled: false
+								},
                                 series: [
                                     {
                                         name: 'rpm',
@@ -284,14 +305,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                     text: ''
                                 },
                                 xAxis: {
-                                    type: 'datetime',
-                                    title: {
-                                        text: 'Date'
-                                    }
+                                    type: 'datetime'
                                 },
                                 yAxis: [{
                                     title: {
-                                        text: 'time'
+                                        text: 'Timing (s)'
                                     },
                                     min: 0,
                                     max: ttBrowserMax
@@ -308,6 +326,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 legend: {
                                     enabled: false
                                 },
+                                credits: {
+									enabled: false
+								},
                                 series: [
                                     {
                                         name: 'time',

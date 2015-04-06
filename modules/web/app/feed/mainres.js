@@ -40,13 +40,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					}, cb);
 				},
 				ajax: function (cb) {
-					api("stats.getAjaxStats",token,params, cb);
+					api("stats.getAjaxTimings",token,params, cb);
 				},
 				actions: function (cb) {
 					api("stats.getActions", token, params, cb);
 				},
 				topAjax: function (cb) {
-					api("stats.getTopAjax", token, params, cb);
+					api("stats.getAjaxStats", token, params, cb);
 				},
 				topPages: function (cb) {
 					api("stats.getTopPages", token, params, cb);
@@ -96,13 +96,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							api("stats.getPagesErrorStats",token, params, cb);
 						},
 						ajax: function (cb) {
-							api("stats.getAjaxStats",token,params, cb);
+							api("stats.getAjaxTimings",token,params, cb);
 						},
 						actions: function (cb) {
 							api("stats.getActions", token, params, cb);
 						},
 						topAjax: function (cb) {
-							api("stats.getTopAjax", token, params, cb);
+							api("stats.getAjaxStats", token, params, cb);
 						},
 						topPages: function (cb) {
 							api("stats.getTopPages", token, params, cb);
