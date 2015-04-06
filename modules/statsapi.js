@@ -215,11 +215,13 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
-                getTopAjax: function(t, p, cb) {
+                getAjaxStats: function(t, p, cb) {
                     var query = queryfix(p.filter);
+                    var ApdexT = 400;
                     ajax.mapReduce(
                         function() {
-                            emit(this._s_name, {c:1, tt: this._i_tt})
+                            emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt
+								, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
                         },
                         function (k,v) {
                             var r=null;
@@ -230,17 +232,22 @@ module.exports.init = function (ctx, cb) {
                                 else {
                                     r.tt += v.tt;
                                     r.c+=v.c;
+                                    r.r+=v.r;
+                                    r.ag+=v.ag;
+                                    r.aa+=v.aa;
                                 }
                             })
                             return r;
                         },
                         {
                             query: query,
-                            out: {inline:1}
+                            out: {inline:1},
+                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
                         },safe.sure(cb, function (data) {
 							// calculate average after aggregation
 							_.each(data, function (metric) {
 								var key = metric.value;
+								key.apdex = (key.ag+key.aa/2)/key.c;
 								key.tta = key.tt/key.c;
 							})
 							cb(null, data);
@@ -365,9 +372,10 @@ module.exports.init = function (ctx, cb) {
                     // dummy, just get it all out
                     serverErrors.findOne({_id:new mongo.ObjectID(p._id)},cb);
                 },
-                getAjaxStats:function(t, p, cb) {
+                getAjaxTimings:function(t, p, cb) {
                     var query = queryfix(p.filter);
                     var ApdexT = 400;
+                    var query =(p._idurl)? _.extend(query,{_s_name:p._idurl}): query;
                     ajax.mapReduce(
                         function() {
                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code
@@ -703,80 +711,6 @@ module.exports.init = function (ctx, cb) {
 
                         return cb(null, block)
                     }))
-                },
-                getAjaxRpm:function(t, p, cb) {
-                    var query = queryfix(p.filter);
-                    var ApdexT = 400;
-                    if (!p.Graph_bool) {
-                        ajax.mapReduce(
-                            function() {
-                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt
-									, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0})
-							},
-                            function (k,v) {
-                                var r=null;
-                                v.forEach(function (v) {
-                                    if (!r){
-                                        r = v
-                                    }
-                                    else {
-										r.tt+=v.tt;
-										r.r+=v.r;
-										r.c+=v.c;
-										r.ag+=v.ag;
-										r.aa+=v.aa;
-                                    }
-                                })
-                                return r;
-                            },
-                            {
-                                query: query,
-                                out: {inline:1},
-                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                            }, safe.sure(cb, function (data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							})
-							cb(null, data);
-						})
-                        )
-                    }
-                    else {
-                        query._s_name=p._idurl;
-                        ajax.mapReduce(
-                            function() {
-								emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt})
-							},
-                            function (k,v) {
-                                var r=null;
-                                v.forEach(function (v) {
-                                    if (!r)
-                                        r = v
-                                    else {
-                                        r.tt+=v.tt;
-                                        r.c+=v.c;
-                                        r.r+=v.r;
-                                    }
-                                })
-                                return r;
-                            },
-                            {
-                                query: query,
-                                out: {inline:1},
-                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                            }, safe.sure(cb, function (data) {
-							// calculate average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.tta = key.tt/key.c;
-							})
-							cb(null, data);
-						})
-                        )
-                    }
                 },
                 getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);

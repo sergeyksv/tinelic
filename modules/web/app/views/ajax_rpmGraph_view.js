@@ -12,7 +12,6 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 				var transaction = $(evt.currentTarget).html()
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
-				var boole=1;
 				api("stats.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
 					trbreak.empty();
                     trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr>');
@@ -44,7 +43,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
                               trbreak.append('<tr><td>'+data.id+'</td><td>'+data.col+'</td><td>'+data.perc+' %</td></tr>')
                     })
 				}))
-						api("stats.getAjaxRpm","public",{quant:10,_idurl:_id, Graph_bool:boole, filter:{_idp:this.data.project._id,
+						api("stats.getAjaxTimings","public",{quant:10,_idurl:_id, filter:{_idp:this.data.project._id,
 						_dt:this.data.fr.filter._dt
 						}},safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();
@@ -186,7 +185,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 
 						}))
 			},this);
-			api("stats.getAjaxStats","public", this.data.fr ,safe.sure(this.app.errHandler, function (r) {
+			api("stats.getAjaxTimings","public", this.data.fr ,safe.sure(this.app.errHandler, function (r) {
 							var offset = new Date().getTimezoneOffset();
 							var ajflat = [], ajprev = null;
 							var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);

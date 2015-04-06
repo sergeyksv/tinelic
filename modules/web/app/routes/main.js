@@ -374,7 +374,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					},cb)
 				},
 				rpm: function (cb) {
-					api("stats.getAjaxRpm","public",{_t_age:quant+"m",quant:quant,filter:{
+					api("stats.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}, cb);
