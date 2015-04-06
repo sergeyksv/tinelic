@@ -496,12 +496,17 @@ module.exports.init = function (ctx, cb) {
 										nrNonFatal.apply(this,arguments)
 									}, function () {
 									safe.parallel([
-										function() {
-											action_errors.insert( te )
+										function(cb) {
+											// save actual error
+											action_errors.insert(te,cb)
 										},
-										function() {
-											var q = {_dt: {$gte: te._dt}}
-											actions.update(q,{$inc: {_i_err: 1}},{multi: false})
+										function(cb) {
+											// modify error counter for
+											// closest action
+											actions.findAndModify(
+												{_dt: {$gte: te._dt}},
+												{_dt:-1},{$inc: {_i_err: 1}}
+											,cb)
 										}
 									],nrNonFatal)
 								}))
