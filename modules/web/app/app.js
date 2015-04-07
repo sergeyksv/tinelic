@@ -141,9 +141,12 @@ define(['views/layout','module','safe',"dust"
 			},cb)
 		},
 		init:function(wire, next) {
-			$.blockUI.defaults.message = "Loading ...";
-			$.blockUI.defaults.showOverlay = false;
-
+			$.blockUI.defaults.message = "<h4>Loading ...</h4>";
+			$.blockUI.defaults.overlayCSS = {
+				backgroundColor: '#FFF',
+				opacity:         0,
+				cursor:          'wait'
+			};
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
