@@ -167,18 +167,16 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				db.collection("page_errors",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
 			function (cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
 						function (cb) { col.ensureIndex({chash:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
@@ -186,40 +184,35 @@ module.exports.init = function (ctx, cb) {
 				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { col.ensureIndex({chash:1}, cb)},
-						function (cb) { col.ensureIndex({_dt:1}, cb)},
-						function (cb) { col.ensureIndex({_idp:1}, cb)}
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb)}
 					], safe.sure(cb, col))
 				}))
 			},
 			function (cb) {
 				db.collection("actions", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
 			function (cb) {
 				db.collection("action_stats", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
 			function (cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			},
 			function (cb) {
 				db.collection("metrics", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_dt:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1}, cb) }
+						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
 					], safe.sure(cb, col))
 				}))
 			}
@@ -567,17 +560,25 @@ module.exports.init = function (ctx, cb) {
 					delete data.url
 					delete data.r
 
-					pages.findAndModify({
+					pages.findOne({
 						chash: data.chash,
 						_dt: {$lte: data._dt}
-					}, {_dt: -1},{$inc:{_i_err: (data._i_code == 200)?0:1}}, {multi: false}, safe.sure(cb, function (page) {
+					}, {sort:{_dt: -1}, hint:{chash:1}}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
 							(page._s_route) && (data._s_route = page._s_route);
 							(page._s_uri) && (data._s_uri = page._s_uri);
 						}
 						ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
-							ajax.insert(data, cb)
+							safe.parallel([
+								function (cb) {
+									ajax.insert(data, cb)
+								},
+								function (cb) {
+									if (!page) return cb();
+									page.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb)
+								}
+							],cb)
 						}))
 					}))
 				}, function (err) {
