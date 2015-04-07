@@ -17,7 +17,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			views = _.sortBy(views, function (v) { return v._id; });
 			var flat = [],prev = null;
 			var ajflat = [], ajprev = null;
-			var actflat = [], actprev = null
+			var actflat = [], actprev = null;
 			_.each(views, function (v) {
 				if (prev) {
 					for (var i=prev._id+1; i<v._id; i++) {

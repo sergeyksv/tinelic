@@ -537,6 +537,14 @@ module.exports.init = function (ctx, cb) {
 						req.connection.socket.remoteAddress;
 
 					data = prefixify(data,{strict:1});
+
+					// add few data consistance checks
+					if (data._i_tt > 1000 * 60 * 10)
+						return cb(new Error("Ajax total time is too big > 10 min"))
+
+					if (Math.abs(data._i_tt - data._i_pt - data._i_nt)>1000)
+						return cb(new Error("ajax total time do not match components"))
+
 					var md5sum = crypto.createHash('md5');
 					md5sum.update(ip);
 					md5sum.update(req.headers['host']);
@@ -596,8 +604,8 @@ module.exports.init = function (ctx, cb) {
 					data = prefixify(data,{strict:1});
 
 					// add few data consistance checks
-					if (data._i_tt > 1000 * 60 * 5)
-						return cb(new Error("Page total time is too big > 5 min"))
+					if (data._i_tt > 1000 * 60 * 10)
+						return cb(new Error("Page total time is too big > 10 min"))
 
 					if (Math.abs(data._i_tt - data._i_nt - data._i_lt - data._i_dt)>1000)
 						return cb(new Error("Page total time do not match components"))
@@ -682,7 +690,7 @@ module.exports.init = function (ctx, cb) {
 							_s_server: ge.server_name,
 							_s_logger: ge.platform,
 							_s_message: ge.message,
-							_s_culprit: ge.culprit,
+							_s_culprit: ge.culprit || 'undefined',
 							exception: {
 								_s_type: ge.exception[0].type,
 								_s_value: ge.exception[0].value
