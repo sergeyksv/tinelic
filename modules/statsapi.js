@@ -43,7 +43,6 @@ module.exports.init = function (ctx, cb) {
                     safe.parallel({
                         actions:function(cb) {
                             q._dt.$gt = p._dt._dtActionsErrAck,
-                            console.log(q);
                             q = queryfix(q)
                             serverErrors.find(q).count(cb)
                         },
