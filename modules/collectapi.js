@@ -576,7 +576,7 @@ module.exports.init = function (ctx, cb) {
 								},
 								function (cb) {
 									if (!page) return cb();
-									page.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb)
+									pages.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb)
 								}
 							],cb)
 						}))
