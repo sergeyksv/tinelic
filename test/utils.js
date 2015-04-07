@@ -21,7 +21,7 @@ process.on('uncaughtException', STOP);
 
 function STOP (err) {
 	if (err)
-		console.trace(err);
+		console.log(err.stack);
 
 	killChilds();
 

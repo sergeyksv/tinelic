@@ -23,28 +23,18 @@ module.exports.blurFocus = function(input){
 	input.sendKeys(Key.TAB);
 }
 
-module.exports.runModal = function (selector, run) {
+module.exports.waitModal = function (selector, run) {
 	var self = this;
 	selector = selector || By.css('.modal:not(#livechat)');
-	self.browser.wait(function () {
+	return self.browser.wait(function () {
 		return self.browser.isElementPresent(selector)
-	});
-	self.browser.findElement(selector).then(function (modal) {
-		var id;
-		modal.getAttribute("id").then(function(text){
-			id = text;
+	}).then(function() {
+		return self.browser.findElement(selector).then(function (modal) {
+			return self.browser.wait(function () {
+				return modal.getCssValue("opacity").then(function (v) { return v==1; });
+			});
 		});
-		self.browser.wait(function () {
-			return modal.getCssValue("opacity").then(function (v) { return v==1; });
-		});
-		run(modal);
-
-		self.browser.wait(function () {
-			return self.browser.isElementPresent(By.id(id)).then(function (isPresent)
-				{ return !isPresent; } );
-		});
-		self.browser.sleep(256);
-	});
+	})
 }
 
 module.exports.waitNoElement = function (element) {
