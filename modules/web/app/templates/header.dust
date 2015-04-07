@@ -13,7 +13,7 @@
 	  <ul class="nav navbar-nav">
 		<li class="active"><a href="{_t_prefix}/">Home</a></li>
 		<li><a href="{_t_prefix}/page">Page</a></li>
-		<li><a href="{_t_prefix}/users">Manage users</a></li>
+		<li><a href="{_t_prefix}/users" class="doManageUsers">Manage users</a></li>
 		<li><a href="{_t_prefix}/teams">Manage teams</a></li>
 		<li><a id="logout" href="#">Log out</a></li>
 	  </ul>

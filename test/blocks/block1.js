@@ -29,6 +29,49 @@ module.exports.block = function(){
 					})
 				})
 			});
+			it("Log-in as new user", function (done) {
+				var self = this, b = self.browser, pid = null;
+				self.trackError(done);
+				b.get("http://localhost/web/");
+				helpers.waitPageReload.call(self, null).then(function (pid) {
+					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#login")).sendKeys("admin");
+					b.findElement(By.css("button.btn")).click();
+
+					helpers.waitPageReload.call(self, pid).then(function (pid) {
+
+						b.findElement(By.css("#navbar .doManageUsers")).click();
+
+						helpers.waitPageReload.call(self, pid).then(function (pid) {
+
+							b.findElement(By.css("#addnu")).click();
+
+							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
+								b.findElement(By.css('input#firstname')).sendKeys("obram");
+								b.findElement(By.css('input#lastname')).sendKeys("tinelic");
+								b.findElement(By.css('input#login')).sendKeys("obram");
+								b.findElement(By.css('button#role')).click();
+								b.findElement(By.css('.li-role')).click("admin");
+								b.findElement(By.css('input#userpass')).sendKeys("123456");
+								b.findElement(By.css('input#userrpass')).sendKeys("123456");
+								b.findElement(By.css("button#savebtn")).click();
+
+								helpers.waitPageReload.call(self, pid).then(function (pid) {
+									b.findElement(By.css("#logout")).click();
+
+									helpers.waitPageReload.call(self, pid).then(function (pid) {
+
+										b.findElement(By.css('#pass')).sendKeys("123456");
+										b.findElement(By.css("#login")).sendKeys("obram");
+										b.findElement(By.css("button.btn")).click();
+										self.done();
+									})
+								})
+							})
+						})
+					})
+				})
+			});
 		});
 	}
 };

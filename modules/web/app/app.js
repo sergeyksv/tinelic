@@ -174,6 +174,7 @@ define(['views/layout','module','safe',"dust"
 			}))
 		},
 		clientRender:function (res, route, next) {
+			$.unblockUI();
 			this._pageLoad.data = new Date();
 			next || (next = this.errHandler);
 			var self = this;
@@ -186,7 +187,7 @@ define(['views/layout','module','safe',"dust"
 				var oldView = mainView.views[0];
 				document.title = route.data.title;
 				var $dom = $(text);
-				$("#content").html($dom);
+				$("#content").append($dom);
 				view.bindDom($dom, oldView)
 				oldView.remove();
 				mainView.attachSubView(view)
