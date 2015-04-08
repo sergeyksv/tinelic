@@ -741,7 +741,7 @@ module.exports.init = function (ctx, cb) {
                     as.mapReduce(
                         function() {
                                 this.data.forEach(function(k,v) {
-                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt})
+                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt, own: k._i_own})
                                 })
                         },
                         function (k,v) {
@@ -753,6 +753,7 @@ module.exports.init = function (ctx, cb) {
                                 else {
 									r.tt += v.tt;
                                     r.cnt += v.cnt
+                                    r.own += v.own
                                 }
                             })
                             return r;
@@ -765,6 +766,7 @@ module.exports.init = function (ctx, cb) {
 							_.each(data, function (metric) {
 								var key = metric.value;
 								key.tta = key.tt/key.cnt;
+								key.owna = key.own/key.cnt;
 							})
 							cb(null, data);
 						})
