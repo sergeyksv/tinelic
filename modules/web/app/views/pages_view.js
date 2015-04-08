@@ -19,7 +19,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
 
                 safe.parallel([
                     function(cb) {
-                        api("stats.pagesBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.getPagesBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
                             trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                             var sum = 0;
@@ -34,7 +34,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         cb()
                     },
                     function(cb) {
-                        api("stats.getPageViews", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.getPagesTimings", $.cookie("token"), filter, safe.sure(cb, function(data) {
 
                             var views = data;
                             var flat = [], prev = null
@@ -202,7 +202,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
             var self = this;
             var filter1 = this.data.fr;
             var quant = this.data.fr.quant;
-			api("stats.getPageViews", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
+			api("stats.getPagesTimings", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
 
                             var views = data;
                             var flat = [], prev = null

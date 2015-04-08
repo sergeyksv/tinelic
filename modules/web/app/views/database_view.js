@@ -20,7 +20,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 safe.parallel([
                     function(cb) {
                         filter.filter['data._s_cat'] = "WebTransaction"
-                        api("stats.getActionsCallees", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                        api("stats.getActionsCategoryBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
                             trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
                             data = _.sortBy(data, function(r) {

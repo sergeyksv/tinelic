@@ -12,7 +12,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 				var transaction = $(evt.currentTarget).html()
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
-				api("stats.ajaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
+				api("stats.getAjaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
 					trbreak.empty();
                     trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr>');
 					var int=[] , k=null;
