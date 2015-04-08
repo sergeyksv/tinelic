@@ -23,16 +23,17 @@ module.exports.blurFocus = function(input){
 	input.sendKeys(Key.TAB);
 }
 
-module.exports.waitModal = function (selector, run) {
+module.exports.waitModal = function (selector, timeout) {
 	var self = this;
 	selector = selector || By.css('.modal:not(#livechat)');
+	timeout = timeout || 15000;
 	return self.browser.wait(function () {
 		return self.browser.isElementPresent(selector)
-	}).then(function() {
+	},timeout).then(function() {
 		return self.browser.findElement(selector).then(function (modal) {
 			return self.browser.wait(function () {
 				return modal.getCssValue("opacity").then(function (v) { return v==1; });
-			});
+			},timeout);
 		});
 	})
 }
