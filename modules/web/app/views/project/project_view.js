@@ -18,13 +18,14 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 			var quant = this.data.quant;
 			var flat = [],prev = null;
 			var ajflat = [], ajprev = null;
-			var actflat = [], actprev = null
+			var actflat = [], actprev = null;
 			var dtstart = this.data.fr.filter._dt.$gt/(quant*60000);
             var dtend =  this.data.fr.filter._dt.$lte/(quant*60000);
-            if (dtstart != views[0]._id) {
+            if (views && views.length && dtstart != views[0]._id) {
 				flat[0]={_id: dtstart, value:null}
 				flat[1]={_id: views[0]._id-1, value:null}
 			}
+
 			_.each(views, function (v) {
 				if (prev) {
 					for (var i=prev._id+1; i<v._id; i++) {
@@ -34,11 +35,11 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				prev = v;
 				flat.push(v);
 			})
-			if (views[views.length-1]._id != dtend) {
+			if (views && views.length && views[views.length-1]._id != dtend) {
 				flat[flat.length]={_id: views[views.length-1]._id+1, value:null}
 				flat[flat.length]={_id: dtend, value:null}
 			}
-			if (dtstart != ajax[0]._id) {
+			if (ajax && ajax.length && dtstart != ajax[0]._id) {
 				ajflat[0]={_id: dtstart, value:null}
 				ajflat[1]={_id: ajax[0]._id-1, value:null}
 			}
@@ -51,11 +52,11 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				ajprev = a;
 				ajflat.push(a);
 			})
-			if (ajax[ajax.length-1]._id != dtend) {
+			if (ajax && ajax.length && ajax[ajax.length-1]._id != dtend) {
 				ajflat[ajflat.length]={_id: ajax[ajax.length-1]._id+1, value:null}
 				ajflat[ajflat.length]={_id: dtend, value:null}
 			}
-			if (dtstart != actions[0]._id) {
+			if (actions && actions.length && dtstart != actions[0]._id) {
 				actflat[0]={_id: dtstart, value:null}
 				actflat[1]={_id: actions[0]._id-1, value:null}
 			}
@@ -68,7 +69,7 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				actprev = a;
 				actflat.push(a);
 			})
-			if (actions[actions.length-1]._id != dtend) {
+			if (actions && actions.length && actions[actions.length-1]._id != dtend) {
 				actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null}
 				actflat[actflat.length]={_id: dtend, value:null}
 			}
