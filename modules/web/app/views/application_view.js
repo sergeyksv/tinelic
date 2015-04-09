@@ -21,19 +21,23 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                   function(cb) {
                       api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                           trbreak.empty();
-                          trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
+                          trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th><th>Own Time</th></tr>');
                           data = _.sortBy(data, function(r) {
                               return r.value.tta*-1
                           })
-                           var sumtta = 0
+                           var sumtta = 0; var sumowna = 0;
                             _.forEach(data, function(r) {
                                 sumtta += r.value.tta
+                                sumowna += r.value.owna
                             })
                           var sum = data[0].value
                           _.forEach(data, function(r) {
                               var count = (r.value.cnt/sum.cnt).toFixed(2)
                               var proc = ((r.value.tta/sumtta)*100).toFixed(1)
-                              trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
+                              var owna = ((r.value.owna/sumowna)*100).toFixed(1)
+                              r.value.tta = r.value.tta.toFixed(1)
+                              r.value.owna = r.value.owna.toFixed(1)
+                              trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+r.value.tta+' s / '+proc+' %</td><td>'+r.value.owna+' s / '+owna+' %</td></tr>')
                           })
                       }))
                       cb()
