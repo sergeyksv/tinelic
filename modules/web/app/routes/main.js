@@ -244,48 +244,54 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						}
 					}
 				var views = {}; // total | server | browser | transaction | page | ajax
-				var valtt; var vale; var valr; var period;
+				var valtt; var vale; var valr; var valapd; var period;
 				if (r.data.views.length != 0) {
-					valtt = vale = valr = 0;
+					valtt = vale = valr = valapd = 0;
 					period = r.data.views.length;
 					_.forEach(r.data.views, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tta/1000):0;
 						vale+=v.value?v.value.e:0;
+						valapd+=v.value?v.value.apdex:0;
 					})
 
 					valtt=(valtt/period);
 					vale=(vale/period).toFixed(2);
 					valr=(valr/period);
-					views.total = {rpm: valr, errorpage: vale, etupage: valtt}
+					valapd=(valapd/period);
+					views.total = {rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd}
 
 				}
 				if (r.data.actions.length != 0) {
-					valtt = vale = valr = 0;
+					valtt = vale = valr = valapd = 0;
 					period = r.data.actions.length;
 					_.forEach(r.data.actions, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tta/1000):0;
+						valapd+=v.value?v.value.apdex:0;
 					})
 
 					valtt=(valtt/period);
 					valr=(valr/period);
-					_.extend(views.total,{rsm: valr, ttserver: valtt});
+					valapd=(valapd/period);
+					_.extend(views.total,{rsm: valr, ttserver: valtt, apdserver: valapd});
 
 				}
 				if (r.data.ajax.length != 0) {
-					valtt = vale = valr = 0;
+					valtt = vale = valr = valapd = 0;
 					period = r.data.ajax.length;
 					_.forEach(r.data.ajax, function (v) {
 						valr+=v.value?v.value.r:0;
 						valtt+=v.value?(v.value.tta/1000):0;
 						vale+=v.value?v.value.e:0;
+						valapd+=v.value?v.value.apdex:0;
 					})
 
 					valtt=(valtt/period);
 					vale=(vale/period).toFixed(2);
 					valr=(valr/period);
-					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt})
+					valapd=(valapd/period);
+					_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt, apdajax: valapd})
 
 				}
 				if (r.data.errors.length != 0) {
