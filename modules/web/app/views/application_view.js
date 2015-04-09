@@ -39,7 +39,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                       cb()
                   },
                   function(cb) {
-                      api("stats.getActions", $.cookie("token"), filter, safe.sure(cb, function(data) {
+                      api("stats.getActionsTimings", $.cookie("token"), filter, safe.sure(cb, function(data) {
 
                           var actions = data;
                           var actflat = [], actprev = null
@@ -206,7 +206,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
             view.prototype.postRender.call(this);
             var self = this;
 			var filter = this.data.fr;
-			api("stats.getActions", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
+			api("stats.getActionsTimings", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
 
                           var actions = data;
                           var actflat = [], actprev = null

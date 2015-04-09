@@ -459,7 +459,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getTopTransactions", "public", {
+							api("stats.getActionsStats", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -491,7 +491,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getTopPages", "public", {
+							api("stats.getPagesStats", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -672,7 +672,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
 						},
 						rpm: function (cb){
-								api("stats.getServerErrorRpm", "public", {_t_age:quant+"m",quant:quant, filter:{
+								api("stats.getServerErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
 									_idp:project._id, _id:req.params.id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}}, cb)

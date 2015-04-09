@@ -84,7 +84,7 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
-                getActions: function(t, p, cb) {
+                getActionsTimings: function(t, p, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
                     var ApdexT = 200;
@@ -130,7 +130,7 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getTopTransactions: function(t, p , cb) {
+                getActionsStats: function(t, p , cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction"
 					var ApdexT = 200;
@@ -274,7 +274,7 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getTopPages: function(t, p, cb) {
+                getPagesStats: function(t, p, cb) {
                     var query = queryfix(p.filter);
                     var ApdexT = 7000;
                     pages.mapReduce(
@@ -313,11 +313,11 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getEvents:function (t, p, cb) {
+                getPagesError:function (t, p, cb) {
                     // dummy, just get it all out
                     events.find().toArray(cb)
                 },
-                getEvent:function (t, p, cb) {
+                getPageError:function (t, p, cb) {
                     // dummy, just get it all out
                     events.findOne({_id:new mongo.ObjectID(p._id)},cb);
                 },
@@ -434,7 +434,7 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getPageViews:function (t, p, cb) {
+                getPagesTimings:function (t, p, cb) {
                     var query = queryfix(p.filter);
 					var ApdexT = 7000;
                     pages.mapReduce(function () {
@@ -474,7 +474,7 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getEventInfo:function (t, p, cb) {
+                getPagesErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);
 
                     events.findOne(query, safe.sure(cb, function (event) {
@@ -639,7 +639,7 @@ module.exports.init = function (ctx, cb) {
 						)
 					}))
 				},
-				getServerErrorRpm:function(t, p, cb) {
+				getServerErrorTimings:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
 					var q = p.quant || 1;
 					serverErrors.findOne(query1, safe.sure(cb, function (event) {
@@ -713,7 +713,7 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
-                getJSByTrace:function (t, p, cb) {
+                JSByTrace:function (t, p, cb) {
                     var url = p._s_file.trim();
 
                     request.get({url:url}, safe.sure(cb, function (res, body) {
@@ -843,7 +843,7 @@ module.exports.init = function (ctx, cb) {
                         })
                     )
                 },
-                pagesBreakDown: function(t,p,cb){
+                getPagesBreakDown: function(t,p,cb){
                     var query = queryfix(p.filter);
                     pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
                         delete query._s_uri
@@ -884,7 +884,7 @@ module.exports.init = function (ctx, cb) {
                         )
                     }))
                 },
-                ajaxBreakDown: function(t,p,cb){
+                getAjaxBreakDown: function(t,p,cb){
                     var query = queryfix(p.filter);
                     var q = p.quant || 1;
                     ajax.mapReduce(
@@ -947,7 +947,7 @@ module.exports.init = function (ctx, cb) {
 						})
                     )
                 },
-                getActionsCallees: function(t,p, cb) {
+                getActionsCategoryBreakDown: function(t,p, cb) {
                     var query = queryfix(p.filter);
                     as.mapReduce(
                         function() {

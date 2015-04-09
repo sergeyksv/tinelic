@@ -30,7 +30,7 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe','dustc!templates/
 					$li.find("pre").remove()
 				} else {
 					var trace = this.data.event.stacktrace.frames[$this.data('idx')];
-					api("stats.getJSByTrace","public",trace, function (err,jsfile) {
+					api("stats.JSByTrace","public",trace, function (err,jsfile) {
 						if (err) {
 							$li.append("<pre>"+htmlEscape(err.message)+"</pre>");
 						} else {
