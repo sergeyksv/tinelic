@@ -31,7 +31,7 @@
           		</td>
           		<td class="success">
           		    <div class="dropdown">
-          			    <button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs navbar-right" style="margin-right: 20px;">Actions</button>
+          			   <button type="button" role="button" data-toggle="dropdown" class="actions btn btn-default btn-xs navbar-right" style="margin-right: 20px;">Actions</button>
 
                       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
