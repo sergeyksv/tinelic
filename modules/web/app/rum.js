@@ -53,15 +53,16 @@
             document.attachEvent("onreadystatechange", ready2);
 
             if (document.documentElement.doScroll && window == window.top) {
-                (function() {
+                var ready3 = function() {
                     try {
                         document.documentElement.doScroll("left");
                     } catch (error) {
-                        setTimeout(arguments.callee, 0);
+                        setTimeout(ready3, 0);
                         return;
                     }
                     domEvent();
-                })();
+                };
+                ready3();
             }
         }
     }
@@ -187,7 +188,7 @@
                         if (self.readyState == 2) {
                             s._i_nt = time;
                         }
-                        if (self.readyState == 4) {
+                        if (self.readyState == 4 ) {
                             s._i_tt = time;
                             s._i_pt = s._i_tt - s._i_nt;
                             s.url = url;
@@ -207,7 +208,7 @@
                         if (oldOnReadyStateChange) {
                             oldOnReadyStateChange();
                         }
-                    }
+                    };
                     if (this.addEventListener) {
                         this.addEventListener("readystatechange", onReadyStateChange, false);
                     } else {
