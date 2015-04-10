@@ -306,10 +306,6 @@ module.exports.init = function (ctx, cb) {
 						})
                     );
                 },
-                getPagesError:function (t, p, cb) {
-                    // dummy, just get it all out
-                    events.find().toArray(cb);
-                },
                 getPageError:function (t, p, cb) {
                     // dummy, just get it all out
                     events.findOne({_id:new mongo.ObjectID(p._id)},cb);
