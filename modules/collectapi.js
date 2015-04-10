@@ -790,7 +790,7 @@ module.exports.init = function (ctx, cb) {
 					data._s_server = "rum";
 					data._s_reporter = "raven";
 
-					data.excpetion = data.exception || {};
+					data.exception = data.exception || {};
 					data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
 					data.exception._s_value = data.exception.value || data._s_message; delete data.exception.value;
 					if (data.stacktrace) {
