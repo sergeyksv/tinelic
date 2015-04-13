@@ -87,224 +87,232 @@ module.exports.init = function (ctx, cb) {
                 getActionsTimings: function(t, p, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
-                    var ApdexT = 200;
-
-                    actions.mapReduce(
-                        function() {
-                            emit(parseInt(this._dt.valueOf()/(Q*60000)), {
-                                c:1,
-                                r: 1.0/Q,
-                                tt: this._i_tt,
-                                ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
-                                aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
-                            });
-						},
-                        function (k,v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
-                                }
-                                else {
-                                    r.tt+=v.tt;
-                                    r.r+=v.r;
-                                    r.c+=v.c;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        }, safe.sure(cb, function (data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-							cb(null, data);
-						})
-                    );
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_serverT
+                        actions.mapReduce(
+                            function() {
+                                emit(parseInt(this._dt.valueOf()/(Q*60000)), {
+                                    c:1,
+                                    r: 1.0/Q,
+                                    tt: this._i_tt,
+                                    ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                    aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
+                                });
+                            },
+                            function (k,v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt+=v.tt;
+                                        r.r+=v.r;
+                                        r.c+=v.c;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            }, safe.sure(cb, function (data) {
+                                // calculate apdex and average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                cb(null, data);
+                            })
+                        );
+                    }))
                 },
                 getActionsStats: function(t, p , cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
-					var ApdexT = 200;
-                    actions.mapReduce(
-                        function() {
-							emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
-								ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-						},
-                        function (k,v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_serverT;
+                        actions.mapReduce(
+                            function() {
+                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
+                                    ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+                            },
+                            function (k,v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt+=v.tt;
+                                        r.r+=v.r;
+                                        r.c+=v.c;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            },
+                            safe.sure(cb, function(data) {
+                                // calculate apdex and average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                var st = p.st;
+                                if (st) {
+                                    data =_.sortBy(data, function(v){
+                                        if (st == "rpm")
+                                            return -1*v.value.r;
+                                        if (st == "mtc")
+                                            return -1* (v.value.tta*v.value.c);
+                                        if (st == "sar")
+                                            return -1* v.value.tta;
+                                        if (st == "wa")
+                                            return 1* v.value.apdex;
+                                    });
+
+                                    var sum=0;
+                                    _.each(data, function(r){
+                                        if (st == "rpm")
+                                            sum+=r.value.r;
+                                        if (st == "mtc")
+                                            sum += r.value.tta*r.value.c;
+                                        if (st == "sar")
+                                            sum += r.value.tta;
+                                        if (st == "wa") {
+                                            sum += r.value.apdex;
+                                        }
+                                    });
+                                    var percent = sum/100;
+                                    _.each(data, function (r) {
+                                        if (st == "rpm") {
+                                            r.value.bar = Math.round(r.value.r/percent);
+                                        }
+                                        if (st == "mtc") {
+                                            r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+                                            r.value.tta = (r.value.tta/1000);
+                                        }
+                                        if (st == "sar") {
+                                            r.value.bar = Math.round(r.value.tta/percent);
+                                            r.value.tta = (r.value.tta/1000);
+                                        }
+                                        if (st == "wa") {
+                                            r.value.bar = Math.round(r.value.apdex/percent);
+                                            r.value.apdex = r.value.apdex;
+                                        }
+                                    });
                                 }
                                 else {
-                                    r.tt+=v.tt;
-                                    r.r+=v.r;
-                                    r.c+=v.c;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
+                                    data = _.take(_.sortBy(data, function(r) {
+                                        return (r.value.tta*r.value.c)*-1;
+                                    }),10);
+                                    var progress =0;
+                                    _.forEach(data,function(r) {
+                                        progress += r.value.tta*r.value.c;
+                                    });
+                                    _.forEach(data, function(r) {
+                                        r.value.progress = (r.value.tta*r.value.c/progress)*100;
+                                        r.value.tta = r.value.tta/1000;
+                                    });
                                 }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        },
-                        safe.sure(cb, function(data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-                            var st = p.st;
-                            if (st) {
-                                data =_.sortBy(data, function(v){
-                                    if (st == "rpm")
-                                        return -1*v.value.r;
-                                    if (st == "mtc")
-                                        return -1* (v.value.tta*v.value.c);
-                                    if (st == "sar")
-                                        return -1* v.value.tta;
-                                    if (st == "wa")
-                                        return 1* v.value.apdex;
-                                });
-
-                                var sum=0;
-                                _.each(data, function(r){
-                                    if (st == "rpm")
-                                        sum+=r.value.r;
-                                    if (st == "mtc")
-                                        sum += r.value.tta*r.value.c;
-                                    if (st == "sar")
-                                        sum += r.value.tta;
-                                    if (st == "wa") {
-                                        sum += r.value.apdex;
-                                    }
-                                });
-                                var percent = sum/100;
-                                _.each(data, function (r) {
-                                    if (st == "rpm") {
-                                        r.value.bar = Math.round(r.value.r/percent);
-                                    }
-                                    if (st == "mtc") {
-                                        r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
-                                        r.value.tta = (r.value.tta/1000);
-                                    }
-                                    if (st == "sar") {
-                                        r.value.bar = Math.round(r.value.tta/percent);
-                                        r.value.tta = (r.value.tta/1000);
-                                    }
-                                    if (st == "wa") {
-                                        r.value.bar = Math.round(r.value.apdex/percent);
-                                        r.value.apdex = r.value.apdex;
-                                    }
-                                });
-                            }
-                            else {
-                                data = _.take(_.sortBy(data, function(r) {
-                                    return (r.value.tta*r.value.c)*-1;
-                                }),10);
-                                var progress =0;
-                                _.forEach(data,function(r) {
-                                    progress += r.value.tta*r.value.c;
-                                });
-                                _.forEach(data, function(r) {
-                                    r.value.progress = (r.value.tta*r.value.c/progress)*100;
-                                    r.value.tta = r.value.tta/1000;
-                                });
-                            }
-                            cb(null, data);
-                        })
-                    );
+                                cb(null, data);
+                            })
+                        );
+                    }))
                 },
                 getAjaxStats: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var ApdexT = 500;
-                    ajax.mapReduce(
-                        function() {
-                            emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
-								ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-                        },
-                        function (k,v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
-                                }
-                                else {
-                                    r.tt += v.tt;
-                                    r.c+=v.c;
-                                    r.r+=v.r;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        },safe.sure(cb, function (data) {
-							// calculate average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-							cb(null, data);
-						})
-                    );
+
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_ajaxT;
+                        ajax.mapReduce(
+                            function() {
+                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
+                                    ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+                            },
+                            function (k,v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt += v.tt;
+                                        r.c+=v.c;
+                                        r.r+=v.r;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            },safe.sure(cb, function (data) {
+                                // calculate average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                cb(null, data);
+                            })
+                        );
+                    }))
                 },
                 getPagesStats: function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var ApdexT = 7000;
-                    pages.mapReduce(
-                        function() {
-                           emit(this._s_route, {c:1, r: 1.0/Q, tt: this._i_tt,
-								ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-						},
-                        function (k,v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
-                                }
-                                else {
-									r.tt+=v.tt;
-                                    r.r+=v.r;
-                                    r.c+=v.c;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        }, safe.sure(cb, function (data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-							cb(null, data);
-						})
-                    );
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_pagesT;
+                        pages.mapReduce(
+                            function() {
+                                emit(this._s_route, {c:1, r: 1.0/Q, tt: this._i_tt,
+                                    ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+                            },
+                            function (k,v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt+=v.tt;
+                                        r.r+=v.r;
+                                        r.c+=v.c;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            }, safe.sure(cb, function (data) {
+                                // calculate apdex and average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                cb(null, data);
+                            })
+                        );
+                    }))
                 },
                 getPageError:function (t, p, cb) {
                     // dummy, just get it all out
@@ -384,85 +392,91 @@ module.exports.init = function (ctx, cb) {
                 },
                 getAjaxTimings:function(t, p, cb) {
                     var query = queryfix(p.filter);
-                    var ApdexT = 500;
                     query =(p._idurl)? _.extend(query,{_s_name:p._idurl}): query;
-                    ajax.mapReduce(
-                        function() {
-                           emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code,
-								e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-						},
-                        function (k,v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
-                                }
-                                else {
-									r.tt+=v.tt;
-                                    r.r+=v.r;
-                                    r.c+=v.c;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
-                                    r.e+=v.e;
-                                    r.pt+= v.pt;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        },safe.sure(cb, function (data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-							cb(null, data);
-						})
-                    );
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_ajaxT;
+                        ajax.mapReduce(
+                            function() {
+                                emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code,
+                                    e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+                            },
+                            function (k,v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt+=v.tt;
+                                        r.r+=v.r;
+                                        r.c+=v.c;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                        r.e+=v.e;
+                                        r.pt+= v.pt;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            },safe.sure(cb, function (data) {
+                                // calculate apdex and average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                cb(null, data);
+                            })
+                        );
+                    }))
+
                 },
                 getPagesTimings:function (t, p, cb) {
                     var query = queryfix(p.filter);
-					var ApdexT = 7000;
-                    pages.mapReduce(function () {
-							emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q,
-								ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
-                                aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
-						},
-                        function (k, v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                if (!r) {
-                                    r = v;
-                                }
-                                else {
-									r.tt+=v.tt;
-                                    r.r+=v.r;
-                                    r.c+=v.c;
-                                    r.ag+=v.ag;
-                                    r.aa+=v.aa;
-                                    r.e+=v.e;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1},
-                            scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-                        }, safe.sure(cb, function (data) {
-							// calculate apdex and average after aggregation
-							_.each(data, function (metric) {
-								var key = metric.value;
-								key.apdex = (key.ag+key.aa/2)/key.c;
-								key.tta = key.tt/key.c;
-							});
-							cb(null, data);
-						})
-                    );
+                    ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+                        var ApdexT = apdex._i_pagesT;
+                        pages.mapReduce(function () {
+                                emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q,
+                                    ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+                                    aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
+                            },
+                            function (k, v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    if (!r) {
+                                        r = v;
+                                    }
+                                    else {
+                                        r.tt+=v.tt;
+                                        r.r+=v.r;
+                                        r.c+=v.c;
+                                        r.ag+=v.ag;
+                                        r.aa+=v.aa;
+                                        r.e+=v.e;
+                                    }
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1},
+                                scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+                            }, safe.sure(cb, function (data) {
+                                // calculate apdex and average after aggregation
+                                _.each(data, function (metric) {
+                                    var key = metric.value;
+                                    key.apdex = (key.ag+key.aa/2)/key.c;
+                                    key.tta = key.tt/key.c;
+                                });
+                                cb(null, data);
+                            })
+                        );
+                    }))
+
                 },
                 getPagesErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);

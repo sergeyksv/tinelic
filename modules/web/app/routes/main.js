@@ -711,6 +711,23 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					})
 				)
 			}))
+		},
+		settings: function(req,res,cb) {
+			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				safe.parallel({
+					view: function (cb) {
+						requirejs(["views/settings_view"], function (view) {
+							safe.back(cb, null, view)
+						},cb)
+					},
+					apdexConfig: function(cb) {
+						api("assets.getProjectApdexConfig", "public", {_id:project._id}, cb)
+					}
+				},safe.sure(cb, function(r){
+						res.renderX({view:r.view,data:{title:"Settings", project:project, apdexConfig: r.apdexConfig}})
+					})
+				)
+			}))
 		}
 	}
 })

@@ -184,6 +184,28 @@ module.exports.init = function (ctx, cb) {
 					var set = {$set:{}}
 					set.$set[data.type] = new Date();
 					tm.projects.update({_id:data._id},set,cb)
+				},
+				getProjectApdexConfig: function(t, query, cb) {
+					query =  prefixify(query)
+					var serverT = 200;
+					var pagesT = 7000;
+					var ajaxT = 500;
+					projects.findOne(query, safe.sure(cb,function(data) {
+						if (data.apdexConfig){
+							cb(null,data.apdexConfig)
+						}
+						else {
+							cb(null, {
+								_i_serverT: serverT,
+								_i_pagesT: pagesT,
+								_i_ajaxT: ajaxT
+							})
+						}
+					}))
+				},
+				saveProjectsConfig: function(t,query, cb) {
+					query = prefixify(query)
+					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
 				}
             }});
         }))
