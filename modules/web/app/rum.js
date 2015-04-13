@@ -151,9 +151,9 @@
         var xhrwrapper = function(XHR) {
             var open = XHR.prototype.open;
             var send = XHR.prototype.send;
-            XHR.prototype.open = function(method, url, async, user, pass) {
-                this._url = url;
-                open.call(this, method, url, async, user, pass);
+            XHR.prototype.open = function() {
+                this._url = arguments[1];
+                open.apply(this, arguments);
             };
             XHR.prototype.send = function(data) {
                 var self = this;
