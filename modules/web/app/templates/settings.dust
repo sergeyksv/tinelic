@@ -1,0 +1,67 @@
+{@view name="views/header_view" data="header" /}
+
+<div class="starter-template container">
+	<div class="row">
+		<div class="col-sm-3"></div>
+        <div class="col-sm-6">
+			<div class="row-fluid">
+				{#project}
+                    <legend class="h2" id="_id" data-id="{project._id}">Project <div class="btn btn-default btn-sm pull-right edit" data-type="project">Edit</div></legend>
+                    <div class="row-fluid">
+						<form id="project" class="form-inline">
+							<strong>Name:</strong> &nbsp
+							<span>{project.name}</span>
+							<input style="display: none" type="text" name="name" class="form-control" value="{project.name}">
+                            <div type="submit" data-send="project" style="display: none" class="btn btn-sm btn-primary send">Save</div>
+						</form>
+						<br>
+
+					</div><br>
+				{/project}
+				{#apdexConfig}
+                    <legend class="h2">Apdex Time <div class="btn btn-default btn-sm pull-right edit" data-type="apdexT">Edit</div></legend>
+					<div class="row-fluid">
+                        <form id="apdexT">
+							<div class="col-sm-4 text-danger">
+								<div class="row">
+									<div class="col-xs-4">
+                                        <strong>Server:</strong>
+                                    </div>
+									<div class="col-xs-8">
+                                        <span>{_i_serverT}</span>
+                                        <input style="display: none" type="number" name="_i_serverT" class="form-control" value="{_i_serverT}">
+									</div>
+								</div>
+							</div>
+                            <div class="col-sm-4 text-success">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <strong>Pages:</strong>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span>{_i_pagesT}</span>
+                                        <input style="display: none" type="number" name="_i_pagesT" class="form-control" value="{_i_pagesT}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-4 text-info">
+                                <div class="row">
+                                    <div class="col-xs-4">
+                                        <strong>Ajax:</strong>
+                                    </div>
+                                    <div class="col-xs-8">
+                                        <span>{_i_ajaxT}</span>
+                                        <input style="display: none" type="number" name="_i_ajaxT" class="form-control" value="{_i_ajaxT}">
+                                    </div>
+                                </div>
+                            </div>
+							<br>
+                            <div type="submit" data-send="apdexT" style="display: none" class="btn btn-sm btn-primary send">Save</div>
+						</form>
+					</div><br>
+				{/apdexConfig}
+			</div>
+		</div>
+        <div class="col-sm-3"></div>
+	</div>
+</div>
