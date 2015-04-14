@@ -723,42 +723,6 @@ module.exports.init = function (ctx, cb) {
                         })
                     );
                 },
-                JSByTrace:function (t, p, cb) {
-                    var url = p._s_file.trim();
-
-                    request.get({url:url}, safe.sure(cb, function (res, body) {
-                        if (res.statusCode!=200)
-                            return cb(new Error("Error, status code " + res.statusCode));
-                        var lineno=0,lineidx=0;
-                        while (lineno<parseInt(p._i_line)-1) {
-                            lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
-                            if (lineidx==-1)
-                                return cb(new Error("Line number '"+p._i_line+"' is not found"));
-                            lineno++;
-                        }
-                        var idx = lineidx+parseInt(p._i_col);
-                        body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
-                        if (idx>=body.length)
-                            return cb(new Error("Column number '"+p._i_col+"' is not found"));
-                        var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
-
-                        return cb(null, block);
-                    }));
-                },
-                FetchStackTrace:function (t, p, cb) {
-						safe.forEach(p[0].stacktrace.frames, function(r, cb) {
-							ctx.api.stats.JSByTrace("public",r, function (err,jsfile) {
-								if (err) {
-									console.log('ERR_inFetchStack',err)
-								} else {
-									r._s_context=jsfile;
-									cb(null, r)
-								}
-							})
-						}, safe.sure(cb, function(){
-							cb(null, p)
-						}))
-                },
                 getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";

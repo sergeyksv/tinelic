@@ -9,6 +9,13 @@ var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
 var newrelic = require("newrelic");
+var LRU = require("lru-cache")
+  , options = { max: 500
+              , length: function (n) { return n.length }
+              , dispose: function (key, n) { n.close }
+              , maxAge: 1000 * 60 * 60 }
+  , cache = LRU(options)
+  , otherCache = LRU(50) // sets just the max size 
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -819,8 +826,8 @@ module.exports.init = function (ctx, cb) {
 						}
 						ctx.api.validate.check("error",data, safe.sure(cb, function () {
 							events.insert(data, safe.sure(cb, function(res){
-								ctx.api.stats.FetchStackTrace("public",res, function (err,jsfile) {
-									events.update({"_id":jsfile[0]._id},{$set : {stacktrace:{frames : jsfile[0].stacktrace.frames}}},safe.sure(cb, function(res){
+								ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
+									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
 									}))
 								})
 							cb(null)
@@ -837,5 +844,49 @@ module.exports.init = function (ctx, cb) {
 				})
 			})
 		}))
-	}),cb(null, {api:{}}))
+	}),cb(null, {api:{
+				getTraceLineContext:function (t, p, cb) {
+                    var url = p._s_file.trim();
+
+                    request.get({url:url}, safe.sure(cb, function (res, body) {
+                        if (res.statusCode!=200)
+                            return cb(new Error("Error, status code " + res.statusCode));
+                        var lineno=0,lineidx=0;
+                        while (lineno<parseInt(p._i_line)-1) {
+                            lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
+                            if (lineidx==-1)
+                                return cb(new Error("Line number '"+p._i_line+"' is not found"));
+                            lineno++;
+                        }
+                        var idx = lineidx+parseInt(p._i_col);
+                        body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
+                        if (idx>=body.length)
+                            return cb(new Error("Column number '"+p._i_col+"' is not found"));
+                        var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
+						if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == false) {
+							cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,block)
+						}
+
+                        return cb(null, block);
+                    }));
+                },
+                getStackTraceContext:function (t, frames, cb) {
+						safe.eachSeries(frames, function(r, cb) {
+							ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
+								if (err) {
+									console.log('ERR_inFetchStack',err)
+									if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == false) {
+										cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
+									}
+								} else {
+									r._s_context=context;
+								}
+
+								cb(null, r)
+							})
+						}, safe.sure(cb, function(){
+							cb(null, frames)
+						}))
+                }
+		}}))
 }
