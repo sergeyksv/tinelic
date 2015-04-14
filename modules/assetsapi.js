@@ -182,8 +182,16 @@ module.exports.init = function (ctx, cb) {
 				pullErrAck: function(t, data, cb) {
 					data = prefixify(data)
 					var set = {$set:{}}
-					set.$set[data.type] = new Date();
-					tm.projects.update({_id:data._id},set,cb)
+
+					if (Array.isArray(data.type)) {
+						_.each(data.type,function(t){
+							set.$set[t] = new Date();
+						})
+					}
+					else
+						set.$set[data.type] = new Date();
+
+					tm.projects.update({_id: data._id}, set, cb)
 				},
 				getProjectApdexConfig: function(t, query, cb) {
 					query =  prefixify(query)

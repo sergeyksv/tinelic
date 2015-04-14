@@ -1,7 +1,7 @@
 {@view name="views/header_view"/}
 
 <div class="container" style="margin-top:20px;" >
-	<legend>{project.name} <span class="text-info h5">{#graphOn.server}Processes: {metrics.proc}  Memory: {metrics.mem} Mb{/graphOn.server} ( {project._id} )</span> <a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs pull-right">Settings</a></legend>
+	<legend>{project.name} <span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}  Memory: {metrics.mem} Mb{/graphOn.server} ( {project._id} )</span><div class="btn-group pull-right"><div id="acknowledge" class="btn btn-danger btn-xs">Ack</div> <a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a></div></legend>
 <div class="row-fluid">
 	{#graphOn}
 		<div class="col-md-4">
@@ -46,7 +46,7 @@
 							<ul class="list-unstyled h6">
 							{#err}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.pages}</span> - {error._s_message}</a><br>
+									<a class="text-default" href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.pages}</span>{#error.new}<strong>  - {error._s_message}</strong>{/error.new}{^error.new} - {error._s_message}{/error.new}</a><br>
 								</li>
 							{/err}
 							</ul>
@@ -62,7 +62,7 @@
 							<ul class="list-unstyled h6">
 							{#sErr}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span> - {error._s_message}</a><br>
+									<a class="text-default" href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span>{#error.new}<strong>  - {error._s_message}</strong>{/error.new}{^error.new} - {error._s_message}{/error.new}</a><br>
 								</li>
 							{/sErr}
 							</ul>

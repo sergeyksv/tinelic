@@ -17,8 +17,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 api('assets.pullErrAck', $.cookie('token'),{type:'_dtPagesErrAck',_id:id}, function(err, data) {
                     if (err)
                         alert(err)
-                    else
+                    else {
+                        api.invalidate();
                         router.reload();
+                    }
                 })
             }
         }
