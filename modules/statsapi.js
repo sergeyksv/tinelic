@@ -729,11 +729,24 @@ module.exports.init = function (ctx, cb) {
                         var idx = lineidx+parseInt(p._i_col);
                         body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
                         if (idx>=body.length)
-                            return cb(new Error("Column number '"+p.colno+"' is not found"));
+                            return cb(new Error("Column number '"+p._i_col+"' is not found"));
                         var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
-
                         return cb(null, block)
                     }))
+                },
+                FetchStackTrace:function (t, p, cb) {
+						safe.forEach(p[0].stacktrace.frames, function(r, cb) {
+							ctx.api.stats.JSByTrace("public",r, function (err,jsfile) {
+								if (err) {
+									console.log('ERR_inFetchStack',err)
+								} else {
+									r._s_context=jsfile;
+									cb(null, r)
+								}
+							})
+						}, safe.sure(cb, function(){
+							cb(null, p)
+						}))
                 },
                 getActionsBreakdown: function(t,p, cb) {
                     var query = queryfix(p.filter);

@@ -696,7 +696,6 @@ module.exports.init = function (ctx, cb) {
 					var zip_buffer = new Buffer( req.body.toString(), 'base64' );
 					zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
 						var ge = JSON.parse( _buffer_getsentry_data.toString() );
-
 						var te = {
 							_idp:new mongo.ObjectID(ge.project),
 							_dt: new Date(ge.timestamp),
@@ -818,7 +817,13 @@ module.exports.init = function (ctx, cb) {
 							(page._s_uri) && (data.request._s_uri = page._s_uri);
 						}
 						ctx.api.validate.check("error",data, safe.sure(cb, function () {
-							events.insert(data, cb)
+							events.insert(data, safe.sure(cb, function(res){
+								ctx.api.stats.FetchStackTrace("public",res, function (err,jsfile) {
+									events.update({"_id":jsfile[0]._id},{$set : {stacktrace:{frames : jsfile[0].stacktrace.frames}}},safe.sure(cb, function(res){
+									}))
+								})
+							cb(null)
+							}))
 						}))
 					}))
 				}, function (err) {
