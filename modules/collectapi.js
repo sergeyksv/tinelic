@@ -789,8 +789,9 @@ module.exports.init = function (ctx, cb) {
 					data._s_server = "rum";
 					data._s_reporter = "raven";
 
+					data.exception = data.exception || {};
 					data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
-					data.exception._s_value = data.exception.value; delete data.exception.value;
+					data.exception._s_value = data.exception.value || data._s_message; delete data.exception.value;
 					if (data.stacktrace) {
 						_.forEach(data.stacktrace.frames, function(r) {
 							r._s_file = r.filename; delete r.filename;

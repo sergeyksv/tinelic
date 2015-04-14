@@ -41,6 +41,8 @@
     "chromedriver": "~2.10.x"
   },
   "scripts": {
-    "test": "mocha -bR spec test/test.js"
+    "test": "grunt build && mocha -bR spec test/test.js",
+    "test-chrome": "mocha -bR spec test/test.js --browser=chrome --testenv=test",
+    "test-check": "mocha -bR spec test/test.js --testenv=test"
   }
 }

@@ -167,6 +167,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				legend: {
 					enabled: false
 				},
+				credits: {
+					enabled: false
+				},
 				series: [
 					{
 						name: 'SERVER',
@@ -220,6 +223,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				},
 				legend: {
+					enabled: false
+				},
+				credits: {
 					enabled: false
 				},
 				series: [
@@ -277,6 +283,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				legend: {
 					enabled: false
 				},
+				credits: {
+					enabled: false
+				},
 				series: [
 					{
 						name: 'rpm-ajax',
@@ -330,6 +339,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				},
 				legend: {
+					enabled: false
+				},
+				credits: {
 					enabled: false
 				},
 				series: [
@@ -387,6 +399,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				legend: {
 					enabled: false
 				},
+				credits: {
+					enabled: false
+				},
 				series: [
 					{
 						name: 'apdex-browser',
@@ -440,6 +455,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				},
 				legend: {
+					enabled: false
+				},credits: {
 					enabled: false
 				},
 				series: [
@@ -496,6 +513,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 				legend: {
 					enabled: false
 				},
+				credits: {
+					enabled: false
+				},
 				series: [
 					{
 						name: 'tt-server',
@@ -548,6 +568,8 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				},
 				legend: {
+					enabled: false
+				},credits: {
 					enabled: false
 				},
 				series: [
@@ -602,6 +624,9 @@ define(['tinybone/base','lodash','moment/moment','highcharts',
 					}
 				},
 				legend: {
+					enabled: false
+				},
+				credits: {
 					enabled: false
 				},
 				series: [
