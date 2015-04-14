@@ -20,7 +20,7 @@
 				</div>
 				<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
 					<span style="white-space: nowrap;"><b>
-					<span class="text-danger">{errAck.actions}</span> / <span class="text-success">{errAck.pages}</span>
+					<span class="text-danger">{errAck.dtlActions} ( {errAck.actions} )</span> / <span class="text-success">{errAck.dtlPages} ( {errAck.pages} )</span>
 					</b></span>
 					&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 					{@gt key=server.r value=0}

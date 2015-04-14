@@ -1,4 +1,4 @@
-define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,safe,_,feed) {
+define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (api,safe,_,feed,moment) {
 	return {
 		index:function (req, res, cb) {
 			safe.parallel({
@@ -210,7 +210,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			}))
 		},
 		project:function (req, res, cb) {
-			var quant = 10;
+			var quant = 10,
+				dta,
+				dtp
 
 			safe.parallel({
 				view:function (cb) {
@@ -229,8 +231,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							},
-							_dtActionsErrAck: (dta <= dt)?dt:dta,
-							_dtPagesErrAck: (dtp <= dt)?dt:dtp
+							_dtActionsErrAck: (dta < dt)?dta:dt,
+							_dtPagesErrAck: (dtp < dt)?dtp:dt
 						}}, safe.sure(cb, function (r) {
 							 cb(null,_.extend(r, {project:project}))
 						}))
@@ -301,6 +303,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 						total += r.stats.count;
 						session += r.stats.session;
 						page += r.stats.pages;
+						if (r.error._dtl > dtp)
+							r.error.new = 1
 					})
 					var data = _.take(r.data.errors, 10)
 					_.extend(views.browser,{err: data, total: total, session: session, page: page})
@@ -310,6 +314,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 					var total = 0;
 					_.forEach(r.data.serverErrors, function(r) {
 						total += r.stats.c
+						if (r.error._dtl > dta)
+							r.error.new = 1;
 					})
 					var data = _.take(r.data.serverErrors, 10)
 					_.extend(views.serverErr,{sErr:data,total:total})
@@ -562,19 +568,22 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			// we want to server on folder style url
 			if (req.path.substr(-1) != "/" && !req.params.id)
 				return res.redirect(req.baseUrl+req.path+"/");
-			var st = req.params.sort
-			var quant = 10;
+			var st = req.params.sort,
+				quant = 10,
+				dtp;
+
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				safe.parallel({
+					dtp = project._dtPagesErrAck || res.locals.dtstart;
+					safe.parallel({
 						view: function (cb) {
 							requirejs(["views/client-errors/err_view"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPagesErrorStats","public",{st:st,_t_age:quant+"m",filter:{
+							api("stats.getPagesErrorStats","public",{st:st, _t_age:quant+"m",filter:{
 								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						event: function (cb) {
@@ -587,6 +596,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								}}, cb)
 						}
 					}, safe.sure(cb, function(r){
+						var lastAck = moment(dtp).fromNow()
 						var filter = {
 							_t_age: quant + "m", quant: quant,
 							filter: {
@@ -599,9 +609,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							total += r.stats.count;
 							session += r.stats.session;
 							page += r.stats.pages;
+							if (r.error._dtl > dtp)
+								r.error.new = 1
+							if (r.error._dtl)
+								r.error._dtl = moment(r.error._dtl).fromNow()
 						})
 						r.event.headless = true;
-						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page}})
+						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck}})
 					})
 				)
 			}))
@@ -659,9 +673,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 			// we want to server on folder style url
 			if (req.path.substr(-1) != "/" && !req.params.id)
 				return res.redirect(req.baseUrl+req.path+"/");
-			var st = req.params.sort
-			var quant = 10;
+			var quant = 10,
+				dta,
+				st = req.params.sort
+
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				dta = project._dtActionsErrAck || res.locals.dtstart;
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/server-errors/server-err_view"], function (view) {
@@ -669,9 +686,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getServerErrorStats","public",{_t_age:quant+"m",filter:{
+							api("stats.getServerErrorStats","public",{st: st,  _t_age:quant+"m",filter:{
 								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: (dta < res.locals.dtstart)?dta:res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						event: function (cb) {
@@ -684,6 +701,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 								}}, cb)
 						}
 					}, safe.sure(cb, function(r){
+						var lastAck = moment(dta).fromNow()
 						var filter = {
 							_t_age: quant + "m", quant: quant,
 							filter: {
@@ -692,22 +710,23 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres"], function (api,s
 							}
 						}
 						r.event.headless = true;
-						var data = []
-						if (st == 'terr') {
-							data = r.data
-						}
+						var data = r.data
 						if (data.length == 0) {
 							data.push({error: {_s_message: "Not errors on this client"}})
 						}
 						var sum = 0.0
 						_.forEach(data, function(r) {
 							sum += r.stats.c
+							if (r.error._dtl > dta)
+								r.error.new = 1
+							if (r.error._dtl)
+								r.error._dtl = moment(r.error._dtl).fromNow()
 						})
 						var percent = sum/100
 						_.forEach(data, function(r) {
 							r.bar = r.stats.c/percent
 						})
-						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: sum}})
+						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: sum, lastAck: lastAck}})
 					})
 				)
 			}))

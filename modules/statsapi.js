@@ -38,19 +38,52 @@ module.exports.init = function (ctx, cb) {
         ],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors, metrics) {
             cb(null, {api:{
                 getErrAck: function(t,p,cb) {
-                    var q = {_idp: p._idp, _dt: {$lte: p._dt.$lte}};
                     safe.parallel({
                         actions:function(cb) {
-                            q._dt.$gt = p._dt._dtActionsErrAck;
+                            var q = {
+                                _idp: p._idp,
+                                _dt: {
+                                    $lte: p._dt.$lte,
+                                    $gt: p._dt._dtActionsErrAck
+                                }
+                            }
                             q = queryfix(q);
                             serverErrors.find(q).count(cb);
                         },
+                        dtlActions: function(cb) {
+                            var q = {
+                                _idp: p._idp,
+                                _dtl: {
+                                    $lte: p._dt.$lte,
+                                    $gt: p._dt._dtActionsErrAck
+                                }
+                            }
+                            q = queryfix(q)
+                            serverErrors.find(q).count(cb)
+                        },
                         pages:function(cb) {
-                            q._dt.$gt = p._dt._dtPagesErrAck;
+                            var q = {
+                                _idp: p._idp,
+                                _dt: {
+                                    $lte: p._dt.$lte,
+                                    $gt: p._dt._dtPagesErrAck
+                                }
+                            }
                             q = queryfix(q);
                             events.find(q).count(cb);
+                        },
+                        dtlPages: function(cb) {
+                            var q = {
+                                _idp: p._idp,
+                                _dtl: {
+                                    $lte: p._dt.$lte,
+                                    $gt: p._dt._dtPagesErrAck
+                                }
+                            }
+                            q = queryfix(q);
+                            events.find(q).count(cb)
                         }
-                    },cb);
+                    },cb)
                 },
                 getMetrics: function(t, p, cb) {
                     var query = queryfix(p.filter);
@@ -326,7 +359,6 @@ module.exports.init = function (ctx, cb) {
                         var query = {_idp:err._idp,_s_logger:err._s_logger,"exception._s_value": err.exception._s_value,"stacktrace.frames":{$size:st}};
 
                         serverErrors.mapReduce(function () {
-                                var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                                 var route = {};
                                 if (this.action){
 									route[this.action._s_name]=1;
@@ -335,7 +367,7 @@ module.exports.init = function (ctx, cb) {
                                 var server = {}; server[this._s_server]=1;
                                 var lang = {}; lang[this._s_logger]=1;
                                 var ids = [this._id];
-                                emit(this._s_logger+this.exception._s_value+st,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
+                                emit(this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
                             },
                             function (k, v) {
                                 var r=null;
@@ -486,14 +518,13 @@ module.exports.init = function (ctx, cb) {
                         var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
 
                         events.mapReduce(function () {
-                                var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                                 var route = {}; route[this.request._s_url]=1;
                                 var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
                                 var os = {}; os[this.agent.os.family]=1;
                                 var sessions = {}; sessions[this.shash]=1;
                                 var views = {}; views[this._idpv]=1;
                                 var ids = [this._id];
-                                emit(this._s_logger+this._s_message+st,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
+                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
                             },
                             function (k, v) {
                                 var r=null;
@@ -546,12 +577,10 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
-                    var st = p.st;
                     events.mapReduce(function () {
-                            var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
                             var s = {}; s[this.shash]=1;
                             var epm = {}; epm[this._idpv]=1;
-                            emit(this._s_logger+this._s_message+st,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
+                            emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
                         },
                         function (k, v) {
                             var r=null;
@@ -595,22 +624,27 @@ module.exports.init = function (ctx, cb) {
                                         ids[e._id].error = e;
                                     });
                                     var data = _.values(ids);
-                                    var p = null;
-                                    if (st == "terr" || st === undefined)
-                                        p = 'count';
-                                    if (st == "perr")
-                                        p = 'pages';
-                                    if (st == "serr")
-                                        p = 'session';
+                                    var f = null;
+                                    if (p.st == "terr" || p.st === undefined || p.st == 'mr')
+                                        f = 'count';
+                                    if (p.st == "perr")
+                                        f = 'pages';
+                                    if (p.st == "serr")
+                                        f = 'session';
                                     var sum = 0.0;
                                     _.forEach(data, function(r) {
-                                        sum += r.stats[p];
+                                        sum += r.stats[f];
                                     });
                                     var percent = sum/100;
                                     _.forEach(data, function(r) {
-                                        r.bar = r.stats[p]/percent;
+                                        r.bar = r.stats[f]/percent;
                                     });
-                                    data = _.sortBy(data, function(r) {return r.stats[p]*-1;});
+                                    data = _.sortBy(data, function(r) {
+                                        if (p.st == "mr")
+                                            return new Date(r.error._dtl)*-1
+                                        else
+                                            return r.stats[f]*-1;
+                                    });
                                     cb(null, data);
                                 }));
                         })
@@ -685,8 +719,7 @@ module.exports.init = function (ctx, cb) {
                 getServerErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
                     serverErrors.mapReduce(function () {
-                            var st = (this.stacktrace && this.stacktrace.frames && this.stacktrace.frames.length) || 0;
-                            emit(this._s_message,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id});
+                            emit(this.ehash,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id});
                         },
                         function (k, v) {
                             var r=null;
@@ -718,7 +751,14 @@ module.exports.init = function (ctx, cb) {
                                     _.each(errors, function (e) {
                                         ids[e._id].error = e;
                                     });
-                                    cb(null, _.values(ids));
+
+                                    ids = _(ids).values().sortBy(function(r){
+                                        if (p.st == 'terr')
+                                            return r.stats.c * -1
+                                        if (p.st == 'mr')
+                                            return new Date(r.error._dtl)*-1
+                                    }).value()
+                                    cb(null, ids);
                                 }));
                         })
                     );

@@ -3,7 +3,7 @@
 <div class="starter-template container">
 <legend>{project.name}
     <span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
-    <div class="pull-right btn btn-large btn-danger acknowledge">Acknowledge</div>
+    <div class="pull-right btn btn-large btn-danger acknowledge">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 </legend>
 <div class="row">
 	<div class="col-sm-4">
@@ -13,12 +13,14 @@
 					{@eq value="serr"}Most session concerning{/eq}
                     {@eq value="perr"}Most page concerning{/eq}
                     {@eq value="terr"}Most concerning{/eq}
+					{@eq value="mr"}Most recent{/eq}
 				{/select}
 			<span class="caret"></span></span><br><br>
 			<ul class="dropdown-menu" role="menu">
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="serr" class="do-stats" href="#">Most session concerning</a></li>
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="perr" class="do-stats" href="#">Most page concerning</a></li>
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Most concerning</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mr" class="do-stats" href="#">Most recent</a></li>
 			</ul>
 		</div>
 		{@view name="views/client-errors/err_list_view" data="data"/}
