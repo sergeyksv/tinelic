@@ -81,7 +81,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 			httpServer.listen(80);
 
 			if (cfg.config.automated && process.send) {
-				process.send({c: "startapp_repl", data: err})
+				process.send({c: "startapp_repl", data: null})
 			}
 		}))
 	}))
