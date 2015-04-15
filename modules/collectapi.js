@@ -161,95 +161,98 @@ module.exports.init = function (ctx, cb) {
 		_i_err: {type: "integer", required: true},
 		agent: {type: "object", required: true},
 		geo: {type: "object"}
-	}}})
+	}}});
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
 				db.collection("page_errors",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({chash:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({chash:1}, cb) },
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({chash:1}, cb)},
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb)}
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb);},
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb);}
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("actions", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("action_stats", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			},
 			function (cb) {
 				db.collection("metrics", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { col.ensureIndex({_idp:1,_dt:1}, cb) }
-					], safe.sure(cb, col))
-				}))
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
+					], safe.sure(cb, col));
+				}));
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
 			setInterval(function() {
-				var dtlw = new Date(Date.parse(Date()) - 1000*60*60*24*7)
-				var q = {_dt: {$lte: dtlw}}
+				var dtlw = new Date(Date.parse(Date()) - 1000*60*60*24*7);
+				var q = {_dt: {$lte: dtlw}};
 				safe.parallel([
 					function() {
-						events.remove(q)
+						events.remove(q);
 					},
 					function() {
-						pages.remove(q)
+						pages.remove(q);
 					},
 					function() {
-						ajax.remove(q)
+						ajax.remove(q);
 					},
 					function() {
-						actions.remove(q)
+						actions.remove(q);
 					},
 					function() {
-						as.remove(q)
+						as.remove(q);
 					},
 					function() {
-						action_errors.remove(q)
+						action_errors.remove(q);
 					},
 					function() {
-						metrics.remove(q)
+						metrics.remove(q);
 					}
-				])
+				]);
 			},1000*60*60);
 
 			ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next ) {
 				function nrParseTransactionName( value ) {
 					var _value_array = value.split( "/" );
-					var _type = _value_array.length > 1 ? _value_array[0] + "/" + _value_array[1] : ""
-						, _name = "";
+					var _type = _value_array.length > 1 ? _value_array[0] + "/" + _value_array[1] : "", _name = "";
 					for( var i = 2; i < _value_array.length; i++ )
 						_name += (_name.length > 0 ? "/" : "") + _value_array[i];
 					return { name: _name.length ? _name : "-unknown-", type: _type.length ? _type : "-unknown-" };

@@ -29,56 +29,60 @@ if(fs.existsSync(lcfgPath)){
 	cfg.config = _.merge(cfg.config,require(lcfgPath));
 }
 
-console.time("Live !")
-tinyback.createApp(cfg, function (err, app) {
-	if (err) {
-		console.log(err);
-		if (err.originalError)
-			console.log(err.originalError);
-		process.exit(0);
-	}
+console.time("Live !");
+var cb = function (err) {
+	console.log(err);
+	if (err.originalError)
+		console.log(err.originalError);
+	process.exit(0);
+};
 
-	app.locals.newrelic = newrelic;
-	_.each(app.api, function (module, ns) {
-		_.each(module, function (func, name) {
-			if (!_.isFunction(func)) return;
-			// wrap function
-			module[name] = function () {
-				var cb = arguments[arguments.length-1];
-				if (_.isFunction(cb)) {
-					var args = safe.args.apply(0, arguments);
-					// redefined callback to one wrapped by new relic
-					args[args.length-1] = newrelic.createTracer("api/api/"+ns+"/"+name, function (err) {
-						if (err)
-							newrelic.noticeError(err);
-						cb.apply(this, arguments);
-					})
-					func.apply(this,args)
-				} else {
-					func.apply(this,arguments)
+tinyback.createApp(cfg, safe.sure(cb, function (app) {
+	app.api.mongo.getDb({}, safe.sure(cb, function (db) {
+		app.api.mongo.dropUnusedIndexes(db, safe.sure(cb, function () {
+			app.locals.newrelic = newrelic;
+			_.each(app.api, function (module, ns) {
+				_.each(module, function (func, name) {
+					if (!_.isFunction(func)) return;
+					// wrap function
+					module[name] = function () {
+						var cb = arguments[arguments.length-1];
+						if (_.isFunction(cb)) {
+							var args = safe.args.apply(0, arguments);
+							// redefined callback to one wrapped by new relic
+							args[args.length-1] = newrelic.createTracer("api/api/"+ns+"/"+name, function (err) {
+								if (err)
+									newrelic.noticeError(err);
+								cb.apply(this, arguments);
+							})
+							func.apply(this,args)
+						} else {
+							func.apply(this,arguments)
+						}
+					}
+				})
+			})
+			console.timeEnd("Live !")
+			try {
+				var options = {
+					key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
+					cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
+					ssl: true,
+					plain: false
 				}
+
+				var httpsServer = https.createServer(options, app.express);
+
+				httpsServer.listen(443)
+			} catch (e) {};
+
+			var httpServer = http.createServer(app.express);
+
+			httpServer.listen(80);
+
+			if (cfg.config.automated && process.send) {
+				process.send({c: "startapp_repl", data: err})
 			}
-		})
-	})
-	console.timeEnd("Live !")
-	try {
-		var options = {
-			key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
-			cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
-			ssl: true,
-			plain: false
-		}
-
-		var httpsServer = https.createServer(options, app.express);
-
-		httpsServer.listen(443)
-	} catch (e) {};
-
-	var httpServer = http.createServer(app.express);
-
-	httpServer.listen(80);
-
-	if (cfg.config.automated && process.send) {
-		process.send({c: "startapp_repl", data: err})
-	}
-})
+		}))
+	}))
+}))
