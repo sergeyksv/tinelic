@@ -36,7 +36,11 @@ module.exports.init = function (ctx, cb) {
                 db.collection("teams",cb);
             },
             "projects":function (cb) {
-                db.collection("projects",cb);
+                db.collection("projects",safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { ctx.api.mongo.ensureIndex(col,{slug:1}, cb); }
+					], safe.sure(cb, col));
+				}));
             }
         }, safe.sure(cb,function (tm) {
 			var projects = tm.projects;
