@@ -886,6 +886,8 @@ module.exports.init = function (ctx, cb) {
 				getTraceLineContext:function (t, p, cb) {
 					if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
 						block=cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
+					} else if (cache.has("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
+						block=cache.get("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col);
 					} else {
 						var url = p._s_file.trim();
 
@@ -914,9 +916,7 @@ module.exports.init = function (ctx, cb) {
 								ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
 									if (err) {
 										console.log('ERR_inFetchStack',err)
-										if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == false) {
-											cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
-										}
+										cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
 										r._s_context=err;
 									} else {
 										r._s_context=context;
