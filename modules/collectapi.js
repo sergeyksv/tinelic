@@ -495,7 +495,8 @@ module.exports.init = function (ctx, cb) {
 											md5sum.update(te.exception._s_type)
 											md5sum.update(te._s_message + te.stacktrace.frames.length)
 											te.ehash = md5sum.digest('hex')
-											action_errors.findOne({$query:{ehash: te.ehash},$orderby:{_dtl: -1}},safe.sure(cb,function(edtl){
+											action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+												edtl = edtl[0]
 												if (edtl)
 													te._dtl = edtl._dtl
 												else
@@ -744,7 +745,8 @@ module.exports.init = function (ctx, cb) {
 									md5sum.update(te.exception._s_type)
 									md5sum.update(te._s_message + te.stacktrace.frames.length)
 									te.ehash = md5sum.digest('hex')
-									action_errors.findOne({$query:{ehash: te.ehash},$orderby:{_dtl: -1}},safe.sure(cb,function(edtl){
+									action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+										edtl = edtl[0]
 										if (edtl)
 											te._dtl = edtl._dtl
 										else
@@ -845,7 +847,9 @@ module.exports.init = function (ctx, cb) {
 							md5sum.update(data.exception._s_type)
 							md5sum.update(data._s_message + data.stacktrace.frames.length)
 							data.ehash = md5sum.digest('hex')
-							events.findOne({$query:{ehash: data.ehash},$orderby:{_dtl: -1}},safe.sure(cb,function(edtl){
+							//find().sort().limit(1).toArray
+							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+								edtl = edtl[0]
 								if (edtl)
 									data._dtl = edtl._dtl
 								else
