@@ -1,34 +1,27 @@
-<div style="margin: 10% 15%;">
-	<div class="panel panel-danger" style="display: none;">
-      <div class="panel-heading">
-        Error
-      </div>
-      <div class="panel-body"></div>
-    </div>
-  <div class="form-group">
-    <label for="inputEmail3" class="col-sm-2 control-label">Login</label>
-    <div class="col-sm-10">
-      <input type="login" class="form-control" id="login" placeholder="Login">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
-    <div class="col-sm-10">
-      <input style="margin-top: 10px;" type="password" class="form-control" id="pass" placeholder="Password">
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox"> Remember me
-        </label>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <button class="btn btn-default">Login</button>
+<style>
+    body {
+        background-color: #eee
+    }
+</style>
+<div class="starter-template">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <form class="form-signin col-md-4" role="form">
+                <h2 class="form-signin-heading">Please sign in</h2>
+                <div class="panel panel-danger" style="display: none;">
+                    <div class="panel-heading">
+                        Error
+                    </div>
+                    <div class="panel-body"></div>
+                </div>
+                <input type="login" class="form-control" id="login" placeholder="Login">
+                <input type="password" class="form-control" id="pass" placeholder="Password">
+                <br>
+                <div class="btn btn-lg btn-primary btn-block" id="signup">Login</div>
+            </form>
+            <div class="col-md-4"></div>
+        </div>
     </div>
 </div>
-  </div>
+
