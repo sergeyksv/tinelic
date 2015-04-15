@@ -62,8 +62,5 @@
 		</div>
 		{/projects}
     {/teams}
-<div class="row">
-	<button class="do-newproject btn btn-default col-md-2" style="margin-top: 10px;padding-left:0px;">Add new project</button>
-</div>
 </div>
 

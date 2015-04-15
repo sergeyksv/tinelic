@@ -176,37 +176,51 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						rules.push({action:"project_edit",_id:project._idp})
 					})
 				})
-				api("obac.getPermissions", res.locals.token, {rules:rules}, safe.sure(cb, function (answers) {
-					console.log(answers);
-					_.forEach(r.teams, function(teams) {
-						if (teams.projects) {
-							var projects = {};
-							_.forEach(r.proj, function(proj) {
-								projects[proj._id] = proj
-							})
-							_.forEach(teams.projects, function (proj) {
-								proj._t_project = projects[proj._idp]
-							})
-						}
-						if (teams.users) {
-							var users = {};
-							_.forEach(r.users, function(usr) {
-								users[usr._id] = usr;
-							})
-							_.forEach(teams.users, function(user) {
-								user.firstname = users[user._idu].firstname;
-								user.lastname = users[user._idu].lastname;
-							})
-						}
-					})
-					res.renderX({view: r.view, data: {
-						title: "Manage teams",
-						teams: r.teams,
-						proj: r.proj,
-						usr: r.users,
-						obac: answers
-					}})
+				safe.parallel({
+					answers: function(cb){
+						api("obac.getPermissions", res.locals.token, {rules:rules}, cb)
+					},
+					granted: function(cb) {
+						api("obac.getGrantedIds", res.locals.token, {action:"team_edit"}, cb)
+					}
+				},safe.sure(cb,function(result){
+						_.forEach(r.teams, function(teams) {
+							if (teams.projects) {
+								var projects = {};
+								_.forEach(r.proj, function(proj) {
+									projects[proj._id] = proj
+								})
+								_.forEach(teams.projects, function (proj) {
+									proj._t_project = projects[proj._idp]
+								})
+							}
+							if (teams.users) {
+								var users = {};
+								_.forEach(r.users, function(usr) {
+									users[usr._id] = usr;
+								})
+								_.forEach(teams.users, function(user) {
+									user.firstname = users[user._idu].firstname;
+									user.lastname = users[user._idu].lastname;
+								})
+							}
+						})
+
+						result.granted = _.reduce(result.granted,function(memo,i){
+							memo[i] = true
+							return memo
+						},{})
+
+						res.renderX({view: r.view, data: {
+							title: "Manage teams",
+							teams: r.teams,
+							proj: r.proj,
+							usr: r.users,
+							obac: result.answers,
+							obacGranted: result.granted
+						}})
 				}))
+
 			}))
 		},
 		project:function (req, res, cb) {
