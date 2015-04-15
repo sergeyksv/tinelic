@@ -862,24 +862,6 @@ module.exports.init = function (ctx, cb) {
 								else
 									data._dtl = new Date();
 
-						// if all frames has cache then just one insert in DB
-								safe.eachSeries(data.stacktrace.frames, function(r, cb) {
-									if (cache.has(r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
-										r._s_context=cache.get(r._s_file+"_"+r._i_line+"_"+r._i_col);
-									} else {
-										IfInsert+=1;
-									}
-									cb(null, r)
-								}, safe.sure(cb, function(){
-									cb(null, data.stacktrace.frames)
-								}))
-								if (IfInsert == 0) {
-									events.insert(data,safe.sure(cb, function(res){
-										cb()
-									}))
-								}
-								else {
-									IfInsert=0;
 									events.insert(data, safe.sure(cb, function(res){
 										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
 											events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
@@ -887,7 +869,6 @@ module.exports.init = function (ctx, cb) {
 										})
 										cb(null)
 									}))
-								}
 							}))
 						}))
 					}))
@@ -903,38 +884,33 @@ module.exports.init = function (ctx, cb) {
 		}))
 	}),cb(null, {api:{
 				getTraceLineContext:function (t, p, cb) {
-                    var url = p._s_file.trim();
+					if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
+						block=cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
+					} else {
+						var url = p._s_file.trim();
 
-                    request.get({url:url}, safe.sure(cb, function (res, body) {
-                        if (res.statusCode!=200)
-                            return cb(new Error("Error, status code " + res.statusCode));
-                        var lineno=0,lineidx=0;
-                        while (lineno<parseInt(p._i_line)-1) {
-                            lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
-                            if (lineidx==-1)
-                                return cb(new Error("Line number '"+p._i_line+"' is not found"));
-                            lineno++;
-                        }
-                        var idx = lineidx+parseInt(p._i_col);
-                        body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
-                        if (idx>=body.length)
-                            return cb(new Error("Column number '"+p._i_col+"' is not found"));
-                        var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
-						if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == false) {
+						request.get({url:url}, safe.sure(cb, function (res, body) {
+							if (res.statusCode!=200)
+								return cb(new Error("Error, status code " + res.statusCode));
+							var lineno=0,lineidx=0;
+							while (lineno<parseInt(p._i_line)-1) {
+								lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
+								if (lineidx==-1)
+									return cb(new Error("Line number '"+p._i_line+"' is not found"));
+								lineno++;
+							}
+							var idx = lineidx+parseInt(p._i_col);
+							body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
+							if (idx>=body.length)
+								return cb(new Error("Column number '"+p._i_col+"' is not found"));
+							var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
 							cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,block)
-						}
-
-                        return cb(null, block);
-                    }));
+						}));
+					}
+					return cb(null, block);
                 },
                 getStackTraceContext:function (t, frames, cb) {
 						safe.eachSeries(frames, function(r, cb) {
-							if (r._s_context != '') { cb(null, r) }
-							if (cache.has(r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
-								r._s_context=cache.get(r._s_file+"_"+r._i_line+"_"+r._i_col);
-							} else if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
-								r._s_context=cache.get("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col);
-							} else {
 								ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
 									if (err) {
 										console.log('ERR_inFetchStack',err)
@@ -945,9 +921,8 @@ module.exports.init = function (ctx, cb) {
 									} else {
 										r._s_context=context;
 									}
+									cb(null, r)
 								})
-							}
-							cb(null, r)
 						}, safe.sure(cb, function(){
 							cb(null, frames)
 						}))
