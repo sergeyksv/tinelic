@@ -10,7 +10,7 @@ var request = require('request');
 var zlib = require('zlib');
 var newrelic = require("newrelic");
 var LRU = require("lru-cache")
-  , options = { max: 500
+  , options = { max: 2000		// it is about 15 contexts
               , length: function (n) { return n.length }
               , dispose: function (key, n) { n.close }
               , maxAge: 1000 * 60 * 60 }
@@ -779,6 +779,7 @@ module.exports.init = function (ctx, cb) {
 			})
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				var data = {};
+				var IfInsert = 0;
 				safe.run(function (cb) {
 					data = JSON.parse(req.query.sentry_data);
 					var ip = req.headers['x-forwarded-for'] ||
@@ -858,13 +859,32 @@ module.exports.init = function (ctx, cb) {
 								else
 									data._dtl = new Date();
 
-								events.insert(data, safe.sure(cb, function(res){
-									ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
-										events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
-										}))
-									})
-									cb(null)
+						// if all frames has cache then just one insert in DB
+								safe.eachSeries(data.stacktrace.frames, function(r, cb) {
+									if (cache.has(r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
+										r._s_context=cache.get(r._s_file+"_"+r._i_line+"_"+r._i_col);
+									} else {
+										IfInsert+=1;
+									}
+									cb(null, r)
+								}, safe.sure(cb, function(){
+									cb(null, data.stacktrace.frames)
 								}))
+								if (IfInsert == 0) {
+									events.insert(data,safe.sure(cb, function(res){
+										cb()
+									}))
+								}
+								else {
+									IfInsert=0;
+									events.insert(data, safe.sure(cb, function(res){
+										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
+											events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
+											}))
+										})
+										cb(null)
+									}))
+								}
 							}))
 						}))
 					}))
@@ -906,18 +926,25 @@ module.exports.init = function (ctx, cb) {
                 },
                 getStackTraceContext:function (t, frames, cb) {
 						safe.eachSeries(frames, function(r, cb) {
-							ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
-								if (err) {
-									console.log('ERR_inFetchStack',err)
-									if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == false) {
-										cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
+							if (r._s_context != '') { cb(null, r) }
+							if (cache.has(r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
+								r._s_context=cache.get(r._s_file+"_"+r._i_line+"_"+r._i_col);
+							} else if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == true) {
+								r._s_context=cache.get("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col);
+							} else {
+								ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
+									if (err) {
+										console.log('ERR_inFetchStack',err)
+										if (cache.has("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col) == false) {
+											cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
+										}
+										r._s_context=err;
+									} else {
+										r._s_context=context;
 									}
-								} else {
-									r._s_context=context;
-								}
-
-								cb(null, r)
-							})
+								})
+							}
+							cb(null, r)
 						}, safe.sure(cb, function(){
 							cb(null, frames)
 						}))
