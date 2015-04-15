@@ -491,7 +491,18 @@ module.exports.init = function (ctx, cb) {
 									safe.parallel([
 										function(cb) {
 											// save actual error
-											action_errors.insert(te,cb)
+											var md5sum = crypto.createHash('md5')
+											md5sum.update(te.exception._s_type)
+											md5sum.update(te._s_message + te.stacktrace.frames.length)
+											te.ehash = md5sum.digest('hex')
+											action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+												if (edtl.length)
+													te._dtl = edtl[0]._dtl
+												else
+													te._dtl = new Date();
+
+												action_errors.insert(te, cb)
+											}))
 										},
 										function(cb) {
 											// modify error counter for
@@ -729,7 +740,18 @@ module.exports.init = function (ctx, cb) {
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							safe.parallel([
 								function() {
-									action_errors.insert(te)
+									var md5sum = crypto.createHash('md5')
+									md5sum.update(te.exception._s_type)
+									md5sum.update(te._s_message + te.stacktrace.frames.length)
+									te.ehash = md5sum.digest('hex')
+									action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+										if (edtl.length)
+											te._dtl = edtl[0]._dtl
+										else
+											te._dtl = new Date();
+
+										action_errors.insert(te, cb)
+									}))
 								},
 								function() {
 									var q = {_dt: {$gte: te._dt}}
@@ -819,7 +841,19 @@ module.exports.init = function (ctx, cb) {
 							(page._s_uri) && (data.request._s_uri = page._s_uri);
 						}
 						ctx.api.validate.check("error",data, safe.sure(cb, function () {
-							events.insert(data, cb)
+							md5sum = crypto.createHash('md5')
+							md5sum.update(data.exception._s_type)
+							md5sum.update(data._s_message + data.stacktrace.frames.length)
+							data.ehash = md5sum.digest('hex')
+							//find().sort().limit(1).toArray
+							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+								if (edtl.length)
+									data._dtl = edtl[0]._dtl
+								else
+									data._dtl = new Date();
+
+								events.insert(data, cb)
+							}))
 						}))
 					}))
 				}, function (err) {
