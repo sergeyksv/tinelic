@@ -48,6 +48,8 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("jquery.blockUI", true);
 	requirejs.define("bootstrap/dropdown", true);
 	requirejs.define("bootstrap/modal", true);
+	requirejs.define("bootstrap/tagsinput", true);
+	requirejs.define("bootstrap/typeahead", true);
 	requirejs.define("highcharts",true);
 	requirejs.define("backctx",ctx);
 
