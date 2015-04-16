@@ -3,7 +3,7 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/signup.dust'],
     var View = view.extend({
         id:"templates/signup",
         events: {
-            "click .btn":function(e) {
+            "click #signup":function(e) {
                 var self = this;
                 var login = self.$('#login')[0].value;
                 var pass = self.$('#pass')[0].value;

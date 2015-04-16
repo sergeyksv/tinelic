@@ -36,7 +36,11 @@ module.exports.init = function (ctx, cb) {
                 db.collection("teams",cb);
             },
             "projects":function (cb) {
-                db.collection("projects",cb);
+                db.collection("projects",safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { ctx.api.mongo.ensureIndex(col,{slug:1}, cb); }
+					], safe.sure(cb, col));
+				}));
             }
         }, safe.sure(cb,function (tm) {
 			var projects = tm.projects;
@@ -151,13 +155,24 @@ module.exports.init = function (ctx, cb) {
                     tm.teams.remove({_id: _id}, cb)
                 },
                 addProjects: function(t, u, cb) {
-					u = prefixify(u);
+					var id;
+					if (!Array.isArray(u._id)) {
+						u = prefixify(u);
+						id = u._id
+					}
+					else {
+						id = {$in: []}
+						_.each(u._id,function(thisid){
+							id.$in.push(mongo.ObjectID(thisid))
+						})
+						u = prefixify(u);
+					}
 					var update = {
-							$addToSet: {
-								projects: {$each: u.projects}
-							}}
+						$addToSet: {
+							projects: {$each: u.projects}
+						}}
 					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
+						tm.teams.update({_id: id}, update, {multi:true},cb)
 					}))
                 },
                 addUsers: function(t, u, cb) {
@@ -214,6 +229,32 @@ module.exports.init = function (ctx, cb) {
 				saveProjectsConfig: function(t,query, cb) {
 					query = prefixify(query)
 					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
+				},
+				deleteProject: function(t,id,cb){
+					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
+						if (u.role == "admin") {
+							id = prefixify(id)
+							var collections = ['action_errors','action_stats','actions','metrics','page_errors','page_reqs','pages']
+							safe.parallel([
+								function(cb){
+									safe.forEach(collections,function(collection,eachCb){
+										db.collection(collection,safe.sure(eachCb,function(thisCollection){
+											thisCollection.remove(id,eachCb)
+										}))
+									},cb)
+								},
+								function(cb){
+									tm.projects.remove({_id: id._idp},cb)
+								},
+								function(cb){
+									tm.teams.update({'projects._idp': id._idp},{$pull:{projects: id}},{multi:true},cb)
+								}
+							],cb)
+						}
+						else {
+							throw new CustomError('You are not admin',"Access forbidden")
+						}
+					}))
 				}
             }});
         }))
