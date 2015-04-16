@@ -16,7 +16,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.css('#pass')).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
-					b.findElement(By.css("button.btn")).click();
+					b.findElement(By.css("#signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
 						b.findElement(By.css("#logout")).click();
@@ -36,7 +36,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.css('#pass')).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
-					b.findElement(By.css("button.btn")).click();
+					b.findElement(By.css("#signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
 
@@ -65,7 +65,7 @@ module.exports.block = function(){
 
 										b.findElement(By.css('#pass')).sendKeys("123456");
 										b.findElement(By.css("#login")).sendKeys("obram");
-										b.findElement(By.css("button.btn")).click();
+										b.findElement(By.css("#signup")).click();
 
 										helpers.waitPageReload.call(self, pid).then(function (pid) {
 											b.findElement(By.css("#logout")).click();
@@ -86,7 +86,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.css('#pass')).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
-					b.findElement(By.css("button.btn")).click();
+					b.findElement(By.css("#signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
 
@@ -116,7 +116,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.css('#pass')).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
-					b.findElement(By.css("button.btn")).click();
+					b.findElement(By.css("#signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
 
@@ -148,7 +148,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.css('#pass')).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
-					b.findElement(By.css("button.btn")).click();
+					b.findElement(By.css("#signup")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
 
@@ -196,7 +196,7 @@ module.exports.block = function(){
 
 													b.findElement(By.css('#pass')).sendKeys("123456");
 													b.findElement(By.css("#login")).sendKeys("obram");
-													b.findElement(By.css("button.btn")).click();
+													b.findElement(By.css("#signup")).click();
 													self.done();
 												})
 											})

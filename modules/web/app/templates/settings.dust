@@ -6,7 +6,12 @@
         <div class="col-sm-6">
 			<div class="row-fluid">
 				{#project}
-                    <legend class="h2" id="_id" data-id="{project._id}">Project <div class="btn btn-default btn-sm pull-right edit" data-type="project">Edit</div></legend>
+                    <legend class="h2" id="_id" data-id="{project._id}">Project
+                        <div class="btn-group pull-right">
+                            <div class="btn btn-sm btn-danger" id="deleteProject">Delete</div>
+                            <div class="btn btn-default btn-sm edit" data-type="project">Edit</div>
+                        </div>
+                    </legend>
                     <div class="row-fluid">
 						<form id="project" class="form-inline">
 							<strong>Name:</strong> &nbsp

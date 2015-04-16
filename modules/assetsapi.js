@@ -229,6 +229,32 @@ module.exports.init = function (ctx, cb) {
 				saveProjectsConfig: function(t,query, cb) {
 					query = prefixify(query)
 					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
+				},
+				deleteProject: function(t,id,cb){
+					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
+						if (u.role == "admin") {
+							id = prefixify(id)
+							var collections = ['action_errors','action_stats','actions','metrics','page_errors','page_reqs','pages']
+							safe.parallel([
+								function(cb){
+									safe.forEach(collections,function(collection,eachCb){
+										db.collection(collection,safe.sure(eachCb,function(thisCollection){
+											thisCollection.remove(id,eachCb)
+										}))
+									},cb)
+								},
+								function(cb){
+									tm.projects.remove({_id: id._idp},cb)
+								},
+								function(cb){
+									tm.teams.update({'projects._idp': id._idp},{$pull:{projects: id}},{multi:true},cb)
+								}
+							],cb)
+						}
+						else {
+							throw new CustomError('You are not admin',"Access forbidden")
+						}
+					}))
 				}
             }});
         }))
