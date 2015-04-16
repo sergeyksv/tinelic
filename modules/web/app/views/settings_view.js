@@ -3,6 +3,19 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'dustc!templates/setting
     var View = view.extend({
         id:"templates/settings",
         events: {
+            "click #deleteProject": function(e) {
+                var self = this;
+                var c = confirm('Do you really want delete this project and all of its data?');
+                if (c) {
+                    var id = {_idp:self.$("#_id").data('id')}
+                    api('assets.deleteProject', $.cookie('token'), id, function(err, data){
+                        if (err)
+                            alert(err)
+                        else
+                            self.app.router.navigateTo('/web/')
+                    })
+                }
+            },
             "click .edit": function(e){
                 var self = this
                 var form = self.$('form[id="'+$(e.currentTarget).data("type")+'"]')
