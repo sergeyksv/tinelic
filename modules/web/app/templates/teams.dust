@@ -3,8 +3,11 @@
 <div class="container">
 	<div class="starter-template">
 		{?obac.team_new.global}
-		<button type="button" id="addnt" class="btn btn-default btn-xs">Add new team</button>
-		{/obac.team_new.global}
+            <div class="btn-group">
+                <div id="addnt" class="btn btn-default btn-xs">Add new team</div>
+                <div class="btn btn-default btn-xs doNewProject">Create new project</div>
+            </div>
+        {/obac.team_new.global}
 		<p class="bg-primary"></p>
 		<table style="margin-top: 20px;"class="table table-condensed">
 			<tr>
@@ -36,6 +39,9 @@
                       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-project" data-addp="{_id}", href="#">Add project</a></li>
+                        {?obacGranted[_id]}
+                            <li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
+                        {/obacGranted[_id]}
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-user" data-addu="{_id}" href="#">Add user</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 

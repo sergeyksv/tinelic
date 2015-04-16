@@ -1,12 +1,28 @@
 /**
  * Created by ivan on 2/16/15.
  */
-define(['tinybone/base',"tinybone/backadapter",'dustc!../templates/teams.dust','bootstrap/modal' ],function (tb, api) {
+define(['tinybone/base',"tinybone/backadapter","safe",'dustc!../templates/teams.dust','bootstrap/modal' ],function (tb, api, safe) {
     var view = tb.View;
     var View = view.extend({
         id:"templates/teams",
         events: {
             //'click .doUpdate':"doUpdate",
+            'click .doNewProject': function(e) {
+                api.invalidate()
+                var self = this;
+                require(["views/modals/project"],function (Modal) {
+                    var modal = new Modal({app:self.app});
+                    modal.data = {};
+                    modal.render(safe.sure(self.app.errHandler, function (text) {
+                        var $modal = $(text)
+                        self.$el.prepend($modal);
+                        modal.bindDom($modal);
+                    }))
+                    modal.once("saved", function () {
+                        self.app.router.reload();
+                    })
+                }, this.app.errHandler)
+            },
             'click .btn-info': function(ebtn) {
                 var self = this;
                 var role = self.$('.li-role');

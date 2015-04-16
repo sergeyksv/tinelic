@@ -155,13 +155,24 @@ module.exports.init = function (ctx, cb) {
                     tm.teams.remove({_id: _id}, cb)
                 },
                 addProjects: function(t, u, cb) {
-					u = prefixify(u);
+					var id;
+					if (!Array.isArray(u._id)) {
+						u = prefixify(u);
+						id = u._id
+					}
+					else {
+						id = {$in: []}
+						_.each(u._id,function(thisid){
+							id.$in.push(mongo.ObjectID(thisid))
+						})
+						u = prefixify(u);
+					}
 					var update = {
-							$addToSet: {
-								projects: {$each: u.projects}
-							}}
+						$addToSet: {
+							projects: {$each: u.projects}
+						}}
 					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
+						tm.teams.update({_id: id}, update, {multi:true},cb)
 					}))
                 },
                 addUsers: function(t, u, cb) {
