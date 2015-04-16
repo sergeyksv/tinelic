@@ -1,4 +1,4 @@
-define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/database.dust', 'highcharts'],function (tb,_,api, safe) {
+define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/database.dust', 'highcharts','jquery.tablesorter.combined'],function (tb,_,api, safe) {
     var view = tb.View;
     var View = view.extend({
         id:"templates/database",
@@ -22,10 +22,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                         filter.filter['data._s_cat'] = "WebTransaction"
                         api("stats.getActionsCategoryBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
-                            trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr>');
-                            data = _.sortBy(data, function(r) {
-                                return r.value.tta*-1
-                            })
+                            trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr></thead><tbody>');
                             var sum = 0
                             _.forEach(data, function(r) {
                                 sum += r.value.tta
@@ -35,6 +32,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 var proc = ((r.value.tta/sum)*100).toFixed(1)
                                 trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                             })
+                            trbreak.append('</tbody>')
+							trbreak.tablesorter({sortList: [[2,1]]});
                         }))
                         cb()
                     },

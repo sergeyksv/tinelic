@@ -1,4 +1,4 @@
-define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/pages.dust', 'highcharts','jquery','jquery.tablesorter.combined'],function (tb,_,api, safe) {
+define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/pages.dust', 'highcharts','jquery.tablesorter.combined'],function (tb,_,api, safe) {
     var view = tb.View;
     var View = view.extend({
         id:"templates/pages",
@@ -21,16 +21,17 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                     function(cb) {
                         api("stats.getPagesBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.empty();
-                            trbreak.append('<thead><tr><th>Part</th><th>Count</th><th>Time</th></tr></thead>');
+                            trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr></thead><tbody>');
                             var sum = 0;
                             _.forEach(data, function(r){
                                 r.value.r = r.value.r.toFixed(2)
                                 sum += r.value.tta
                             })
-                            _.forEach(_.sortBy(data,function(r){return -1*r.value.tta}), function(data) {
-                                trbreak.append('<tbody><tr><td>'+data._id+'</td><td>'+data.value.r+'</td><td>'+((data.value.tta/sum)*100).toFixed(2)+' %</td></tr></tbody>')
+                            _.forEach(data, function(data) {
+                                trbreak.append('<tr><td>'+data._id+'</td><td>'+data.value.r+'</td><td>'+((data.value.tta/sum)*100).toFixed(2)+' %</td></tr>')
                             })
-                            trbreak.tablesorter({sortList: [[0,0],[1,0]]});
+                            trbreak.append('</tbody>')
+							trbreak.tablesorter({sortList: [[2,1]]});
                         }))
                         cb()
                     },
