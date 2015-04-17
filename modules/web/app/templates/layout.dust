@@ -65,7 +65,8 @@
 			"text":"../js/text",
 			"jquery-cookie": "../js/jquery-cookie",
 			"jquery.blockUI": "../js/jquery.blockUI",
-			"bootstrap":"../js/bootstrap"
+			"bootstrap":"../js/bootstrap",
+			"jquery.tablesorter.combined":"../js/jquery.tablesorter.combined"
 		},
 		shim: {
 			'dust-helpers': {
