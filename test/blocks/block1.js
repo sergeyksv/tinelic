@@ -129,7 +129,6 @@ module.exports.block = function(){
 							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
 
 								b.findElement(By.css('input#name')).sendKeys("NewProject");
-								b.findElement(By.css('.checkTeam')).click();
 								b.findElement(By.css("button.do-save")).click();
 
 								helpers.waitPageReload.call(self, pid).then(function (pid) {
