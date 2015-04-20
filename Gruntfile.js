@@ -42,6 +42,7 @@ module.exports = function(grunt) {
                         "jquery": "empty:",
                         "jquery-cookie": "../public/js/jquery-cookie",
                         "jquery.blockUI": "../public/js/jquery.blockUI",
+                        "jquery.tablesorter.combined": "../public/js/jquery.tablesorter.combined",
                     },
                     shim: {
                         'dust-helpers': {
