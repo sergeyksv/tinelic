@@ -30,7 +30,15 @@ define(['tinybone/base',"lodash",'tinybone/backadapter','safe','dustc!templates/
 					$li.find("pre").remove()
 				} else {
 					var trace = this.data.event.stacktrace.frames[$this.data('idx')];
-					$li.append("<pre>"+htmlEscape(trace._s_context)+"</pre>");
+					var data = []
+					_.forEach(trace.pre_context, function(r) {
+						data.push(r + "<br>")
+					})
+					data.push("<b>"+trace._s_context + "</b><br>")
+					_.forEach(trace.post_context, function(r) {
+						data.push(r + "<br>")
+					})
+					$li.append("<pre>"+data+"</pre>");
 				}
 				return false;
 			}

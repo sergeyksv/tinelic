@@ -884,42 +884,71 @@ module.exports.init = function (ctx, cb) {
 		}))
 	}),cb(null, {api:{
 				getTraceLineContext:function (t, p, cb) {
-					if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
-						block=cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
-					} else if (cache.has("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
-						block=cache.get("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col);
-					} else {
-						var url = p._s_file.trim();
+					safe.run(function (cb) {
+						if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
+							var context=cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
+							return safe.back(cb,null, context);
+						} else if (cache.has("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
+							var err=cache.get("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col);
+							return safe.back(cb,err,null);
+						} else {
+							var url = p._s_file.trim();
 
-						request.get({url:url}, safe.sure(cb, function (res, body) {
-							if (res.statusCode!=200)
-								return cb(new Error("Error, status code " + res.statusCode));
-							var lineno=0,lineidx=0;
-							while (lineno<parseInt(p._i_line)-1) {
-								lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
-								if (lineidx==-1)
-									return cb(new Error("Line number '"+p._i_line+"' is not found"));
-								lineno++;
-							}
-							var idx = lineidx+parseInt(p._i_col);
-							body = body.substring(0,idx)+"_t__pos____"+body.substring(idx);
-							if (idx>=body.length)
-								return cb(new Error("Column number '"+p._i_col+"' is not found"));
-							var block = body.substring(Math.max(idx-80,0),Math.min(idx+80,body.length-1));
+							request.get({url:url}, safe.sure(cb, function (res, body) {
+								var context={};
+								context.post_context=[]; context.pre_context=[];
+								if (res.statusCode!=200)
+									return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
+								var lineno=0,lineidx=0;
+								var preContextLineEnd=0,preContextLineBegin=0;
+								var i=0;
+								while (lineno<parseInt(p._i_line)-1) {
+									lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
+									if (lineidx==-1)
+										return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
+									preContextLineBegin=lineidx;
+									if ((lineno >= (parseInt(p._i_line)-9)) && (lineno < (parseInt(p._i_line)-2))) {
+											preContextLineEnd = body.indexOf('\n',preContextLineBegin+1);
+											context.pre_context[i] = body.substring(preContextLineBegin,preContextLineEnd);
+											preContextLineBegin = preContextLineEnd;
+											i++;
+									}
+									lineno++;
+								}
+								var contextLineEnd = body.indexOf('\n',lineidx+1);
+								context._s_context=body.substring(lineidx,contextLineEnd);
+								var postContextLineEnd=0;
+								for (var i=0; i<7; i++) {
+									postContextLineEnd = body.indexOf('\n',contextLineEnd+1);
+									// if no end file
+									if (postContextLineEnd	!=	-1) {
+										context.post_context[i] = body.substring(contextLineEnd,postContextLineEnd);
+										contextLineEnd = postContextLineEnd;
+									} else
+										return safe.back(cb,null, context);
+								}
+								return safe.back(cb,null, context);
+							}));
+						}
+					}, function (err, block) {
+						if (err) {
+							cache.set("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col,err.toString());
+							return safe.back(cb,err, null);
+						} else {
 							cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,block)
-						}));
-					}
-					return cb(null, block);
+							return safe.back(cb,null, block);
+						}
+					})
                 },
                 getStackTraceContext:function (t, frames, cb) {
 						safe.eachSeries(frames, function(r, cb) {
 								ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
 									if (err) {
-										console.log('ERR_inFetchStack',err)
-										cache.set("Error_"+r._s_file+"_"+r._i_line+"_"+r._i_col,err)
-										r._s_context=err;
+										r._s_context=err.toString();
 									} else {
-										r._s_context=context;
+										r._s_context=context._s_context;
+										r.pre_context=context.pre_context;
+										r.post_context=context.post_context;
 									}
 									cb(null, r)
 								})
