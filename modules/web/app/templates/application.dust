@@ -39,7 +39,7 @@
 			{/data}
 		</div>
 	</div>
-	<div class="col-sm-8">
+	<div class="col-sm-8 addtrbreak">
     	<hr></hr>
        	<div id="rpm-one" style="width:100%; height:150px; float: left;"></div>
        	<hr></hr>

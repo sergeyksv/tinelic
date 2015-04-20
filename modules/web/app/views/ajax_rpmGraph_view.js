@@ -13,7 +13,9 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
 				api("stats.getAjaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
-					trbreak.empty();
+					trbreak.remove();
+                    self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
+                    trbreak=self.$('#trbreak')
                     trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr></thead><tbody>');
 					var int=[] , k=null;
 					for (var j=0; j<data[0].value.pag.length-1; j++) {
@@ -39,7 +41,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 					_.forEach(int, function(data) {
                               trbreak.append('<tr><td>'+data.id+'</td><td>'+data.col+'</td><td>'+data.perc+' %</td></tr>')
                     })
-                    trbreak.append('</tbody>')
+                    trbreak.append('</tbody></table>')
 					trbreak.tablesorter({sortList: [[2,1]]});
 				}))
 						api("stats.getAjaxTimings","public",{quant:10,_idurl:_id, filter:{_idp:this.data.project._id,

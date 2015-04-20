@@ -21,7 +21,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                     function(cb) {
                         filter.filter['data._s_cat'] = "WebTransaction"
                         api("stats.getActionsCategoryBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                            trbreak.empty();
+                            trbreak.remove();
+                            self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
+                            trbreak=self.$('#trbreak')
                             trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th></tr></thead><tbody>');
                             var sum = 0
                             _.forEach(data, function(r) {
@@ -32,7 +34,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                 var proc = ((r.value.tta/sum)*100).toFixed(1)
                                 trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+proc+' %</td></tr>')
                             })
-                            trbreak.append('</tbody>')
+                            trbreak.append('</tbody></table>')
 							trbreak.tablesorter({sortList: [[2,1]]});
                         }))
                         cb()
