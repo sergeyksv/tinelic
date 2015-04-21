@@ -1,5 +1,6 @@
 define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/pages.dust', 'highcharts'],function (tb,_,api, safe) {
     var view = tb.View;
+    var prevObject = null;
     var View = view.extend({
         id:"templates/pages",
         events: {
@@ -13,7 +14,14 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
             'click .more': function(e) {
                 var self = this;
                 var trbreak = self.$('#trbreak')
-                var p = $(e.currentTarget).html()
+                var p = $(e.currentTarget).html();
+                if (prevObject) {
+					var perem = prevObject.text();
+					prevObject.empty();
+					prevObject.append(perem);
+				};
+                prevObject = $(e.currentTarget);
+                prevObject.empty().append("<b>"+p+"</b>");
                 var filter = this.data.fr
                 filter.filter._s_route = p;
 

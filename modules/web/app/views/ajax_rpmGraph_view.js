@@ -1,5 +1,6 @@
 define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templates/ajax_rpmGraph.dust'],function (tb,safe,api) {
 	var view = tb.View;
+	var prevObject = null;
 	var View = view.extend({
 		id:"templates/ajax_rpmGraph",
 		postRender:function () {
@@ -9,7 +10,14 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 			var quant = this.data.fr.quant;
 			this.on("CallGraph",function(_id, evt){
 				var trbreak = self.$('#trbreak')
-				var transaction = $(evt.currentTarget).html()
+				var transaction = $(evt.currentTarget).html();
+				if (prevObject) {
+					var perem = prevObject.text();
+					prevObject.empty();
+					prevObject.append(perem);
+				};
+                prevObject = $(evt.currentTarget);
+                prevObject.empty().append("<b>"+transaction+"</b>");
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
 				api("stats.getAjaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
