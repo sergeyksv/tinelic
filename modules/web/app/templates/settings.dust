@@ -140,7 +140,7 @@
                             <div class="btn-group">
                                 <div type="submit" data-send="pageRules{$idx}" style="display: none" class="btn btn-sm btn-primary send">Save</div>
                                 <div type="submit" data-id='{_id}' style="display:none" class="btn btn-sm btn-danger deletePageRule">Delete</div>
-                                <div type="submit" data-send="pageRule{$idx}" style="display: none" class="btn btn-sm btn-default addAction">AddAction</div>
+                                <div type="submit" data-id='{_id}' style="display: none" class="btn btn-sm btn-default addAction">AddAction</div>
                             </div>
                         </div>
                         </form>

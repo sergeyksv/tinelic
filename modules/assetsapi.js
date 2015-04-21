@@ -226,38 +226,37 @@ module.exports.init = function (ctx, cb) {
 						}
 					}))
 				},
-				getProjectPageRules: function(t,query,cb) {
-					query = prefixify(query)
-					projects.findOne(query,safe.sure(cb,function(data){
+				getProjectPageRules: function(t,p,cb) {
+					p = prefixify(p)
+					projects.findOne(p,safe.sure(cb,function(data){
 						cb(null,data.pageRules)
 					}))
 				},
-				saveProjectsConfig: function(t,query, cb) {
-					query = prefixify(query);
-					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
+				saveProjectsConfig: function(t,p, cb) {
+					p = prefixify(p);
+					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
 				},
-				addPageRule: function(t,query,cb) {
-					query = prefixify(query);
-					query.filter._id = mongo.ObjectID();
-					query.filter.actions[0]._id = mongo.ObjectID();
-					projects.update({_id: query._id},{$push: {pageRules:query.filter}},{},cb)
+				addPageRule: function(t,p,cb) {
+					p = prefixify(p);
+					p.pageRule._id = mongo.ObjectID();
+					projects.update({_id: p._id},{$push: {pageRules:p.pageRule}},{},cb)
 				},
-				addPageRuleAction: function(t,query,cb){
-					query = prefixify(query);
-					query.filter._id = mongo.ObjectID();
+				addPageRuleAction: function(t,p,cb){
+					p = prefixify(p);
+					p.action._id = mongo.ObjectID();
 					var push = {$push:{}};
-					push.$push['pageRules.'+query._i_index+'.actions'] = query.filter;
-					projects.update({_id: query._id},push,{},cb);
+					push.$push['pageRules.$.actions'] = p.action;
+					projects.update({'pageRules._id': p._id},push,{},cb);
 				},
-				deletePageRule: function(t,query,cb){
-					query = prefixify(query);
-					projects.update({_id: query._id},{$pull:{pageRules:query.filter}},{},cb)
+				deletePageRule: function(t,p,cb){
+					p = prefixify(p);
+					projects.update({_id: p._id},{$pull:{pageRules:p.filter}},{},cb)
 				},
-				deletePageRuleAction: function(t,query,cb){
-					query = prefixify(query);
+				deletePageRuleAction: function(t,p,cb){
+					p = prefixify(p);
 					var pull = {$pull:{}};
-					pull.$pull['pageRules.'+query._i_index+'.actions'] = query.filter;
-					projects.update({_id:query._id},pull,{},cb);
+					pull.$pull['pageRules.$.actions'] = p;
+					projects.update({'pageRules.actions._id':p._id},pull,{},cb);
 				},
 				deleteProject: function(t,id,cb){
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {

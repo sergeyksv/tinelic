@@ -665,20 +665,19 @@ module.exports.init = function (ctx, cb) {
 								function(cb) {
 									var n = 0;
 									ctx.api.assets.getProjectPageRules('public',{_id: data._idp},safe.sure(cb,function(pageRules){
-										safe.map(pageRules,function(pageRule,mapCb){
+										safe.map(pageRules,function(pageRule,cb){
 											pageRule._s_condition = JSON.parse(pageRule._s_condition);
 											pageRule._s_condition._id = _id;
-											pages.findOne(pageRule._s_condition,safe.sure(mapCb,function(conditions){
+											pages.findOne(pageRule._s_condition,safe.sure(cb,function(conditions){
 												if (conditions) {
 													_.each(pageRule.actions,function(action){
 														if (data[action._s_field] && action._s_type == 'replacer') {
 															data[action._s_field] = data[action._s_field].replace(RegExp(action._s_matcher),action._s_replacer);
-															data._idPageRule = pageRule._id;
 														}
 														n++
 													})
 												}
-												mapCb();
+												cb();
 											}))
 										},safe.sure(cb,function(){
 											if (n)

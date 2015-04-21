@@ -63,10 +63,7 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'dustc!templates/setting
             'click .deletePageRuleAction': function(e) {
                 var self = this;
                 var id = self.$(e.currentTarget).data('send');
-                var data = {filter:{_id: id}};
-                var index = $(e.currentTarget).closest('form').attr('id').replace(/^pageRules/,"")
-                data._id = self.$("#_id").data('id');
-                data._i_index = index;
+                var data = {_id: id};
                 api('assets.deletePageRuleAction', $.cookie('token'), data, function(err,data){
                     if (err)
                         alert(err);
@@ -78,15 +75,13 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'dustc!templates/setting
             },
             'click .addAction': function(e) {
                 var self = this;
-                var index = self.$(e.currentTarget).data('send').replace(/(^pageRule)/,"");
-                var data = {filter: {
+                var data = {action: {
                     _s_type: "NoReplace",
                     _s_field: "NoName",
                     _s_matcher: "NoMatcher",
                     _s_replacer: "NoReplacer"
                 }};
-                data._id = self.$("#_id").data('id');
-                data._i_index = index;
+                data._id = self.$(e.currentTarget).data('id');
                 api('assets.addPageRuleAction', $.cookie('token'), data, function(err,data){
                     if (err)
                         alert(err);
@@ -99,15 +94,9 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'dustc!templates/setting
             'click .addPageRule': function(e) {
                 var self = this;
                 var data = {
-                    filter: {
+                    pageRule: {
                         _s_condition: "No Condition",
                         actions: [
-                            {
-                                _s_type: "NoReplace",
-                                _s_field: "NoName",
-                                _s_matcher: "NoMatcher",
-                                _s_replacer: "NoReplacer"
-                            }
                         ]
                     }
                 };
