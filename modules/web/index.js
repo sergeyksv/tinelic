@@ -24,6 +24,7 @@ module.exports.init = function (ctx, cb) {
 			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
 			'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
 			"md5":"../public/js/md5",
+			'jquery.tablesorter.combined': path.resolve(__dirname,'../../node_modules/tablesorter/dist/js/jquery.tablesorter.combined'),
 		},
 		config:{
 			"text":{
@@ -51,6 +52,7 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("bootstrap/tagsinput", true);
 	requirejs.define("bootstrap/typeahead", true);
 	requirejs.define("highcharts",true);
+	requirejs.define("jquery.tablesorter.combined",true);
 	requirejs.define("backctx",ctx);
 
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}));

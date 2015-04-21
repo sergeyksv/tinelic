@@ -1,4 +1,4 @@
-define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templates/ajax_rpmGraph.dust'],function (tb,safe,api) {
+define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templates/ajax_rpmGraph.dust','jquery.tablesorter.combined'],function (tb,safe,api) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"templates/ajax_rpmGraph",
@@ -14,7 +14,7 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 				filter.filter._s_name = transaction;
 				api("stats.getAjaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
 					trbreak.empty();
-                    trbreak.append('<tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr>');
+                    trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Percent</th></tr></thead><tbody>');
 					var int=[] , k=null;
 					for (var j=0; j<data[0].value.pag.length-1; j++) {
 						if ((data[0].value.pag[j] != null) || (data[0].value.pag[j] != undefined)){
@@ -28,9 +28,6 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 							}
 						}
 					}
-					int =_.sortBy(int, function(v){
-						return -1*v.col;
-					})
 					var sum=0;
 					_.each(int, function(v){
 						sum+=v.col
@@ -42,6 +39,8 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 					_.forEach(int, function(data) {
                               trbreak.append('<tr><td>'+data.id+'</td><td>'+data.col+'</td><td>'+data.perc+' %</td></tr>')
                     })
+                    trbreak.append('</tbody>')
+					trbreak.tablesorter({sortList: [[2,1]]});
 				}))
 						api("stats.getAjaxTimings","public",{quant:10,_idurl:_id, filter:{_idp:this.data.project._id,
 						_dt:this.data.fr.filter._dt
