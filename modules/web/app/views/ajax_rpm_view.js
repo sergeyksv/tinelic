@@ -15,12 +15,14 @@ define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust', 'views/ajax_
               return false;
 			},
 			"click .do-get-ajax": function (evt){
-				var GraphView=null
+				var self = this;
+				var GraphView=null;
+				var more = self.$('.do-get-ajax');
 				GraphView = _.find(this.views,function(v){
 					return v.name == "views/ajax_rpmGraph_view";
 				});
 				if (GraphView) {
-					GraphView.trigger("CallGraph", evt.currentTarget.innerHTML, evt)
+					GraphView.trigger("CallGraph", evt.currentTarget.innerHTML, evt, more)
 				}
 				return false;
 			}

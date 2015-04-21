@@ -1,6 +1,5 @@
 define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!templates/database.dust', 'highcharts'],function (tb,_,api, safe) {
     var view = tb.View;
-    var prevObject = null;
     var View = view.extend({
         id:"templates/database",
         events: {
@@ -15,13 +14,13 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                 var self = this;
                 var trbreak = self.$('#trbreak')
                 var p = $(e.currentTarget).html();
-                if (prevObject) {
-					var perem = prevObject.text();
-					prevObject.empty();
-					prevObject.append(perem);
-				};
-                prevObject = $(e.currentTarget);
-                prevObject.empty().append("<b>"+p+"</b>");
+                var more = self.$('.more');
+				for (var i=0; i < more.length; i++) {
+					if (more[i].classList.contains("leftlist"))
+						more[i].classList.remove("leftlist");
+					if (more[i].innerText == p)
+						more[i].classList.add("leftlist");
+				}
                 var filter = this.data.fr
                 filter.filter['data._s_name'] = p;
 
