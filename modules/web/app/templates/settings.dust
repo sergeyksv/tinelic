@@ -12,23 +12,21 @@
                             <div class="btn btn-default btn-sm edit" data-type="project">Edit</div>
                         </div>
                     </legend>
-                    <div class="row-fluid">
+                    <div class="row-fluid bg-info" style="padding: 10px">
 						<form id="project" class="form-inline">
 							<strong>Name:</strong> &nbsp
 							<span>{project.name}</span>
 							<input style="display: none" type="text" name="name" class="form-control" value="{project.name}">
                             <div type="submit" data-send="project" style="display: none" class="btn btn-sm btn-primary send">Save</div>
 						</form>
-						<br>
-
 					</div><br>
 				{/project}
 				{#apdexConfig}
                     <legend class="h2">Apdex Time <div class="btn btn-default btn-sm pull-right edit" data-type="apdexT">Edit</div></legend>
-					<div class="row-fluid">
+					<div class="row-fluid bg-info" style="padding: 10px">
                         <form id="apdexT">
 							<div class="col-sm-4 text-danger">
-								<div class="row">
+								<div class="row-fluid">
 									<div class="col-xs-4">
                                         <strong>Server:</strong>
                                     </div>
@@ -65,6 +63,94 @@
 						</form>
 					</div><br>
 				{/apdexConfig}
+                <legend class="h2">Page Rules <div type="submit" data-add="pageRules" class="btn btn-sm btn-default addPageRule pull-right">Add Rule</div></legend>
+                <div class="row-fluid">
+                        <div class="bg-warning">
+                            <span class="text-info">Please insert condition as: { "foo" : { "foo2" : "bar" } }</span>
+                        </div>
+                        {#project.pageRules}
+                        <form id="pageRules{$idx}">
+                        <div class="container-fluid bg-info" style="padding: 10px">
+                            <div class="row">
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label">Condition</label>
+                                    <div class="col-sm-8">
+                                        <span>{_s_condition}</span>
+                                        <input style="display: none" type="text" name="_s_condition" class="form-control" value="{_s_condition}">
+                                    </div>
+                                    <div class="btn-group col-sm-2">
+                                        <div class="btn btn-default btn-xs edit" data-type="pageRules{$idx}">Edit</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                            <div class="row">
+                                <div class="form-group">
+                                    {#actions}
+                                        <div class="container-fluid">
+                                            <label class="col-sm-2 control-label">Action {$idx}</label>
+                                            <div class="col-sm-8">
+                                                <div class="container-fluid">
+                                                    <div class="row">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-3 control-label">type:</label>
+                                                            <div class="col-sm-9">
+                                                                <span>{_s_type}</span>
+                                                                <input style="display: none" type="text" name="actions.{$idx}._s_type" class="form-control" value="replacer" readonly>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-3 control-label">field:</label>
+                                                            <div class="col-sm-9">
+                                                                <span>{_s_field}</span>
+                                                                <input style="display: none" type="text" name="actions.{$idx}._s_field" class="form-control" value="{_s_field}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-3 control-label">matcher:</label>
+                                                            <div class="col-sm-9">
+                                                                <span>{_s_matcher}</span>
+                                                                <input style="display: none" type="text" name="actions.{$idx}._s_matcher" class="form-control" value="{_s_matcher}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="form-group">
+                                                            <label class="col-sm-3 control-label">replacer:</label>
+                                                            <div class="col-sm-9">
+                                                                <span>{_s_replacer}</span>
+                                                                <input style="display: none" type="text" name="actions.{$idx}._s_replacer" class="form-control" value="{_s_replacer}">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-2">
+                                                <div type="submit" style="display: none;" data-send="{_id}" class="btn btn-xs btn-danger deletePageRuleAction">Delete</div>
+                                            </div>
+                                        </div>
+                                        <br>
+                                    {/actions}
+                                </div>
+                            </div>
+                            <div class="btn-group">
+                                <div type="submit" data-send="pageRules{$idx}" style="display: none" class="btn btn-sm btn-primary send">Save</div>
+                                <div type="submit" data-id='{_id}' style="display:none" class="btn btn-sm btn-danger deletePageRule">Delete</div>
+                                <div type="submit" data-send="pageRule{$idx}" style="display: none" class="btn btn-sm btn-default addAction">AddAction</div>
+                            </div>
+                        </div>
+                        </form>
+                        {/project.pageRules}
+                        <br>
+                        <div class="btn-group">
+
+                        </div>
+
+                </div><br>
 			</div>
 		</div>
         <div class="col-sm-3"></div>

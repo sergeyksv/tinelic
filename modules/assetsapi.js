@@ -226,9 +226,38 @@ module.exports.init = function (ctx, cb) {
 						}
 					}))
 				},
-				saveProjectsConfig: function(t,query, cb) {
+				getProjectPageRules: function(t,query,cb) {
 					query = prefixify(query)
+					projects.findOne(query,safe.sure(cb,function(data){
+						cb(null,data.pageRules)
+					}))
+				},
+				saveProjectsConfig: function(t,query, cb) {
+					query = prefixify(query);
 					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
+				},
+				addPageRule: function(t,query,cb) {
+					query = prefixify(query);
+					query.filter._id = mongo.ObjectID();
+					query.filter.actions[0]._id = mongo.ObjectID();
+					projects.update({_id: query._id},{$push: {pageRules:query.filter}},{},cb)
+				},
+				addPageRuleAction: function(t,query,cb){
+					query = prefixify(query);
+					query.filter._id = mongo.ObjectID();
+					var push = {$push:{}};
+					push.$push['pageRules.'+query._i_index+'.actions'] = query.filter;
+					projects.update({_id: query._id},push,{},cb);
+				},
+				deletePageRule: function(t,query,cb){
+					query = prefixify(query);
+					projects.update({_id: query._id},{$pull:{pageRules:query.filter}},{},cb)
+				},
+				deletePageRuleAction: function(t,query,cb){
+					query = prefixify(query);
+					var pull = {$pull:{}};
+					pull.$pull['pageRules.'+query._i_index+'.actions'] = query.filter;
+					projects.update({_id:query._id},pull,{},cb);
 				},
 				deleteProject: function(t,id,cb){
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
