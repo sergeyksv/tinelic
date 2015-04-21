@@ -782,7 +782,6 @@ module.exports.init = function (ctx, cb) {
 			})
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				var data = {};
-				var IfInsert = 0;
 				safe.run(function (cb) {
 					data = JSON.parse(req.query.sentry_data);
 					var ip = req.headers['x-forwarded-for'] ||
@@ -885,13 +884,11 @@ module.exports.init = function (ctx, cb) {
 	}),cb(null, {api:{
 				getTraceLineContext:function (t, p, cb) {
 					safe.run(function (cb) {
-						if (cache.has(p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
-							var context=cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
-							return safe.back(cb,null, context);
-						} else if (cache.has("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col) == true) {
-							var err=cache.get("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col);
-							return safe.back(cb,err,null);
-						} else {
+						var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col)
+						if (cdata) {
+							return safe.back(cb,cdata.err, cdata.block);
+						}
+						else {
 							var url = p._s_file.trim();
 
 							request.get({url:url}, safe.sure(cb, function (res, body) {
@@ -931,13 +928,8 @@ module.exports.init = function (ctx, cb) {
 							}));
 						}
 					}, function (err, block) {
-						if (err) {
-							cache.set("Error_"+p._s_file+"_"+p._i_line+"_"+p._i_col,err.toString());
-							return safe.back(cb,err, null);
-						} else {
-							cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,block)
-							return safe.back(cb,null, block);
-						}
+						cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:err, block:block})
+						return safe.back(cb,err, block);
 					})
                 },
                 getStackTraceContext:function (t, frames, cb) {
