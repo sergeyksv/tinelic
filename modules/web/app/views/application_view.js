@@ -14,13 +14,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               var self = this;
               var trbreak = self.$('#trbreak')
               var transaction = $(e.currentTarget).html();
-			  var more = self.$('.more');
-			  for (var i=0; i < more.length; i++) {
-				if (more[i].classList.contains("leftlist"))
-					more[i].classList.remove("leftlist");
-				if (more[i].innerText == transaction)
-					more[i].classList.add("leftlist");
-			  }
+			  self.$('.more.leftlist').removeClass('leftlist');
+			  $(e.currentTarget).addClass('leftlist');
               var filter = this.data.fr
               filter.filter._s_name = transaction;
 

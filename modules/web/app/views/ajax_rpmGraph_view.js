@@ -7,15 +7,9 @@ define(['tinybone/base','safe','tinybone/backadapter','highcharts','dustc!templa
 			var self = this;
 			var ajax = this.data.rpm;
 			var quant = this.data.fr.quant;
-			this.on("CallGraph",function(_id, evt, more){
+			this.on("CallGraph",function(_id, evt){
 				var trbreak = self.$('#trbreak')
 				var transaction = $(evt.currentTarget).html();
-				for (var i=0; i < more.length; i++) {
-					if (more[i].classList.contains("leftlist"))
-						more[i].classList.remove("leftlist");
-					if (more[i].innerText == transaction)
-						more[i].classList.add("leftlist");
-				}
 				var filter = this.data.fr
 				filter.filter._s_name = transaction;
 				api("stats.getAjaxBreakDown", "public", filter, safe.sure(this.app.errHandler, function(data) {
