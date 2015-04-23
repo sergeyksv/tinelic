@@ -182,8 +182,10 @@ module.exports.init = function (ctx, cb) {
 								users: {$each:u.users}
 						}
 					}
-					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
+					tm.teams.update({_id: u._id},{$pull:{users:{role: u._s_type}}},{},safe.sure(cb,function(){
+						ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+							tm.teams.update({_id: u._id}, update, {},cb)
+						}))
 					}))
                 },
                 pullData: function(t, u, cb) {
@@ -232,6 +234,29 @@ module.exports.init = function (ctx, cb) {
 						cb(null,data.pageRules)
 					}))
 				},
+				savePageRule: function(t,p,cb) {
+					p = prefixify(p);
+					var index;
+					var filter = {
+						'pageRules.$._s_condition': p.filter['pageRules.$._s_condition'],
+						'pageRules.$.actions':[]
+					}
+					var objects = {};
+					p.filter['pageRules.$.actions'] = [];
+					_.each(p.filter,function(v,k){
+						index = k.replace(/(pageRules\.\$\.actions\.)/,'');
+						if (index.search(/^[0-9*]/) != -1){
+							index = index.split('.');
+							if (!objects[index[0]])
+								objects[index[0]] = {};
+							objects[index[0]][index[1]] = v
+						}
+					});
+					_.each(objects,function(r){
+						filter['pageRules.$.actions'].push(r)
+					});
+					projects.update({'pageRules._id': p._id},{$set: filter},{multi:false},cb);
+				},
 				saveProjectsConfig: function(t,p, cb) {
 					p = prefixify(p);
 					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
@@ -239,6 +264,7 @@ module.exports.init = function (ctx, cb) {
 				addPageRule: function(t,p,cb) {
 					p = prefixify(p);
 					p.pageRule._id = mongo.ObjectID();
+					p.pageRule.actions = [];
 					projects.update({_id: p._id},{$push: {pageRules:p.pageRule}},{},cb)
 				},
 				addPageRuleAction: function(t,p,cb){
@@ -251,12 +277,6 @@ module.exports.init = function (ctx, cb) {
 				deletePageRule: function(t,p,cb){
 					p = prefixify(p);
 					projects.update({_id: p._id},{$pull:{pageRules:p.filter}},{},cb)
-				},
-				deletePageRuleAction: function(t,p,cb){
-					p = prefixify(p);
-					var pull = {$pull:{}};
-					pull.$pull['pageRules.$.actions'] = p;
-					projects.update({'pageRules.actions._id':p._id},pull,{},cb);
 				},
 				deleteProject: function(t,id,cb){
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
