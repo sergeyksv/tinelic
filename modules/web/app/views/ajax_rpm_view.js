@@ -15,7 +15,10 @@ define(['tinybone/base', 'lodash', 'dustc!templates/ajax_rpm.dust', 'views/ajax_
               return false;
 			},
 			"click .do-get-ajax": function (evt){
-				var GraphView=null
+				var self = this;
+				self.$('.do-get-ajax.leftlist').removeClass('leftlist');
+				$(evt.currentTarget).addClass('leftlist');
+				var GraphView=null;
 				GraphView = _.find(this.views,function(v){
 					return v.name == "views/ajax_rpmGraph_view";
 				});
