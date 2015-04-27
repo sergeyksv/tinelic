@@ -898,31 +898,52 @@ module.exports.init = function (ctx, cb) {
 									return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
 								var lineno=0,lineidx=0;
 								var preContextLineEnd=0,preContextLineBegin=0;
-								var i=0;
+								var j=6;
+								var boolOne=true;
 								while (lineno<parseInt(p._i_line)-1) {
 									lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
 									if (lineidx==-1)
 										return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
-									preContextLineBegin=lineidx;
-									if ((lineno >= (parseInt(p._i_line)-9)) && (lineno < (parseInt(p._i_line)-2))) {
-											preContextLineEnd = body.indexOf('\n',preContextLineBegin+1);
-											context.pre_context[i] = body.substring(preContextLineBegin,preContextLineEnd);
-											preContextLineBegin = preContextLineEnd;
-											i++;
-									}
 									lineno++;
 								}
-								var contextLineEnd = body.indexOf('\n',lineidx+1);
-								context._s_context=body.substring(lineidx,contextLineEnd);
-								var postContextLineEnd=0;
-								for (var i=0; i<7; i++) {
-									postContextLineEnd = body.indexOf('\n',contextLineEnd+1);
-									// if no end file
-									if (postContextLineEnd	!=	-1) {
-										context.post_context[i] = body.substring(contextLineEnd,postContextLineEnd);
-										contextLineEnd = postContextLineEnd;
-									} else
-										return safe.back(cb,null, context);
+								var idx = lineidx+parseInt(p._i_col);
+								if (idx>=body.length)
+									return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
+								preContextLineEnd=idx;
+								for (var i=idx-1; i>=0; i--) {
+									var ch = body.charAt(i);
+									if (ch == '\n' || ch == '}' || ch == ';' || ch == ')') {
+										preContextLineBegin=i+1;
+										if (boolOne) {
+											boolOne=false;
+											context._s_context=body.substring(preContextLineBegin,preContextLineEnd);
+										} else {
+											context.pre_context[j] = body.substring(preContextLineBegin,preContextLineEnd);
+											if (j == 0)
+												break;
+											j--;
+										}
+										preContextLineEnd = preContextLineBegin;
+									}
+								}
+								var postContextLineEnd=0,postContextLineBegin=0;
+								boolOne=true;
+								postContextLineBegin=idx;
+								for (var i=idx+1; i<body.length; i++) {
+									var ch = body.charAt(i);
+									if (ch == '\n' || ch == '}' || ch == ';') {
+										postContextLineEnd=i+1;
+										if (boolOne) {
+											boolOne=false;
+											context._s_context+=body.substring(postContextLineBegin,postContextLineEnd);
+										} else {
+											context.post_context[j] = body.substring(postContextLineBegin,postContextLineEnd);
+											if (j == 6)
+												break;
+											j++;
+										}
+										postContextLineBegin = postContextLineEnd;
+									}
 								}
 								return safe.back(cb,null, context);
 							}));
