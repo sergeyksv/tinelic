@@ -1,0 +1,46 @@
+{#action}
+    <form>
+    <div class="container-fluid" style="padding: 5px">
+        <label class="col-sm-2 control-label">Action</label>
+        <div class="col-sm-8">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">type:</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="_s_type" class="form-control" value="replacer" readonly>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">field:</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="_s_field" class="form-control" value="{_s_field}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">matcher:</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="_s_matcher" class="form-control" value="{_s_matcher}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">replacer:</label>
+                        <div class="col-sm-9">
+                            <input type="text" name="_s_replacer" class="form-control" value="{_s_replacer}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div type="submit" class="close deletePageRuleAction"><div aria-hidden="true">&times;</div></div>
+        </div>
+    </div>
+    </form>
+{/action}

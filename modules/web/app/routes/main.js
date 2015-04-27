@@ -749,7 +749,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
-						requirejs(["views/settings_view"], function (view) {
+						requirejs(["views/settings/settings_view"], function (view) {
 							safe.back(cb, null, view)
 						},cb)
 					},
@@ -760,6 +760,27 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						res.renderX({view:r.view,data:{title:"Settings", project:project, apdexConfig: r.apdexConfig}})
 					})
 				)
+			}))
+		},
+		memory: function(req,res,cb) {
+			var quant = 10;
+			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+				safe.parallel({
+					view: function (cb) {
+						requirejs(["views/memory_view"], function (view) {
+							safe.back(cb, null, view)
+						},cb)},
+					memory: function(cb) {
+						api('stats.getMemoryGraph','public',{quant:quant,
+							filter:{
+								_idp:project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}
+						},cb)}
+				},safe.sure(cb, function(r){
+					res.renderX({view:r.view,data:{title:"Memory", project:project, mem: r.memory,quant:quant}})
+				}))
+
 			}))
 		}
 	}

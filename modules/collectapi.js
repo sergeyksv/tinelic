@@ -670,6 +670,31 @@ module.exports.init = function (ctx, cb) {
 							var _id = docs[0]._id;
 							safe.parallel([
 								function(cb) {
+									var n = 0;
+									ctx.api.assets.getProjectPageRules('public',{_id: data._idp},safe.sure(cb,function(pageRules){
+										safe.map(pageRules,function(pageRule,cb){
+											pageRule._s_condition = JSON.parse(pageRule._s_condition);
+											pageRule._s_condition._id = _id;
+											pages.findOne(pageRule._s_condition,safe.sure(cb,function(conditions){
+												if (conditions) {
+													_.each(pageRule.actions,function(action){
+														if (data[action._s_field] && action._s_type == 'replacer') {
+															data[action._s_field] = data[action._s_field].replace(RegExp(action._s_matcher),action._s_replacer);
+														}
+														n++
+													})
+												}
+												cb();
+											}))
+										},safe.sure(cb,function(){
+											if (n)
+												pages.update({_id:_id},{$set:data},{},cb);
+											else
+												cb();
+										}))
+									}))
+								},
+								function(cb) {
 									events.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
 										$set: {
 											_idpv: _id,

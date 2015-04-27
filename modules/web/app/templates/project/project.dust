@@ -1,7 +1,7 @@
 {@view name="views/header_view"/}
 
 <div class="container" style="margin-top:20px;" >
-	<legend>{project.name} <span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}  Memory: {metrics.mem} Mb{/graphOn.server} ( {project._id} )</span><div class="btn-group pull-right"><div id="acknowledge" class="btn btn-danger btn-xs">Ack</div> <a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a></div></legend>
+	<legend>{project.name} <span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}  <a href="{_t_prefix}/project/{project.slug}/memory">Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )</span><div class="btn-group pull-right"><div id="acknowledge" class="btn btn-danger btn-xs">Ack</div> <a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a></div></legend>
 <div class="row-fluid">
 	{#graphOn}
 		<div class="col-md-4">

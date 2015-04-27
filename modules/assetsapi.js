@@ -182,8 +182,10 @@ module.exports.init = function (ctx, cb) {
 								users: {$each:u.users}
 						}
 					}
-					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
+					tm.teams.update({_id: u._id},{$pull:{users:{role: u._s_type}}},{},safe.sure(cb,function(){
+						ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+							tm.teams.update({_id: u._id}, update, {},cb)
+						}))
 					}))
                 },
                 pullData: function(t, u, cb) {
@@ -226,9 +228,38 @@ module.exports.init = function (ctx, cb) {
 						}
 					}))
 				},
-				saveProjectsConfig: function(t,query, cb) {
-					query = prefixify(query)
-					projects.update({_id: query._id},{$set:query.filter},{multi:false},cb)
+				getProjectPageRules: function(t,p,cb) {
+					p = prefixify(p)
+					projects.findOne(p,safe.sure(cb,function(data){
+						cb(null,data.pageRules)
+					}))
+				},
+				savePageRule: function(t,p,cb) {
+					p = prefixify(p);
+					if (!p.filter['pageRules.$.actions'])
+						p.filter['pageRules.$.actions'] = [];
+					projects.update({'pageRules._id': p._id},{$set: p.filter},{multi:false},cb);
+				},
+				saveProjectsConfig: function(t,p, cb) {
+					p = prefixify(p);
+					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
+				},
+				addPageRule: function(t,p,cb) {
+					p = prefixify(p);
+					p.pageRule._id = mongo.ObjectID();
+					p.pageRule.actions = [];
+					projects.update({_id: p._id},{$push: {pageRules:p.pageRule}},{},cb)
+				},
+				addPageRuleAction: function(t,p,cb){
+					p = prefixify(p);
+					p.action._id = mongo.ObjectID();
+					var push = {$push:{}};
+					push.$push['pageRules.$.actions'] = p.action;
+					projects.update({'pageRules._id': p._id},push,{},cb);
+				},
+				deletePageRule: function(t,p,cb){
+					p = prefixify(p);
+					projects.update({_id: p._id},{$pull:{pageRules:p.filter}},{},cb)
 				},
 				deleteProject: function(t,id,cb){
 					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
