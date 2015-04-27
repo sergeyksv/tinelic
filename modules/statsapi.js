@@ -1036,6 +1036,37 @@ module.exports.init = function (ctx, cb) {
 							cb(null, data);
 						})
                     );
+                },
+                getMemoryGraph:function(t,p,cb){
+                    var query = queryfix(p.filter);
+                    metrics.find(query).toArray(safe.sure(cb,function(data){
+                        data = _(data).pluck('_s_pid').uniq().value();
+                        safe.map(data,function(pid,cb){
+                            query._s_pid = pid
+                            metrics.mapReduce(
+                                function(){
+                                    emit(parseInt(this._dt.valueOf()/(Q*25000)),{mem: this._f_val/this._i_cnt})
+                                },
+                                function (k,v) {
+                                    var r=null;
+                                    v.forEach(function(v) {
+                                        if (!r) {
+                                            r = v;
+                                        }
+                                        else {
+                                            r.mem = ((v.mem + r.mem)/2)
+                                        }
+                                    });
+                                    return r;
+                                },
+                                {
+                                    query: query,
+                                    out: {inline:1},
+                                    scope:{Q: p.quant}
+                                },cb
+                            )
+                        },cb)
+                    }))
                 }
             }});
         }));

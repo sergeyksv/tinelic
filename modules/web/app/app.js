@@ -117,6 +117,7 @@ define(['views/layout','module','safe',"dust"
 				router.get("/project/:slug/server_errors/:sort", main.server_errors);
 				router.get("/project/:slug/server_errors/:sort/:id", main.server_errors);
 				router.get("/project/:slug/settings", main.settings);
+				router.get("/project/:slug/memory", main.memory);
 				router.get("/teams", main.teams);
 
 				// error handler after that
