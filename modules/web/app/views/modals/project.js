@@ -23,7 +23,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 					_.each(teams, function(team){
 						teamnames.push({name:team.name})
 						tags.append('\
-							<option data-teamid="'+team._id+'" selected="selected" value="'+team.name+'">'+team.name+'</option\
+							<option data-teamid="'+team._id+'" selected="selected" value="'+team.name+'">'+team.name+'</option>\
 						')
 					})
 					var tnames = new Bloodhound({

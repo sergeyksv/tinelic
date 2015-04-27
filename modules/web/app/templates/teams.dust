@@ -42,7 +42,6 @@
                         {?obacGranted[_id]}
                             <li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
                         {/obacGranted[_id]}
-                        <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-user" data-addu="{_id}" href="#">Add user</a></li>
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 
                       </ul>
@@ -68,24 +67,45 @@
                         {/projects}
                     </table>
                 </td>
-                <td class="info">
-                    <table>
-                        {#users}
-                            <tr>
-                                <td class="col-md-1">
-                                    {firstname} {lastname}
-                                </td>
-                                <th class="col-md-1">
-                                    {role_team}
-                                </th>
-                                <td class="col-md-1">
-                                    <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idu,{_idu},{_id}" style="margin: 2px 5px;">del</button>
-                                </td>
-                            </tr>
-                        {/users}
-                    </table>
-                </td>
-                <td class="info">
+                <td class="info" colspan="2">
+                    <div class="container-fluid">
+                        <div class="row usersPanel">
+                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
+                                <span><strong>leads</strong></span>
+                                {#users}
+                                    {@select key="{role}"}
+                                        {@eq value="lead"}
+                                            &nbsp<span class="glyphicon glyphicon-user text-info user"><span class="h6 text-muted">{firstname} {lastname}</span></span>
+                                        {/eq}
+                                    {/select}
+                                {/users}
+                                <input class="input-sm tags" style="display: none" type="text" role="tagsinput" value="{#users}{@select key="{role}"}{@eq value="lead"}{firstname} {lastname},{/eq}{/select}{/users}">
+                                <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
+                            </div>
+                            <div class="col-xs-3 btn-group">
+                                <div style="cursor: pointer;display: none;" class="btn btn-sm btn-default cancel">Cancel</div>
+                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="lead" class="btn btn-sm btn-primary save-user" aria-hidden="true">Save</div>
+                            </div>
+                        </div>
+                        <div class="row usersPanel">
+                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
+                                <span><strong>members</strong></span>
+                                {#users}
+                                    {@select key="{role}"}
+                                        {@eq value="member"}
+                                            &nbsp<span class="glyphicon glyphicon-user text-info user"><span class="h6 text-muted">{firstname} {lastname}</span></span>
+                                        {/eq}
+                                    {/select}
+                                {/users}
+                                <input class="input-sm tags" style="display: none" type="text" role="tagsinput" value="{#users}{@select key="{role}"}{@eq value="member"}{firstname} {lastname},{/eq}{/select}{/users}">
+                                <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
+                            </div>
+                            <div class="col-xs-3 btn-group">
+                                <div style="cursor: pointer;display: none;" class="btn btn-sm btn-default cancel">Cancel</div>
+                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="member" class="btn btn-sm btn-primary save-user" aria-hidden="true">Save</div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
           	</tr>
           {/teams}
@@ -132,80 +152,24 @@
         <p class="bg-danger" id="addp-warn"></p>
         <input type="name" class="form-control _idteam" placeholder="Id" disabled>
       </div>
-      	<table id="table-add-project" role="form" style="margin: 5% 15%;">
-                {#proj}
-                    <tr>
-                        <td>
-                            <input class="cb-ap" style="margin-right: 5px;" value="{_id}, {name}" type="checkbox"></input>
-                        </td>
-                        <td>
-                             {name}
-                        </td>
-                    </tr>
-                {/proj}
-        </table>
+      <div class="modal-body">
+          <div class="container-fluid">
+              <div class="form-horizontal">
+                  <label class="col-md-3 control-label">Projects</label>
+                  <div class="col-md-9">
+                      <select multiple data-role="tagsinput" class="tags">
+                          {#proj}
+                              <option data-projectid="{_id}" class="pOption" selected="selected" value="{name}">{name}</option>
+                          {/proj}
+                      </select>
+                  </div>
+              </div>
+          </div>
+      </div>
       <div class="modal-footer">
 
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button id="btn-add-project" type="button" class="btn btn-primary ">Save</button>
-
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal add-users -->
-<div class="modal fade" id="modal-add-users" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog container">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Add users</h4>
-
-        <p class="bg-danger" id="addu-warn"></p>
-        <input type="name" class="form-control _idteamu" placeholder="Id" disabled>
-      </div>
-      	<table class="table" id="table-add-users" role="form">
-      	        <tr class="active">
-      	            <th>
-      	            </th>
-      	            <th>
-      	                #
-      	            </th>
-
-      	            <th>
-      	                User
-      	            </th>
-      	            <th>
-      	                Role
-      	            </th>
-      	        </tr>
-                {#usr}
-                    <tr style="margin: 5px;">
-                        <td>
-                        </td>
-                        <td>
-                            <input class="cb-au" style="margin-right: 5px;" value="{_id}, {firstname}, {lastname}" type="checkbox"></input>
-                        </td>
-                        <td>
-                             {firstname} {lastname}
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
-                                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                        <li role="presentation" data-role="Lead" class="li-role"><a role="menuitem" tabindex="-1" href="#">Lead</a></li>
-                                        <li role="presentation" data-role="Member" class="li-role"><a role="menuitem" tabindex="-1" href="#">Member</a></li>
-                                    </ul>
-                            </div>
-                        </td>
-                    </tr>
-                {/usr}
-        </table>
-      <div class="modal-footer">
-
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button id="btn-add-users" type="button" class="btn btn-primary ">Save</button>
 
       </div>
     </div>

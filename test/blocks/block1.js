@@ -1,10 +1,10 @@
 "use strict";
 
-var webdriver = require('selenium-webdriver');
+var webdriver = require("selenium-webdriver");
 var By = webdriver.By;
-var safe = require('safe');
-var _ = require('lodash');
-var helpers = require('../helpers');
+var safe = require("safe");
+var _ = require("lodash");
+var helpers = require("../helpers");
 
 module.exports.block = function(){
 	return function(dir){
@@ -14,7 +14,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#pass")).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
 					b.findElement(By.css("#signup")).click();
 
@@ -34,7 +34,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#pass")).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
 					b.findElement(By.css("#signup")).click();
 
@@ -47,15 +47,15 @@ module.exports.block = function(){
 							b.findElement(By.css("#addnu")).click();
 
 							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
-								b.findElement(By.css('input#firstname')).sendKeys("obram");
-								b.findElement(By.css('input#lastname')).sendKeys("tinelic");
-								b.findElement(By.css('input#login')).sendKeys("obram");
-								b.findElement(By.css('button#role')).click();
-								b.findElements(By.css('.li-role')).then(function (body) {
+								b.findElement(By.css("input#firstname")).sendKeys("obram");
+								b.findElement(By.css("input#lastname")).sendKeys("tinelic");
+								b.findElement(By.css("input#login")).sendKeys("obram");
+								b.findElement(By.css("button#role")).click();
+								b.findElements(By.css(".li-role")).then(function (body) {
 									body[body.length-1].click()
 								})
-								b.findElement(By.css('input#userpass')).sendKeys("123456");
-								b.findElement(By.css('input#userrpass')).sendKeys("123456");
+								b.findElement(By.css("input#userpass")).sendKeys("123456");
+								b.findElement(By.css("input#userrpass")).sendKeys("123456");
 								b.findElement(By.css("button#savebtn")).click();
 
 								helpers.waitPageReload.call(self, pid).then(function (pid) {
@@ -63,7 +63,7 @@ module.exports.block = function(){
 
 									helpers.waitPageReload.call(self, pid).then(function (pid) {
 
-										b.findElement(By.css('#pass')).sendKeys("123456");
+										b.findElement(By.css("#pass")).sendKeys("123456");
 										b.findElement(By.css("#login")).sendKeys("obram");
 										b.findElement(By.css("#signup")).click();
 
@@ -84,7 +84,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#pass")).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
 					b.findElement(By.css("#signup")).click();
 
@@ -97,7 +97,7 @@ module.exports.block = function(){
 							b.findElement(By.css("#addnt")).click();
 
 							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
-								b.findElement(By.css('input#name')).sendKeys("NewTeam");
+								b.findElement(By.css("input#name")).sendKeys("NewTeam");
 								b.findElement(By.css("button#savebtn")).click();
 
 									helpers.waitPageReload.call(self, pid).then(function (pid) {
@@ -114,7 +114,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#pass")).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
 					b.findElement(By.css("#signup")).click();
 
@@ -128,7 +128,7 @@ module.exports.block = function(){
 
 							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
 
-								b.findElement(By.css('input#name')).sendKeys("NewProject");
+								b.findElement(By.css("input#name")).sendKeys("NewProject");
 								b.findElement(By.css("button.do-save")).click();
 
 								helpers.waitPageReload.call(self, pid).then(function (pid) {
@@ -145,7 +145,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					b.findElement(By.css('#pass')).sendKeys("tinelic");
+					b.findElement(By.css("#pass")).sendKeys("tinelic");
 					b.findElement(By.css("#login")).sendKeys("admin");
 					b.findElement(By.css("#signup")).click();
 
@@ -157,48 +157,36 @@ module.exports.block = function(){
 
 								b.findElements(By.css(".actions")).then(function (body) {
 									body[body.length-1].click()
-								})
+								});
 								b.findElements(By.css("#li-add-project")).then(function (body) {
 									body[body.length-1].click()
-								})
+								});
 
 								helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
-									b.findElements(By.css(".cb-ap")).then(function (body) {
-										body[body.length-1].click()
-									})
+
 									b.findElement(By.css("#btn-add-project")).click();
 
 									helpers.waitPageReload.call(self, pid).then(function (pid) {
-										b.findElements(By.css(".actions")).then(function (body) {
+
+										b.findElements(By.css(".edit")).then(function (body) {
 											body[body.length-1].click()
-										})
-										b.findElements(By.css("#li-add-user")).then(function (body) {
+										});
+
+										b.findElements(By.css(".tt-input")).then(function(body){
+											body[body.length-1].sendKeys("obram tinelic")
+										});
+
+										b.findElements(By.css(".save-user")).then(function (body) {
 											body[body.length-1].click()
-										})
+										});
 
-										helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
-											b.findElements(By.css(".cb-au")).then(function (body) {
-												body[body.length-1].click()
-											})
-											b.findElements(By.css('button.btn.btn-info')).then(function (body) {
-												body[body.length-1].click()
-											})
-											b.findElements(By.css('.li-role')).then(function (body) {
-												body[body.length-2].click()
-											})
-											b.findElement(By.css("#btn-add-users")).click();
+										b.findElement(By.css("#logout")).click();
 
-											helpers.waitPageReload.call(self, pid).then(function (pid) {
-												b.findElement(By.css("#logout")).click();
-
-												helpers.waitPageReload.call(self, pid).then(function (pid) {
-
-													b.findElement(By.css('#pass')).sendKeys("123456");
-													b.findElement(By.css("#login")).sendKeys("obram");
-													b.findElement(By.css("#signup")).click();
-													self.done();
-												})
-											})
+										helpers.waitPageReload.call(self,pid).then(function(pid){
+											b.findElement(By.css("#pass")).sendKeys("123456");
+											b.findElement(By.css("#login")).sendKeys("obram");
+											b.findElement(By.css("#signup")).click();
+											self.done();
 										})
 									})
 								})

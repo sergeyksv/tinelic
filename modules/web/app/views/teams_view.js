@@ -1,14 +1,74 @@
 /**
  * Created by ivan on 2/16/15.
  */
-define(['tinybone/base',"tinybone/backadapter","safe",'dustc!../templates/teams.dust','bootstrap/modal' ],function (tb, api, safe) {
+define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeahead','bootstrap/tagsinput','dustc!../templates/teams.dust','bootstrap/modal'],function (tb, api, safe,_) {
     var view = tb.View;
     var View = view.extend({
         id:"templates/teams",
+        postRender:function(){
+            var self = this;
+            var usersPanel = self.$('.usersPanel');
+
+
+            var users = [];
+            _.each(self.data.usr,function(k){
+                users.push({fname: k.firstname +" "+ k.lastname})
+            });
+            var unames = new Bloodhound({
+                local: users,
+                datumTokenizer: function(d) {
+                    return Bloodhound.tokenizers.whitespace(d.fname);
+                },
+                queryTokenizer: Bloodhound.tokenizers.whitespace
+            });
+            unames.initialize();
+
+            usersPanel.find('.tags').tagsinput({
+                typeaheadjs: {
+                    displayKey: 'fname',
+                    valueKey: 'fname',
+                    source: unames.ttAdapter()
+                }
+            });
+            usersPanel.find('.bootstrap-tagsinput').hide();
+        },
+        'doUpdate':function(e){
+            var self = this;
+            var $this = $(e.currentTarget).closest('.usersPanel');
+            $this.find('.user').toggle();
+            $this.find('.bootstrap-tagsinput').toggle();
+            $this.find('.btn-primary').toggle();
+            $this.find('.cancel').toggle();
+            self.$('.edit').toggle();
+        },
         events: {
             //'click .doUpdate':"doUpdate",
+            "click .edit":'doUpdate',
+            "click .cancel":'doUpdate',
+            "click .save-user":function(e) {
+                var self = this;
+                var $this = $(e.currentTarget).closest('.usersPanel');
+                var $tags = $this.find('.tags').tagsinput('items');
+                var $id = $(e.currentTarget).data('teamid');
+                var allusers = _.reduce(self.data.usr,function(memo, i){
+                    memo[i.firstname +" "+ i.lastname] = i._id;
+                    return memo
+                },{});
+                var data = {users:[]}; // data = {users:[{_idu: "idu",role: "role"}],_id:"id"}
+                data._id = $id;
+
+                _.each($tags,function(r){
+                    if(allusers[r])
+                        data.users.push({_idu:allusers[r],role: $(e.currentTarget).data('type')})
+                });
+                data._s_type = $(e.currentTarget).data('type');
+
+                api('assets.addUsers','public',data,function(){
+                        api.invalidate();
+                        self.app.router.reload();
+                })
+            },
             'click .doNewProject': function(e) {
-                api.invalidate()
                 var self = this;
                 require(["views/modals/project"],function (Modal) {
                     var modal = new Modal({app:self.app});
@@ -19,6 +79,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'dustc!../templates/teams.
                         modal.bindDom($modal);
                     }))
                     modal.once("saved", function () {
+                        api.invalidate();
                         self.app.router.reload();
                     })
                 }, this.app.errHandler)
@@ -45,18 +106,32 @@ define(['tinybone/base',"tinybone/backadapter","safe",'dustc!../templates/teams.
             'click #li-add-project': function(e) {
                 var self = this;
                 var id = self.$('._idteam')[0];
-                var modal = self.$('#modal-add-project')
+                var $modal = self.$('#modal-add-project');
+                var $tags = $modal.find('.tags');
                 $this = $(e.currentTarget);
                 id.setAttribute('value', $this.data('addp'));
-                modal.modal("show")
+                $modal.modal("show");
+                var pnames = new Bloodhound({
+                    local: self.data.proj,
+                    datumTokenizer: function(d) {
+                        return Bloodhound.tokenizers.whitespace(d.name);
+                    },
+                    queryTokenizer: Bloodhound.tokenizers.whitespace
+                });
+                pnames.initialize();
+
+                $tags.tagsinput({
+                    typeaheadjs: {
+                        displayKey: 'name',
+                        valueKey: 'name',
+                        source: pnames.ttAdapter()
+                    }
+                });
+
             },
-            'click #li-add-user': function(e) {
-                var self = this;
-                var id = self.$('._idteamu')[0];
-                var modal = self.$('#modal-add-users')
-                $this = $(e.currentTarget);
-                id.setAttribute('value', $this.data('addu'));
-                modal.modal("show")
+            'click .tag': function(e) {
+                var $this = $(e.currentTarget);
+                $this.toggleClass('label-danger');
             },
             'click .btn-danger': function(e) {
                 var self = this;
@@ -73,65 +148,38 @@ define(['tinybone/base',"tinybone/backadapter","safe",'dustc!../templates/teams.
                     }
                 })
             },
-            'click #btn-add-users': function(e) {
-                var self = this;
-                var n = self.$( ".cb-au:checked");
-                var id = self.$('._idteamu').val();
-                var dang = self.$('#addu-warn');
-                var input = self.$('.btn-info');
-                var data = {};
-                data.users = [];
-                $.each(n, function(i, val) {
-                    var n = val.value.split(',');
-                    $.each(input, function(i, val1) {
-                        if (n[0] == val1.name) {
-                            data.users.push({_idu: n[0], role: val1.innerHTML.toLowerCase()})
-                        }
-                    })
-                })
-                data._id = id;
-                if (n.length) {
-                  api("assets.addUsers", "public", data, function (err) {
-                        if (err) {
-                            dang.html(err.message);
-                        }
-                        else {
-                            require(["views/teams_view"],function (Modal) {
-                                self.app.router.navigateTo("/web/teams");
-                            })
-                        }
-                    })
-                }
-                else {
-                    dang.html('Users is not checked')
-                }
-            },
             'click #btn-add-project': function(e) {
                 var self = this;
-                var n = self.$( ".cb-ap:checked");
+                var $modal = self.$("#modal-add-project");
+                var $items = $modal.find('.tags').tagsinput('items');
+                var $allitems = _.reduce($modal.find('.pOption'),function(memo,i){
+                    memo[$(i).val()] = $(i).data('projectid');
+                    return memo
+                },{});
                 var id = self.$('._idteam').val();
                 var dang = self.$('#addp-warn');
-                var data = {};
-                data.projects = [];
-                $.each(n, function(i, val) {
-                    var n = val.value.split(',');
-                    data.projects.push({_idp: n[0]})
-                })
+
+                var data = {projects:[]}; // data = {projects:[{_idp: "_idp"}],_id : "id"}
+
+                _.each($items, function(item) {
+                    if($allitems[item])
+                        data.projects.push({_idp:$allitems[item]})
+                });
+
                 data._id = id;
-                if (n.length) {
+                if ($items.length) {
                     api("assets.addProjects", "public", data, function (err, data) {
                         if (err) {
                             dang.html(err);
                         }
                         else {
-                            require(["views/teams_view"],function (Modal) {
-                                self.app.router.navigateTo("/web/teams");
-                            })
+                            api.invalidate();
+                            self.app.router.reload();
                         }
                     })
                 }
                 else {
-                    dang.html('Project is not checked')
+                    dang.html('Project is not selected')
                 }
             },
             'click #savebtn':function (e) {
