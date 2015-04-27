@@ -885,72 +885,70 @@ module.exports.init = function (ctx, cb) {
 				getTraceLineContext:function (t, p, cb) {
 					safe.run(function (cb) {
 						var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col)
-						if (cdata) {
+						if (cdata)
 							return safe.back(cb,cdata.err, cdata.block);
-						}
-						else {
-							var url = p._s_file.trim();
+						var url = p._s_file.trim();
 
-							request.get({url:url}, safe.sure(cb, function (res, body) {
-								var context={};
-								context.post_context=[]; context.pre_context=[];
-								if (res.statusCode!=200)
-									return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
-								var lineno=0,lineidx=0;
-								var preContextLineEnd=0,preContextLineBegin=0;
-								var j=6;
-								var boolOne=true;
-								while (lineno<parseInt(p._i_line)-1) {
-									lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
-									if (lineidx==-1)
-										return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
-									lineno++;
-								}
-								var idx = lineidx+parseInt(p._i_col);
-								if (idx>=body.length)
-									return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
-								preContextLineEnd=idx;
-								for (var i=idx-1; i>=0; i--) {
-									var ch = body.charAt(i);
-									if (ch == '\n' || ch == '}' || ch == ';' || ch == ')') {
-										preContextLineBegin=i+1;
-										if (boolOne) {
-											boolOne=false;
-											context._s_context=body.substring(preContextLineBegin,preContextLineEnd);
-										} else {
-											context.pre_context[j] = body.substring(preContextLineBegin,preContextLineEnd);
-											if (j == 0)
-												break;
-											j--;
-										}
-										preContextLineEnd = preContextLineBegin;
+						request.get({url:url}, safe.sure(cb, function (res, body) {
+							var context={};
+							context.post_context=[]; context.pre_context=[];
+							if (res.statusCode!=200)
+								return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
+							var lineno=0,lineidx=0;
+							var preContextLineEnd=0,preContextLineBegin=0;
+							var j=0;
+							var boolOne=true;
+							while (lineno<parseInt(p._i_line)-1) {
+								lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
+								if (lineidx==-1)
+									return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
+								lineno++;
+							}
+							var idx = lineidx+parseInt(p._i_col);
+							if (idx>=body.length)
+								return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
+							preContextLineEnd=idx;
+							for (var i=idx-1; i>=0; i--) {
+								var ch = body.charAt(i);
+								if (ch == '\n' || ch == '}' || ch == ';' || ch == ')' || i == 0) {
+									preContextLineBegin=i+1;
+									if (boolOne) {
+										boolOne=false;
+										context._s_context=body.substring(preContextLineBegin,preContextLineEnd);
+									} else {
+										context.pre_context.unshift(body.substring(preContextLineBegin,preContextLineEnd));
+										if (j == 6)
+											break;
+										j++;
 									}
+									preContextLineEnd = preContextLineBegin;
 								}
-								var postContextLineEnd=0,postContextLineBegin=0;
-								boolOne=true;
-								postContextLineBegin=idx;
-								for (var i=idx+1; i<body.length; i++) {
-									var ch = body.charAt(i);
-									if (ch == '\n' || ch == '}' || ch == ';') {
-										postContextLineEnd=i+1;
-										if (boolOne) {
-											boolOne=false;
-											context._s_context+=body.substring(postContextLineBegin,postContextLineEnd);
-										} else {
-											context.post_context[j] = body.substring(postContextLineBegin,postContextLineEnd);
-											if (j == 6)
-												break;
-											j++;
-										}
-										postContextLineBegin = postContextLineEnd;
+							}
+							var postContextLineEnd=0,postContextLineBegin=0;
+							boolOne=true;
+							j=0;
+							postContextLineBegin=idx;
+							for (var i=idx+1; i<body.length; i++) {
+								var ch = body.charAt(i);
+								if (ch == '\n' || ch == '}' || ch == ';' || i == body.length-1) {
+									postContextLineEnd=i+1;
+									if (boolOne) {
+										boolOne=false;
+										context._s_context+=body.substring(postContextLineBegin,postContextLineEnd);
+									} else {
+										context.post_context.push(body.substring(postContextLineBegin,postContextLineEnd));
+										if (j == 6)
+											break;
+										j++;
 									}
+									postContextLineBegin = postContextLineEnd;
 								}
-								return safe.back(cb,null, context);
-							}));
-						}
+							}
+							return cb(null, context);
+						}));
 					}, function (err, block) {
 						cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:err, block:block})
-						return safe.back(cb,err, block);
+						return cb(err, block);
 					})
                 },
                 getStackTraceContext:function (t, frames, cb) {
