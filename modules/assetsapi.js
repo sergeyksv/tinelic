@@ -236,26 +236,9 @@ module.exports.init = function (ctx, cb) {
 				},
 				savePageRule: function(t,p,cb) {
 					p = prefixify(p);
-					var index;
-					var filter = {
-						'pageRules.$._s_condition': p.filter['pageRules.$._s_condition'],
-						'pageRules.$.actions':[]
-					}
-					var objects = {};
-					p.filter['pageRules.$.actions'] = [];
-					_.each(p.filter,function(v,k){
-						index = k.replace(/(pageRules\.\$\.actions\.)/,'');
-						if (index.search(/^[0-9*]/) != -1){
-							index = index.split('.');
-							if (!objects[index[0]])
-								objects[index[0]] = {};
-							objects[index[0]][index[1]] = v
-						}
-					});
-					_.each(objects,function(r){
-						filter['pageRules.$.actions'].push(r)
-					});
-					projects.update({'pageRules._id': p._id},{$set: filter},{multi:false},cb);
+					if (!p.filter['pageRules.$.actions'])
+						p.filter['pageRules.$.actions'] = [];
+					projects.update({'pageRules._id': p._id},{$set: p.filter},{multi:false},cb);
 				},
 				saveProjectsConfig: function(t,p, cb) {
 					p = prefixify(p);

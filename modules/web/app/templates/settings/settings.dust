@@ -67,21 +67,16 @@
                 <div class="row-fluid">
                         {#project.pageRules}
                         <form id="pageRules{$idx}">
-                        <div class="bg-warning">
-                            <span class="text-info" style="display: none;">Please insert condition as: { "foo" : { "foo2" : "bar" } }</span>
-                        </div>
                         <div class="container-fluid bg-info" style="padding: 10px">
                             <div class="row">
                                 <div class="form-group">
                                     <label class="col-sm-2 control-label">Condition</label>
                                     <div class="col-sm-7">
                                         <span>{_s_condition}</span>
-                                        <input style="display: none" type="text" name="_s_condition" class="form-control" value="{_s_condition}">
                                     </div>
-                                    <div type="submit" style="display: none" class=" btn btn-default btn-xs cancel" data-type="pageRules{$idx}">Cancel</div>
                                     <div type="submit" class="btn-group col-sm-3">
                                         <div data-id='{_id}' class="btn btn-xs btn-danger deletePageRule">Delete</div>
-                                        <div class="btn btn-default btn-xs edit" data-type="pageRules{$idx}">Edit</div>
+                                        <div class="btn btn-default btn-xs edit-pageRule" data-type="pageRules{$idx}" data-index="{$idx}">Edit</div>
                                     </div>
                                 </div>
                             </div>
@@ -98,7 +93,6 @@
                                                             <label class="col-sm-3 control-label">type:</label>
                                                             <div class="col-sm-9">
                                                                 <span>{_s_type}</span>
-                                                                <input style="display: none" type="text" name="actions.{$idx}._s_type" class="form-control" value="replacer" readonly>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -107,7 +101,6 @@
                                                             <label class="col-sm-3 control-label">field:</label>
                                                             <div class="col-sm-9">
                                                                 <span>{_s_field}</span>
-                                                                <input style="display: none" type="text" name="actions.{$idx}._s_field" class="form-control" value="{_s_field}">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -116,7 +109,6 @@
                                                             <label class="col-sm-3 control-label">matcher:</label>
                                                             <div class="col-sm-9">
                                                                 <span>{_s_matcher}</span>
-                                                                <input style="display: none" type="text" name="actions.{$idx}._s_matcher" class="form-control" value="{_s_matcher}">
                                                             </div>
                                                         </div>
                                                     </div>
@@ -125,31 +117,19 @@
                                                             <label class="col-sm-3 control-label">replacer:</label>
                                                             <div class="col-sm-9">
                                                                 <span>{_s_replacer}</span>
-                                                                <input style="display: none" type="text" name="actions.{$idx}._s_replacer" class="form-control" value="{_s_replacer}">
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-sm-2">
-                                                <div type="submit" style="display: none;" class="close deletePageRuleAction"><div aria-hidden="true">&times;</div></div>
-                                            </div>
                                         </div>
                                     {/actions}
                                 </div>
-                            </div>
-                            <div type="submit" style="display: none;" class="btn-group">
-                                <div  data-id="{_id}" data-send="pageRules{$idx}" class="btn btn-sm btn-primary savePageRule">Save</div>
-                                <div  data-id='{_id}' class="btn btn-sm btn-default addAction">AddAction</div>
                             </div>
                         </div>
                         </form>
                         {/project.pageRules}
                         <br>
-                        <div class="btn-group">
-
-                        </div>
-
                 </div><br>
 			</div>
 		</div>
