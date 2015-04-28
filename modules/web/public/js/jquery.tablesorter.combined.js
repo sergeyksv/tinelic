@@ -85,7 +85,7 @@
 				numberSorter     : null,       // choose overall numeric sorter function(a, b, direction, maxColumnValue)
 
 				// *** widget options
-				widgets: [],                   // method to add widgets, e.g. widgets: ['zebra']
+				widgets: ['zebra'],                   // method to add widgets, e.g. widgets: ['zebra']
 				widgetOptions    : {
 					zebra : [ 'even', 'odd' ]    // zebra widget alternating row class names
 				},
@@ -97,10 +97,10 @@
 
 				// *** extra css class names
 				tableClass       : '',
-				cssAsc           : '',
-				cssDesc          : '',
+				cssAsc           : 'headerSortUp',
+				cssDesc          : 'headerSortDown',
 				cssNone          : '',
-				cssHeader        : '',
+				cssHeader        : 'header',
 				cssHeaderRow     : '',
 				cssProcessing    : '', // processing icon applied to header during sort/filter
 

@@ -22,11 +22,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               safe.parallel([
                   function(cb) {
                       api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                          trbreak.empty();
+                          trbreak.remove();
+                          self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
+                          trbreak=self.$('#trbreak')
                           trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th><th>Own Time</th></tr></thead><tbody>');
-                          data = _.sortBy(data, function(r) {
-                              return r.value.tta*-1
-                          })
                            var sumtta = 0; var sumowna = 0;
                             _.forEach(data, function(r) {
                                 sumtta += r.value.tta
@@ -41,7 +40,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               r.value.owna = r.value.owna.toFixed(1)
                               trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+r.value.tta+' s / '+proc+' %</td><td>'+r.value.owna+' s / '+owna+' %</td></tr>')
                           })
-                          trbreak.append('</tbody>')
+                          trbreak.append('</tbody></table>')
 						  trbreak.tablesorter({sortList: [[2,1]]});
                       }))
                       cb()
