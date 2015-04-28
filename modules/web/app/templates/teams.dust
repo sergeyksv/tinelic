@@ -56,7 +56,7 @@
                         {#projects}
                             <tr>
                                 <td class="col-md-1">
-                                    {_t_project.name}
+                                    <a href="{_t_prefix}/project/{_t_project.slug}/settings">{_t_project.name}</a>
                                 </td>
                                 <td class="col-md-1">
 									{?obac.project_edit[_t_project._id]}

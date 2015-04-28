@@ -37,6 +37,7 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                 var rpass = self.$('#userrpass')[0].value;
                 var id = self.$('#_id')[0].value;
                 var warn = self.$('#warn');
+                var modal = self.$('#settings');
 
                 if (role == "Role is not checked") {
                     warn.html('Role is not checked')
@@ -62,6 +63,10 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                                     function (err) {
                                         if (err)
                                             throw err
+										else {
+							                modal.modal('hide');
+											self.app.router.navigateTo("/web/users");
+										}
                                     });
                             }
                             else {
@@ -74,11 +79,11 @@ define(['tinybone/base', "tinybone/backadapter", 'dustc!templates/users.dust','b
                                 }, function (err) {
                                     if (err)
                                         throw err
-                                });
+									else {
+										modal.modal('hide');
+										self.app.router.navigateTo("/web/users");
+									}                                });
                             }
-                            require(["views/users_view"], function (Modal) {
-                                self.app.router.navigateTo("/web/users");
-                            })
                         }
                     }
                 }

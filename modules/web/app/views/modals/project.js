@@ -57,6 +57,10 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 			"click .do-save":"doSave",
 			"submit form":"doSave"
 		},
+		remove: function () {
+			self.$('.modal').modal('hide');
+			return view.prototype.remove.call(this);
+		},
 		doSave:function (e) {
 			var self = this;
 			var checkTeam = self.$('select').val()
