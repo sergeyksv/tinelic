@@ -15,7 +15,7 @@ var LRU = require("lru-cache")
               , dispose: function (key, n) { n.close }
               , maxAge: 1000 * 60 * 60 }
   , cache = LRU(options)
-  , otherCache = LRU(50) // sets just the max size 
+  , otherCache = LRU(50) // sets just the max size
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -518,7 +518,7 @@ module.exports.init = function (ctx, cb) {
 											// modify error counter for
 											// closest action
 											actions.findAndModify(
-												{_dt: {$gte: te._dt}},
+												{_idp:te._idp,_dt: {$gte: te._dt}},
 												{_dt:-1},{$inc: {_i_err: 1}}
 											,cb)
 										}
