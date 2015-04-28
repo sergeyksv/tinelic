@@ -672,17 +672,19 @@ module.exports.init = function (ctx, cb) {
 								function(cb) {
 									var n = 0;
 									ctx.api.assets.getProjectPageRules('public',{_id: data._idp},safe.sure(cb,function(pageRules){
-										safe.map(pageRules,function(pageRule,cb){
-											pageRule._s_condition = JSON.parse(pageRule._s_condition);
-											pageRule._s_condition._id = _id;
-											pages.findOne(pageRule._s_condition,safe.sure(cb,function(conditions){
-												if (conditions) {
+										safe.forEach(pageRules,function(pageRule,cb){
+											var condition = JSON.parse(pageRule._s_condition);
+											condition._id = _id;
+											pages.findOne(condition,{_id:1},safe.sure(cb,function(matched){
+												console.log(condition,!!matched);
+												if (matched) {
 													_.each(pageRule.actions,function(action){
 														if (data[action._s_field] && action._s_type == 'replacer') {
+															console.log(data[action._s_field].replace(RegExp(action._s_matcher),action._s_replacer));
 															data[action._s_field] = data[action._s_field].replace(RegExp(action._s_matcher),action._s_replacer);
 														}
-														n++
 													})
+													n++
 												}
 												cb();
 											}))
