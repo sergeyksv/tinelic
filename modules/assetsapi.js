@@ -231,7 +231,7 @@ module.exports.init = function (ctx, cb) {
 				getProjectPageRules: function(t,p,cb) {
 					p = prefixify(p)
 					projects.findOne(p,safe.sure(cb,function(data){
-						cb(null,data.pageRules)
+						cb(null,data.pageRules || [])
 					}))
 				},
 				savePageRule: function(t,p,cb) {
