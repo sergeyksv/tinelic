@@ -13,6 +13,7 @@
     "geoip-lite": "~1.1.5",
     "less-middleware": "~1.0.4",
     "lodash": "~2.4.1",
+    "lru-cache": "~2.5.2",
     "lx-valid": "git://github.com/sergeyksv/lx-valid.git",
     "moment": "~2.9.0",
     "mongodb": "~1.4.28",
