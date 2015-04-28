@@ -9,17 +9,23 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               var h = window.location.pathname.split('/',5)
               this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort'));
               return false;
-          },
-          'click .more': function(e) {
-              var self = this;
-              var trbreak = self.$('#trbreak')
-              var transaction = $(e.currentTarget).html();
-			  self.$('.more.leftlist').removeClass('leftlist');
-			  $(e.currentTarget).addClass('leftlist');
-              var filter = this.data.fr
-              filter.filter._s_name = transaction;
+          }
+        },
+        postRender:function () {
+            view.prototype.postRender.call(this);
+			var self = this;
+			var filter = this.data.fr;
+			var query = this.data.url.split('selected=')
+            if (query.length == 2) {
+				self.$('.more.leftlist').removeClass('leftlist');
+				var more = self.$('.more');
+				for (var i=0; i < more.length; i++) {
+					if (more[i].innerText == query[1])
+						more[i].classList.add("leftlist");
+				}
+			filter.filter._s_name = query[1];
 
-              safe.parallel([
+			safe.parallel([
                   function(cb) {
                       api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                           trbreak.remove();
@@ -207,12 +213,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                       cb()
                   }
               ])
-          }
-        },
-        postRender:function () {
-            view.prototype.postRender.call(this);
-            var self = this;
-			var filter = this.data.fr;
+			} else {
 			api("stats.getActionsTimings", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
 
                           var actions = data;
@@ -371,6 +372,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                               ]
                           })
                       }))
+             }
         }
     })
     View.id = "views/application_view";

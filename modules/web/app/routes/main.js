@@ -501,7 +501,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
-						res.renderX({view:r.view,data:{data:r.data, title:"Application", st: st, fr: filter}})
+						res.renderX({view:r.view,data:{data:r.data, title:"Application", st: st, fr: filter, url:req.originalUrl}})
 					})
 				)
 			}))
