@@ -1,4 +1,4 @@
-{@view name="views/header_view"/}
+{@view name="views/header_view" data="header"/}
 
 <div class="starter-template container">
 <div class="row">
