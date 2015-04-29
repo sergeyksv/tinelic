@@ -154,6 +154,10 @@ module.exports.init = function (ctx, cb) {
                     var _id = new mongo.ObjectID(u.id)
                     tm.teams.remove({_id: _id}, cb)
                 },
+				setProjects: function(t,p,cb){
+					p = prefixify(p);
+					tm.teams.update({_id: p._id},{$set: {projects: p.projects}}, {multi:true},cb)
+				},
                 addProjects: function(t, u, cb) {
 					var id;
 					if (!Array.isArray(u._id)) {

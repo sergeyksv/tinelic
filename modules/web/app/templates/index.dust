@@ -2,7 +2,7 @@
 <div class="container">
 {#teams}
 <br>
-<div class="row bg-success">
+<div class="row bg-primary">
 	<div data-field="views" class="col-xs-12">
 		{name}
 	</div>
