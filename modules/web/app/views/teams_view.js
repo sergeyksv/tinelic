@@ -173,6 +173,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                             dang.html(err);
                         }
                         else {
+							$modal.modal('hide');
                             api.invalidate();
                             self.app.router.reload();
                         }
@@ -187,6 +188,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                 var name = self.$('#name').val();
                 var id = self.$('#_id').val();
                 var warn = self.$('#warn');
+                var modal = self.$('#settings');
 
                 if (name.length < 3) {
                     warn.html('Name is to short')
@@ -197,12 +199,20 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                                 function(err) {
                                     if (err)
                                         throw err
+									else {
+										modal.modal('hide');
+										self.app.router.navigateTo("/web/teams");
+									}
                                 });
                         }
                         else {
                             api("assets.saveTeam", "public", {name: name},  function(err) {
                                 if (err)
                                     throw err
+								else {
+									modal.modal('hide');
+									self.app.router.navigateTo("/web/teams");
+								}
                             });
                         }
                         require(["views/teams_view"],function (Modal) {

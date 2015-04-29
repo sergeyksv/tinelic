@@ -126,7 +126,7 @@ module.exports.block = function(){
 
 							b.findElement(By.css(".doNewProject")).click();
 
-							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
+							helpers.waitModal.call(self, By.css(".modal.fade.in")).then(function () {
 
 								b.findElement(By.css("input#name")).sendKeys("NewProject");
 								b.findElement(By.css("button.do-save")).click();
@@ -162,7 +162,7 @@ module.exports.block = function(){
 									body[body.length-1].click()
 								});
 
-								helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
+								helpers.waitModal.call(self, By.css(".modal.fade.in")).then(function () {
 
 									b.findElement(By.css("#btn-add-project")).click();
 
@@ -180,13 +180,16 @@ module.exports.block = function(){
 											body[body.length-1].click()
 										});
 
-										b.findElement(By.css("#logout")).click();
-
 										helpers.waitPageReload.call(self,pid).then(function(pid){
-											b.findElement(By.css("#pass")).sendKeys("123456");
-											b.findElement(By.css("#login")).sendKeys("obram");
-											b.findElement(By.css("#signup")).click();
-											self.done();
+
+											b.findElement(By.css("#logout")).click();
+
+											helpers.waitPageReload.call(self,pid).then(function(pid){
+												b.findElement(By.css("#pass")).sendKeys("123456");
+												b.findElement(By.css("#login")).sendKeys("obram");
+												b.findElement(By.css("#signup")).click();
+												self.done();
+											})
 										})
 									})
 								})

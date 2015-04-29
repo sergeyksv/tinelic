@@ -638,20 +638,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			var st = req.params.stats
 			var str = req.query._str || req.cookies.str || '1d';
 			var quant = 10;
-			var range = 60 * 60 * 1000;
 
-			// transcode range paramater into seconds
-			var match = str.match(/(\d+)(.)/);
-			var units = {
-				h:60 * 60 * 1000,
-				d:24 * 60 * 60 * 1000,
-				w:7 * 24 * 60 * 60 * 1000
-			}
-			if (match.length==3 && units[match[2]])
-				range = match[1]*units[match[2]];
-
-			var dtstart = new Date(Date.parse(Date()) - range);
-			var dtend = Date();
+			var dtstart = res.locals.dtstart;
+			var dtend = res.locals.dtend;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {

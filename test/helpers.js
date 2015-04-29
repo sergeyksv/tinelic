@@ -83,6 +83,12 @@ module.exports.waitPageReload = function (old_id, timeout) {
 			return false;
 		})
 	},timeout).then(function () {
+		return b.wait(function () {
+			return b.isElementPresent(By.xpath("//div[@class='blockUI blockOverlay']")).then(function (isPresent)
+				{ return !isPresent; } );
+			}
+		,timeout);
+	}).then(function () {
 		return new_id;
 	})
 }
