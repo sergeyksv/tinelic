@@ -751,23 +751,24 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				)
 			}))
 		},
-		memory: function(req,res,cb) {
+		metrics: function(req,res,cb) {
 			var quant = 10;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
-						requirejs(["views/memory_view"], function (view) {
+						requirejs(["views/metrics_view"], function (view) {
 							safe.back(cb, null, view)
 						},cb)},
 					memory: function(cb) {
-						api('stats.getMemoryGraph','public',{quant:quant,
+						api('stats.getMetricsView','public',{quant:quant,
 							filter:{
+								_s_type: "Memory/Physical",
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						},cb)}
 				},safe.sure(cb, function(r){
-					res.renderX({view:r.view,data:{title:"Memory", project:project, mem: r.memory,quant:quant}})
+					res.renderX({view:r.view,data:{title:"Metrics", project:project, mem: r.memory,quant:quant}})
 				}))
 
 			}))
