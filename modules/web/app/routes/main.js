@@ -749,7 +749,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
-						requirejs(["views/settings/settings_view"], function (view) {
+						requirejs(["views/project-settings/settings_view"], function (view) {
 							safe.back(cb, null, view)
 						},cb)
 					},

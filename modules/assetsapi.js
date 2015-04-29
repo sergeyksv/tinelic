@@ -236,19 +236,26 @@ module.exports.init = function (ctx, cb) {
 				},
 				savePageRule: function(t,p,cb) {
 					p = prefixify(p);
-					if (!p.filter['pageRules.$.actions'])
-						p.filter['pageRules.$.actions'] = [];
-					projects.update({'pageRules._id': p._id},{$set: p.filter},{multi:false},cb);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					// ensure that every rule has an id
+					_.each(p.rule.actions, function (action) {
+						if (!action._id)
+							action._id = mongo.ObjectID();
+					})
+					if (p.rule._id) {
+						// update existins
+						projects.update({_id: p._id,'pageRules._id': p.rule._id},{$set: {'pageRules.$':p.rule}},{multi:false},cb);
+					} else {
+						// add new one
+						p.rule._id = mongo.ObjectID();
+						projects.update({_id: p._id},{$push: {pageRules:p.rule}},{},cb);
+					}
 				},
 				saveProjectsConfig: function(t,p, cb) {
 					p = prefixify(p);
 					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
-				},
-				addPageRule: function(t,p,cb) {
-					p = prefixify(p);
-					p.pageRule._id = mongo.ObjectID();
-					p.pageRule.actions = [];
-					projects.update({_id: p._id},{$push: {pageRules:p.pageRule}},{},cb)
 				},
 				addPageRuleAction: function(t,p,cb){
 					p = prefixify(p);
