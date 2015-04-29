@@ -492,6 +492,22 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								},
 								st: st
 							}, cb)
+						},
+						breakdown: function (cb) {
+							api("stats.getActionsBreakdown", "public", {
+								_t_age: quant + "m", quant: quant, filter: {
+									_idp: project._id,
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+									_s_name: req.query.selected
+							}}, cb)
+						},
+						graphs: function (cb) {
+							api("stats.getActionsTimings", "public", {
+								_t_age: quant + "m", quant: quant, filter: {
+									_idp: project._id,
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+									_s_name: req.query.selected
+							}}, cb)
 						}
 					}, safe.sure(cb, function(r){
 						var filter = {
@@ -501,7 +517,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
-						res.renderX({view:r.view,data:{data:r.data, title:"Application", st: st, fr: filter, url:req.originalUrl}})
+						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected}})
 					})
 				)
 			}))

@@ -14,21 +14,15 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
         postRender:function () {
             view.prototype.postRender.call(this);
 			var self = this;
+			var trbreak = self.$('#trbreak')
 			var filter = this.data.fr;
-			var query = this.data.url.split('selected=')
-            if (query.length == 2) {
-				self.$('.more.leftlist').removeClass('leftlist');
-				var more = self.$('.more');
-				for (var i=0; i < more.length; i++) {
-					if (more[i].innerText == query[1])
-						more[i].classList.add("leftlist");
-				}
-			filter.filter._s_name = query[1];
+			var actions = this.data.graphs;
+			var data = this.data.breakdown;
+            if (this.data.query) {
 
 			safe.parallel([
                   function(cb) {
-                      api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                          trbreak.remove();
+						  trbreak.remove();
                           self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
                           trbreak=self.$('#trbreak')
                           trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th><th>Own Time</th></tr></thead><tbody>');
@@ -48,13 +42,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           })
                           trbreak.append('</tbody></table>')
 						  trbreak.tablesorter({sortList: [[2,1]]});
-                      }))
                       cb()
                   },
                   function(cb) {
-                      api("stats.getActionsTimings", $.cookie("token"), filter, safe.sure(cb, function(data) {
-
-                          var actions = data;
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
@@ -209,14 +199,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   }
                               ]
                           })
-                      }))
+
                       cb()
                   }
               ])
 			} else {
-			api("stats.getActionsTimings", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
-
-                          var actions = data;
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
@@ -371,7 +358,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   }
                               ]
                           })
-                      }))
              }
         }
     })
