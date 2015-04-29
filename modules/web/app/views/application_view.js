@@ -9,20 +9,20 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               var h = window.location.pathname.split('/',5)
               this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort'));
               return false;
-          },
-          'click .more': function(e) {
-              var self = this;
-              var trbreak = self.$('#trbreak')
-              var transaction = $(e.currentTarget).html();
-			  self.$('.more.leftlist').removeClass('leftlist');
-			  $(e.currentTarget).addClass('leftlist');
-              var filter = this.data.fr
-              filter.filter._s_name = transaction;
+          }
+        },
+        postRender:function () {
+            view.prototype.postRender.call(this);
+			var self = this;
+			var trbreak = self.$('#trbreak')
+			var filter = this.data.fr;
+			var actions = this.data.graphs;
+			var data = this.data.breakdown;
+            if (this.data.query) {
 
-              safe.parallel([
+			safe.parallel([
                   function(cb) {
-                      api("stats.getActionsBreakdown", $.cookie("token"), filter, safe.sure(cb, function(data) {
-                          trbreak.remove();
+						  trbreak.remove();
                           self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
                           trbreak=self.$('#trbreak')
                           trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th><th>Own Time</th></tr></thead><tbody>');
@@ -42,13 +42,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                           })
                           trbreak.append('</tbody></table>')
 						  trbreak.tablesorter({sortList: [[2,1]]});
-                      }))
                       cb()
                   },
                   function(cb) {
-                      api("stats.getActionsTimings", $.cookie("token"), filter, safe.sure(cb, function(data) {
-
-                          var actions = data;
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
@@ -203,19 +199,11 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   }
                               ]
                           })
-                      }))
+
                       cb()
                   }
               ])
-          }
-        },
-        postRender:function () {
-            view.prototype.postRender.call(this);
-            var self = this;
-			var filter = this.data.fr;
-			api("stats.getActionsTimings", $.cookie("token"), this.data.fr, safe.sure(this.app.errHandler, function(data) {
-
-                          var actions = data;
+			} else {
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
@@ -370,7 +358,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
                                   }
                               ]
                           })
-                      }))
+             }
         }
     })
     View.id = "views/application_view";
