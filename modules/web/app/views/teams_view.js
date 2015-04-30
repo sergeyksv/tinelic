@@ -8,11 +8,19 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
         postRender:function(){
             var self = this;
             var usersPanel = self.$('.usersPanel');
-
+            var projectsPanel = self.$('.projectsPanel');
 
             var users = [];
             _.each(self.data.usr,function(k){
                 users.push({fname: k.firstname +" "+ k.lastname})
+            });
+
+            var pnames = new Bloodhound({
+                local: self.data.proj,
+                datumTokenizer: function(d) {
+                    return Bloodhound.tokenizers.whitespace(d.name)
+                },
+                queryTokenizer: Bloodhound.tokenizers.whitespace
             });
             var unames = new Bloodhound({
                 local: users,
@@ -21,7 +29,17 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                 },
                 queryTokenizer: Bloodhound.tokenizers.whitespace
             });
+
+            pnames.initialize();
             unames.initialize();
+
+            projectsPanel.find('.project-tags').tagsinput({
+                typeaheadjs: {
+                    displayKey: 'name',
+                    valueKey: 'name',
+                    source: pnames.ttAdapter()
+                }
+            })
 
             usersPanel.find('.tags').tagsinput({
                 typeaheadjs: {
@@ -31,20 +49,60 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                 }
             });
             usersPanel.find('.bootstrap-tagsinput').hide();
-        },
-        'doUpdate':function(e){
-            var self = this;
-            var $this = $(e.currentTarget).closest('.usersPanel');
-            $this.find('.user').toggle();
-            $this.find('.bootstrap-tagsinput').toggle();
-            $this.find('.btn-primary').toggle();
-            $this.find('.cancel').toggle();
-            self.$('.edit').toggle();
+            projectsPanel.find('.bootstrap-tagsinput').hide();
         },
         events: {
             //'click .doUpdate':"doUpdate",
-            "click .edit":'doUpdate',
-            "click .cancel":'doUpdate',
+            "click .edit-projects":function(e){
+                var self = this;
+                var $this = $(e.currentTarget).closest('.projectsPanel');
+                $this.find('.project').toggle();
+                $this.find('.bootstrap-tagsinput').toggle();
+                $this.find('.btn-primary').toggle();
+                $this.find('.cancel').toggle();
+                self.$('.edit-projects').toggle();
+                self.$('.edit').toggle();
+            },
+            "click .edit":function(e){
+                var self = this;
+                var $this = $(e.currentTarget).closest('.usersPanel');
+                $this.find('.user').toggle();
+                $this.find('.bootstrap-tagsinput').toggle();
+                $this.find('.btn-primary').toggle();
+                $this.find('.cancel').toggle();
+                self.$('.edit').toggle();
+                self.$('.edit-projects').toggle();
+            },
+            "click .cancel":function(e){
+                api.invalidate();
+                this.app.router.reload();
+            },
+            "click .save-projects":function(e) {
+                // data = {projects:[{_idp: "_idp"}],_id : "id"}
+                var self = this;
+                var $this = $(e.currentTarget);
+                var id = $this.data('teamid');
+                var $tags = $this.closest('.projectsPanel').find('.project-tags').tagsinput('items');
+                var allprojects = _.reduce(self.data.proj,function(memo,i){
+                    memo[i.name] = i._id;
+                    return memo;
+                },{})
+                var data = {projects:[],_id:id};
+                _.each($tags,function(r){
+                    if (allprojects)
+                        data.projects.push({_idp:allprojects[r]})
+                });
+
+                api("assets.setProjects", "public", data, function (err, data) {
+                    if (err) {
+                        alert(err)
+                    }
+                    else {
+                        api.invalidate();
+                        self.app.router.reload();
+                    }
+                })
+            },
             "click .save-user":function(e) {
                 var self = this;
                 var $this = $(e.currentTarget).closest('.usersPanel');
@@ -103,36 +161,6 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                 id.setAttribute('value', '');
                 return false;
             },
-            'click #li-add-project': function(e) {
-                var self = this;
-                var id = self.$('._idteam')[0];
-                var $modal = self.$('#modal-add-project');
-                var $tags = $modal.find('.tags');
-                $this = $(e.currentTarget);
-                id.setAttribute('value', $this.data('addp'));
-                $modal.modal("show");
-                var pnames = new Bloodhound({
-                    local: self.data.proj,
-                    datumTokenizer: function(d) {
-                        return Bloodhound.tokenizers.whitespace(d.name);
-                    },
-                    queryTokenizer: Bloodhound.tokenizers.whitespace
-                });
-                pnames.initialize();
-
-                $tags.tagsinput({
-                    typeaheadjs: {
-                        displayKey: 'name',
-                        valueKey: 'name',
-                        source: pnames.ttAdapter()
-                    }
-                });
-
-            },
-            'click .tag': function(e) {
-                var $this = $(e.currentTarget);
-                $this.toggleClass('label-danger');
-            },
             'click .btn-danger': function(e) {
                 var self = this;
                 $this = $(e.currentTarget);
@@ -147,41 +175,6 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                         })
                     }
                 })
-            },
-            'click #btn-add-project': function(e) {
-                var self = this;
-                var $modal = self.$("#modal-add-project");
-                var $items = $modal.find('.tags').tagsinput('items');
-                var $allitems = _.reduce($modal.find('.pOption'),function(memo,i){
-                    memo[$(i).val()] = $(i).data('projectid');
-                    return memo
-                },{});
-                var id = self.$('._idteam').val();
-                var dang = self.$('#addp-warn');
-
-                var data = {projects:[]}; // data = {projects:[{_idp: "_idp"}],_id : "id"}
-
-                _.each($items, function(item) {
-                    if($allitems[item])
-                        data.projects.push({_idp:$allitems[item]})
-                });
-
-                data._id = id;
-                if ($items.length) {
-                    api("assets.addProjects", "public", data, function (err, data) {
-                        if (err) {
-                            dang.html(err);
-                        }
-                        else {
-							$modal.modal('hide');
-                            api.invalidate();
-                            self.app.router.reload();
-                        }
-                    })
-                }
-                else {
-                    dang.html('Project is not selected')
-                }
             },
             'click #savebtn':function (e) {
                 var self = this;
