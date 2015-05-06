@@ -1,0 +1,32 @@
+{@view name="views/header/header" data="header"/}
+
+<div class="starter-template container">
+	<legend>{project.name}
+		<span class="text-info h5" data-id="{project._id}"> {total} total</span>
+		<div class="pull-right btn btn-large btn-danger acknowledge">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
+	</legend>
+
+	<div class="row">
+		<div class="col-sm-4">
+			<div class="dropdown">
+				{title} <span class="btn btn-xs btn-info" data-toggle="dropdown">
+					{@select key="{st}"}
+						{@eq value="mr"}Most recent{/eq}
+						{@eq value="terr"}Total errors{/eq}
+					{/select}
+					<span class="caret"></span></span><br><br>
+					<ul class="dropdown-menu" role="menu">
+						<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Total errors</a></li>
+						<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mr" class="do-stats" href="#">Most recent</a></li>
+					</ul>
+			</div>
+		{@view name="views/server-errors/server-err_list" data="data"/}
+		</div>
+		<div class="col-sm-8">
+			{@view name="views/server-errors/server-err_graph" data="rpm"/}
+			<div class="row">
+				{@view name="views/server-errors/server-event" data="event"/}
+			</div>
+		</div>
+	</div>
+</div>

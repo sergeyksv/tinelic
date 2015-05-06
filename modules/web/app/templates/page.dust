@@ -1,9 +1,0 @@
-{@view name="views/header_view" data="header" /}
-
-<div class="container">
-<div class="starter-template">
-Hello Page<br>
-{title}
-<a href=".">Home!</a>
-</div>
-</div>
