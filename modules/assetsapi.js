@@ -257,7 +257,33 @@ module.exports.init = function (ctx, cb) {
 						projects.update({_id: p._id},{$push: {pageRules:p.rule}},{},cb);
 					}
 				},
+				saveApdexT: function(t,p,cb){
+					var error = 0;
+					p = prefixify(p);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					_.each(p.filter,function(k,v){
+						if(isNaN(k))
+							error++;
+
+						if (v == '_i_serverT' || v == '_i_ajaxT' || v == '_i_pagesT') {
+							p.filter['apdexConfig.'+v] = k;
+							delete p.filter[v]
+						}
+						else
+							error++;
+					})
+					if (error)
+						return safe.back(cb, new Error('where is apdex? My dear friend'))
+
+					projects.update({_id: p._id},{$set:p.filter},{},cb)
+
+
+				},
 				saveProjectsConfig: function(t,p, cb) {
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
 					p = prefixify(p);
 					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
 				},

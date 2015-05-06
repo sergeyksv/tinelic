@@ -54,30 +54,54 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!../../temp
                 var self = this;
                 var form = self.$('form[id="'+$(e.currentTarget).data("type")+'"]');
                 form.find("span").toggle();
+                form.find('p').toggle();
                 form.find("input").toggle();
                 form.find("select").toggle();
                 form.find("div[type='submit']").toggle();
             },
+            'click .saveApdex': function(e) {
+                var self = this;
+                var data = {filter : {}};
+                var send = self.$(e.currentTarget).data('send');
+                var array = $("#"+send).serializeArray();
+
+
+                if (self.$('.saveApdex:visible').length > 1)
+                    if(!confirm('are you sure save this property, other editing props to be lose?'))
+                        return false
+
+                _.forEach(array,function(obj) {
+                    data.filter[obj.name] = obj.value
+                })
+
+                data._id = self.$("#_id").data('id');
+
+                api('assets.saveApdexT', $.cookie('token'),data,function(err,data){
+                    if (err)
+                        alert(err)
+                    else {
+                        api.invalidate();
+                        self.app.router.reload();
+                    }
+                })
+            },
             'click .send': function(e) {
                 var self = this;
-                var index;
+
+                if (self.$('.send:visible').length > 1)
+                    if(!confirm('are you sure save this property, other editing props to be lose?'))
+                        return false
+
                 var send = self.$(e.currentTarget).data('send');
                 var array = $("#"+send).serializeArray();
                 var data = {filter : {}};
 
                 data._id = self.$("#_id").data('id');
 
-                if (send == 'apdexT') {
-                    data.filter.apdexConfig = {};
-                    _.forEach(array,function(obj) {
-                        data.filter.apdexConfig[obj.name] = obj.value
-                    })
-                }
-                else {
-                    _.forEach(array,function(obj) {
-                        data.filter[obj.name] = obj.value
-                    })
-                }
+                _.forEach(array,function(obj) {
+                    data.filter[obj.name] = obj.value
+                })
+
                 api("assets.saveProjectsConfig", $.cookie("token"),data, function(err,data){
                     if (err)
                         alert(err)
