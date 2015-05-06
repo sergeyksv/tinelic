@@ -22,7 +22,8 @@
 		<div>
 			{#data}
 			  {#value}
-				<div class="progress" style="border-radius:20px">
+				{@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
+				<div class="progress" data-idx='{$idx}' style="border-radius:20px">
 					<span style="text-align:right;position:absolute; right:20px">
 						{@select key="{st}"}
 							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
@@ -33,13 +34,26 @@
 					</span>
 					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
 						<div style="text-align:left; padding-left:20px"">
-							<a href="./{st}?selected={_id}" style="color: black;" class="more
+							<a href="./{st}?selected={_id}" style="color: black;" class="
 							{@eq key="{_id}" value="{query}"} leftlist{/eq}">{_id}</a>
 						</div>
 					</div>
 				</div>
+				{/lte}{/gte}
 			  {/value}
 			{/data}
+		</div>
+		<div id="paging">
+			<ul class="pagination">
+				<li><a href="#"><span>&laquo;</span></a></li>
+				<li class="addActive active"><a href="#" class="more">1</a></li>
+				{#data}
+					{@gte key=$idx value="2"} {@lte key=$idx value="{pageCount}"}
+						<li class="addActive"><a href="#" class="more">{$idx}</a></li>
+					{/lte}{/gte}
+				{/data}
+				<li><a href="#"><span>&raquo;</span></a></li>
+			</ul>
 		</div>
 	</div>
 	<div class="col-sm-8 addtrbreak">

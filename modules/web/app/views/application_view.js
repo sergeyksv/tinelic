@@ -9,6 +9,21 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               var h = window.location.pathname.split('/',5)
               this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort'));
               return false;
+          },
+          'click .more': function(e) {
+              var self = this;
+			  var currentNumPage = $(e.currentTarget).html();
+			  this.locals={};
+			  this.locals.leftlistBegin=currentNumPage*10-10;
+			  this.locals.leftlistEnd=currentNumPage*10-1;
+			  view.locals={};
+			  view.locals.leftlistBegin = currentNumPage*10-10;
+			  view.locals.leftlistEnd = currentNumPage*10-1;
+
+              self.$('.addActive.active').removeClass('active');
+			  $(e.currentTarget).addClass('active');
+			  this.refresh
+              //return false;
           }
         },
         postRender:function () {

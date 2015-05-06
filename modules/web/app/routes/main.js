@@ -517,6 +517,15 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
+						// Pagination
+						var pageCount = Math.ceil(r.data.length/10);
+						/*var page=[];
+						for (var i=1; i<=Math.ceil(r.data.length/10); i++) {
+							page.push(i)
+						}*/
+						res.locals.pageCount=pageCount;
+						res.locals.leftlistBegin = 0;
+						res.locals.leftlistEnd = 9;
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected}})
 					})
 				)
