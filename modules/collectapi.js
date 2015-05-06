@@ -9,13 +9,10 @@ var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
 var newrelic = require("newrelic");
-var LRU = require("lru-cache")
-  , options = { max: 2000		// it is about 15 contexts
-              , length: function (n) { return n.length }
-              , dispose: function (key, n) { n.close }
-              , maxAge: 1000 * 60 * 60 }
-  , cache = LRU(options)
-  , otherCache = LRU(50) // sets just the max size
+var LRU = require("lru-cache");
+
+// cache for client side error context
+var cache = LRU({ max: 1000, maxAge: 1000 * 60 * 60 });
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -909,90 +906,89 @@ module.exports.init = function (ctx, cb) {
 			})
 		}))
 	}),cb(null, {api:{
-				getTraceLineContext:function (t, p, cb) {
-					safe.run(function (cb) {
-						var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col)
-						if (cdata)
-							return safe.back(cb,cdata.err, cdata.block);
-						var url = p._s_file.trim();
+		getTraceLineContext:function (t, p, cb) {
+			safe.run(function (cb) {
+				var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col)
+				if (cdata)
+					return safe.back(cb,cdata.err, cdata.block);
+				var url = p._s_file.trim();
 
-						request.get({url:url}, safe.sure(cb, function (res, body) {
-							var context={};
-							context.post_context=[]; context.pre_context=[];
-							if (res.statusCode!=200)
-								return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
-							var lineno=0,lineidx=0;
-							var preContextLineEnd=0,preContextLineBegin=0;
-							var j=0;
-							var boolOne=true;
-							while (lineno<parseInt(p._i_line)-1) {
-								lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
-								if (lineidx==-1)
-									return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
-								lineno++;
+				request.get({url:url}, safe.sure(cb, function (res, body) {
+					var context={};
+					context.post_context=[]; context.pre_context=[];
+					if (res.statusCode!=200)
+						return safe.back(cb,new Error("Error, status code " + res.statusCode),null);
+					var lineno=0,lineidx=0;
+					var preContextLineEnd=0,preContextLineBegin=0;
+					var j=0;
+					var boolOne=true;
+					while (lineno<parseInt(p._i_line)-1) {
+						lineidx = body.indexOf('\n',lineidx?(lineidx+1):0);
+						if (lineidx==-1)
+							return safe.back(cb,new Error("Line number '"+p._i_line+"' is not found"),null);
+						lineno++;
+					}
+					var idx = lineidx+parseInt(p._i_col);
+					if (idx>=body.length)
+						return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
+					preContextLineEnd=idx;
+					for (var i=idx-1; i>=0; i--) {
+						var ch = body.charAt(i);
+						if (ch == '\n' || ch == '}' || ch == ';' || ch == ')' || i == 0) {
+							preContextLineBegin=i+1;
+							if (boolOne) {
+								boolOne=false;
+								context._s_context=body.substring(preContextLineBegin,preContextLineEnd);
+							} else {
+								context.pre_context.unshift(body.substring(preContextLineBegin,preContextLineEnd));
+								if (j == 6)
+									break;
+								j++;
 							}
-							var idx = lineidx+parseInt(p._i_col);
-							if (idx>=body.length)
-								return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
-							preContextLineEnd=idx;
-							for (var i=idx-1; i>=0; i--) {
-								var ch = body.charAt(i);
-								if (ch == '\n' || ch == '}' || ch == ';' || ch == ')' || i == 0) {
-									preContextLineBegin=i+1;
-									if (boolOne) {
-										boolOne=false;
-										context._s_context=body.substring(preContextLineBegin,preContextLineEnd);
-									} else {
-										context.pre_context.unshift(body.substring(preContextLineBegin,preContextLineEnd));
-										if (j == 6)
-											break;
-										j++;
-									}
-									preContextLineEnd = preContextLineBegin;
-								}
+							preContextLineEnd = preContextLineBegin;
+						}
+					}
+					var postContextLineEnd=0,postContextLineBegin=0;
+					boolOne=true;
+					j=0;
+					postContextLineBegin=idx;
+					for (var i=idx+1; i<body.length; i++) {
+						var ch = body.charAt(i);
+						if (ch == '\n' || ch == '}' || ch == ';' || i == body.length-1) {
+							postContextLineEnd=i+1;
+							if (boolOne) {
+								boolOne=false;
+								context._s_context+=body.substring(postContextLineBegin,postContextLineEnd);
+							} else {
+								context.post_context.push(body.substring(postContextLineBegin,postContextLineEnd));
+								if (j == 6)
+									break;
+								j++;
 							}
-							var postContextLineEnd=0,postContextLineBegin=0;
-							boolOne=true;
-							j=0;
-							postContextLineBegin=idx;
-							for (var i=idx+1; i<body.length; i++) {
-								var ch = body.charAt(i);
-								if (ch == '\n' || ch == '}' || ch == ';' || i == body.length-1) {
-									postContextLineEnd=i+1;
-									if (boolOne) {
-										boolOne=false;
-										context._s_context+=body.substring(postContextLineBegin,postContextLineEnd);
-									} else {
-										context.post_context.push(body.substring(postContextLineBegin,postContextLineEnd));
-										if (j == 6)
-											break;
-										j++;
-									}
-									postContextLineBegin = postContextLineEnd;
-								}
-							}
-							return cb(null, context);
-						}));
-					}, function (err, block) {
-						cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:err, block:block})
-						return cb(err, block);
-					})
-                },
-                getStackTraceContext:function (t, frames, cb) {
-						safe.eachSeries(frames, function(r, cb) {
-								ctx.api.collect.getTraceLineContext("public",r, function (err,context) {
-									if (err) {
-										r._s_context=err.toString();
-									} else {
-										r._s_context=context._s_context;
-										r.pre_context=context.pre_context;
-										r.post_context=context.post_context;
-									}
-									cb(null, r)
-								})
-						}, safe.sure(cb, function(){
-							cb(null, frames)
-						}))
+							postContextLineBegin = postContextLineEnd;
+						}
+					}
+					return cb(null, context);
+				}));
+			}, function (err, block) {
+                if (err) {
+                    // hide error within context line
+                    block = {pre_context:[],post_context:[],_s_context:err.toString()};
                 }
-		}}))
+				cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:null, block:block})
+				return cb(null, block);
+			})
+        },
+        getStackTraceContext:function (t, frames, cb) {
+			safe.eachSeries(frames, function(r, cb) {
+				ctx.api.collect.getTraceLineContext("public",r, safe.sure(cb, function (context) {
+					r._s_context=context._s_context;
+					r.pre_context=context.pre_context;
+					r.post_context=context.post_context;
+				}))
+			}, safe.sure(cb, function(){
+				cb(null, frames)
+			}))
+        }
+	}}))
 }

@@ -1,5 +1,4 @@
 {@view name="views/header_view" data="header" /}
-
 <div class="container">
 	<div class="starter-template">
 		{?obac.team_new.global}
@@ -10,64 +9,48 @@
         {/obac.team_new.global}
 		<p class="bg-primary"></p>
 		<table style="margin-top: 20px;"class="table table-condensed">
-			<tr>
-				 <th data-field="id" class="active col-md-1">
-                    Team name
-                 </th>
-                 <th class="col-md-1 active">
-                    Projects
-                 </th>
-                 <th class="col-md-3 active">
-                    Users and Role
-                 </th>
-                 <th data-field="id" class="col-md-1 active">
-                 </th>
-			</tr>
           {#teams}
           	<tr>
-          		<td class="success">
-          			{name}
+          		<td class="bg-primary" colspan="3">
+          			<strong>Team:</strong> {name}
           		</td>
-                <td class="success">
-                </td>
-          		<td class="success">
-          		</td>
-          		<td class="success">
-          		    <div class="dropdown">
-          			   <button type="button" role="button" data-toggle="dropdown" class="actions btn btn-default btn-xs navbar-right" style="margin-right: 20px;">Actions</button>
+          		<td class="bg-primary">
+          		    <div class="dropdown pull-right">
+          			   <button type="button" role="button" data-toggle="dropdown" class="actions btn btn-default btn-xs" style="margin-right: 20px;">Actions</button>
 
                       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
-                        <li role="presentation"><a role="menuitem" tabindex="-1" id="li-add-project" data-addp="{_id}", href="#">Add project</a></li>
                         {?obacGranted[_id]}
                             <li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
                         {/obacGranted[_id]}
                         <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 
                       </ul>
-                    <div>
+                    </div>
           		</td>
           	</tr>
           	<tr>
-                <td class="warning">
+                <td colspan="2" class="col-xs-6">
+                    <div class="container-fluid">
+                        <div class="row projectsPanel">
+                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
+                                <span><strong>Projects</strong></span>
+                                {#projects}
+                                    &nbsp<span class="glyphicon glyphicon-star-empty text-danger project"><a href="{_t_prefix}/project/{_t_project.slug}/settings">{_t_project.name}</a></span>
+                                {/projects}
+                               {?obac.project_edit[_t_project._id]}{/obac.project_edit[_t_project._id]}
+                                    <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit-projects" aria-hidden="true"></span>
+
+                                <input class="input-sm project-tags" style="display: none" type="text" role="tagsinput" value="{#projects}{_t_project.name},{/projects}">
+                            </div>
+                            <div class="col-xs-3 btn-group">
+                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
+                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" class="btn btn-xs btn-primary save-projects" aria-hidden="true">Save</div>
+                            </div>
+                        </div>
+                    </div>
                 </td>
-                <td class="warning">
-                    <table>
-                        {#projects}
-                            <tr>
-                                <td class="col-md-1">
-                                    <a href="{_t_prefix}/project/{_t_project.slug}/settings">{_t_project.name}</a>
-                                </td>
-                                <td class="col-md-1">
-									{?obac.project_edit[_t_project._id]}
-                                    <button type="button" role="button" class="btn btn-danger btn-xs" data-del="_idp,{_idp},{_id}" style="margin: 2px;">del</button>
-                                    {/obac.project_edit[_t_project._id]}
-                                </td>
-                            </tr>
-                        {/projects}
-                    </table>
-                </td>
-                <td class="info" colspan="2">
+                <td colspan="2" class="col-xs-6">
                     <div class="container-fluid">
                         <div class="row usersPanel">
                             <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
@@ -83,8 +66,8 @@
                                 <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
                             </div>
                             <div class="col-xs-3 btn-group">
-                                <div style="cursor: pointer;display: none;" class="btn btn-sm btn-default cancel">Cancel</div>
-                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="lead" class="btn btn-sm btn-primary save-user" aria-hidden="true">Save</div>
+                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
+                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="lead" class="btn btn-xs btn-primary save-user" aria-hidden="true">Save</div>
                             </div>
                         </div>
                         <div class="row usersPanel">
@@ -101,8 +84,8 @@
                                 <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
                             </div>
                             <div class="col-xs-3 btn-group">
-                                <div style="cursor: pointer;display: none;" class="btn btn-sm btn-default cancel">Cancel</div>
-                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="member" class="btn btn-sm btn-primary save-user" aria-hidden="true">Save</div>
+                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
+                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="member" class="btn btn-xs btn-primary save-user" aria-hidden="true">Save</div>
                             </div>
                         </div>
                     </div>

@@ -155,44 +155,41 @@ module.exports.block = function(){
 
 							helpers.waitPageReload.call(self, pid).then(function (pid) {
 
-								b.findElements(By.css(".actions")).then(function (body) {
-									body[body.length-1].click()
-								});
-								b.findElements(By.css("#li-add-project")).then(function (body) {
+								b.findElements(By.css(".edit-projects")).then(function (body) {
 									body[body.length-1].click()
 								});
 
-								helpers.waitModal.call(self, By.css(".modal.fade.in")).then(function () {
+								b.findElements(By.css(".save-projects")).then(function(body){
+									body[body.length-1].click();
+								});
 
-									b.findElement(By.css("#btn-add-project")).click();
+								helpers.waitPageReload.call(self, pid).then(function (pid) {
 
-									helpers.waitPageReload.call(self, pid).then(function (pid) {
+									b.findElements(By.css(".edit")).then(function (body) {
+										body[body.length-1].click()
+									});
 
-										b.findElements(By.css(".edit")).then(function (body) {
-											body[body.length-1].click()
-										});
+									b.findElements(By.css(".tt-input")).then(function(body){
+										body[body.length-1].sendKeys("obram tinelic")
+									});
 
-										b.findElements(By.css(".tt-input")).then(function(body){
-											body[body.length-1].sendKeys("obram tinelic")
-										});
+									b.findElements(By.css(".save-user")).then(function (body) {
+										body[body.length-1].click()
+									});
 
-										b.findElements(By.css(".save-user")).then(function (body) {
-											body[body.length-1].click()
-										});
+									helpers.waitPageReload.call(self,pid).then(function(pid){
+
+										b.findElement(By.css("#logout")).click();
 
 										helpers.waitPageReload.call(self,pid).then(function(pid){
-
-											b.findElement(By.css("#logout")).click();
-
-											helpers.waitPageReload.call(self,pid).then(function(pid){
-												b.findElement(By.css("#pass")).sendKeys("123456");
-												b.findElement(By.css("#login")).sendKeys("obram");
-												b.findElement(By.css("#signup")).click();
-												self.done();
-											})
+											b.findElement(By.css("#pass")).sendKeys("123456");
+											b.findElement(By.css("#login")).sendKeys("obram");
+											b.findElement(By.css("#signup")).click();
+											self.done();
 										})
 									})
 								})
+
 							})
 						})
 				})
