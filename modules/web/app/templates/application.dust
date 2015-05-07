@@ -46,12 +46,9 @@
 		<div id="paging">
 			<ul class="pagination">
 				<li><a href="#"><span>&laquo;</span></a></li>
-				<li class="addActive active"><a href="#" class="more">1</a></li>
-				{#data}
-					{@gte key=$idx value="2"} {@lte key=$idx value="{pageCount}"}
-						<li class="addActive"><a href="#" class="more">{$idx}</a></li>
-					{/lte}{/gte}
-				{/data}
+				{#paging}
+				<li class="addActive {?selected}active{/selected}"><a href="#" class="more">{index}</a></li>
+				{/paging}
 				<li><a href="#"><span>&raquo;</span></a></li>
 			</ul>
 		</div>

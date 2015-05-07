@@ -11,20 +11,36 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!template
               return false;
           },
           'click .more': function(e) {
-              var self = this;
-			  var currentNumPage = $(e.currentTarget).html();
-			  this.locals={};
-			  this.locals.leftlistBegin=currentNumPage*10-10;
-			  this.locals.leftlistEnd=currentNumPage*10-1;
-			  view.locals={};
-			  view.locals.leftlistBegin = currentNumPage*10-10;
-			  view.locals.leftlistEnd = currentNumPage*10-1;
-
-              self.$('.addActive.active').removeClass('active');
-			  $(e.currentTarget).addClass('active');
-			  this.refresh
-              //return false;
+              e.preventDefault();
+			  this.locals.currentPage = parseInt($(e.currentTarget).html());
+			  this.refresh(this.app.errHandler);
+              return false;
           }
+        },
+        preRender: function () {
+            var locals = this.locals;
+            var data = this.data;
+            var i;
+            if (!locals.pageCount) {
+                // set default data
+                locals.pageCount = Math.ceil(data.data.length/10);
+                var selIndex = 0;
+                for (i=0; i<data.data.length; i++) {
+                    if (data.data[i]._id == data.query) {
+                        selIndex = i;
+                        break;
+                    }
+                }
+                locals.currentPage = 1+Math.floor(selIndex/10);
+            }
+            // update paging helper variables
+            locals.leftlistBegin = (locals.currentPage-1)*10;
+            locals.leftlistEnd = locals.leftlistBegin+10;
+
+            locals.paging = [];
+            for (i=1; i<=locals.pageCount; i++) {
+                locals.paging.push({index:i,selected:i==locals.currentPage});
+            }
         },
         postRender:function () {
             view.prototype.postRender.call(this);
