@@ -281,18 +281,24 @@ module.exports.init = function (ctx, cb) {
 
 
 				},
-				saveProjectsConfig: function(t,p, cb) {
+				saveProjectName:function(t,p,cb) {
+					var error = 0;
+					p = prefixify(p);
 					if (!p._id)
 						return safe.back(cb, new Error("_id of project is required"));
-					p = prefixify(p);
-					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
-				},
-				addPageRuleAction: function(t,p,cb){
-					p = prefixify(p);
-					p.action._id = mongo.ObjectID();
-					var push = {$push:{}};
-					push.$push['pageRules.$.actions'] = p.action;
-					projects.update({'pageRules._id': p._id},push,{},cb);
+
+					_.each(p.filter,function(k,v){
+						if (v == 'name' && _.isString(k)) {}
+						else
+							error++
+					})
+
+					if (error)
+						return safe.back(cb, new Error('data is not valid'));
+
+					this.saveProject(t,{project:{name: p.filter.name,_id: p._id}},safe.sure(cb,function(id,name,slug){
+						cb(null,{slug:slug})
+					}));
 				},
 				deletePageRule: function(t,p,cb){
 					p = prefixify(p);
