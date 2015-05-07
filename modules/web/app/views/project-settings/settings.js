@@ -61,10 +61,9 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
             },
             'click .saveApdex': function(e) {
                 var self = this;
-                var data = {filter : {}};
+                var data = {filter : this.data.apdexConfig};
                 var send = self.$(e.currentTarget).data('send');
                 var array = $("#"+send).serializeArray();
-
 
                 if (self.$('.saveApdex:visible').length > 1)
                     if(!confirm('are you sure save this property, other editing props to be lose?'))
