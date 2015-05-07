@@ -11,6 +11,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/ap
               return false;
           }
         },
+
         postRender:function () {
             view.prototype.postRender.call(this);
 			var self = this;
