@@ -1,7 +1,7 @@
-define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash','bootstrap/typeahead','bootstrap/tagsinput','bootstrap/dropdown', 'dustc!templates/modals/project.dust'],function (tb,modal,api,safe,_) {
+define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash','bootstrap/typeahead','bootstrap/tagsinput','bootstrap/dropdown', 'dustc!views/modals/project.dust'],function (tb,modal,api,safe,_) {
 	var view = tb.View;
 	var View = view.extend({
-		id:"templates/modals/project",
+		id:"views/modals/project",
 		postRender:function () {
 			var self = this;
 			api("assets.getTeams", $.cookie('token'),{},safe.sure(this.app.errHandler, function(teams){

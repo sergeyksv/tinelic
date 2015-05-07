@@ -1,0 +1,35 @@
+{^headless}
+{@view name="views/header/header" data="header" /}
+<div class="starter-template container-fluid">
+{/headless}
+
+<div class="row">
+<div class="col-xs-12 col-sm-9">
+<br>
+<div class='text-center'>
+{#prevId}
+	<a href="{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
+{/prevId}
+<b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>
+{#nextId}
+	<a href="{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
+{/nextId}
+</div>
+<br>
+{#event}
+<h1>{exception._s_value}</h1>
+--- {_id} - {_s_culprit}
+<br><br>
+<ul>
+{#stacktrace.frames}
+<li><a href="#" data-idx='{$idx}' class='do-get-trace'>{_s_file}:{_i_line}:{_i_col}</a></li>
+{/stacktrace.frames}
+</ul>
+{/event}
+</div>
+<div class="col-xs-12 col-sm-3"><br>
+{@view name="views/server-errors/server-event_stats" data="info"/}
+</div>
+{^headless}
+</div>
+{/headless}
