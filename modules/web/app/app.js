@@ -1,4 +1,4 @@
-define(['views/layout','module','safe',"dust",
+define(['views/layout/layout','module','safe',"dust",
 	"tinybone/base",
 	"moment/moment",
 	"lodash",
@@ -125,7 +125,7 @@ define(['views/layout','module','safe',"dust",
 				router.use(function (err, req, res, cb) {
 					if (err.subject) {
 						if (err.subject == "Unauthorized") {
-							requirejs(["views/signup_view"], safe.trap(cb, function (view) {
+							requirejs(["views/signup/signup"], safe.trap(cb, function (view) {
 								res.status(401);
 								res.renderX({view: view, route: req.route.path, data: {title: "Sign UP"}});
 							}), cb);

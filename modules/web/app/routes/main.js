@@ -3,7 +3,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		index:function (req, res, cb) {
 			safe.parallel({
 				view:function (cb) {
-					requirejs(["views/index_view"], function (view) {
+					requirejs(["views/index/index"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -106,7 +106,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			var st = req.params.st
 			safe.parallel({
 				view:function (cb) {
-					requirejs(["views/client-errors/event_view"], function (view) {
+					requirejs(["views/client-errors/event"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -121,7 +121,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			var st = req.params.st
 			safe.parallel({
 				view:function (cb) {
-					requirejs(["views/server-errors/server-event_view"], function (view) {
+					requirejs(["views/server-errors/server-event"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -133,14 +133,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		page:function (req, res, cb) {
-			requirejs(["views/page_view"], safe.trap(cb, function (view) {
+			requirejs(["views/page/page"], safe.trap(cb, function (view) {
 				res.renderX({view:view,data:{title:"Page Page"}})
 			}), cb);
 		},
 		users:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {
-					requirejs(["views/users_view"], function (view) {
+					requirejs(["views/users/users"], function (view) {
 						safe.back(cb, null, view)
 					}, cb)
 				},
@@ -155,7 +155,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		teams:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {
-					requirejs(["views/teams_view"], function (view) {
+					requirejs(["views/teams/teams"], function (view) {
 						safe.back(cb, null, view)
 					}, cb)
 				},
@@ -230,7 +230,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 
 			safe.parallel({
 				view:function (cb) {
-					requirejs(["views/project/project_view"], function (view) {
+					requirejs(["views/project/project"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -411,7 +411,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 			safe.parallel({
 				view: function (cb) {
-					requirejs(["views/ajax_rpm_view"], function (view) {
+					requirejs(["views/ajax_rpm/ajax_rpm"], function (view) {
 						safe.back(cb, null, view)
 					},cb)
 				},
@@ -480,7 +480,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
-							requirejs(["views/application_view"], function (view) {
+							requirejs(["views/application/application"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -528,7 +528,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
-							requirejs(["views/pages_view"], function (view) {
+							requirejs(["views/pages/pages"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -606,7 +606,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					dtp = project._dtPagesErrAck || res.locals.dtstart;
 					safe.parallel({
 						view: function (cb) {
-							requirejs(["views/client-errors/err_view"], function (view) {
+							requirejs(["views/client-errors/err"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -660,7 +660,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
-							requirejs(["views/database_view"], function (view) {
+							requirejs(["views/database/database"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -700,7 +700,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dta = project._dtActionsErrAck || res.locals.dtstart;
 				safe.parallel({
 						view: function (cb) {
-							requirejs(["views/server-errors/server-err_view"], function (view) {
+							requirejs(["views/server-errors/server-err"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
@@ -754,7 +754,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
-						requirejs(["views/project-settings/settings_view"], function (view) {
+						requirejs(["views/project-settings/settings"], function (view) {
 							safe.back(cb, null, view)
 						},cb)
 					},
@@ -772,7 +772,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
-						requirejs(["views/metrics_view"], function (view) {
+						requirejs(["views/metrics/metrics"], function (view) {
 							safe.back(cb, null, view)
 						},cb)},
 					memory: function(cb) {
