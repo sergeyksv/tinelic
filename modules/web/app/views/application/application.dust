@@ -19,43 +19,7 @@
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
 			</ul>
 		</div>
-		<div>
-			{#data}
-			  {#value}
-				{@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
-				<div class="progress" data-idx='{$idx}' style="border-radius:20px">
-					<span style="text-align:right;position:absolute; right:20px">
-						{@select key="{st}"}
-							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
-							{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
-						{/select}
-					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
-						<div style="text-align:left; padding-left:20px"">
-							<a href="./{st}?selected={_id}" style="color: black;" class="
-							{@eq key="{_id}" value="{query}"} leftlist{/eq}">{_id}</a>
-						</div>
-					</div>
-				</div>
-				{/lte}{/gte}
-			  {/value}
-			{/data}
-		</div>
-		<div id="paging">
-			<ul class="pagination">
-				{#paging}
-					{@eq key="{index}" value="1"}
-						<li class="{?selected}disabled{/selected}">{^selected}<a href="#" class="more">{/selected}<span>Prev</span>{^selected}</a>{/selected}</li>
-					{/eq}
-					<li class="findActive {?selected}active{/selected}"><a href="#" class="more">{index}</a></li>
-					{@eq key="{index}" value="{pageCount}"}
-						<li class="{?selected}disabled{/selected}">{^selected}<a href="#" class="more">{/selected}<span>Next</span>{^selected}</a>{/selected}</li>
-					{/eq}
-				{/paging}
-			</ul>
-		</div>
+		{@view name="views/application/application_leftlist_pagination"/}
 	</div>
 	<div class="col-sm-8">
 		{@view name="views/application/application_graph_table"/}
