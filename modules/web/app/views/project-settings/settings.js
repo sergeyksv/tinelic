@@ -3,11 +3,11 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
     var View = view.extend({
         id:"views/project-settings/settings",
         events: {
-            "click #deleteProject": function(e) {
+            "click #doDeleteProject": function(e) {
                 var self = this;
                 var c = confirm('Do you really want delete this project and all of its data?');
                 if (c) {
-                    var id = {_idp:self.$("#_id").data('id')}
+                    var id = {_idp:self.data.project._id};
                     api('assets.deleteProject', $.cookie('token'), id, function(err, data){
                         if (err)
                             alert(err)
@@ -50,42 +50,86 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                     })
                 },this.app.errHandler)
             },
-            "click .edit": function(e){
+            "click .doEditProjectName":function(e) {
                 var self = this;
-                var form = self.$('form[id="'+$(e.currentTarget).data("type")+'"]');
-                form.find("span").toggle();
-                form.find("input").toggle();
-                form.find("select").toggle();
-                form.find("div[type='submit']").toggle();
-            },
-            'click .send': function(e) {
-                var self = this;
-                var index;
-                var send = self.$(e.currentTarget).data('send');
-                var array = $("#"+send).serializeArray();
-                var data = {filter : {}};
-
-                data._id = self.$("#_id").data('id');
-
-                if (send == 'apdexT') {
-                    data.filter.apdexConfig = {};
-                    _.forEach(array,function(obj) {
-                        data.filter.apdexConfig[obj.name] = obj.value
-                    })
-                }
-                else {
-                    _.forEach(array,function(obj) {
-                        data.filter[obj.name] = obj.value
-                    })
-                }
-                api("assets.saveProjectsConfig", $.cookie("token"),data, function(err,data){
-                    if (err)
-                        alert(err)
-                    else {
-                        api.invalidate();
-                        self.app.router.reload();
+                var $curr = $(e.currentTarget);
+                var $form = $curr.closest('form');
+                require(['views/project-settings/stroke_edit'],function(StrokeEdit){
+                    var p = new StrokeEdit({app:self.app});
+                    p.data = {
+                        name: self.data.project.name,
+                        _t_title : $curr.data('title'),
+                        _t_type : $curr.data('type'),
+                        _t_val : $curr.data('val')
                     }
-                })
+
+                    p.render(safe.sure(self.app.errHandler,function(text){
+                        var $p = $(text);
+                        $form.after($p);
+                        $form.hide();
+                        p.bindDom($p);
+                    }));
+                    p.on('cancel',function () {
+                        $form.show();
+                        p.remove();
+                    });
+                    p.on('save',function(data){
+                        if (self.$('.doSaveStroke:visible').length > 1)
+                            if(!confirm('are you sure save this property, other editing props to be lose?'))
+                                return false;
+
+                        data._id = self.data.project._id;
+
+                        api('assets.saveProjectName', $.cookie('token'),data,function(err,data){
+                            if (err)
+                                alert(err);
+                            else {
+                                api.invalidate();
+                                self.app.router.navigateTo('/web/project/'+data.slug+'/settings');
+                            }
+                        })
+
+                    })
+                },this.app.errHandler)
+            },
+            "click .doEditApdex": function(e) {
+                var self = this;
+                var $curr = $(e.currentTarget);
+                var $form = $curr.closest('form');
+                require(['views/project-settings/stroke_edit'],function(StrokeEdit){
+                    var a = new StrokeEdit({app:self.app});
+                    a.data = self.data.apdexConfig;
+                    a.data._t_title = $curr.data('title');
+                    a.data._t_type = $curr.data('type');
+                    a.data._t_val = $curr.data('val');
+                    a.render(safe.sure(self.app.errHandler,function(text){
+                        var $p = $(text);
+                        $form.after($p);
+                        $form.hide();
+                        a.bindDom($p);
+                    }));
+                    a.on('cancel',function () {
+                        $form.show();
+                        a.remove();
+                    });
+                    a.on('save',function(data){
+                        if (self.$('.doSaveStroke:visible').length > 1)
+                            if(!confirm('are you sure save this property, other editing props to be lose?'))
+                                return false;;
+
+                        data._id = self.data.project._id;
+
+                        api('assets.saveApdexT', $.cookie('token'),data,function(err,data){
+                            if (err)
+                                alert(err);
+                            else {
+                                api.invalidate();
+                                self.app.router.reload();
+                            }
+                        })
+
+                    })
+                },this.app.errHandler)
             },
             'click .deletePageRule':function(e){
                 if(confirm('Are you sure delete this Page Rule?')) {

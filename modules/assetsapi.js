@@ -257,16 +257,48 @@ module.exports.init = function (ctx, cb) {
 						projects.update({_id: p._id},{$push: {pageRules:p.rule}},{},cb);
 					}
 				},
-				saveProjectsConfig: function(t,p, cb) {
+				saveApdexT: function(t,p,cb){
+					var error = 0;
 					p = prefixify(p);
-					projects.update({_id: p._id},{$set:p.filter},{multi:false},cb)
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					_.each(p.filter,function(k,v){
+						if(isNaN(k))
+							error++;
+
+						if (v == '_i_serverT' || v == '_i_ajaxT' || v == '_i_pagesT') {
+							p.filter['apdexConfig.'+v] = k;
+							delete p.filter[v]
+						}
+						else
+							error++;
+					})
+					if (error)
+						return safe.back(cb, new Error('where is apdex? My dear friend'))
+
+					projects.update({_id: p._id},{$set:p.filter},{},cb)
+
+
 				},
-				addPageRuleAction: function(t,p,cb){
+				saveProjectName:function(t,p,cb) {
+					var error = 0;
 					p = prefixify(p);
-					p.action._id = mongo.ObjectID();
-					var push = {$push:{}};
-					push.$push['pageRules.$.actions'] = p.action;
-					projects.update({'pageRules._id': p._id},push,{},cb);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					_.each(p.filter,function(k,v){
+						if (v == 'name' && _.isString(k)) {}
+						else
+							error++
+					})
+
+					if (error)
+						return safe.back(cb, new Error('data is not valid'));
+
+					this.saveProject(t,{project:{name: p.filter.name,_id: p._id}},safe.sure(cb,function(id,name,slug){
+						cb(null,{slug:slug})
+					}));
 				},
 				deletePageRule: function(t,p,cb){
 					p = prefixify(p);

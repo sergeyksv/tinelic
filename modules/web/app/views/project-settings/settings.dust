@@ -6,62 +6,66 @@
         <div class="col-sm-8">
 			<div class="row-fluid">
 				{#project}
-                    <legend class="h2" id="_id" data-id="{project._id}">Project
-                        <div class="btn-group pull-right">
-                            <div class="btn btn-sm btn-danger" id="deleteProject">Delete</div>
-                            <div class="btn btn-default btn-sm edit" data-type="project">Edit</div>
-                        </div>
+                    <legend class="h2">Project
+						<div class="btn btn-sm btn-danger pull-right" id="doDeleteProject">Delete</div>
                     </legend>
-                    <div class="row-fluid bg-info" style="padding: 10px">
-						<form id="project" class="form-inline">
-							<strong>Name:</strong> &nbsp
-							<span>{project.name}</span>
-							<input style="display: none" type="text" name="name" class="form-control" value="{project.name}">
-                            <div type="submit" data-send="project" style="display: none" class="btn btn-sm btn-primary send">Save</div>
-						</form>
-					</div><br>
+					<div class="form-horizontal">
+                        <div class="form-group">
+                            <form>
+                                <label class="col-sm-2 control-label">Name</label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Name" data-type="name" data-val="{project.name}" class="btn btn-default btn-xs doEditProjectName">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{project.name}</p>
+                                </div>
+                            </form>
+                        </div>
+					</div>
+					<br>
 				{/project}
 				{#apdexConfig}
-                    <legend class="h2">Apdex Time <div class="btn btn-default btn-sm pull-right edit" data-type="apdexT">Edit</div></legend>
-					<div class="row-fluid bg-info" style="padding: 10px">
-                        <form id="apdexT">
-							<div class="col-sm-4 text-danger">
-								<div class="row-fluid">
-									<div class="col-xs-4">
-                                        <strong>Server:</strong>
-                                    </div>
-									<div class="col-xs-8">
-                                        <span>{_i_serverT}</span>
-                                        <input style="display: none" type="number" name="_i_serverT" class="form-control" value="{_i_serverT}">
-									</div>
-								</div>
-							</div>
-                            <div class="col-sm-4 text-success">
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <strong>Pages:</strong>
-                                    </div>
-                                    <div class="col-xs-8">
-                                        <span>{_i_pagesT}</span>
-                                        <input style="display: none" type="number" name="_i_pagesT" class="form-control" value="{_i_pagesT}">
-                                    </div>
+                    <legend class="h2">Apdex Time</legend>
+					<div class="form-horizontal">
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Server</label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Server" data-type="_i_serverT" data-val="{_i_serverT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
                                 </div>
-                            </div>
-                            <div class="col-sm-4 text-info">
-                                <div class="row">
-                                    <div class="col-xs-4">
-                                        <strong>Ajax:</strong>
-                                    </div>
-                                    <div class="col-xs-8">
-                                        <span>{_i_ajaxT}</span>
-                                        <input style="display: none" type="number" name="_i_ajaxT" class="form-control" value="{_i_ajaxT}">
-                                    </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_serverT}</p>
                                 </div>
-                            </div>
-							<br>
-                            <div type="submit" data-send="apdexT" style="display: none" class="btn btn-sm btn-primary send">Save</div>
-						</form>
-					</div><br>
+							</form>
+                        </div>
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Pages
+                                </label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Pages" data-type="_i_pagesT" data-val="{_i_pagesT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_pagesT}</p>
+                                </div>
+							</form>
+                        </div>
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Ajax
+                                </label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Ajax" data-type="_i_ajaxT" data-val="{_i_ajaxT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_ajaxT}</p>
+                                </div>
+							</form>
+                        </div>
+					</div>
+					<br>
+					<div type="submit" data-send="apdexT" style="display: none" class="btn btn-sm btn-primary send">Save</div>
+					<br>
 				{/apdexConfig}
                 <legend class="h2">Page Rules <div type="submit" data-add="pageRules" class="btn btn-sm btn-default doEditRule pull-right">Add Rule</div></legend>
                 <div class="row-fluid">
