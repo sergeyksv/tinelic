@@ -19,36 +19,10 @@
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
 			</ul>
 		</div>
-		<div>
-			{#data}
-			  {#value}
-				<div class="progress" style="border-radius:20px">
-					<span style="text-align:right;position:absolute; right:20px">
-						{@select key="{st}"}
-							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
-							{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
-						{/select}
-					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
-						<div style="text-align:left; padding-left:20px"">
-							<a href="./{st}?selected={_id}" style="color: black;" class="more
-							{@eq key="{_id}" value="{query}"} leftlist{/eq}">{_id}</a>
-						</div>
-					</div>
-				</div>
-			  {/value}
-			{/data}
-		</div>
+		{@view name="views/application/application_leftlist_pagination"/}
 	</div>
-	<div class="col-sm-8 addtrbreak">
-    	<hr></hr>
-       	<div id="rpm-one" style="width:100%; height:150px; float: left;"></div>
-       	<hr></hr>
-        <div id="time-one" style="width:100%; height:150px; float: left;"></div>
-        <table class="tablesorter table table-hover" id="trbreak">
-        </table>
+	<div class="col-sm-8">
+		{@view name="views/application/application_graph_table"/}
     </div>
 </div>
 </div>
