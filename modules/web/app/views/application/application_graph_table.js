@@ -17,18 +17,23 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
                           self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
                           trbreak=self.$('#trbreak')
                           trbreak.append('<thead><tr class=\"info\"><th>Part</th><th>Count</th><th>Time</th><th>Own Time</th></tr></thead><tbody>');
-                           var sumtta = 0; var sumowna = 0;
+                            var sumtta = 0, sumowna = 0;
+                            var sumcnt = null;
+                            var percfortta = null;
                             _.forEach(data, function(r) {
-                                sumtta += r.value.tta
-                                sumowna += r.value.owna
+                                sumtta += r.value.tta;
+                                sumowna += r.value.owna;
+                                if (self.data.query == r._id) {
+									sumcnt = r.value.cnt;
+									percfortta = r.value.tta;
+								}
                             })
-                          var sum = data[0].value
                           _.forEach(data, function(r) {
-                              var count = (r.value.cnt/sum.cnt).toFixed(2)
-                              var proc = ((r.value.tta/sumtta)*100).toFixed(1)
+                              var count = (r.value.cnt/sumcnt).toFixed(2)
+							  var proc = ((r.value.tta/percfortta)*100).toFixed(1)
                               var owna = ((r.value.owna/sumowna)*100).toFixed(1)
-                              r.value.tta = r.value.tta.toFixed(1)
-                              r.value.owna = r.value.owna.toFixed(1)
+                              r.value.tta = (r.value.tta/sumtta).toFixed(2)
+                              r.value.owna = (r.value.owna/sumowna).toFixed(2)
                               trbreak.append('<tr><td>'+r._id+'</td><td>'+count+'</td><td>'+r.value.tta+' s / '+proc+' %</td><td>'+r.value.owna+' s / '+owna+' %</td></tr>')
                           })
                           trbreak.append('</tbody></table>')
