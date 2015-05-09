@@ -98,7 +98,7 @@
 </div>
 
 <!-- Modal settings -->
-<div class="modal fade" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -119,41 +119,6 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button id="savebtn" type="button" class="btn btn-primary ">Save</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal add-project -->
-<div class="modal fade" id="modal-add-project" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Add project</h4>
-
-        <p class="bg-danger" id="addp-warn"></p>
-        <input type="name" class="form-control _idteam" placeholder="Id" disabled>
-      </div>
-      <div class="modal-body">
-          <div class="container-fluid">
-              <div class="form-horizontal">
-                  <label class="col-md-3 control-label">Projects</label>
-                  <div class="col-md-9">
-                      <select multiple data-role="tagsinput" class="tags">
-                          {#proj}
-                              <option data-projectid="{_id}" class="pOption" selected="selected" value="{name}">{name}</option>
-                          {/proj}
-                      </select>
-                  </div>
-              </div>
-          </div>
-      </div>
-      <div class="modal-footer">
-
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button id="btn-add-project" type="button" class="btn btn-primary ">Save</button>
-
       </div>
     </div>
   </div>

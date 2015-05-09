@@ -1,4 +1,4 @@
-define(['tinybone/base',"tinybone/backadapter",'dustc!views/header/header.dust','bootstrap/dropdown','dust-helpers'],function (tb,api) {
+define(['tinybone/base',"tinybone/backadapter",'dustc!views/header/header.dust','bootstrap/dropdown','dust-helpers','bootstrap/collapse','bootstrap/transition'],function (tb,api) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/header/header",
