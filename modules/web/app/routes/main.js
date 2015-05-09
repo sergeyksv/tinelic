@@ -694,6 +694,22 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								},
 								st: st
 							}, cb)
+						},
+						breakdown: function (cb) {
+							api("stats.getActionsCategoryBreakDown", "public", {
+								_t_age: quant + "m", quant: quant, filter: {
+									_idp: project._id,
+									_dt: {$gt: dtstart, $lte: dtend},
+									'data._s_name': req.query.selected
+							}}, cb)
+						},
+						graphs: function (cb) {
+							api("stats.getActionsCategoryTimings", "public", {
+								_t_age: quant + "m", quant: quant, filter: {
+									_idp: project._id,
+									_dt: {$gt: dtstart, $lte: dtend},
+									'data._s_name': req.query.selected
+							}}, cb)
 						}
 					}, safe.sure(cb, function(r){
 						var filter = {
@@ -703,7 +719,27 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_dt: {$gt: dtstart, $lte: dtend}
 							}
 						}
-						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, title:"Database/Statements", st: st, fr: filter}})
+						var stat = {};
+						stat.avg=0.0; stat.r=0.0; stat.tta=0.0;
+						if (req.query.selected) {
+							_.forEach(r.data, function(r) {
+								if(r._id == req.query.selected) {
+									stat.avg=r.value.avg;
+									stat.r=r.value.r;
+									stat.tta=r.value.tta;
+								}
+							})
+						} else {
+							_.forEach(r.data, function(r) {
+									stat.avg+=r.value.avg;
+									stat.r+=r.value.r;
+									stat.tta+=r.value.tta;
+							})
+							stat.avg=stat.avg/r.data.length;
+							stat.r=stat.r/r.data.length;
+							stat.tta=stat.tta/r.data.length;
+						}
+						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))

@@ -242,7 +242,7 @@ module.exports.init = function (ctx, cb) {
                                             r.value.bar = Math.round(r.value.apdex/percent);
                                             r.value.apdex = r.value.apdex;
                                         }
-                                        r.value.r = r.value.r/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
+                                        r.value.r = r.value.c/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
                                         r.value.tta = (r.value.tta/1000);
                                     });
                                 }
@@ -853,13 +853,13 @@ module.exports.init = function (ctx, cb) {
                                     r.value.bar = r.value.r/procent;
                                 if (st == 'mtc' || st === undefined) {
                                     r.value.bar = (r.value.tta*r.value.r)/procent;
-                                    r.value.tta = (r.value.tta/1000);
 								}
                                 if (st == 'sar')
                                     r.value.bar = r.value.avg/procent;
                             });
                             data = _.sortBy(data, function(r) {
                                 r.value.avg = r.value.avg/1000;
+                                r.value.tta = r.value.tta/1000;
                                 if (st == 'req')
                                     return r.value.r*-1;
                                 if (st == 'mtc' || st === undefined)
@@ -983,9 +983,10 @@ module.exports.init = function (ctx, cb) {
                     query._s_cat = "WebTransaction";
                     as.mapReduce(
                         function() {
+							var self=this;
                             this.data.forEach(function(k,v) {
-                                if (k._s_cat == CAT || k._s_cat == 'Custom') {
-                                    emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt});
+                                if (k._s_name == NAME) {
+                                    emit(self._s_name, {cnt: k._i_cnt, tt: k._i_tt});
                                 }
                             });
                         },
@@ -1005,7 +1006,7 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1},
-                            scope: {CAT: query._s_cat}
+                            scope: {CAT: query._s_cat, NAME: p.filter["data._s_name"]}
                         }, safe.sure(cb, function (data) {
 							// calculate average after aggregation
 							_.each(data, function (metric) {

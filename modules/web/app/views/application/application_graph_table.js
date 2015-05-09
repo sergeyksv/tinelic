@@ -26,8 +26,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
                     locals.datapreRender[i].count = (r.value.cnt/sumcnt).toFixed(2)
 					locals.datapreRender[i].proc = ((r.value.tta/percfortta)*100).toFixed(1)
                     locals.datapreRender[i].ownaproc = ((r.value.owna/sumowna)*100).toFixed(1)
-                    locals.datapreRender[i].tta = (r.value.tta/sumtta).toFixed(2)
-                    locals.datapreRender[i].owna = (r.value.owna/sumowna).toFixed(2)
+                    locals.datapreRender[i].tta = (r.value.tta/1000).toFixed(2)
+                    locals.datapreRender[i].owna = (r.value.owna/1000).toFixed(2)
 					i++;
 				})
 			}
