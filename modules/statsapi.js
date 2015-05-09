@@ -271,7 +271,7 @@ module.exports.init = function (ctx, cb) {
                         var ApdexT = apdex._i_ajaxT;
                         ajax.mapReduce(
                             function() {
-                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
+                                emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 )/Q,
                                     ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
                             },
                             function (k,v) {
@@ -284,6 +284,7 @@ module.exports.init = function (ctx, cb) {
                                         r.tt += v.tt;
                                         r.c+=v.c;
                                         r.r+=v.r;
+                                        r.e+=v.e;
                                         r.ag+=v.ag;
                                         r.aa+=v.aa;
                                     }
@@ -300,7 +301,52 @@ module.exports.init = function (ctx, cb) {
                                     var key = metric.value;
                                     key.apdex = (key.ag+key.aa/2)/key.c;
                                     key.tta = key.tt/key.c;
+                                    key.e = key.e/key.c;
                                 });
+                                var st = p.st;
+                                if (st) {
+                                    data =_.sortBy(data, function(v){
+                                        if (st == "rpm")
+                                            return -1*v.value.r;
+                                        if (st == "mtc")
+                                            return -1* (v.value.tta*v.value.c);
+                                        if (st == "sar")
+                                            return -1* v.value.tta;
+                                        if (st == "wa")
+                                            return 1* v.value.apdex;
+                                    });
+
+                                    var sum=0;
+                                    _.each(data, function(r){
+                                        if (st == "rpm")
+                                            sum+=r.value.r;
+                                        if (st == "mtc")
+                                            sum += r.value.tta*r.value.c;
+                                        if (st == "sar")
+                                            sum += r.value.tta;
+                                        if (st == "wa") {
+                                            sum += r.value.apdex;
+                                        }
+                                    });
+                                    var percent = sum/100;
+                                    _.each(data, function (r) {
+                                        if (st == "rpm") {
+                                            r.value.bar = Math.round(r.value.r/percent);
+                                        }
+                                        if (st == "mtc") {
+                                            r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+                                        }
+                                        if (st == "sar") {
+                                            r.value.bar = Math.round(r.value.tta/percent);
+                                        }
+                                        if (st == "wa") {
+                                            r.value.bar = Math.round(r.value.apdex/percent);
+                                            r.value.apdex = r.value.apdex;
+                                        }
+                                        r.value.r = r.value.c/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
+                                        r.value.tta = (r.value.tta/1000);
+                                    });
+                                }
                                 cb(null, data);
                             })
                         );
@@ -920,7 +966,8 @@ module.exports.init = function (ctx, cb) {
                     var q = p.quant || 1;
                     ajax.mapReduce(
                         function() {
-                            emit(this._s_name, { route: this._s_route, pag: []} );
+							if (this._s_route)
+								emit(this._s_route, {c:1, tt: this._i_tt} );
                         },
                         function (k,v) {
                             var r=null;
@@ -928,7 +975,8 @@ module.exports.init = function (ctx, cb) {
                                 if (!r)
                                     r = v;
                                 else {
-                                    r.pag.push(v.route);
+                                    r.tt+=v.tt;
+                                    r.c+=v.c;
                                 }
                             });
                             return r;
@@ -936,8 +984,14 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1}
-                        },
-                        cb
+                        }, safe.sure(cb, function (data) {
+    							// calculate average after aggregation
+    							_.each(data, function (metric) {
+    								var key = metric.value;
+    								key.tta = key.tt/key.c;
+    							});
+    							cb(null, data);
+    					})
                     );
                 },
                 getActionsCategoryTimings:function (t, p, cb) {
