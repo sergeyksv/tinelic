@@ -980,10 +980,11 @@ module.exports.init = function (ctx, cb) {
                 },
                 getActionsCategoryBreakDown: function(t,p, cb) {
                     var query = queryfix(p.filter);
+                    query._s_cat = "WebTransaction";
                     as.mapReduce(
                         function() {
                             this.data.forEach(function(k,v) {
-                                if (k._s_cat == CAT) {
+                                if (k._s_cat == CAT || k._s_cat == 'Custom') {
                                     emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt});
                                 }
                             });
@@ -1004,7 +1005,7 @@ module.exports.init = function (ctx, cb) {
                         {
                             query: query,
                             out: {inline:1},
-                            scope: {CAT: query['data._s_cat']}
+                            scope: {CAT: query._s_cat}
                         }, safe.sure(cb, function (data) {
 							// calculate average after aggregation
 							_.each(data, function (metric) {
