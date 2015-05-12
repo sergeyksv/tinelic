@@ -21,7 +21,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
 
                 safe.parallel([
                     function(cb) {
-                        filter.filter['data._s_cat'] = "WebTransaction"
                         api("stats.getActionsCategoryBreakDown", $.cookie("token"), filter, safe.sure(cb, function(data) {
                             trbreak.remove();
                             self.$('.addtrbreak').append('<table class="tablesorter" id="trbreak">');
