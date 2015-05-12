@@ -510,6 +510,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						}
 					}, safe.sure(cb, function(r){
+						var stat = {};
+						stat.apdex=0.0; stat.rpm=0.0; stat.tta=0.0;
 						var filter = {
 							_t_age: quant + "m", quant: quant,
 							filter: {
@@ -517,7 +519,25 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}
 						}
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected}})
+						if (req.query.selected) {
+							_.forEach(r.data, function(r) {
+								if(r._id == req.query.selected) {
+									stat.apdex=r.value.apdex;
+									stat.rpm=r.value.r;
+									stat.tta=r.value.tta;
+								}
+							})
+						} else {
+							_.forEach(r.data, function(r) {
+									stat.apdex+=r.value.apdex;
+									stat.rpm+=r.value.r;
+									stat.tta+=r.value.tta;
+							})
+							stat.apdex=stat.apdex/r.data.length;
+							stat.rpm=stat.rpm/r.data.length;
+							stat.tta=stat.tta/r.data.length;
+						}
+						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))

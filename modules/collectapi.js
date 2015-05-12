@@ -429,6 +429,30 @@ module.exports.init = function (ctx, cb) {
 									_i_sqr: Math.round(item[1][5]*1000)
 								})
 							})
+							// extra pass to get scope metrics (if any)
+							_.each(body[body.length-1], function (item) {
+								// now process only metrics without scope
+								var scope = item[0]["scope"];
+								if (scope) return;
+
+								// but thous that already have details
+								var stat = action_stats[item[0]["name"]]
+								if (!stat) return;
+								trnName = nrParseTransactionName(item[0]["name"])
+
+								stat.data.unshift({
+									_s_name: trnName.name,
+									_s_cat: trnName.type.split("/", 2)[0],
+									_s_type: trnName.type.split("/", 2)[1],
+									_i_cnt: item[1][0],
+									_i_tt: Math.round(item[1][1]*1000),
+									_i_own: Math.round(item[1][2]*1000),
+									_i_min: Math.round(item[1][3]*1000),
+									_i_max: Math.round(item[1][4]*1000),
+									_i_sqr: Math.round(item[1][5]*1000)
+								})
+							})
+
 							if (_.size(action_stats)) {
 								_.forEach(_.values(action_stats), function(v) {
 									ctx.api.validate.check("action-stats",v, safe.sure(nrNonFatal, function () {

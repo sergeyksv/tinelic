@@ -234,16 +234,16 @@ module.exports.init = function (ctx, cb) {
                                         }
                                         if (st == "mtc") {
                                             r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
-                                            r.value.tta = (r.value.tta/1000);
                                         }
                                         if (st == "sar") {
                                             r.value.bar = Math.round(r.value.tta/percent);
-                                            r.value.tta = (r.value.tta/1000);
                                         }
                                         if (st == "wa") {
                                             r.value.bar = Math.round(r.value.apdex/percent);
                                             r.value.apdex = r.value.apdex;
                                         }
+                                        r.value.r = r.value.r/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
+                                        r.value.tta = (r.value.tta/1000);
                                     });
                                 }
                                 else {
