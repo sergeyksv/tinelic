@@ -438,7 +438,8 @@ module.exports.init = function (ctx, cb) {
 								// but thous that already have details
 								var stat = action_stats[item[0]["name"]]
 								if (!stat) return;
-								trnName = nrParseTransactionName(item[0]["name"])
+								
+								var trnName = nrParseTransactionName(item[0]["name"])
 
 								stat.data.unshift({
 									_s_name: trnName.name,
