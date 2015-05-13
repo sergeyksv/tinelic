@@ -1,4 +1,4 @@
-<nav class="navbar navbar-inverse navbar-fixed-top">
+<nav class="navbar navbar-inverse navbar-static-top">
   <div class="container">
 	<div class="navbar-header">
 	  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -17,29 +17,31 @@
 		<li><a href="{_t_prefix}/teams" class="doManageTeams">Manage teams</a></li>
 		<li><a id="logout" href="#">Log out</a></li>
 	  </ul>
-
-	  	{?range}
-	  		<div class="btn-group" style="float: right; margin-top: 10px;">
-              <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-				{@select key="{range}"}
-					{@eq value="1h"}Last hour{/eq}
-					{@eq value="6h"}Last 6 hours{/eq}
-					{@eq value="12h"}Last 12 hours{/eq}
-					{@eq value="1d"}Last day{/eq}
-					{@eq value="3d"}Last 3 days{/eq}
-					{@eq value="1w"}Last week{/eq}
-					{@default}Default time range{/default}
-				{/select}
-              </button>
-      		  <ul class="dropdown-menu" role="menu">
-      			<li data-range='1h'> <a href="#">Last hour</a></li>
-      			<li data-range='6h'> <a href="#">Last 6 hours</a></li>
-      			<li data-range='12h'><a href="#">Last 12 hours</a></li>
-      			<li data-range='1d'> <a href="#">Last day</a></li>
-      			<li data-range='3d'> <a href="#">Last 3 days</a></li>
-      			<li data-range='1w'> <a href="#">Last week</a></li>
-      		  </ul>
-			</div>
+		{?range}
+            <ul class="nav navbar-nav navbar-right">
+                <li id="fat-menu" class="dropdown">
+                    <a id="drop3" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+						{@select key="{range}"}
+							{@eq value="1h"}Last hour{/eq}
+							{@eq value="6h"}Last 6 hours{/eq}
+							{@eq value="12h"}Last 12 hours{/eq}
+							{@eq value="1d"}Last day{/eq}
+							{@eq value="3d"}Last 3 days{/eq}
+							{@eq value="1w"}Last week{/eq}
+							{@default}Default time range{/default}
+						{/select}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
+                        <li data-range='1h'> <a href="#">Last hour</a></li>
+                        <li data-range='6h'> <a href="#">Last 6 hours</a></li>
+                        <li data-range='12h'><a href="#">Last 12 hours</a></li>
+                        <li data-range='1d'> <a href="#">Last day</a></li>
+                        <li data-range='3d'> <a href="#">Last 3 days</a></li>
+                        <li data-range='1w'> <a href="#">Last week</a></li>
+                    </ul>
+                </li>
+            </ul>
 		{/range}
 	</div><!--/.nav-collapse -->
   </div>
