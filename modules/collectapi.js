@@ -83,7 +83,7 @@ module.exports.init = function (ctx, cb) {
 			".*":[{type:"string","maxLength": 1024},
 				{type:"ineteger"}]
 		}}
-    }}})
+    }}});
 	ctx.api.validate.register("action-stats", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_s_name: {type:"string",required:true,"maxLength": 4096},
@@ -105,7 +105,7 @@ module.exports.init = function (ctx, cb) {
 				_i_sqr: {type: "integer", required: true}
 			}
 		}}
-	}}})
+	}}});
 	ctx.api.validate.register("actions", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_dt: {type:"date",required:true},
@@ -115,7 +115,7 @@ module.exports.init = function (ctx, cb) {
 		_i_wt: {type:"integer",required:true},
 		_i_tt: {type:"integer",required:true}
 
-	}}})
+	}}});
 	ctx.api.validate.register("metrics", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_dt: {type:"date",required:true},
@@ -131,7 +131,7 @@ module.exports.init = function (ctx, cb) {
 		_f_min: {type:"number",required:true},
 		_f_max: {type:"number",required:true},
 		_f_sqr: {type:"number",required:true}
-	}}})
+	}}});
 	ctx.api.validate.register("ajax", {$set:{properties:{
 		_i_nt: {type: "integer", required: true},
 		_i_tt: {type: "integer", required: true},
@@ -149,7 +149,7 @@ module.exports.init = function (ctx, cb) {
 		_idpv: {type: "mongoId"},
 		_s_route: {type: "string", "maxLength": 1024},
 		_s_uri: {type: "string", "maxLength": 4096}
-	}}})
+	}}});
 	ctx.api.validate.register("page", {$set:{properties:{
 		_i_nt: {type: "integer", required: true},
 		_i_tt: {type: "integer", required: true},
@@ -183,7 +183,7 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dt:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -191,7 +191,7 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dt:1}, cb);},
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb);},
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb);}
 					], safe.sure(cb, col));
 				}));
@@ -286,28 +286,28 @@ module.exports.init = function (ctx, cb) {
 							line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 							_TOKEN = "(";
 							if( line.indexOf( _TOKEN ) >= 0 ) {
-								si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								si._s_func = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 								line = line.replace( ")", "" );
 							}
 							_TOKEN = ":";
 							if( line.indexOf( _TOKEN ) >= 0 ) {
-								si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								si._s_file = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 								// line number and column number
 								var arr_line_items = line.split( ":" );
 								if( arr_line_items.length == 2 ) {
-									si["_i_line"] = arr_line_items[0];
-									si["_i_col"] = arr_line_items[1];
+									si._i_line = arr_line_items[0];
+									si._i_col = arr_line_items[1];
 								} else if( arr_line_items.length == 1 ) {
-									si["_i_line"] = arr_line_items[0];
+									si._i_line = arr_line_items[0];
 								}
 							}
-							error_dest.stacktrace.frames.push(prefixify(si))
+							error_dest.stacktrace.frames.push(prefixify(si));
 						} else {
 							error_dest._s_message = line;
 						}
-					})
+					});
 				}
 				function nrParseStackTrace_dotnet( st_source, error_dest ) {
 					if(!st_source)
@@ -319,21 +319,21 @@ module.exports.init = function (ctx, cb) {
 							line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 							_TOKEN = " in ";
 							if( line.indexOf( _TOKEN ) >= 0 ) {
-								si["_s_func"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+								si._s_func = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 								line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 								_TOKEN = ":line";
 								if( line.indexOf( _TOKEN ) >= 0 ) {
-									si["_s_file"] = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
+									si._s_file = line.substr( 0, line.indexOf( _TOKEN ) ).trim();
 									line = line.substr( line.indexOf( _TOKEN ) + _TOKEN.length );
 									// line number and column number
-									si["_i_line"] = line.trim();
+									si._i_line = line.trim();
 								}
-							} else si["_s_func"] = line;
-							error_dest.stacktrace.frames.push(prefixify(si))
+							} else si._s_func = line;
+							error_dest.stacktrace.frames.push(prefixify(si));
 						} else {
 							error_dest._s_message = line;
 						}
-					})
+					});
 				}
 				safe.run(function (cb) {
 					var nrpc = {
@@ -517,14 +517,14 @@ module.exports.init = function (ctx, cb) {
 										_s_type: trnName.type.split("/",2)[1]
 									},
 									stacktrace: { frames: [] }
-								}
+								};
 								if( run._s_logger == "node" || run._s_logger == "nodejs" ) {
-									nrParseStackTrace_nodejs( ne[4]["stack_trace"], te );
+									nrParseStackTrace_nodejs( ne[4].stack_trace, te );
 								} else if( run._s_logger == "dotnet" ) {
-									nrParseStackTrace_dotnet( ne[4]["stack_trace"], te );
+									nrParseStackTrace_dotnet( ne[4].stack_trace, te );
 								}
 								ctx.api.validate.check("error",te, safe.sure(function () {
-										console.log(JSON.stringify(te), ne[4]["stack_trace"]);
+										console.log(JSON.stringify(te), ne[4].stack_trace);
 										nrNonFatal.apply(this,arguments);
 									}, function () {
 									safe.parallel([
@@ -789,39 +789,39 @@ module.exports.init = function (ctx, cb) {
 						if (ge.exception[0].stacktrace) {
 							_.each(ge.exception[0].stacktrace.frames, function (frame) {
 								te.stacktrace.frames.push({
-									_s_file: frame["filename"] || "",
-									_i_line: frame["lineno"] || 0,
+									_s_file: frame.filename || "",
+									_i_line: frame.lineno || 0,
 									_i_col: 0,
-									_s_func: frame["function"] || "",
-									pre_context : frame["pre_context"] || [],
-									_s_context : frame["context_line"] || "",
-									post_context : frame["post_context"] || []
-								})
-							})
+									_s_func: frame.function || "",
+									pre_context : frame.pre_context || [],
+									_s_context : frame.context_line || "",
+									post_context : frame.post_context || []
+								});
+							});
 							te.stacktrace.frames = te.stacktrace.frames.reverse();
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							safe.parallel([
 								function() {
-									var md5sum = crypto.createHash('md5')
-									md5sum.update(te.exception._s_type)
-									md5sum.update(te._s_message + te.stacktrace.frames.length)
-									te.ehash = md5sum.digest('hex')
+									var md5sum = crypto.createHash('md5');
+									md5sum.update(te.exception._s_type);
+									md5sum.update(te._s_message + te.stacktrace.frames.length);
+									te.ehash = md5sum.digest('hex');
 									action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
 										if (edtl.length)
-											te._dtl = edtl[0]._dtl
+											te._dtl = edtl[0]._dtl;
 										else
 											te._dtl = new Date();
 
-										action_errors.insert(te, cb)
-									}))
+										action_errors.insert(te, cb);
+									}));
 								},
 								function() {
-									var q = {_dt: {$gte: te._dt}}
-									actions.update(q,{$inc: {_i_err: 1}},{multi: false})
+									var q = {_dt: {$gte: te._dt}};
+									actions.update(q,{$inc: {_i_err: 1}},{multi: false});
 								}
-							],cb)
-						}))
+							],cb);
+						}));
 					}));
 				}, function( error ){
 					if (error) {
@@ -833,7 +833,7 @@ module.exports.init = function (ctx, cb) {
 						res.status(200).end( "ok" );
 					}
 				});
-			})
+			});
 			ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				var data = {};
 				safe.run(function (cb) {
@@ -844,24 +844,24 @@ module.exports.init = function (ctx, cb) {
 						 req.connection.socket.remoteAddress;
 
 					var _dtp = data._dtp || data._dtInit;
-					data.project && (delete data.project);
+					if (data.project) delete data.project;
 					data._idp = req.params.project;
 					data._dtr = new Date();
 					data._dtc = data._dt;
 					data._dt = data._dtr;
 					data._dtp = _dtp;
-					data._dtInit && (delete data._dtInit);
+					if (data._dtInit) delete data._dtInit;
 					data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
 					data = prefixify(data,{strict:1});
 					var md5sum = crypto.createHash('md5');
 					md5sum.update(ip);
-					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers.host);
 					md5sum.update(req.headers['user-agent']);
-					md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))))
+					md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))));
 					data.shash = md5sum.digest('hex');
 					md5sum = crypto.createHash('md5');
 					md5sum.update(ip);
-					md5sum.update(req.headers['host']);
+					md5sum.update(req.headers.host);
 					md5sum.update(req.headers['user-agent']);
 					md5sum.update(data._dtp.toString());
 					data.chash = md5sum.digest('hex');
@@ -888,7 +888,7 @@ module.exports.init = function (ctx, cb) {
 							r.post_context = [];
 							r._s_context = r.context_line || ""; delete r.context_line;
 							delete r.in_app;
-						})
+						});
 					} else
 						data.stacktrace = {frames:[]};
 					delete data.platform;
@@ -900,31 +900,31 @@ module.exports.init = function (ctx, cb) {
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
 							data._idpv = page._id;
-							(page._s_route) && (data.request._s_route = page._s_route);
-							(page._s_uri) && (data.request._s_uri = page._s_uri);
+							if (page._s_route) data.request._s_route = page._s_route;
+							if (page._s_uri) data.request._s_uri = page._s_uri;
 						}
 						ctx.api.validate.check("error",data, safe.sure(cb, function () {
-							md5sum = crypto.createHash('md5')
-							md5sum.update(data.exception._s_type)
-							md5sum.update(data._s_message + data.stacktrace.frames.length)
-							data.ehash = md5sum.digest('hex')
+							md5sum = crypto.createHash('md5');
+							md5sum.update(data.exception._s_type);
+							md5sum.update(data._s_message + data.stacktrace.frames.length);
+							data.ehash = md5sum.digest('hex');
 							//find().sort().limit(1).toArray
 							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
-									data._dtl = edtl[0]._dtl
+									data._dtl = edtl[0]._dtl;
 								else
 									data._dtl = new Date();
 
 									events.insert(data, safe.sure(cb, function(res){
 										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
 											events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
-											}))
-										})
-										cb(null)
-									}))
-							}))
-						}))
-					}))
+											}));
+										});
+										cb(null);
+									}));
+							}));
+						}));
+					}));
 				}, function (err) {
 					if (err) {
 						newrelic.noticeError(err);
@@ -932,13 +932,13 @@ module.exports.init = function (ctx, cb) {
 					}
 					res.set('Content-Type', 'image/gif');
 					res.send(buf);
-				})
-			})
-		}))
+				});
+			});
+		}));
 	}),cb(null, {api:{
 		getTraceLineContext:function (t, p, cb) {
 			safe.run(function (cb) {
-				var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col)
+				var cdata = cache.get(p._s_file+"_"+p._i_line+"_"+p._i_col);
 				if (cdata)
 					return safe.back(cb,cdata.err, cdata.block);
 				var url = p._s_file.trim();
@@ -962,9 +962,10 @@ module.exports.init = function (ctx, cb) {
 					if (idx>=body.length)
 						return safe.back(cb,new Error("Column number '"+p.colno+"' is not found"),null);
 					preContextLineEnd=idx;
-					for (var i=idx-1; i>=0; i--) {
-						var ch = body.charAt(i);
-						if (ch == '\n' || ch == '}' || ch == ';' || ch == ')' || i == 0) {
+					var ch,i;
+					for (i=idx-1; i>=0; i--) {
+						ch = body.charAt(i);
+						if (ch == '\n' || ch == '}' || ch == ';' || ch == ')' || i === 0) {
 							preContextLineBegin=i+1;
 							if (boolOne) {
 								boolOne=false;
@@ -982,8 +983,8 @@ module.exports.init = function (ctx, cb) {
 					boolOne=true;
 					j=0;
 					postContextLineBegin=idx;
-					for (var i=idx+1; i<body.length; i++) {
-						var ch = body.charAt(i);
+					for (i=idx+1; i<body.length; i++) {
+						ch = body.charAt(i);
 						if (ch == '\n' || ch == '}' || ch == ';' || i == body.length-1) {
 							postContextLineEnd=i+1;
 							if (boolOne) {
@@ -1005,9 +1006,9 @@ module.exports.init = function (ctx, cb) {
                     // hide error within context line
                     block = {pre_context:[],post_context:[],_s_context:err.toString()};
                 }
-				cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:null, block:block})
+				cache.set(p._s_file+"_"+p._i_line+"_"+p._i_col,{err:null, block:block});
 				return cb(null, block);
-			})
+			});
         },
         getStackTraceContext:function (t, frames, cb) {
 			safe.eachSeries(frames, function(r, cb) {
@@ -1015,10 +1016,10 @@ module.exports.init = function (ctx, cb) {
 					r._s_context=context._s_context;
 					r.pre_context=context.pre_context;
 					r.post_context=context.post_context;
-				}))
+				}));
 			}, safe.sure(cb, function(){
-				cb(null, frames)
-			}))
+				cb(null, frames);
+			}));
         }
-	}}))
-}
+	}}));
+};
