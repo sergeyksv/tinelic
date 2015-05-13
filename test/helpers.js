@@ -32,7 +32,6 @@ module.exports.waitModal = function (selector, timeout) {
 	},timeout).then(function() {
 		return self.browser.findElement(selector).then(function (modal) {
 			return self.browser.wait(function () {
-                self.browser.sleep(200)
 				return modal.getCssValue("opacity").then(function (v) {return v==1; });
 			},timeout);
 		});

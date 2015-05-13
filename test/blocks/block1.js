@@ -46,7 +46,7 @@ module.exports.block = function(){
 
 							b.findElement(By.id("addnu")).click();
 
-							helpers.waitModal.call(self, By.className("modal-dialog")).then(function () {
+							helpers.waitModal.call(self, By.id("settings")).then(function () {
 								b.findElement(By.id("firstname")).sendKeys("obram");
 								b.findElement(By.id("lastname")).sendKeys("tinelic");
 								b.findElement(By.id("login")).sendKeys("obram");
@@ -96,7 +96,7 @@ module.exports.block = function(){
 
 							b.findElement(By.id("addnt")).click();
 
-							helpers.waitModal.call(self, By.className("modal-dialog")).then(function () {
+							helpers.waitModal.call(self, By.css(".modal.fade")).then(function () {
 								b.findElement(By.id("name")).sendKeys("NewTeam");
 								b.findElement(By.id("savebtn")).click();
 
@@ -126,10 +126,10 @@ module.exports.block = function(){
 
 							b.findElement(By.className("doNewProject")).click();
 
-							helpers.waitModal.call(self, By.css(".modal.fade.in")).then(function () {
+							helpers.waitModal.call(self, By.css(".modal-dialog")).then(function () {
 
-								b.findElement(By.id("name")).sendKeys("NewProject");
-								b.findElement(By.className("do-save")).click();
+								b.findElement(By.css("input#name")).sendKeys("NewProject");
+								b.findElement(By.css(".do-save")).click();
 
 								helpers.waitPageReload.call(self, pid).then(function () {
 									b.findElement(By.id("logout")).click();
