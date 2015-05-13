@@ -410,7 +410,7 @@ module.exports.init = function (ctx, cb) {
 								// need to change name of segement if it match
 								// transcation name (scope)
 								if (trnName.name == trnScope.name)
-									trnName+="_seg";
+									trnName.name+="_seg";
 
 								if( !action_stats[scope] ) {
 									action_stats[scope] = {
