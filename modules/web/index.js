@@ -51,6 +51,8 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("bootstrap/modal", true);
 	requirejs.define("bootstrap/tagsinput", true);
 	requirejs.define("bootstrap/typeahead", true);
+    requirejs.define("bootstrap/collapse", true);
+    requirejs.define("bootstrap/transition", true);
 	requirejs.define("highcharts",true);
 	requirejs.define("jquery.tablesorter.combined",true);
 	requirejs.define("backctx",ctx);
