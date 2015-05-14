@@ -5,16 +5,16 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
         events: {
             "click #doDeleteProject": function(e) {
                 var self = this;
-                var c = confirm('Do you really want delete this project and all of its data?');
-                if (c) {
+                self.app.confirm('Do you realy delete this project and all of this data?',safe.sure(self.app.errHandler,function(){
                     var id = {_idp:self.data.project._id};
                     api('assets.deleteProject', $.cookie('token'), id, function(err, data){
                         if (err)
-                            alert(err)
+                            self.app.errHandler(err);
                         else
                             self.app.router.navigateTo('/web/')
                     })
-                }
+                }))
+
             },
             "click .doEditRule":function(e){
                 var self = this;
@@ -75,20 +75,18 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                     });
                     p.on('save',function(data){
                         if (self.$('.doSaveStroke:visible').length > 1)
-                            if(!confirm('are you sure save this property, other editing props to be lose?'))
-                                return false;
+                            self.app.confirm('Are you sure save this property, other editing props to be lose?',function(){
+                                data._id = self.data.project._id;
 
-                        data._id = self.data.project._id;
-
-                        api('assets.saveProjectName', $.cookie('token'),data,function(err,data){
-                            if (err)
-                                alert(err);
-                            else {
-                                api.invalidate();
-                                self.app.router.navigateTo('/web/project/'+data.slug+'/settings');
-                            }
-                        })
-
+                                api('assets.saveProjectName', $.cookie('token'),data,function(err,data){
+                                    if (err)
+                                        alert(err);
+                                    else {
+                                        api.invalidate();
+                                        self.app.router.navigateTo('/web/project/'+data.slug+'/settings');
+                                    }
+                                })
+                            });
                     })
                 },this.app.errHandler)
             },
@@ -114,25 +112,24 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                     });
                     a.on('save',function(data){
                         if (self.$('.doSaveStroke:visible').length > 1)
-                            if(!confirm('are you sure save this property, other editing props to be lose?'))
-                                return false;;
+                            self.app.confirm('Are you sure save this property, other editing props to be lose?',function(){
+                                data._id = self.data.project._id;
 
-                        data._id = self.data.project._id;
-
-                        api('assets.saveApdexT', $.cookie('token'),data,function(err,data){
-                            if (err)
-                                alert(err);
-                            else {
-                                api.invalidate();
-                                self.app.router.reload();
-                            }
-                        })
-
+                                api('assets.saveApdexT', $.cookie('token'),data,function(err,data){
+                                    if (err)
+                                        alert(err);
+                                    else {
+                                        api.invalidate();
+                                        self.app.router.reload();
+                                    }
+                                })
+                            });
                     })
                 },this.app.errHandler)
             },
             'click .deletePageRule':function(e){
-                if(confirm('Are you sure delete this Page Rule?')) {
+                var self = this;
+                self.app.confirm('Are you sure delete this Page Rule?',function(){
                     var self = this;
                     var data = {
                         filter:{
@@ -149,7 +146,7 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                         }
 
                     })
-                }
+                });
             }
         }
     })

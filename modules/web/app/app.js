@@ -73,6 +73,23 @@ define(['views/layout/layout','module','safe',"dust",
 		errHandler: function (err) {
 			if (err) console.log(err.stack);
 		},
+        confirm: function (msg,cb) {
+            $.blockUI({message: '<div class="container-fluid" style="cursor: default" ">\
+                <h4>'+msg+'</h4>\
+                <div class="btn btn-primary" id="yes">Yes</div>\
+                <div class="btn btn-default" type="button" id="no">No</div>\
+                </div> <br>',css:{top:'10%',left:'20%',width:'60%'}});
+
+            $('#yes').click(function(){
+                $.unblockUI();
+                safe.back(cb,null);
+            });
+
+            $('#no').click(function(){
+                $.unblockUI();
+                return false
+            })
+        },
 		initRoutes: function (cb) {
 			var self = this;
 			var router = self.router;
