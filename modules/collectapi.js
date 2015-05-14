@@ -472,10 +472,10 @@ module.exports.init = function (ctx, cb) {
 									});
 								});
 
-								if (!_.size(action_stats))
-								 	return cb();
-
 								safe.run(function (cb) {
+									if (!_.size(action_stats))
+									 	return cb();
+
 									safe.each(_.values(action_stats), function(v,cb) {
 										ctx.api.validate.check("action-stats",v, function (err) {
 											if (nrNonFatal(err))
@@ -610,7 +610,6 @@ module.exports.init = function (ctx, cb) {
 						throw new Error("NewRelic: unknown method " + req.query.method);
 					fn();
 				}, function (err) {
-					nrNonFatal(err);
 					res.json({exception:{message:err.message}});
 				});
 			});
