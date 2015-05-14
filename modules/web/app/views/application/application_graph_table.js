@@ -19,17 +19,17 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 						sumcnt = r.value.cnt;
 						percfortta = r.value.tta;
 					}
-                })
+                });
                 _.forEach(data, function(r) {
 					locals.datapreRender[i]={};
                     locals.datapreRender[i]._id = r._id;
-                    locals.datapreRender[i].count = (r.value.cnt/sumcnt).toFixed(2)
-					locals.datapreRender[i].proc = ((r.value.tta/percfortta)*100)
-                    locals.datapreRender[i].ownaproc = ((r.value.owna/sumowna)*100)
-                    locals.datapreRender[i].tta = (r.value.tta/1000)
-                    locals.datapreRender[i].owna = (r.value.owna/1000)
+                    locals.datapreRender[i].count = (r.value.cnt/sumcnt).toFixed(2);
+					locals.datapreRender[i].proc = ((r.value.tta/percfortta)*100);
+                    locals.datapreRender[i].ownaproc = ((r.value.owna/sumowna)*100);
+                    locals.datapreRender[i].tta = (r.value.tta/1000);
+                    locals.datapreRender[i].owna = (r.value.owna/1000);
 					i++;
-				})
+				});
 			}
         },
 		postRender:function () {
