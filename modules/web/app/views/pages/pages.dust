@@ -1,51 +1,33 @@
 {@view name="views/header/header" data="header" /}
 
 <div class="starter-template container">
-<div class="row">
-	<div class="col-sm-4">
-		<div class="dropdown">
-			{title} <span class="btn btn-xs btn-info" data-toggle="dropdown">
+	<legend>{project.name}
+		<span class="text-info h5"> {query} </span>
+		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {stat.epm} epm /</span>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info" data-toggle="dropdown">
 				{@select key="{st}"}
 					{@eq value="rpm"}highest rpm{/eq}
 					{@eq value="mtc"}most time consuming{/eq}
 					{@eq value="sar"}slowest average response time{/eq}
 					{@eq value="wa"}worst apdex{/eq}
 				{/select}
-			<span class="caret"></span></span><br><br>
-			<ul class="dropdown-menu" role="menu">
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="rpm" class="do-stats" href="#">Highest rpm</a></li>
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mtc" class="do-stats" href="#">Most time consuming</a></li>
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
-				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
-			</ul>
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="rpm" class="do-stats" href="#">Highest rpm</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mtc" class="do-stats" href="#">Most time consuming</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
+				</ul>
 		</div>
-		<div>
-			{#data}
-			  {#value}
-				<div class="progress" style="border-radius:20px">
-					<span style="text-align:right;position:absolute; right:20px">
-						{@select key="{st}"}
-							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
-							{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
-						{/select}
-					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
-						<div style="text-align:left; padding-left:20px""><span style="cursor: pointer;" class="more">{_id}</span> </div>
-					</div>
-				</div>
-			  {/value}
-			{/data}
-		</div>
+	</legend>
+
+<div class="row">
+	<div class="col-sm-4">
+		{@view name="views/pages/pages_leftlist_pagination"/}
 	</div>
-	<div class="col-sm-8 addtrbreak">
-    	<hr></hr>
-       	<div id="rpm-one" style="width:100%; height:150px; float: left;"></div>
-       	<hr></hr>
-        <div id="time-one" style="width:100%; height:150px; float: left;"></div>
-        <table class="tablesorter table table-hover" id="trbreak">
-        </table>
+	<div class="col-sm-8">
+       	{@view name="views/pages/pages_graph_table"/}
     </div>
 </div>
 </div>

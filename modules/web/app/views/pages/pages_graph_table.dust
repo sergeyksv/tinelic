@@ -7,7 +7,6 @@
 				<th>Part</th>
 				<th>Count</th>
 				<th>Time</th>
-				<th>Own Time</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -16,7 +15,6 @@
 				<td>{_id}</td>
 				<td>{count}</td>
 				<td>{@formatnumber val=tta type="tm"/} / {@formatnumber val=proc type="erate"/}</td>
-				<td>{@formatnumber val=owna type="tm"/} / {@formatnumber val=ownaproc type="erate"/}</td>
 			</tr>
 			{/datapreRender}
 		</tbody>
