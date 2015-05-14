@@ -10,7 +10,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/d
 				var data = this.data.breakdown;
 				var i=0;
 				var sumtta = 0;
-                var sumcnt = null;
                 var percfortta = null;
                 _.forEach(data, function(r) {
 					sumtta += r.value.tta;
