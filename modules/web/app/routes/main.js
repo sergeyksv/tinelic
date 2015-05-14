@@ -665,7 +665,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								r.error._dtl = moment(r.error._dtl).fromNow()
 						})
 						r.event.headless = true;
-						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck}})
+						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck,id:req.params.id}})
 					})
 				)
 			}))

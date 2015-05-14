@@ -1,12 +1,30 @@
-define(['tinybone/base',"tinybone/backadapter",'dustc!views/header/header.dust','bootstrap/dropdown','dust-helpers','bootstrap/collapse','bootstrap/transition'],function (tb,api) {
+define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header.dust','bootstrap/dropdown','dust-helpers','bootstrap/collapse','bootstrap/transition'],function (tb,api,safe) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/header/header",
 		events: {
-			'click .dropdown-menu li':function (e) {
+            'click #doCustomRange': function(e) {
+                var self = this;
+                require(['views/modals/dtpick'],function(Modal){
+                    var modal = new Modal({app:self.app});
+                    modal.data = {};
+                    modal.render(safe.sure(self.app.errHandler, function (text) {
+                        var $modal = $(text);
+                        self.$el.prepend($modal);
+                        modal.bindDom($modal);
+                    }));
+                    modal.once("saved", function (data) {
+                        $.cookie('str',JSON.stringify({from:data.from,to:data.to}),{expires: 5,path: '/'});
+                        modal.remove();
+                        api.invalidate();
+                        self.app.router.reload();
+                    })
+                },this.app.errHandler)
+            },
+			'click .doRange':function (e) {
 				e.preventDefault();
 				$this = $(e.currentTarget);
-				$.cookie('str', $this.data('range'), {expires: 5,path: '/',});
+				$.cookie('str', $this.data('range'), {expires: 5,path: '/'});
 				this.app.router.reload();
 				return false;
 			},
