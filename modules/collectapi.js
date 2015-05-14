@@ -381,32 +381,32 @@ module.exports.init = function (ctx, cb) {
 							var action_stats = {};
 							safe.each(body[body.length-1], function (item,cb) {
 								// grab memory metrics
-								if (item[0].name == "Memory/Physical") {
-									var te = prefixify({
-										_idp: run._idp,
-										_dt: _dt,
-										_dts: _dts,
-										_dte: _dte,
-										_s_type: item[0].name,
-										_s_name: "",
-										_s_pid: run._s_pid,
-										_s_host: run._s_host,
-										_i_cnt: item[1][0],
-										_f_val: item[1][1],
-										_f_own: item[1][2],
-										_f_min: item[1][3],
-										_f_max: item[1][4],
-										_f_sqr: item[1][5]
+								if (item[0].name != "Memory/Physical")
+									return cb();
+								var te = prefixify({
+									_idp: run._idp,
+									_dt: _dt,
+									_dts: _dts,
+									_dte: _dte,
+									_s_type: item[0].name,
+									_s_name: "",
+									_s_pid: run._s_pid,
+									_s_host: run._s_host,
+									_i_cnt: item[1][0],
+									_f_val: item[1][1],
+									_f_own: item[1][2],
+									_f_min: item[1][3],
+									_f_max: item[1][4],
+									_f_sqr: item[1][5]
+								});
+								ctx.api.validate.check("metrics",te, function (err) {
+									if (nrNonFatal(err))
+										return cb();
+									metrics.insert(te, function (err) {
+										nrNonFatal(err);
+										cb();
 									});
-									ctx.api.validate.check("metrics",te, function (err) {
-										if (nrNonFatal(err))
-											return cb();
-										metrics.insert(te, function (err) {
-											nrNonFatal(err);
-											cb();
-										});
-									});
-								}
+								});
 							},function (err) {
 								nrNonFatal(err);
 
@@ -474,20 +474,22 @@ module.exports.init = function (ctx, cb) {
 
 								if (!_.size(action_stats))
 								 	return cb();
-									
-								safe.each(_.values(action_stats), function(v,cb) {
-									ctx.api.validate.check("action-stats",v, function (err) {
-										if (nrNonFatal(err))
-											return cb();
-										as.insert(v, function (err) {
-											nrNonFatal(err);
-											cb();
+
+								safe.run(function (cb) {
+									safe.each(_.values(action_stats), function(v,cb) {
+										ctx.api.validate.check("action-stats",v, function (err) {
+											if (nrNonFatal(err))
+												return cb();
+											as.insert(v, function (err) {
+												nrNonFatal(err);
+												cb();
+											});
 										});
-									});
-								},cb);
-							}, function (err) {
-								nrNonFatal(err);
-								res.json( { return_value: "ok" } );
+									},cb);
+								}, function (err) {
+									nrNonFatal(err);
+									res.json( { return_value: "ok" } );
+								});
 							});
 						},
 						analytic_event_data:function () {
@@ -601,7 +603,7 @@ module.exports.init = function (ctx, cb) {
 
 					// rename transaction according to new relic name
 					if (ctx.locals.newrelic)
-						ctx.locals.newrelic.setTransactionName(req.method+"//agent_listender/"+req.query.method);
+						ctx.locals.newrelic.setTransactionName(req.method+"//newrelic/"+req.query.method);
 
 					var fn = nrpc[req.query.method];
 					if (!fn)
