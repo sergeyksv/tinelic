@@ -270,7 +270,9 @@ module.exports.init = function (ctx, cb) {
 							ctx.locals.ravenjs.captureError(err);
 						else
 							console.log(err);
-					}
+						return true;
+					} else
+						return false;
 				}
 				// extract json data from http request body
 				function nrParseBody( req ) {
@@ -461,20 +463,29 @@ module.exports.init = function (ctx, cb) {
 								});
 							});
 
-							if (_.size(action_stats)) {
-								_.forEach(_.values(action_stats), function(v) {
-									ctx.api.validate.check("action-stats",v, safe.sure(nrNonFatal, function () {
-										as.insert(v, nrNonFatal);
-									}));
-								});
-							}
-							res.json( { return_value: "ok" } );
+							safe.run(function (cb){
+								if (!_.size(action_stats))
+								 	return cb();
+								safe.each(_.values(action_stats), function(v,cb) {
+									ctx.api.validate.check("action-stats",v, function (err) {
+										if (nrNonFatal(err))
+											return cb();
+										as.insert(v, function (err) {
+											nrNonFatal(err);
+											cb();
+										});
+									});
+								},cb);
+							}, function (err) {
+								nrNonFatal(err);
+								res.json( { return_value: "ok" } );
+							});
 						},
 						analytic_event_data:function () {
 							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-							_.each(body[body.length - 1], function (item) {
+							safe.each(body[body.length - 1], function (item,cb) {
 								item = item[0];
 								var trnName = nrParseTransactionName(item.name);
 								var ct = trnName.type.split("/",2);
@@ -487,17 +498,24 @@ module.exports.init = function (ctx, cb) {
 									"_i_wt": Math.round(item.webDuration*1000),
 									"_i_tt": Math.round(item.duration*1000)
 								};
-								ctx.api.validate.check("actions",te, safe.sure(nrNonFatal, function () {
-									actions.insert(te, nrNonFatal);
-								}));
+								ctx.api.validate.check("actions",te, function (err) {
+									if (nrNonFatal(err))
+									 	return cb();
+									actions.insert(te, function (err) {
+										nrNonFatal(err);
+										cb();
+									});
+								});
+							},function (err) {
+								nrNonFatal(err);
+								res.json( { return_value: "ok" } );
 							});
-							res.json( { return_value: "ok" } );
 						},
 						error_data:function () {
 							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-							_.each(body[body.length - 1], function (ne) {
+							safe.each(body[body.length - 1], function (ne) {
 								var trnName = nrParseTransactionName(ne[1]);
 								var te = {
 									_idp:run._idp,
