@@ -610,7 +610,7 @@ module.exports.init = function (ctx, cb) {
                         var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
 
                         events.mapReduce(function () {
-                                var route = {}; route[this.request._s_url]=1;
+                                var route = {}; route[this.request._s_route]=1;
                                 var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
                                 var os = {}; os[this.agent.os.family]=1;
                                 var sessions = {}; sessions[this.shash]=1;
