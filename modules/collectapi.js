@@ -183,7 +183,7 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dt:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dtc:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -270,7 +270,9 @@ module.exports.init = function (ctx, cb) {
 							ctx.locals.ravenjs.captureError(err);
 						else
 							console.log(err);
-					}
+						return true;
+					} else
+						return false;
 				}
 				// extract json data from http request body
 				function nrParseBody( req ) {
@@ -377,104 +379,124 @@ module.exports.init = function (ctx, cb) {
 								_dt = new Date( (_dts.getTime() + _dte.getTime()) / 2.0 );
 
 							var action_stats = {};
-							_.each(body[body.length-1], function (item) {
+							safe.each(body[body.length-1], function (item,cb) {
 								// grab memory metrics
-								if (item[0].name == "Memory/Physical") {
-									var te = prefixify({
-										_idp: run._idp,
-										_dt: _dt,
-										_dts: _dts,
-										_dte: _dte,
-										_s_type: item[0].name,
-										_s_name: "",
-										_s_pid: run._s_pid,
-										_s_host: run._s_host,
-										_i_cnt: item[1][0],
-										_f_val: item[1][1],
-										_f_own: item[1][2],
-										_f_min: item[1][3],
-										_f_max: item[1][4],
-										_f_sqr: item[1][5]
+								if (item[0].name != "Memory/Physical")
+									return cb();
+								var te = prefixify({
+									_idp: run._idp,
+									_dt: _dt,
+									_dts: _dts,
+									_dte: _dte,
+									_s_type: item[0].name,
+									_s_name: "",
+									_s_pid: run._s_pid,
+									_s_host: run._s_host,
+									_i_cnt: item[1][0],
+									_f_val: item[1][1],
+									_f_own: item[1][2],
+									_f_min: item[1][3],
+									_f_max: item[1][4],
+									_f_sqr: item[1][5]
+								});
+								ctx.api.validate.check("metrics",te, function (err) {
+									if (nrNonFatal(err))
+										return cb();
+									metrics.insert(te, function (err) {
+										nrNonFatal(err);
+										cb();
 									});
-									ctx.api.validate.check("metrics",te, safe.sure(nrNonFatal, function () {
-										metrics.insert(te, nrNonFatal);
-									}));
-								}
-								// grab transaction segments stats
-								var scope = item[0].scope;
-								if (!scope) return;
+								});
+							},function (err) {
+								nrNonFatal(err);
 
-								var trnScope = nrParseTransactionName(scope);
-								var trnName = nrParseTransactionName(item[0].name);
+								_.each(body[body.length-1], function (item) {
+									// grab transaction segments stats
+									var scope = item[0].scope;
+									if (!scope) return;
 
-								// need to change name of segement if it match
-								// transcation name (scope)
-								if (trnName.name == trnScope.name)
-									trnName.name+="_seg";
+									var trnScope = nrParseTransactionName(scope);
+									var trnName = nrParseTransactionName(item[0].name);
 
-								if( !action_stats[scope] ) {
-									action_stats[scope] = {
-										"_idp": run._idp,
-										"_s_name": trnScope.name,
-										"_s_cat": trnScope.type.split("/", 2)[0],
-										"_s_type": trnScope.type.split("/", 2)[1],
-										"_dt": _dt,
-										"_dts": _dts,
-										"_dte": _dte,
-										data: []
-									};
-								}
-								action_stats[scope].data.push( {
-									_s_name: trnName.name,
-									_s_cat: trnName.type.split("/", 2)[0],
-									_s_type: trnName.type.split("/", 2)[1],
-									_i_cnt: item[1][0],
-									_i_tt: Math.round(item[1][1]*1000),
-									_i_own: Math.round(item[1][2]*1000),
-									_i_min: Math.round(item[1][3]*1000),
-									_i_max: Math.round(item[1][4]*1000),
-									_i_sqr: Math.round(item[1][5]*1000)
+									// need to change name of segement if it match
+									// transcation name (scope)
+									if (trnName.name == trnScope.name)
+										trnName.name+="_seg";
+
+									if( !action_stats[scope] ) {
+										action_stats[scope] = {
+											"_idp": run._idp,
+											"_s_name": trnScope.name,
+											"_s_cat": trnScope.type.split("/", 2)[0],
+											"_s_type": trnScope.type.split("/", 2)[1],
+											"_dt": _dt,
+											"_dts": _dts,
+											"_dte": _dte,
+											data: []
+										};
+									}
+									action_stats[scope].data.push( {
+										_s_name: trnName.name,
+										_s_cat: trnName.type.split("/", 2)[0],
+										_s_type: trnName.type.split("/", 2)[1],
+										_i_cnt: item[1][0],
+										_i_tt: Math.round(item[1][1]*1000),
+										_i_own: Math.round(item[1][2]*1000),
+										_i_min: Math.round(item[1][3]*1000),
+										_i_max: Math.round(item[1][4]*1000),
+										_i_sqr: Math.round(item[1][5]*1000)
+									});
+								});
+								// extra pass to get scope metrics (if any)
+								_.each(body[body.length-1], function (item) {
+									// now process only metrics without scope
+									var scope = item[0].scope;
+									if (scope) return;
+
+									// but thous that already have details
+									var stat = action_stats[item[0].name];
+									if (!stat) return;
+
+									var trnName = nrParseTransactionName(item[0].name);
+
+									stat.data.unshift({
+										_s_name: trnName.name,
+										_s_cat: trnName.type.split("/", 2)[0],
+										_s_type: trnName.type.split("/", 2)[1],
+										_i_cnt: item[1][0],
+										_i_tt: Math.round(item[1][1]*1000),
+										_i_own: Math.round(item[1][2]*1000),
+										_i_min: Math.round(item[1][3]*1000),
+										_i_max: Math.round(item[1][4]*1000),
+										_i_sqr: Math.round(item[1][5]*1000)
+									});
+								});
+
+								safe.run(function (cb) {
+									if (!_.size(action_stats))
+									 	return cb();
+
+									safe.each(_.values(action_stats), function(v,cb) {
+										ctx.api.validate.check("action-stats",v, function (err) {
+											if (nrNonFatal(err))
+												return cb();
+											as.insert(v, function (err) {
+												nrNonFatal(err);
+												cb();
+											});
+										});
+									},cb);
+								}, function (err) {
+									nrNonFatal(err);
+									res.json( { return_value: "ok" } );
 								});
 							});
-							// extra pass to get scope metrics (if any)
-							_.each(body[body.length-1], function (item) {
-								// now process only metrics without scope
-								var scope = item[0].scope;
-								if (scope) return;
-
-								// but thous that already have details
-								var stat = action_stats[item[0].name];
-								if (!stat) return;
-
-								var trnName = nrParseTransactionName(item[0].name);
-
-								stat.data.unshift({
-									_s_name: trnName.name,
-									_s_cat: trnName.type.split("/", 2)[0],
-									_s_type: trnName.type.split("/", 2)[1],
-									_i_cnt: item[1][0],
-									_i_tt: Math.round(item[1][1]*1000),
-									_i_own: Math.round(item[1][2]*1000),
-									_i_min: Math.round(item[1][3]*1000),
-									_i_max: Math.round(item[1][4]*1000),
-									_i_sqr: Math.round(item[1][5]*1000)
-								});
-							});
-
-							if (_.size(action_stats)) {
-								_.forEach(_.values(action_stats), function(v) {
-									ctx.api.validate.check("action-stats",v, safe.sure(nrNonFatal, function () {
-										as.insert(v, nrNonFatal);
-									}));
-								});
-							}
-							res.json( { return_value: "ok" } );
 						},
 						analytic_event_data:function () {
 							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-							_.each(body[body.length - 1], function (item) {
+							safe.each(body[body.length - 1], function (item,cb) {
 								item = item[0];
 								var trnName = nrParseTransactionName(item.name);
 								var ct = trnName.type.split("/",2);
@@ -487,17 +509,24 @@ module.exports.init = function (ctx, cb) {
 									"_i_wt": Math.round(item.webDuration*1000),
 									"_i_tt": Math.round(item.duration*1000)
 								};
-								ctx.api.validate.check("actions",te, safe.sure(nrNonFatal, function () {
-									actions.insert(te, nrNonFatal);
-								}));
+								ctx.api.validate.check("actions",te, function (err) {
+									if (nrNonFatal(err))
+									 	return cb();
+									actions.insert(te, function (err) {
+										nrNonFatal(err);
+										cb();
+									});
+								});
+							},function (err) {
+								nrNonFatal(err);
+								res.json( { return_value: "ok" } );
 							});
-							res.json( { return_value: "ok" } );
 						},
 						error_data:function () {
 							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-							_.each(body[body.length - 1], function (ne) {
+							safe.each(body[body.length - 1], function (ne) {
 								var trnName = nrParseTransactionName(ne[1]);
 								var te = {
 									_idp:run._idp,
@@ -571,12 +600,16 @@ module.exports.init = function (ctx, cb) {
 							res.json( { return_value: null } );
 						}
 					};
+
+					// rename transaction according to new relic name
+					if (ctx.locals.newrelic)
+						ctx.locals.newrelic.setTransactionName(req.method+"//newrelic/"+req.query.method);
+
 					var fn = nrpc[req.query.method];
 					if (!fn)
 						throw new Error("NewRelic: unknown method " + req.query.method);
 					fn();
 				}, function (err) {
-					nrNonFatal(err);
 					res.json({exception:{message:err.message}});
 				});
 			});
@@ -618,10 +651,27 @@ module.exports.init = function (ctx, cb) {
 					delete data.url;
 					delete data.r;
 
-					pages.findOne({
-						chash: data.chash,
-						_dt: {$lte: data._dt}
-					}, {sort:{_dt: -1}}, safe.sure(cb, function (page) {
+					// initially we trying to link to closest page
+					safe.parallel({
+						before: function (cb) {
+							pages.findOne({
+								chash: data.chash,
+								_dtc: {$lte: data._dtc}
+							}, {sort:{_dtc: -1}},cb);
+						},
+						after: function (cb) {
+							pages.findOne({
+								chash: data.chash,
+								_dtc: {$gte: data._dtc}
+							}, {sort:{_dtc: 1}},cb);
+						}
+					}, safe.sure(cb, function (res) {
+						// by default previous is fine
+						var page = res.before || null;
+						// but if anything in front that wittin page load time need to choose it
+						if (res.after && data._dtc.valueOf() >= (res.after._dtc.valueOf()-res.after._i_tt))
+							page = res.after;
+
 						if (page) {
 							data._idpv = page._id;
 							if (page._s_route) data._s_route = page._s_route;
@@ -740,13 +790,16 @@ module.exports.init = function (ctx, cb) {
 									}));
 								},
 								function(cb) {
-									ajax.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+									// need to apdate all ajax request that might happened befor us
+									ajax.update({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt*1.2),$lte:data._dtc}}, {
 										$set: {
 											_idpv: _id,
 											_s_route: data._s_route,
 											_s_uri: data._s_uri}
 									}, {multi: true}, safe.sure(cb, function() {
-										ajax.find({chash: data.chash, _i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+										ajax.find({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt),$lte:data._dtc},
+										 	_i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+
 											if (count > 0)
 												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
 											else
