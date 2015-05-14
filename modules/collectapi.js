@@ -183,7 +183,7 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dt:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dtc:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -571,6 +571,11 @@ module.exports.init = function (ctx, cb) {
 							res.json( { return_value: null } );
 						}
 					};
+
+					// rename transaction according to new relic name
+					if (ctx.locals.newrelic)
+						ctx.locals.newrelic.setTransactionName(req.method+"//agent_listender/"+req.query.method);
+
 					var fn = nrpc[req.query.method];
 					if (!fn)
 						throw new Error("NewRelic: unknown method " + req.query.method);
@@ -618,10 +623,27 @@ module.exports.init = function (ctx, cb) {
 					delete data.url;
 					delete data.r;
 
-					pages.findOne({
-						chash: data.chash,
-						_dt: {$lte: data._dt}
-					}, {sort:{_dt: -1}}, safe.sure(cb, function (page) {
+					// initially we trying to link to closest page
+					safe.parallel({
+						before: function (cb) {
+							pages.findOne({
+								chash: data.chash,
+								_dtc: {$lte: data._dtc}
+							}, {sort:{_dtc: -1}},cb);
+						},
+						after: function (cb) {
+							pages.findOne({
+								chash: data.chash,
+								_dtc: {$gte: data._dtc}
+							}, {sort:{_dtc: 1}},cb);
+						}
+					}, safe.sure(cb, function (res) {
+						// by default previous is fine
+						var page = res.before || null;
+						// but if anything in front that wittin page load time need to choose it
+						if (res.after && data._dtc.valueOf() >= (res.after._dtc.valueOf()-res.after._i_tt))
+							page = res.after;
+
 						if (page) {
 							data._idpv = page._id;
 							if (page._s_route) data._s_route = page._s_route;
@@ -740,13 +762,16 @@ module.exports.init = function (ctx, cb) {
 									}));
 								},
 								function(cb) {
-									ajax.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+									// need to apdate all ajax request that might happened befor us
+									ajax.update({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt*1.2),$lte:data._dtc}}, {
 										$set: {
 											_idpv: _id,
 											_s_route: data._s_route,
 											_s_uri: data._s_uri}
 									}, {multi: true}, safe.sure(cb, function() {
-										ajax.find({chash: data.chash, _i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+										ajax.find({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt),$lte:data._dtc},
+										 	_i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+
 											if (count > 0)
 												pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
 											else

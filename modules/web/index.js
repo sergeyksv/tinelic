@@ -161,6 +161,8 @@ module.exports.init = function (ctx, cb) {
 
 			cb(null,{api:{
 				getFeed:function (token, p, cb) {
+					if (ctx.locals.newrelic)
+						ctx.locals.newrelic.setTransactionName("/webapi/"+(token=="public"?"public":"token")+"/feed/"+p.feed);
 					feed = p.feed.split(".");
 					requirejs(["feed/"+feed[0]], function (m) {
 						m[feed[1]](token,p.params,cb);
