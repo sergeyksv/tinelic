@@ -48,6 +48,7 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("jquery-cookie", true);
 	requirejs.define("jquery.blockUI", true);
 	requirejs.define("bootstrap/dropdown", true);
+    requirejs.define("bootstrap/datetimepicker", true);
 	requirejs.define("bootstrap/modal", true);
 	requirejs.define("bootstrap/tagsinput", true);
 	requirejs.define("bootstrap/typeahead", true);
