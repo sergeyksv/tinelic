@@ -379,7 +379,7 @@ module.exports.init = function (ctx, cb) {
 								_dt = new Date( (_dts.getTime() + _dte.getTime()) / 2.0 );
 
 							var action_stats = {};
-							_.each(body[body.length-1], function (item) {
+							safe.each(body[body.length-1], function (item,cb) {
 								// grab memory metrics
 								if (item[0].name == "Memory/Physical") {
 									var te = prefixify({
@@ -398,74 +398,83 @@ module.exports.init = function (ctx, cb) {
 										_f_max: item[1][4],
 										_f_sqr: item[1][5]
 									});
-									ctx.api.validate.check("metrics",te, safe.sure(nrNonFatal, function () {
-										metrics.insert(te, nrNonFatal);
-									}));
+									ctx.api.validate.check("metrics",te, function (err) {
+										if (nrNonFatal(err))
+											return cb();
+										metrics.insert(te, function (err) {
+											nrNonFatal(err);
+											cb();
+										});
+									});
 								}
-								// grab transaction segments stats
-								var scope = item[0].scope;
-								if (!scope) return;
+							},function (err) {
+								nrNonFatal(err);
 
-								var trnScope = nrParseTransactionName(scope);
-								var trnName = nrParseTransactionName(item[0].name);
+								_.each(body[body.length-1], function (item) {
+									// grab transaction segments stats
+									var scope = item[0].scope;
+									if (!scope) return;
 
-								// need to change name of segement if it match
-								// transcation name (scope)
-								if (trnName.name == trnScope.name)
-									trnName.name+="_seg";
+									var trnScope = nrParseTransactionName(scope);
+									var trnName = nrParseTransactionName(item[0].name);
 
-								if( !action_stats[scope] ) {
-									action_stats[scope] = {
-										"_idp": run._idp,
-										"_s_name": trnScope.name,
-										"_s_cat": trnScope.type.split("/", 2)[0],
-										"_s_type": trnScope.type.split("/", 2)[1],
-										"_dt": _dt,
-										"_dts": _dts,
-										"_dte": _dte,
-										data: []
-									};
-								}
-								action_stats[scope].data.push( {
-									_s_name: trnName.name,
-									_s_cat: trnName.type.split("/", 2)[0],
-									_s_type: trnName.type.split("/", 2)[1],
-									_i_cnt: item[1][0],
-									_i_tt: Math.round(item[1][1]*1000),
-									_i_own: Math.round(item[1][2]*1000),
-									_i_min: Math.round(item[1][3]*1000),
-									_i_max: Math.round(item[1][4]*1000),
-									_i_sqr: Math.round(item[1][5]*1000)
+									// need to change name of segement if it match
+									// transcation name (scope)
+									if (trnName.name == trnScope.name)
+										trnName.name+="_seg";
+
+									if( !action_stats[scope] ) {
+										action_stats[scope] = {
+											"_idp": run._idp,
+											"_s_name": trnScope.name,
+											"_s_cat": trnScope.type.split("/", 2)[0],
+											"_s_type": trnScope.type.split("/", 2)[1],
+											"_dt": _dt,
+											"_dts": _dts,
+											"_dte": _dte,
+											data: []
+										};
+									}
+									action_stats[scope].data.push( {
+										_s_name: trnName.name,
+										_s_cat: trnName.type.split("/", 2)[0],
+										_s_type: trnName.type.split("/", 2)[1],
+										_i_cnt: item[1][0],
+										_i_tt: Math.round(item[1][1]*1000),
+										_i_own: Math.round(item[1][2]*1000),
+										_i_min: Math.round(item[1][3]*1000),
+										_i_max: Math.round(item[1][4]*1000),
+										_i_sqr: Math.round(item[1][5]*1000)
+									});
 								});
-							});
-							// extra pass to get scope metrics (if any)
-							_.each(body[body.length-1], function (item) {
-								// now process only metrics without scope
-								var scope = item[0].scope;
-								if (scope) return;
+								// extra pass to get scope metrics (if any)
+								_.each(body[body.length-1], function (item) {
+									// now process only metrics without scope
+									var scope = item[0].scope;
+									if (scope) return;
 
-								// but thous that already have details
-								var stat = action_stats[item[0].name];
-								if (!stat) return;
+									// but thous that already have details
+									var stat = action_stats[item[0].name];
+									if (!stat) return;
 
-								var trnName = nrParseTransactionName(item[0].name);
+									var trnName = nrParseTransactionName(item[0].name);
 
-								stat.data.unshift({
-									_s_name: trnName.name,
-									_s_cat: trnName.type.split("/", 2)[0],
-									_s_type: trnName.type.split("/", 2)[1],
-									_i_cnt: item[1][0],
-									_i_tt: Math.round(item[1][1]*1000),
-									_i_own: Math.round(item[1][2]*1000),
-									_i_min: Math.round(item[1][3]*1000),
-									_i_max: Math.round(item[1][4]*1000),
-									_i_sqr: Math.round(item[1][5]*1000)
+									stat.data.unshift({
+										_s_name: trnName.name,
+										_s_cat: trnName.type.split("/", 2)[0],
+										_s_type: trnName.type.split("/", 2)[1],
+										_i_cnt: item[1][0],
+										_i_tt: Math.round(item[1][1]*1000),
+										_i_own: Math.round(item[1][2]*1000),
+										_i_min: Math.round(item[1][3]*1000),
+										_i_max: Math.round(item[1][4]*1000),
+										_i_sqr: Math.round(item[1][5]*1000)
+									});
 								});
-							});
 
-							safe.run(function (cb){
 								if (!_.size(action_stats))
 								 	return cb();
+									
 								safe.each(_.values(action_stats), function(v,cb) {
 									ctx.api.validate.check("action-stats",v, function (err) {
 										if (nrNonFatal(err))
