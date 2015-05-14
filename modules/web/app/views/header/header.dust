@@ -20,7 +20,8 @@
 		{?range}
             <ul class="nav navbar-nav navbar-right">
                 <li id="fat-menu" class="dropdown">
-                    <a id="drop3" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+					<!-- we need style tag <a>, but href="#" do reload page on 'project page'. I don't know why. -->
+                    <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
 						{@select key="{range}"}
 							{@eq value="1h"}Last hour{/eq}
 							{@eq value="6h"}Last 6 hours{/eq}
@@ -28,17 +29,20 @@
 							{@eq value="1d"}Last day{/eq}
 							{@eq value="3d"}Last 3 days{/eq}
 							{@eq value="1w"}Last week{/eq}
+							{@eq value="Custom"}Custom time range{/eq}
 							{@default}Default time range{/default}
 						{/select}
                         <span class="caret"></span>
                     </a>
-                    <ul class="dropdown-menu" role="menu" aria-labelledby="drop3">
-                        <li data-range='1h'> <a href="#">Last hour</a></li>
-                        <li data-range='6h'> <a href="#">Last 6 hours</a></li>
-                        <li data-range='12h'><a href="#">Last 12 hours</a></li>
-                        <li data-range='1d'> <a href="#">Last day</a></li>
-                        <li data-range='3d'> <a href="#">Last 3 days</a></li>
-                        <li data-range='1w'> <a href="#">Last week</a></li>
+                    <ul class="dropdown-menu" id="menudrop1" role="menu" aria-labelledby="drop1">
+                        <li class="doRange" data-range='1h'> <a href="#">Last hour</a></li>
+                        <li class="doRange" data-range='6h'> <a href="#">Last 6 hours</a></li>
+                        <li class="doRange" data-range='12h'><a href="#">Last 12 hours</a></li>
+                        <li class="doRange" data-range='1d'> <a href="#">Last day</a></li>
+                        <li class="doRange" data-range='3d'> <a href="#">Last 3 days</a></li>
+                        <li class="doRange" data-range='1w'> <a href="#">Last week</a></li>
+                        <li role="presentation" class="divider"></li>
+                        <li id="doCustomRange" role="button" ><a class="disabled">Custom range</a></li>
                     </ul>
                 </li>
             </ul>
