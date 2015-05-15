@@ -949,6 +949,9 @@ module.exports.init = function (ctx, cb) {
 						data.request._s_url=data.request.url;
 						delete data.request.url;
 					}
+					if (data.stacktrace.frames.length > 1) {
+						data.stacktrace.frames.reverse();
+					}
 
 					pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 						if (page) {
