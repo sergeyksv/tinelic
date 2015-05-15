@@ -1069,6 +1069,7 @@ module.exports.init = function (ctx, cb) {
 					r._s_context=context._s_context;
 					r.pre_context=context.pre_context;
 					r.post_context=context.post_context;
+					cb(null,r)
 				}));
 			}, safe.sure(cb, function(){
 				cb(null, frames);

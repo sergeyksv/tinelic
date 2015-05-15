@@ -7,14 +7,6 @@
   </div>
 </div>
 <div class="panel panel-default">
-  <div class="panel-heading">Error routes</div>
-  <div class="panel-body">
-	{#route}
-		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
-	{/route}
-  </div>
-</div>
-<div class="panel panel-default">
   <div class="panel-heading">Error Browsers</div>
   <div class="panel-body">
 	{#browser}

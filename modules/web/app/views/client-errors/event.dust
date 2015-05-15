@@ -26,6 +26,14 @@
 {/stacktrace.frames}
 </ul>
 {/event}
+<div class="panel panel-default">
+  <div class="panel-heading">Error routes</div>
+  <div class="panel-body">
+	{#info.route}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/info.route}
+  </div>
+</div>
 </div>
 <div class="col-xs-12 col-sm-3"><br>
 {@view name="views/client-errors/event_stats" data="info"/}
