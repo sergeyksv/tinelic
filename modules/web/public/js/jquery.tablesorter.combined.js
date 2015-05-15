@@ -2017,6 +2017,17 @@
 		type: 'numeric'
 	});
 
+	ts.addParser({
+		id: 'longPercent',
+		is: function(s) {
+			return (/(\d\s*?%|%\s*?\d)/).test(s) && s.length < 15;
+		},
+		format: function(s, table) {
+			return s ? ts.formatFloat(/(\d+\.?\d*\s%)/.exec(s)[0].replace(/%/g, ''), table) : s;
+		},
+		type: 'numeric'
+	});
+
 	// added image parser to core v2.17.9
 	ts.addParser({
 		id: 'image',
