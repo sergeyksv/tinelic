@@ -6,6 +6,7 @@ var safe = require("safe");
 var mongo = require("mongodb");
 var moment = require("moment");
 var request = require('request');
+var CustomError = require('tinyback').CustomError;
 
 module.exports.deps = ['mongo','prefixify','validate'];
 
@@ -743,9 +744,22 @@ module.exports.init = function (ctx, cb) {
                     );
                 },
                 getPagesErrorTiming:function(t, p, cb) {
-					var query1 = queryfix(p.filter);
-					events.findOne(query1, safe.sure(cb, function (event) {
-						var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
+					var query = queryfix(p.filter);
+                    safe.run(function (cb) {
+                        // to identify error type we can provide id of existing error
+                        if (!query._id)
+                            // overwise we assume that called knows what to do
+                            return cb();
+                        // then we need to fetch it and grap required info (projec and ehash)
+                        events.findOne({_id:query._id}, safe.sure(cb, function (event) {
+                            if (!event)
+                                cb(new CustomError("No event found", "Not Found"));
+                            query._idp = event._idp;
+                            query.ehash = event.ehash;
+                            delete query._id;
+                            cb();
+                        }));
+                    },safe.sure(cb, function () {
 						events.mapReduce(
 							function() {
 								emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q});
@@ -758,7 +772,6 @@ module.exports.init = function (ctx, cb) {
 									}
 									else {
 										r.r+=v.r;
-
 									}
 								});
 								return r;
@@ -770,7 +783,7 @@ module.exports.init = function (ctx, cb) {
 							},
 							cb
 						);
-					}));
+                    }));
 				},
 				getServerErrorTimings:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
