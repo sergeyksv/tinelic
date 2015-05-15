@@ -4,7 +4,7 @@
 <legend>{project.name}
     <span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
     <div class="dropdown pull-right">
-			<span class="btn btn-large btn-info sortingSelection" data-toggle="dropdown">
+			<span class="btn btn-sm btn-info sortingSelection" data-toggle="dropdown">
 				{@select key="{st}"}
 					{@eq value="serr"}Most session concerning{/eq}
                     {@eq value="perr"}Most page concerning{/eq}
@@ -19,7 +19,7 @@
                 <li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mr" class="do-stats" href="#">Most recent</a></li>
 			</ul>
 	</div>
-	<div class="pull-right btn btn-large btn-danger acknowledge">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
+	<div class="pull-right btn btn-sm btn-danger acknowledge">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 </legend>
 <div class="row">
 	<div class="col-sm-4">

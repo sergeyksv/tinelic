@@ -10,7 +10,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 				var errflat = [], errprev = null;
 				var dtstart = this.parent.data.fr.filter._dt.$gt/(quant*60000);
                 var dtend =  this.parent.data.fr.filter._dt.$lte/(quant*60000);
-				if (dtstart != this.data[0]._id) {
+				if (this.data.length && dtstart != this.data[0]._id) {
 					errflat[0]={_id: dtstart, value:null}
 					errflat[1]={_id: this.data[0]._id-1, value:null}
 				}
@@ -23,7 +23,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe",'highcharts', 'd
 					errprev = a;
 					errflat.push(a);
 				})
-				if (this.data[this.data.length-1]._id != dtend) {
+				if (this.data.length && this.data[this.data.length-1]._id != dtend) {
 					errflat[errflat.length]={_id: this.data[this.data.length-1]._id+1, value:null}
 					errflat[errflat.length]={_id: dtend, value:null}
 				}
