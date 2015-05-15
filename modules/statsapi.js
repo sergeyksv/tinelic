@@ -744,12 +744,11 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorTiming:function(t, p, cb) {
 					var query1 = queryfix(p.filter);
-					var q = p.quant || 1;
 					events.findOne(query1, safe.sure(cb, function (event) {
 						var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
 						events.mapReduce(
 							function() {
-								emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/"+q+"});
+								emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q});
 							},
 							function (k,v) {
 								var r=null;
@@ -767,7 +766,7 @@ module.exports.init = function (ctx, cb) {
 							{
 								query: query,
 								out: {inline:1},
-                                scope: {Q:q}
+                                scope: {Q:p.quant || 1}
 							},
 							cb
 						);
