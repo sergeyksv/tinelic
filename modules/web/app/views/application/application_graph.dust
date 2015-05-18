@@ -1,0 +1,3 @@
+<div id="apdex-one" style="width:100%; height:110px; float: left;"></div>
+<div id="rpm-one" style="width:100%; height:110px; float: left;"></div>
+<div id="time-one" style="width:100%; height:110px; float: left;"></div>

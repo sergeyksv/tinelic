@@ -11,8 +11,6 @@ var raven = require('raven');
 
 module.exports.deps = ['assets','users','collect','stats'];
 
-var wires = {};
-
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
 	var cfg = ctx.cfg;
@@ -61,13 +59,12 @@ module.exports.init = function (ctx, cb) {
 	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}));
 	ctx.router.use(static(__dirname+"/public",{maxAge:600000}));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
-
-		var wire = wires[req.params.id];
-		if (wire) {
-			delete wires[req.params.id];
-			res.json(wire);
-		} else
-			res.send(404);
+		ctx.api.cache.get("web_wires",req.params.id, safe.sure(next, function (wire) {
+			if (wire) {
+				res.json(wire);
+			} else
+				res.send(404);
+		}));
 	});
 	requirejs(['app'], function (App) {
 		var app = new App({prefix:"/web"});
@@ -106,18 +103,18 @@ module.exports.init = function (ctx, cb) {
 
 					wireView(view,wv);
 					// make wire available for download for 30s
-					wires[uniqueId]=wv;
-					setTimeout(function () {
-						delete wires[uniqueId];
-					}, 30000);
-
-					res.send(text);
+					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(next, function () {
+						res.send(text);
+					}));
 				}));
 			};
 			next();
 		});
 		var usr_admin=[{}], proj_Def=[{}];
 		safe.series([
+			function (cb) {
+				ctx.api.cache.register("web_wires",{maxAge:300},cb);
+			},
 			function (cb) {
 				app.initRoutes(cb);
 			},

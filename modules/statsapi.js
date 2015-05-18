@@ -122,7 +122,7 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
                     ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-                        var ApdexT = apdex._i_serverT
+                        var ApdexT = apdex._i_serverT;
                         actions.mapReduce(
                             function() {
                                 emit(parseInt(this._dt.valueOf()/(Q*60000)), {
@@ -605,10 +605,11 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);
+                    var query1 = query;
 
                     events.findOne(query, safe.sure(cb, function (event) {
                         var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
-                        var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
+                        var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st},_dt:query1._dt};
 
                         events.mapReduce(function () {
                                 var route = {}; route[this.request._s_route]=1;
