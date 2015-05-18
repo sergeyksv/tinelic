@@ -13,6 +13,7 @@ var cfg = {
 		{name:"prefixify",object:tinyback.prefixify()},
 		{name:"validate",object:tinyback.validate()},
 		{name:"mongo",object:tinyback.mongodb()},
+		{name:"cache",object:tinyback.mongocache()},
 		{name:"obac",object:tinyback.obac()},
 		{name:"users",require:"./modules/usersapi.js"},
 		{name:"restapi",object:tinyback.restapi()},

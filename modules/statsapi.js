@@ -122,7 +122,7 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
                     ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-                        var ApdexT = apdex._i_serverT
+                        var ApdexT = apdex._i_serverT;
                         actions.mapReduce(
                             function() {
                                 emit(parseInt(this._dt.valueOf()/(Q*60000)), {
