@@ -381,7 +381,7 @@ module.exports.init = function (ctx, cb) {
 							safe.each(body[body.length-1], function (item,cb) {
 								// grab memory metrics
 								if (item[0].name != "Memory/Physical")
-									return cb();
+									return safe.back(cb);
 								var te = prefixify({
 									_idp: run._idp,
 									_dt: _dt,
@@ -400,7 +400,7 @@ module.exports.init = function (ctx, cb) {
 								});
 								ctx.api.validate.check("metrics",te, function (err) {
 									if (nrNonFatal(err))
-										return cb();
+										return safe.back(cb);
 									metrics.insert(te, function (err) {
 										nrNonFatal(err);
 										cb();
