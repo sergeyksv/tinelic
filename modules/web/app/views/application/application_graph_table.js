@@ -161,7 +161,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
                           var ttServerMax = _.max(ttServer, function (v) { return v[1]; })[1];
                           var actapdexMax = _.max(actapdex, function (v) { return v[1]; })[1];
 
-                          this.data.graphs={actrpm:actrpm,ttServer:ttServer,actapdex:actapdex,actrpmmax:actrpmmax,ttServerMax:ttServerMax,actapdexMax:actapdexMax }
+                          this.data.graphs={actrpm:actrpm,ttServer:ttServer,actapdex:actapdex,actrpmmax:actrpmmax,ttServerMax:ttServerMax,actapdexMax:actapdexMax };
 		}
 	})
 	View.id = "views/application/application_graph_table";
