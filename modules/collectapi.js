@@ -871,7 +871,7 @@ module.exports.init = function (ctx, cb) {
 								},
 								function() {
 									var q = {_idp:te._idp,_dt: {$gte: te._dt}};
-									actions.update(q,{$inc: {_i_err: 1}},{multi: false});
+									actions.update(q,{$inc: {_i_err: 1}},{multi: false},cb);
 								}
 							],cb);
 						}));
