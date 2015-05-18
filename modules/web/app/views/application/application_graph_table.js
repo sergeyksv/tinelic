@@ -41,14 +41,16 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 				var trbreak = self.$('#trbreak');
 				trbreak.tablesorter({sortList: [[2,1]]});
 			}
+                          var fixBegin = 0, fixEnd=null;
                           var actflat = [], actprev = null
                           var quant = filter.quant;
                           var offset = new Date().getTimezoneOffset();
                           var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
                           var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
                           if (dtstart != actions[0]._id) {
-							actflat[0]={_id: dtstart, value:null}
-							actflat[1]={_id: actions[0]._id-1, value:null}
+							actflat[0]={_id: dtstart, value:null};
+							actflat[1]={_id: actions[0]._id-1, value:null};
+							fixBegin = 1;
 						  }
                           _.each(actions, function (a) {
                               if (actprev) {
@@ -60,8 +62,53 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
                               actflat.push(a);
                           })
                           if (actions[actions.length-1]._id != dtend) {
-							actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null}
-							actflat[actflat.length]={_id: dtend, value:null}
+							actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null};
+							actflat[actflat.length]={_id: dtend, value:null};
+							fixEnd=actflat.length-2;
+						  }
+
+						  var peremMass=[], peremBegin=[], peremEnd=[];
+						  var j=0,k=0;
+						  // method Tukey for processing begin interval i.e 1 and 2 value
+						  for (var z=0; z<=1; z++) {
+							for (var i=fixBegin; i<fixBegin+3; i++) {
+								if (i == fixBegin+2) {
+									peremBegin[j] = actflat[i+z].value?(3*peremBegin[1]-2*actflat[i+z].value.r):0;
+								} else {
+									peremBegin[j] = actflat[i+z].value?actflat[i+z].value.r:0;
+								}
+								j++;
+							}
+							peremBegin.sort();
+							actflat[fixBegin+z].value = {r:peremBegin[1]};
+							j=0;
+						  }
+						  // Median filter with odd window = 5
+						  if (!fixEnd) {fixEnd=actflat.length-1}
+						  while ((fixBegin != actflat.length) && (fixBegin+5 < actflat.length)) {
+								for (var i=fixBegin; i<fixBegin+5; i++) {
+									peremMass[j]=actflat[i].value?actflat[i].value.r:0;
+									j++;
+								}
+								peremMass.sort();
+								actflat[fixBegin+2].value = {r:peremMass[2]};
+								fixBegin++;
+								j=0;
+						  }
+						  // method Tukey for processing end interval i.e for 2 last value
+						  j=0;
+						  for (var z=0; z<=1; z++) {
+							for (var i=fixEnd; i>fixEnd-3; i--) {
+								if (i == fixEnd-2) {
+									peremEnd[j] = actflat[i-z].value?(3*peremEnd[1]-2*actflat[i-z].value.r):0;
+								} else {
+									peremEnd[j] = actflat[i-z].value?actflat[i-z].value.r:0;
+								}
+								j++;
+							}
+							peremEnd.sort();
+							actflat[fixEnd-z].value = {r:peremEnd[1]};
+							j=0;
 						  }
 
                           var actrpm1;
