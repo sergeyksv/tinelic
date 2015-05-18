@@ -637,7 +637,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
+							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
+								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
+							}}, cb)
 						},
 						rpm: function (cb){
 								api("stats.getPagesErrorTiming", "public", {_t_age:quant+"m",quant:quant, filter:{
