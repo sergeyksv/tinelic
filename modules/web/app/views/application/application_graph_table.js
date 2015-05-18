@@ -65,7 +65,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 						  }
 
                           var actrpm1;
-                          var actrpm = [];
+                          var actrpm = [], actapdex = [];
                           var ttServer = [];
                           _.each(actflat, function (a) {
                               var apdex = a.value ? a.value.apdex : null
@@ -75,16 +75,73 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
                               var d = new Date(a._id * quant * 60000);
                               d.setMinutes(d.getMinutes() - offset);
                               d = d.valueOf();
-                              var actrpm1 = a.value ? a.value.r : 0;
+                              actrpm1 = a.value ? a.value.r : 0;
                               actrpm.push([d, actrpm1]);
                               ttServer.push([d, a.value?(a.value.tta)/1000:0]);
+                              actapdex.push([d, a.value?a.value.apdex:0]);
                           })
 
                           var actrpmmax = _.max(actrpm, function (v) {
                               return v[1];
                           })[1];
                           var ttServerMax = _.max(ttServer, function (v) { return v[1]; })[1];
+                          var actapdexMax = _.max(actapdex, function (v) { return v[1]; })[1];
 
+                          self.$('#apdex-one').highcharts({
+                              chart: {
+                                  type: 'spline',
+                                  zoomType: 'x'
+                              },
+                              title: {
+                                  text: ''
+                              },
+                              xAxis: {
+                                  type: 'datetime'
+                              },
+                              yAxis: [{
+                                  title: {
+                                      text: 'Throughput(apdex)'
+                                  },
+                                  min: 0,
+                                  max: actapdexMax
+                              }
+                              ],
+                              plotOptions: {
+                                  series: {
+                                      marker: {
+                                          enabled: false
+                                      },
+                                      animation: false
+                                  }
+                              },
+                              legend: {
+                                  enabled: false
+                              },
+                              credits: {
+										enabled: false
+							  },
+                              series: [
+                                  {
+                                      name: 'apdex',
+                                      yAxis: 0,
+                                      data: actapdex,
+                                      color: "brown",
+                                      type: 'area',
+                                      fillColor: {
+                                          linearGradient: {
+                                              x1: 0,
+                                              y1: 0,
+                                              x2: 0,
+                                              y2: 1
+                                          },
+                                          stops: [
+                                              [0, '#F2CAC8'],
+                                              [1, 'white']
+                                          ]
+                                      }
+                                  }
+                              ]
+                          })
                           self.$('#rpm-one').highcharts({
                               chart: {
                                   type: 'spline',
