@@ -855,7 +855,7 @@ module.exports.init = function (ctx, cb) {
 						}
 						ctx.api.validate.check("error",te, safe.sure(cb, function () {
 							safe.parallel([
-								function() {
+								function(cb) {
 									var md5sum = crypto.createHash('md5');
 									md5sum.update(te.exception._s_type);
 									md5sum.update(te._s_message + te.stacktrace.frames.length);
@@ -869,7 +869,7 @@ module.exports.init = function (ctx, cb) {
 										action_errors.insert(te, cb);
 									}));
 								},
-								function() {
+								function(cb) {
 									var q = {_idp:te._idp,_dt: {$gte: te._dt}};
 									actions.update(q,{$inc: {_i_err: 1}},{multi: false},cb);
 								}
