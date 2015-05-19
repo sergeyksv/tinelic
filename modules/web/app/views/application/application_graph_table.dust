@@ -1,5 +1,7 @@
 <div class="addtrbreak">
-	{@view name="views/application/application_graph" data="graphs"/}
+	{@view name="views/application/application_graph" data="lgraphs.actapdex" locals-name="Apdex" locals-color="#F2CAC8" locals-max=1/}
+	{@view name="views/application/application_graph" data="lgraphs.ttServer" locals-name="Time" locals-color="#F2CAC8" locals-max=lgraphs.ttServerMax/}
+	{@view name="views/application/application_graph" data="lgraphs.actrpm" locals-name="Rpm" locals-color="#F2CAC8" locals-max=lgraphs.actrpmmax/}
 	{?query}<table class="tablesorter table table-hover" id="trbreak">
 		<thead>
 			<tr class="info">
