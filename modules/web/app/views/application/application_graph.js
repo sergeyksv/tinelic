@@ -54,6 +54,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 				actrpm[fixEnd-z][1] = peremBegin[1];
 				j=0;
 			}
+			if ((actrpm[actrpm.length-1][1] == 0) && (new Date(actrpm[0][0]).getMinutes() == new Date(actrpm[actrpm.length-1][0]).getMinutes())) {
+				if (actrpm[actrpm.length-1][0] == actrpm[actrpm.length-2][0]) {
+					actrpm.pop();
+				}
+				actrpm.pop();
+			}
 			var actrpmmax = _.max(actrpm, function (v) { return v[1]; })[1];
 
 			self.$('#graph').highcharts({
