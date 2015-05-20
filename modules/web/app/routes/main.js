@@ -478,6 +478,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		application:function (req, res, cb) {
 			var st = req.params.stats
 			var quant = 10;
+			res.locals.quant = 10;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -538,7 +539,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							stat.rpm=stat.rpm/r.data.length;
 							stat.tta=stat.tta/r.data.length;
 						}
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
+						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))

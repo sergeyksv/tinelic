@@ -2,61 +2,49 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/application/application_graph",
-		preRender: function () {
-            var locals = this.locals;
-        },
 		postRender:function () {
 			view.prototype.postRender.call(this);
-			var self = this;
-			var actrpm = this.data;
-			var fixBegin = this.get('fixBegin')
-			var fixEnd = this.get('fixEnd')
+			var data = this.data;
+			var plot = [];
+			var factor = this.get('quant') * 60000;
+			var dtstart = parseInt(new Date(this.get('dtstart')).valueOf()/factor);
+			var dtend = parseInt(Math.min(new Date(this.get('dtend')).valueOf(),new Date().valueOf())/factor);
+			var flen = this.get('filter-len',7);
+			var halv = Math.floor(flen/2);
+			var median = this.get('filter-median',true);
+			var vfactor = this.get("plot-factor",1)
 
-			var peremBegin=[];
-			var j=0,k=0;
-			// method Tukey for processing begin interval i.e 1 and 2 value
-			for (var z=0; z<=1; z++) {
-				for (var i=fixBegin; i<fixBegin+3; i++) {
-					if (i == fixBegin+2) {
-						peremBegin[j] = actrpm[i+z][1]?(3*peremBegin[1]-2*actrpm[i+z][1]):0;
+			// media (or average) filtration + with averages at the end
+			var dt,i,fw=[],v,j,max=0;
+			for (dt=dtstart,i=0; dt<dtend+halv; dt++) {
+				if (dt<dtend) {
+					if (data[i]._id == dt ) {
+						fw.push(data[i].value[this.get('plot-value')]);
+						i++;
 					} else {
-						peremBegin[j] = actrpm[i+z][1]?actrpm[i+z][1]:0;
+						fw.push(0);
 					}
-					j++;
-				}
-				peremBegin.sort();
-				actrpm[fixBegin+z][1] = peremBegin[1];
-				j=0;
-			}
-			// Median filter with odd window = 5
-			while ((fixBegin != actrpm.length) && (fixBegin+5 < actrpm.length-1)) {
-				for (var i=fixBegin; i<fixBegin+5; i++) {
-					peremBegin[j]=actrpm[i][1]?actrpm[i][1]:0;
-					j++;
-				}
-				peremBegin.sort();
-				actrpm[fixBegin+2][1] = peremBegin[2];
-				fixBegin++;
-				j=0;
-			}
-			// method Tukey for processing end interval i.e for 2 last value
-			j=0;
-			for (var z=0; z<=1; z++) {
-				for (var i=fixEnd; i>fixEnd-3; i--) {
-					if (i == fixEnd-2) {
-						peremBegin[j] = actrpm[i-z][1]?(3*peremBegin[1]-2*actrpm[i-z][1]):0;
-					} else {
-						peremBegin[j] = actrpm[i-z][1]?actrpm[i-z][1]:0;
-					}
-					j++;
-				}
-				peremBegin.sort();
-				actrpm[fixEnd-z][1] = peremBegin[1];
-				j=0;
-			}
-			var actrpmmax = _.max(actrpm, function (v) { return v[1]; })[1];
+				} else
+					fw.shift();
 
-			self.$('#graph').highcharts({
+				if (fw.length>halv) {
+					if (fw.length==flen && median) {
+						v = fw.slice().sort()[halv];
+					} else {
+						for (j=0,sum=0; j<fw.length; j++) {
+							sum+=fw[j];
+						}
+						v = sum/fw.length;
+					}
+					v*=vfactor;
+					max = Math.max(v,max);
+					plot.push([dt*factor,v!==0?v:null]);
+				}
+				if (fw.length ==flen)
+					fw.shift();
+			}
+
+			this.$('#graph').highcharts({
 			  chart: {
 			      type: 'spline',
 			      zoomType: 'x'
@@ -72,7 +60,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			          text: this.get('name')
 			      },
 			      min: 0,
-			      max: actrpmmax
+			      max: this.get('plot-max') || max
 			  }
 			  ],
 			  plotOptions: {
@@ -93,7 +81,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			      {
 			          name: this.locals.name,
 			          yAxis: 0,
-			          data: actrpm,
+			          data: plot,
 			          color: this.get('color'),
 			          type: 'area',
 			          fillColor: {

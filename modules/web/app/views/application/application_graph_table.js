@@ -31,53 +31,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 					i++;
 				});
 			}
-			var filter = this.data.fr;
-			var fixBegin = 0, fixEnd=null;
-			var actflat = [], actprev = null;
-			var quant = filter.quant;
-			var offset = new Date().getTimezoneOffset();
-			var dtstart = self.data.fr.filter._dt.$gt/(quant*60000);
-			var dtend =  self.data.fr.filter._dt.$lte/(quant*60000);
-			var actions = this.data.graphs;
-			if (dtstart != actions[0]._id) {
-			actflat[0]={_id: dtstart, value:null};
-			actflat[1]={_id: actions[0]._id-1, value:null};
-			fixBegin = 2;
-			}
-			_.each(actions, function (a) {
-				if (actprev) {
-					for (var i = actprev._id + 1; i < a._id; i++) {
-						actflat.push({_id: i, value: null});
-					}
-				}
-				actprev = a;
-				actflat.push(a);
-			})
-			if (actions[actions.length-1]._id != dtend) {
-			actflat[actflat.length]={_id: actions[actions.length-1]._id+1, value:null};
-			actflat[actflat.length]={_id: dtend, value:null};
-			fixEnd=actflat.length-3;
-			}
-			if (!fixEnd) {fixEnd=actflat.length-1}
-
-			var actrpm1;
-			var actrpm = [], actapdex = [];
-			var ttServer = [];
-			_.each(actflat, function (a) {
-				var apdex = a.value ? a.value.apdex : null
-				if (isFinite(apdex) == false) {
-					apdex = null;
-				}
-				var d = new Date(a._id * quant * 60000);
-				d.setMinutes(d.getMinutes() - offset);
-				d = d.valueOf();
-				actrpm1 = a.value ? a.value.r : 0;
-				actrpm.push([d, actrpm1]);
-				ttServer.push([d, a.value?(a.value.tta)/1000:0]);
-				actapdex.push([d, a.value?a.value.apdex:0]);
-			})
-
-			locals.lgraphs={actrpm:actrpm,ttServer:ttServer,actapdex:actapdex,fixBegin:fixBegin,fixEnd:fixEnd};
         },
 		postRender:function () {
 			view.prototype.postRender.call(this);
@@ -98,7 +51,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 				});
 			}
 		}
-	})
+	});
 	View.id = "views/application/application_graph_table";
 	return View;
-})
+});
