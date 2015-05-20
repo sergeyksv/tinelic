@@ -1,6 +1,6 @@
 <div class="addtrbreak">
 	{@view name="views/application/application_graph" data="graphs" locals-name="Apdex" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}
-	{@view name="views/application/application_graph" data="graphs" locals-name="Rpm" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="r"/}
+	{@view name="views/application/application_graph" data="graphs" locals-name="Rpm" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="r" locals-filter-median="1"/}
 	{@view name="views/application/application_graph" data="graphs" locals-name="Time" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="tta" locals-plot-factor="0.001"/}
 
 	{?query}<table class="tablesorter table table-hover" id="trbreak">
