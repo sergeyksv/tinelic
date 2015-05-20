@@ -10,9 +10,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			var dtstart = parseInt(new Date(this.get('dtstart')).valueOf()/factor);
 			var dtend = parseInt(Math.min(new Date(this.get('dtend')).valueOf(),new Date().valueOf())/factor);
 			var flen = this.get('filter-len',parseInt((dtend - dtstart)*0.05));
-			if (flen%2==1) flen++;
+			if (flen%2===0) flen++;
 			var halv = Math.floor(flen/2);
-			var median = this.get('filter-median',false);
+			var median = this.get('filter-median',true);
 			var vfactor = this.get("plot-factor",1);
 
 			// media (or average) filtration + with averages at the end
