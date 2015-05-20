@@ -58,68 +58,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			actflat[actflat.length]={_id: dtend, value:null};
 			fixEnd=actflat.length-3;
 			}
-
-			var peremMass=[], peremBegin=[], peremEnd=[];
-			var peremMassTime=[], peremBeginTime=[], peremEndTime=[];
-			var peremMassApdex=[], peremBeginApdex=[], peremEndApdex=[];
-			var j=0,k=0;
-			// method Tukey for processing begin interval i.e 1 and 2 value
-			for (var z=0; z<=1; z++) {
-			for (var i=fixBegin; i<fixBegin+3; i++) {
-				if (i == fixBegin+2) {
-					peremBegin[j] = actflat[i+z].value?(3*peremBegin[1]-2*actflat[i+z].value.r):0;
-					peremBeginTime[j] = actflat[i+z].value?(3*peremBeginTime[1]-2*actflat[i+z].value.tta):0;
-					peremBeginApdex[j] = actflat[i+z].value?(3*peremBeginApdex[1]-2*actflat[i+z].value.apdex):0;
-				} else {
-					peremBegin[j] = actflat[i+z].value?actflat[i+z].value.r:0;
-					peremBeginTime[j] = actflat[i+z].value?actflat[i+z].value.tta:0;
-					peremBeginApdex[j] = actflat[i+z].value?actflat[i+z].value.apdex:0;
-				}
-				j++;
-			}
-			peremBegin.sort();
-			peremBeginTime.sort();
-			peremBeginApdex.sort();
-			actflat[fixBegin+z].value = {r:peremBegin[1],tta:peremBeginTime[1],apdex:peremBeginApdex[1]};
-			j=0;
-			}
-			// Median filter with odd window = 5
 			if (!fixEnd) {fixEnd=actflat.length-1}
-			while ((fixBegin != actflat.length) && (fixBegin+5 < actflat.length-1)) {
-				for (var i=fixBegin; i<fixBegin+5; i++) {
-					peremMass[j]=actflat[i].value?actflat[i].value.r:0;
-					peremMassTime[j]=actflat[i].value?actflat[i].value.tta:0;
-					peremMassApdex[j]=actflat[i].value?actflat[i].value.apdex:0;
-					j++;
-				}
-				peremMass.sort();
-				peremMassTime.sort();
-				peremMassApdex.sort();
-				actflat[fixBegin+2].value = {r:peremMass[2],tta:peremMassTime[2],apdex:peremMassApdex[2]};
-				fixBegin++;
-				j=0;
-			}
-			// method Tukey for processing end interval i.e for 2 last value
-			j=0;
-			for (var z=0; z<=1; z++) {
-			for (var i=fixEnd; i>fixEnd-3; i--) {
-				if (i == fixEnd-2) {
-					peremEnd[j] = actflat[i-z].value?(3*peremEnd[1]-2*actflat[i-z].value.r):0;
-					peremEndTime[j] = actflat[i-z].value?(3*peremEndTime[1]-2*actflat[i-z].value.tta):0;
-					peremEndApdex[j] = actflat[i-z].value?(3*peremEndApdex[1]-2*actflat[i-z].value.apdex):0;
-				} else {
-					peremEnd[j] = actflat[i-z].value?actflat[i-z].value.r:0;
-					peremEndTime[j] = actflat[i-z].value?actflat[i-z].value.tta:0;
-					peremEndApdex[j] = actflat[i-z].value?actflat[i-z].value.apdex:0;
-				}
-				j++;
-			}
-			peremEnd.sort();
-			peremEndTime.sort();
-			peremEndApdex.sort();
-			actflat[fixEnd-z].value = {r:peremEnd[1],tta:peremEndTime[1],apdex:peremEndApdex[1]};
-			j=0;
-			}
 
 			var actrpm1;
 			var actrpm = [], actapdex = [];
@@ -138,13 +77,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 				actapdex.push([d, a.value?a.value.apdex:0]);
 			})
 
-			var actrpmmax = _.max(actrpm, function (v) {
-				return v[1];
-			})[1];
-			var ttServerMax = _.max(ttServer, function (v) { return v[1]; })[1];
-			var actapdexMax = _.max(actapdex, function (v) { return v[1]; })[1];
-
-			locals.lgraphs={actrpm:actrpm,ttServer:ttServer,actapdex:actapdex,actrpmmax:actrpmmax,ttServerMax:ttServerMax,actapdexMax:actapdexMax };
+			locals.lgraphs={actrpm:actrpm,ttServer:ttServer,actapdex:actapdex,fixBegin:fixBegin,fixEnd:fixEnd};
         },
 		postRender:function () {
 			view.prototype.postRender.call(this);
