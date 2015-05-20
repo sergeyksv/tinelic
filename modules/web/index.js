@@ -91,17 +91,9 @@ module.exports.init = function (ctx, cb) {
 				};
 
 				view.render(safe.sure(next, function (text) {
-					var wv = {name:"app",data:route.data,views:[]};
-					function wireView(realView, wiredView) {
-						_.each(realView.views, function (view) {
-							var wv = {md5:view.md5, name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
-							wireView(view,wv);
-							wiredView.views.push(wv);
-						});
-					}
+					var wv = view.getWire();
 					wv.prefix = app.prefix;
 
-					wireView(view,wv);
 					// make wire available for download for 30s
 					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(next, function () {
 						res.send(text);
