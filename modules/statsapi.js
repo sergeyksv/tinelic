@@ -671,7 +671,22 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
-                    events.mapReduce(function () {
+                    safe.run(function (cb) {
+                        // to identify error type we can provide id of existing error
+                        if (!query._id)
+                            // overwise we assume that called knows what to do
+                            return cb();
+                        // then we need to fetch it and grap required info (projec and ehash)
+                        events.findOne({_id:query._id}, safe.sure(cb, function (event) {
+                            if (!event)
+                                cb(new CustomError("No event found", "Not Found"));
+                            query._idp = event._idp;
+                            query.ehash = event.ehash;
+                            delete query._id;
+                            cb();
+                        }));
+                    },safe.sure(cb, function () {
+                        events.mapReduce(function () {
                             var s = {}; s[this.shash]=1;
                             var epm = {}; epm[this._idpv]=1;
                             emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
