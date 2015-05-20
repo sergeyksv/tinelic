@@ -662,17 +662,23 @@ module.exports.init = function (ctx, cb) {
                                 out: {inline:1}
                             },
                             safe.sure(cb, function (stats) {
-                                var res = stats[0].value;
-                                var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views),ids:_.sortBy(res.ids)};
-                                _.each(res.route, function (v,k) {
-                                    res1.route.push({k:k,v:v});
-                                });
-                                _.each(res.os, function (v,k) {
-                                    res1.os.push({k:k,v:v});
-                                });
-                                _.each(res.browser, function (v,k) {
-                                    res1.browser.push({k:k,v:v});
-                                });
+                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
+                                if (stats.length) {
+                                    var res = stats[0].value;
+                                    res1.count = _.size(stats);
+                                    res1.sessions = _.size(res.sessions);
+                                    res1.views = _.size(res.views);
+                                    res1.ids =_.sortBy(res.ids);
+                                    _.each(res.route, function (v,k) {
+                                        res1.route.push({k:k,v:v});
+                                    });
+                                    _.each(res.os, function (v,k) {
+                                        res1.os.push({k:k,v:v});
+                                    });
+                                    _.each(res.browser, function (v,k) {
+                                        res1.browser.push({k:k,v:v});
+                                    });
+                                }
                                 cb(null,res1);
                             })
                         );
