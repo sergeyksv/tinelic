@@ -665,7 +665,7 @@ module.exports.init = function (ctx, cb) {
                                 var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
                                 if (stats.length) {
                                     var res = stats[0].value;
-                                    res1.count = _.size(stats);
+                                    res1.count = res.c;
                                     res1.sessions = _.size(res.sessions);
                                     res1.views = _.size(res.views);
                                     res1.ids =_.sortBy(res.ids);
