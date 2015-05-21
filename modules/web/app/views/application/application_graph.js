@@ -30,7 +30,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 
 				if (fw.length>halv) {
 					if (fw.length==flen && median) {
-						v = fw.slice().sort()[halv];
+						v = fw.slice().sort(function (a, b) {return a>b;})[halv];
 					} else {
 						for (j=0,sum=0; j<fw.length; j++) {
 							sum+=fw[j];
