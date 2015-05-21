@@ -18,7 +18,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			// media (or average) filtration + with averages at the end
 			var dt,i,fw=[],v,j,max=0;
 			for (dt=dtstart,i=0; dt<dtend+halv; dt++) {
-				if (dt<dtend) {
+				if (dt<dtend && i < data.length) {
 					if (data[i]._id == dt ) {
 						fw.push(data[i].value[this.get('plot-value')]);
 						i++;
