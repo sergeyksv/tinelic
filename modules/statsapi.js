@@ -614,7 +614,6 @@ module.exports.init = function (ctx, cb) {
                         events.findOne({_id:query._id}, safe.sure(cb, function (event) {
                             if (!event)
                                 cb(new CustomError("No event found", "Not Found"));
-                            query._idp = event._idp;
                             query.ehash = event.ehash;
                             delete query._id;
                             cb();
@@ -627,7 +626,7 @@ module.exports.init = function (ctx, cb) {
                                 var sessions = {}; sessions[this.shash]=1;
                                 var views = {}; views[this._idpv]=1;
                                 var ids = [this._id];
-                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
+								emit(ALL?this._idp:this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
                             },
                             function (k, v) {
                                 var r=null;
@@ -659,7 +658,8 @@ module.exports.init = function (ctx, cb) {
                             },
                             {
                                 query: query,
-                                out: {inline:1}
+                                out: {inline:1},
+                                scope: {ALL:query.ehash?0:1}
                             },
                             safe.sure(cb, function (stats) {
                                 var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};

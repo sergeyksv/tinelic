@@ -639,6 +639,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						},
 						event: function (cb) {
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
+								_idp:project._id,
 								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
 						},
@@ -658,15 +659,25 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var total = 0; var session = 0; var page = 0;
-						_.forEach(r.data, function(r) {
-							total += r.stats.count;
-							session += r.stats.session;
-							page += r.stats.pages;
-							if (r.error._dtl > dtp)
-								r.error.new = 1
-							if (r.error._dtl)
-								r.error._dtl = moment(r.error._dtl).fromNow()
-						})
+						if (req.params.id) {
+							_.forEach(r.data, function(r) {
+								if(r.error._id == req.params.id) {
+									total = r.stats.count;
+									session = r.stats.session;
+									page = r.stats.pages;
+								}
+							})
+						} else {
+							_.forEach(r.data, function(r) {
+								total += r.stats.count;
+								session += r.stats.session;
+								page += r.stats.pages;
+								if (r.error._dtl > dtp)
+									r.error.new = 1
+								if (r.error._dtl)
+									r.error._dtl = moment(r.error._dtl).fromNow()
+							})
+						}
 						r.event.headless = true;
 						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck,id:req.params.id}})
 					})
