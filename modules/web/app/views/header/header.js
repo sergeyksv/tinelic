@@ -16,10 +16,9 @@ define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header
                     modal.once("saved", function (data) {
                         $.cookie('str',JSON.stringify({from:data.from,to:data.to}),{expires: 5,path: '/'});
                         modal.remove();
-                        api.invalidate();
                         self.app.router.reload();
-                    })
-                },this.app.errHandler)
+                    });
+                },this.app.errHandler);
             },
 			'click .doRange':function (e) {
 				e.preventDefault();
@@ -46,4 +45,3 @@ define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header
 	View.id = "views/header/header";
 	return View;
 })
-
