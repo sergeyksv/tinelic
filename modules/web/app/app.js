@@ -125,6 +125,7 @@ define(['views/layout/layout','module','safe',"dust",
                         res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
                         res.locals.dtstart = res.locals.dtend - range;
                         res.locals.header = {range:str};
+						res.locals.quant = Math.max(Math.round(range/60000/144),1);
                     }
 					next();
 				});

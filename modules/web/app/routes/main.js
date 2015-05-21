@@ -477,8 +477,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats
-			var quant = parseInt((res.locals.dtend.valueOf()-res.locals.dtstart.valueOf())/60000/144)+1;
-			res.locals.quant = quant;
+			var quant = res.locals.quant;
+			console.log(quant);
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -518,13 +518,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					}, safe.sure(cb, function(r){
 						var stat = {};
 						stat.apdex=0.0; stat.rpm=0.0; stat.tta=0.0;
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
 						if (req.query.selected) {
 							_.forEach(r.data, function(r) {
 								if(r._id == req.query.selected) {
