@@ -477,8 +477,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats
-			var quant = 10;
-			res.locals.quant = 10;
+			var quant = parseInt((res.locals.dtend.valueOf()-res.locals.dtstart.valueOf())/60000/144)+1;
+			res.locals.quant = quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -496,6 +496,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
+							if (!req.query.selected)
+								return safe.back(cb,null,[]);
 							api("stats.getActionsBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
@@ -504,12 +506,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						},
 						graphs: function (cb) {
+							var filter = {
+								_idp: project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}
+							if (req.query.selected)
+								filter._s_name = req.query.selected;
 							api("stats.getActionsTimings", "public", {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_name: req.query.selected
-							}}, cb)
+								_t_age: quant + "m", quant: quant, filter: filter}, cb)
 						}
 					}, safe.sure(cb, function(r){
 						var stat = {};
