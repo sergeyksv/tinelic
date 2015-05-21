@@ -478,7 +478,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		application:function (req, res, cb) {
 			var st = req.params.stats
 			var quant = res.locals.quant;
-			console.log(quant);
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
