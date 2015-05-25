@@ -1,6 +1,7 @@
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
   <div class="panel-body">
+	First error: <b>{@formatdate date=idt format="l"/} {@formatdate date=idt format="LTS"/}</b><br>
 	Total count: <b>{count}</b><br>
 	Affected sessions: <b>{sessions}</b><br>
 	Affected pages views: <b>{views}</b><br>

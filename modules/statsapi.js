@@ -627,7 +627,8 @@ module.exports.init = function (ctx, cb) {
                                 var sessions = {}; sessions[this.shash]=1;
                                 var views = {}; views[this._idpv]=1;
                                 var ids = [this._id];
-                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
+                                var idt = [this._dt];
+                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids,idt:idt});
                             },
                             function (k, v) {
                                 var r=null;
@@ -662,10 +663,11 @@ module.exports.init = function (ctx, cb) {
                                 out: {inline:1}
                             },
                             safe.sure(cb, function (stats) {
-                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
+                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[],idt:[]};
                                 if (stats.length) {
                                     var res = stats[0].value;
                                     res1.count = res.c;
+                                    res1.idt = res.idt;
                                     res1.sessions = _.size(res.sessions);
                                     res1.views = _.size(res.views);
                                     res1.ids =_.sortBy(res.ids);
