@@ -30,7 +30,13 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/p
 			var views = this.data.graphs;
             if (this.data.query) {
 				var trbreak = self.$('#trbreak');
-				trbreak.tablesorter({sortList: [[2,1]]});
+				trbreak.tablesorter({sortList: [[2,1]],
+					headers: {
+						2:{
+							sorter:"longPercent"
+						}
+					}
+				});
 			}
                             var flat = [], prev = null
                             var quant = filter.quant;

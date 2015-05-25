@@ -122,7 +122,7 @@ module.exports.init = function (ctx, cb) {
                     var query = queryfix(p.filter);
                     query._s_cat = "WebTransaction";
                     ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-                        var ApdexT = apdex._i_serverT
+                        var ApdexT = apdex._i_serverT;
                         actions.mapReduce(
                             function() {
                                 emit(parseInt(this._dt.valueOf()/(Q*60000)), {
@@ -605,11 +605,21 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);
-
-                    events.findOne(query, safe.sure(cb, function (event) {
-                        var st = (event.stacktrace && event.stacktrace.frames && event.stacktrace.frames.length) || 0;
-                        var query = {_idp:event._idp,_s_logger:event._s_logger,_s_message:event._s_message,"stacktrace.frames":{$size:st}};
-
+                    safe.run(function (cb) {
+                        // to identify error type we can provide id of existing error
+                        if (!query._id)
+                            // overwise we assume that called knows what to do
+                            return cb();
+                        // then we need to fetch it and grap required info (projec and ehash)
+                        events.findOne({_id:query._id}, safe.sure(cb, function (event) {
+                            if (!event)
+                                cb(new CustomError("No event found", "Not Found"));
+                            query._idp = event._idp;
+                            query.ehash = event.ehash;
+                            delete query._id;
+                            cb();
+                        }));
+                    },safe.sure(cb, function () {
                         events.mapReduce(function () {
                                 var route = {}; route[this.request._s_route]=1;
                                 var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
@@ -652,17 +662,23 @@ module.exports.init = function (ctx, cb) {
                                 out: {inline:1}
                             },
                             safe.sure(cb, function (stats) {
-                                var res = stats[0].value;
-                                var res1 = {route:[],os:[],browser:[],count:res.c,sessions:_.size(res.sessions),views:_.size(res.views),ids:_.sortBy(res.ids)};
-                                _.each(res.route, function (v,k) {
-                                    res1.route.push({k:k,v:v});
-                                });
-                                _.each(res.os, function (v,k) {
-                                    res1.os.push({k:k,v:v});
-                                });
-                                _.each(res.browser, function (v,k) {
-                                    res1.browser.push({k:k,v:v});
-                                });
+                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
+                                if (stats.length) {
+                                    var res = stats[0].value;
+                                    res1.count = res.c;
+                                    res1.sessions = _.size(res.sessions);
+                                    res1.views = _.size(res.views);
+                                    res1.ids =_.sortBy(res.ids);
+                                    _.each(res.route, function (v,k) {
+                                        res1.route.push({k:k,v:v});
+                                    });
+                                    _.each(res.os, function (v,k) {
+                                        res1.os.push({k:k,v:v});
+                                    });
+                                    _.each(res.browser, function (v,k) {
+                                        res1.browser.push({k:k,v:v});
+                                    });
+                                }
                                 cb(null,res1);
                             })
                         );
@@ -670,78 +686,94 @@ module.exports.init = function (ctx, cb) {
                 },
                 getPagesErrorStats:function (t, p, cb) {
                     var query = queryfix(p.filter);
-                    events.mapReduce(function () {
-                            var s = {}; s[this.shash]=1;
-                            var epm = {}; epm[this._idpv]=1;
-                            emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
-                        },
-                        function (k, v) {
-                            var r=null;
-                            v.forEach(function (v) {
-                                var k;
-                                if (!r)
-                                    r = v;
-                                else {
-                                    for (k in v.session) {
-                                        r.session[k]=1;
+                    safe.run(function (cb) {
+                        // to identify error type we can provide id of existing error
+                        if (!query._id)
+                            // overwise we assume that called knows what to do
+                            return cb();
+                        // then we need to fetch it and grap required info (projec and ehash)
+                        events.findOne({_id:query._id}, safe.sure(cb, function (event) {
+                            if (!event)
+                                cb(new CustomError("No event found", "Not Found"));
+                            query._idp = event._idp;
+                            query.ehash = event.ehash;
+                            delete query._id;
+                            cb();
+                        }));
+                    },safe.sure(cb, function () {
+                        events.mapReduce(function () {
+                                var s = {}; s[this.shash]=1;
+                                var epm = {}; epm[this._idpv]=1;
+                                emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
+                            },
+                            function (k, v) {
+                                var r=null;
+                                v.forEach(function (v) {
+                                    var k;
+                                    if (!r)
+                                        r = v;
+                                    else {
+                                        for (k in v.session) {
+                                            r.session[k]=1;
+                                        }
+                                        for (k in v.pages) {
+                                            r.pages[k]=1;
+                                        }
+                                        r.count+=v.count;
+                                        r._dtmin = Math.min(r._dtmin, v._dtmin);
+                                        r._dtmax = Math.min(r._dtmax, v._dtmax);
+                                        if (r._dtmax==v._dtmax)
+                                            r._id = v._id;
                                     }
-                                    for (k in v.pages) {
-                                        r.pages[k]=1;
-                                    }
-                                    r.count+=v.count;
-                                    r._dtmin = Math.min(r._dtmin, v._dtmin);
-                                    r._dtmax = Math.min(r._dtmax, v._dtmax);
-                                    if (r._dtmax==v._dtmax)
-                                        r._id = v._id;
-                                }
-                            });
-                            return r;
-                        },
-                        {
-                            query: query,
-                            out: {inline:1}
-                        },
-                        safe.sure(cb, function (stats) {
-                            _.each(stats, function (s) {
-                                s.value.session = _.size(s.value.session);
-                                s.value.pages = _.size(s.value.pages);
-                            } );
-                            stats = _.sortBy(stats, function (s) { return -1*s.value.session*s.value.pages; } );
-                            var ids = {};
-                            _.each(stats, function (s) {
-                                ids[s.value._id]={stats:s.value};
-                            } );
-                            events.find(queryfix({_id:{$in:_.keys(ids)}}))
-                                .toArray(safe.sure(cb, function (errors) {
-                                    _.each(errors, function (e) {
-                                        ids[e._id].error = e;
-                                    });
-                                    var data = _.values(ids);
-                                    var f = null;
-                                    if (p.st == "terr" || p.st === undefined || p.st == 'mr')
-                                        f = 'count';
-                                    if (p.st == "perr")
-                                        f = 'pages';
-                                    if (p.st == "serr")
-                                        f = 'session';
-                                    var sum = 0.0;
-                                    _.forEach(data, function(r) {
-                                        sum += r.stats[f];
-                                    });
-                                    var percent = sum/100;
-                                    _.forEach(data, function(r) {
-                                        r.bar = r.stats[f]/percent;
-                                    });
-                                    data = _.sortBy(data, function(r) {
-                                        if (p.st == "mr")
-                                            return new Date(r.error._dtl)*-1
-                                        else
-                                            return r.stats[f]*-1;
-                                    });
-                                    cb(null, data);
-                                }));
-                        })
-                    );
+                                });
+                                return r;
+                            },
+                            {
+                                query: query,
+                                out: {inline:1}
+                            },
+                            safe.sure(cb, function (stats) {
+                                _.each(stats, function (s) {
+                                    s.value.session = _.size(s.value.session);
+                                    s.value.pages = _.size(s.value.pages);
+                                } );
+                                stats = _.sortBy(stats, function (s) { return -1*s.value.session*s.value.pages; } );
+                                var ids = {};
+                                _.each(stats, function (s) {
+                                    ids[s.value._id]={stats:s.value};
+                                } );
+                                events.find(queryfix({_id:{$in:_.keys(ids)}}))
+                                    .toArray(safe.sure(cb, function (errors) {
+                                        _.each(errors, function (e) {
+                                            ids[e._id].error = e;
+                                        });
+                                        var data = _.values(ids);
+                                        var f = null;
+                                        if (p.st == "terr" || p.st === undefined || p.st == 'mr')
+                                            f = 'count';
+                                        if (p.st == "perr")
+                                            f = 'pages';
+                                        if (p.st == "serr")
+                                            f = 'session';
+                                        var sum = 0.0;
+                                        _.forEach(data, function(r) {
+                                            sum += r.stats[f];
+                                        });
+                                        var percent = sum/100;
+                                        _.forEach(data, function(r) {
+                                            r.bar = r.stats[f]/percent;
+                                        });
+                                        data = _.sortBy(data, function(r) {
+                                            if (p.st == "mr")
+                                                return new Date(r.error._dtl)*-1;
+                                            else
+                                                return r.stats[f]*-1;
+                                        });
+                                        cb(null, data);
+                                    }));
+                            })
+                        );
+                    }));
                 },
                 getPagesErrorTiming:function(t, p, cb) {
 					var query = queryfix(p.filter);

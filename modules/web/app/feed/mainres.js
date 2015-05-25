@@ -101,23 +101,11 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 						actions: function (cb) {
 							api("stats.getActionsTimings", token, params, cb);
 						},
-						topAjax: function (cb) {
-							api("stats.getAjaxStats", token, params, cb);
-						},
-						topPages: function (cb) {
-							api("stats.getPagesStats", token, params, cb);
-						},
-						topTransactions: function(cb) {
-							api("stats.getActionsStats", token, params, cb);
-						},
 						serverErrors: function (cb) {
 							api("stats.getServerErrorStats",token, params, cb);
 						},
 						metrics: function (cb) {
 							api("stats.getMetrics", token, params, cb)
-						},
-						database: function (cb) {
-							api("stats.getActionsCategoryStats", token, params, cb)
 						}
 					}, safe.sure(cb, function(result) {
 						projectN.result=result;

@@ -513,7 +513,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats
-			var quant = 10;
+			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -531,6 +531,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
+							if (!req.query.selected)
+								return safe.back(cb,null,[]);
 							api("stats.getActionsBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
@@ -539,23 +541,18 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
+							var filter = {
+								_idp: project._id,
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+							}
+							if (req.query.selected)
+								filter._s_name = req.query.selected;
 							api("stats.getActionsTimings", "public", {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_name: req.query.selected
-								}}, cb)
+								_t_age: quant + "m", quant: quant, filter: filter}, cb)
 						}
 					}, safe.sure(cb, function(r){
 						var stat = {};
 						stat.apdex=0.0; stat.rpm=0.0; stat.tta=0.0;
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
 						if (req.query.selected) {
 							_.forEach(r.data, function(r) {
 								if(r._id == req.query.selected) {
@@ -574,7 +571,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							stat.rpm=stat.rpm/r.data.length;
 							stat.tta=stat.tta/r.data.length;
 						}
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
+						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))
@@ -673,7 +670,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
+							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
+								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
+							}}, cb)
 						},
 						rpm: function (cb){
 							api("stats.getPagesErrorTiming", "public", {_t_age:quant+"m",quant:quant, filter:{

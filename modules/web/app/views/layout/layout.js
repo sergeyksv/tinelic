@@ -7,11 +7,13 @@ define(['tinybone/base','dustc!views/layout/layout.dust','views/header/header'],
 		},
 		events:{
 			"click a":function (e) {
-				e.preventDefault()
-				this.app.router.navigateTo($(e.currentTarget).attr("href"), this.app.errHandler);
+				e.preventDefault();
+				var href = $(e.currentTarget).attr("href");
+				if (href && href.length)
+					this.app.router.navigateTo($(e.currentTarget).attr("href"), this.app.errHandler);
 			}
 		}
-	})
+	});
 	View.id = "views/layout/layout";
 	return View;
-})
+});
