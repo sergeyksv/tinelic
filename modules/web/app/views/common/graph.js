@@ -1,7 +1,7 @@
-define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/application/application_graph.dust', 'highcharts','jquery.tablesorter.combined'],function (tb,_,api,safe) {
+define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/common/graph.dust', 'highcharts','jquery.tablesorter.combined'],function (tb,_,api,safe) {
 	var view = tb.View;
 	var View = view.extend({
-		id:"views/application/application_graph",
+		id:"views/common/graph",
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var data = this.data;
@@ -102,6 +102,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			});
 		}
 	});
-	View.id = "views/application/application_graph";
+	View.id = "views/common/graph";
 	return View;
 });
