@@ -407,7 +407,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
-			var quant = 10;
+			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 			safe.parallel({
 				view: function (cb) {
@@ -476,7 +476,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		    }))
 		},
 		application:function (req, res, cb) {
-			var st = req.params.stats
+			var st = req.params.stats;
 			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
@@ -541,8 +541,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		pages:function (req, res, cb) {
-			var st = req.params.stats
-			var quant = 10;
+			var st = req.params.stats;
+			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -672,7 +672,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		database:function (req, res, cb) {
 			var st = req.params.stats
 			var str = req.query._str || req.cookies.str || '1d';
-			var quant = 10;
+			var quant = res.locals.quant;
 
 			var dtstart = res.locals.dtstart;
 			var dtend = res.locals.dtend;
