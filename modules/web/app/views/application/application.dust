@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header" /}
-
-<div class="starter-template container">
+{>"views/base_page"/}
+{<main}
 	<legend>{project.name}
 		<span class="text-info h5"> {query} </span>
 		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.rpm type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} /</span>
@@ -30,4 +29,4 @@
 		{@view name="views/application/application_graph_table"/}
     </div>
 </div>
-</div>
+{/main}

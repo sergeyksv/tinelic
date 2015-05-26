@@ -1,7 +1,5 @@
-{@view name="views/header/header" data="header"/}
-
-<div class="container">
-	<div class="starter-template">
+{>"views/base_page"/}
+{<main}
 		<button type="button" id="addnu" class="btn btn-default btn-xs">Add new user</button>
 		<p class="bg-primary"></p>
 		<table style="margin-top: 20px;"class="table table-striped">
@@ -50,9 +48,6 @@
           	</tr>
           {/users}
         </table>
-
-	</div>
-</div>
 
 <!-- Modal -->
 <div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -104,3 +99,4 @@
     </div>
   </div>
 </div>
+{/main}
