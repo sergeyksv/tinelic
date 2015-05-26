@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header"/}
-
-<div class="starter-template container">
+{>"views/base_page"/}
+{<main}
 <legend>{project.name}
     <span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
     <div class="dropdown pull-right">
@@ -32,4 +31,4 @@
     	</div>
     </div>
 </div>
-</div>
+{/main}

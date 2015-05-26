@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header" /}
-<div class="container">
-	<div class="starter-template">
+{>"views/base_page"/}
+{<main}
 		{?obac.team_new.global}
             <div class="btn-group">
                 <div id="addnt" class="btn btn-default btn-xs">Add new team</div>
@@ -94,9 +93,6 @@
           {/teams}
         </table>
 
-	</div>
-</div>
-
 <!-- Modal settings -->
 <div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -123,3 +119,4 @@
     </div>
   </div>
 </div>
+{/main}
