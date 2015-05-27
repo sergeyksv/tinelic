@@ -10,27 +10,27 @@
 				<span class="text-danger">  {@formatnumber val=apdserver type="apdex"/}</span> /
 				<span class="text-success"> {@formatnumber val=apdclient type="apdex"/}</span> /
 				<span class="text-info"> {@formatnumber val=apdajax type="apdex"/}</span>
-				{#server}<div id="apdex-server" style="width:100%; height:110px; float: left;"></div>{/server}
-				{#browser}<div id="apdex-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
-				{#ajax}<div id="apdex-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+				{#server}{@view name="views/common/graph" data="actions" locals-name="apdex-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/server}
+				{#browser}{@view name="views/common/graph" data="views" locals-name="apdex-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/browser}
+				{#ajax}{@view name="views/common/graph" data="ajax" locals-name="apdex-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/ajax}
 			</div>
 			<div class="row center-block">
 				<span class="h4">Throughput</span>
 				<span class="text-danger">  {@formatnumber val=rsm type="rpm"/}</span> /
 				<span class="text-success"> {@formatnumber val=rpm type="rpm"/}</span> /
 				<span class="text-info"> {@formatnumber val=ram type="rpm"/}</span>
-				{#server}<div id="thr-server" style="width:100%; height:110px; float: left;"></div>{/server}
-				{#browser}<div id="thr-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
-				{#ajax}<div id="thr-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+				{#server}{@view name="views/common/graph" data="actions" locals-name="thr-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="r" locals-filter-median="1"/}{/server}
+				{#browser}{@view name="views/common/graph" data="views" locals-name="thr-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="1"/}{/browser}
+				{#ajax}{@view name="views/common/graph" data="ajax" locals-name="thr-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="r" locals-filter-median="1"/}{/ajax}
 			</div>
 			<div class="row center-block">
 				<span class="h4">Time</span>
 				<span class="text-danger">  {@formatnumber val=ttserver type="tm"/}</span> /
 				<span class="text-success"> {@formatnumber val=etupage type="tm"/}</span> /
 				<span class="text-info"> {@formatnumber val=etuajax type="tm"/}</span>
-				{#server}<div id="tt-server" style="width:100%; height:110px; float: left;"></div>{/server}
-				{#browser}<div id="tt-browser" style="width:100%; height:110px; float: left;"></div>{/browser}
-				{#ajax}<div id="tt-ajax" style="width:100%; height:110px; float: left;"></div>{/ajax}
+				{#server}{@view name="views/common/graph" data="actions" locals-name="tt-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/server}
+				{#browser}{@view name="views/common/graph" data="views" locals-name="tt-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/browser}
+				{#ajax}{@view name="views/common/graph" data="ajax" locals-name="tt-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/ajax}
 			</div>
 			{/stats.total}
 		</div>
