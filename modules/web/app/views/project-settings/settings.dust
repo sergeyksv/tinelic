@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header" /}
-
-<div class="starter-template container">
+{>"views/base_page"/}
+{<main}
 	<div class="row">
 		<div class="col-sm-2"></div>
         <div class="col-sm-8">
@@ -103,4 +102,4 @@
 		</div>
         <div class="col-sm-3"></div>
 	</div>
-</div>
+{/main}

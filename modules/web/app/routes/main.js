@@ -407,7 +407,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
-			var quant = 10;
+			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 			safe.parallel({
 				view: function (cb) {
@@ -476,7 +476,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		    }))
 		},
 		application:function (req, res, cb) {
-			var st = req.params.stats
+			var st = req.params.stats;
 			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
@@ -541,8 +541,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		pages:function (req, res, cb) {
-			var st = req.params.stats
-			var quant = 10;
+			var st = req.params.stats;
+			var quant = res.locals.quant;
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -635,6 +635,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						},
 						event: function (cb) {
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
+								_idp:project._id,
 								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
 						},
@@ -654,15 +655,25 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var total = 0; var session = 0; var page = 0;
-						_.forEach(r.data, function(r) {
-							total += r.stats.count;
-							session += r.stats.session;
-							page += r.stats.pages;
-							if (r.error._dtl > dtp)
-								r.error.new = 1
-							if (r.error._dtl)
-								r.error._dtl = moment(r.error._dtl).fromNow()
-						})
+						if (req.params.id) {
+							_.forEach(r.data, function(r) {
+								if(r.error._id == req.params.id) {
+									total = r.stats.count;
+									session = r.stats.session;
+									page = r.stats.pages;
+								}
+							})
+						} else {
+							_.forEach(r.data, function(r) {
+								total += r.stats.count;
+								session += r.stats.session;
+								page += r.stats.pages;
+								if (r.error._dtl > dtp)
+									r.error.new = 1
+								if (r.error._dtl)
+									r.error._dtl = moment(r.error._dtl).fromNow()
+							})
+						}
 						r.event.headless = true;
 						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck,id:req.params.id}})
 					})
@@ -672,7 +683,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		database:function (req, res, cb) {
 			var st = req.params.stats
 			var str = req.query._str || req.cookies.str || '1d';
-			var quant = 10;
+			var quant = res.locals.quant;
 
 			var dtstart = res.locals.dtstart;
 			var dtend = res.locals.dtend;

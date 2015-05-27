@@ -1,6 +1,5 @@
 define(['tinybone/base','lodash','moment/moment',"tinybone/backadapter",'highcharts',
-	'dustc!views/project/project.dust',
-	'views/project/errors'],function (tb,_,moment,api) {
+	'dustc!views/project/project.dust'],function (tb,_,moment,api) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/project/project",

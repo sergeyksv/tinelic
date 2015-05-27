@@ -1,5 +1,4 @@
-{@view name="views/header/header" data="header" /}
-
-<div class="starter-template container-fluid graph">
+{>"views/base_page"/}
+{<main}
 	<div id="memory"></div>
-</div>
+{/main}
