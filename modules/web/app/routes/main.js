@@ -224,7 +224,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		project:function (req, res, cb) {
-			var quant = 10,
+			var quant = res.locals.quant,
 				dta,
 				dtp
 
