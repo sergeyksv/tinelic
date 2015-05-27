@@ -6,92 +6,66 @@
                 <div class="btn btn-default btn-xs doNewProject">Create new project</div>
             </div>
         {/obac.team_new.global}
-		<p class="bg-primary"></p>
-		<table style="margin-top: 20px;"class="table table-condensed">
-          {#teams}
-          	<tr>
-          		<td class="bg-primary" colspan="3">
-          			<strong>Team:</strong> {name}
-          		</td>
-          		<td class="bg-primary">
-          		    <div class="dropdown pull-right">
-          			   <button type="button" role="button" data-toggle="dropdown" class="actions btn btn-default btn-xs" style="margin-right: 20px;">Actions</button>
+       	{#teams}
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Team:</strong> {name}
+				<div class="dropdown pull-right">
+      			   <button type="button" role="button" data-toggle="dropdown" class="actions btn btn-default btn-xs" style="margin-right: 20px;">Actions</button>
 
-                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
-                        <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
-                        {?obacGranted[_id]}
-                            <li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
-                        {/obacGranted[_id]}
-                        <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+                    <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" href="#" data-edit="{name},{_id}">Edit</a></li>
+                    {?obacGranted[_id]}
+                        <li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
+                    {/obacGranted[_id]}
+                    <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 
-                      </ul>
-                    </div>
-          		</td>
-          	</tr>
-          	<tr>
-                <td colspan="2" class="col-xs-6">
-                    <div class="container-fluid">
-                        <div class="row projectsPanel">
-                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
-                                <span><strong>Projects</strong></span>
-                                {#projects}
-                                    &nbsp<span class="glyphicon glyphicon-star-empty text-danger project"><a href="{_t_prefix}/project/{_t_project.slug}/settings">{_t_project.name}</a></span>
-                                {/projects}
-                               {?obac.project_edit[_t_project._id]}{/obac.project_edit[_t_project._id]}
-                                    <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit-projects" aria-hidden="true"></span>
+                  </ul>
+				</div>
+			</div>
+		  	<div class="panel-body">
+				<div class="container-fluid">
+					<div class="row projectsPanel">
+						<div class="col-xs-3"><strong>Projects</strong></div>
 
-                                <input class="input-sm project-tags" style="display: none" type="text" role="tagsinput" value="{#projects}{_t_project.name},{/projects}">
-                            </div>
-                            <div class="col-xs-3 btn-group">
-                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
-                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" class="btn btn-xs btn-primary save-projects" aria-hidden="true">Save</div>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-                <td colspan="2" class="col-xs-6">
-                    <div class="container-fluid">
-                        <div class="row usersPanel">
-                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
-                                <span><strong>leads</strong></span>
-                                {#users}
-                                    {@select key="{role}"}
-                                        {@eq value="lead"}
-                                            &nbsp<span class="glyphicon glyphicon-user text-info user"><span class="h6 text-muted">{firstname} {lastname}</span></span>
-                                        {/eq}
-                                    {/select}
-                                {/users}
-                                <input class="input-sm tags" style="display: none" type="text" role="tagsinput" value="{#users}{@select key="{role}"}{@eq value="lead"}{firstname} {lastname},{/eq}{/select}{/users}">
-                                <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
-                            </div>
-                            <div class="col-xs-3 btn-group">
-                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
-                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="lead" class="btn btn-xs btn-primary save-user" aria-hidden="true">Save</div>
-                            </div>
-                        </div>
-                        <div class="row usersPanel">
-                            <div class="col-xs-9 panel panel-info" style="margin:0;padding-top:3px;">
-                                <span><strong>members</strong></span>
-                                {#users}
-                                    {@select key="{role}"}
-                                        {@eq value="member"}
-                                            &nbsp<span class="glyphicon glyphicon-user text-info user"><span class="h6 text-muted">{firstname} {lastname}</span></span>
-                                        {/eq}
-                                    {/select}
-                                {/users}
-                                <input class="input-sm tags" style="display: none" type="text" role="tagsinput" value="{#users}{@select key="{role}"}{@eq value="member"}{firstname} {lastname},{/eq}{/select}{/users}">
-                                <span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil edit" aria-hidden="true"></span>
-                            </div>
-                            <div class="col-xs-3 btn-group">
-                                <div style="cursor: pointer;display: none;" class="btn btn-xs btn-default cancel">Cancel</div>
-                                <div style="cursor:pointer;display: none;" data-teamid="{_id}" data-type="member" class="btn btn-xs btn-primary save-user" aria-hidden="true">Save</div>
-                            </div>
-                        </div>
-                    </div>
-                </td>
-          	</tr>
-          {/teams}
-        </table>
+						<div class="col-xs-9 project-tags">
+							{#projects}
+								&nbsp;<a href="{_t_prefix}/project/{_t_project.slug}/settings"><span class="label label-primary">{_t_project.name}</span></a>
+							{/projects}
+							{?obac.team_edit[_id]}
+								<span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil doEditProjects" data-id='{_id}'></span>
+							{/obac.team_edit[_id]}
+						</div>
+					</div>
+					<div class="row usersPanel">
+						<div class="col-xs-3"><strong>Leads</strong></div>
+						<div class="col-xs-9 project-leads">
+							{#users}
+								{@select key="{role}"}
+									{@eq value="lead"}
+										&nbsp<span class="glyphicon glyphicon-user" aria-hidden="true"></span> <a>{firstname} {lastname}</a>
+									{/eq}
+								{/select}
+							{/users}
+							<span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil doEditLeads"></span>
+						</div>
+					</div>
+					<div class="row usersPanel">
+						<div class="col-xs-3"><strong>Members</strong></div>
+						<div class="col-xs-9 project-memebers">
+							{#users}
+								{@select key="{role}"}
+									{@eq value="member"}
+										&nbsp<span class="glyphicon glyphicon-user" aria-hidden="true"></span> <a>{firstname} {lastname}</a>
+									{/eq}
+								{/select}
+							{/users}
+							<span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil doEditMemebers"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+        {/teams}
 
 <!-- Modal settings -->
 <div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

@@ -33,13 +33,13 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
             pnames.initialize();
             unames.initialize();
 
-            projectsPanel.find('.project-tags').tagsinput({
+            projectsPanel.find('.project-tags-tags').tagsinput({
                 typeaheadjs: {
                     displayKey: 'name',
                     valueKey: 'name',
                     source: pnames.ttAdapter()
                 }
-            })
+            });
 
             usersPanel.find('.tags').tagsinput({
                 typeaheadjs: {
@@ -49,19 +49,53 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
                 }
             });
             usersPanel.find('.bootstrap-tagsinput').hide();
-            projectsPanel.find('.bootstrap-tagsinput').hide();
         },
         events: {
             //'click .doUpdate':"doUpdate",
-            "click .edit-projects":function(e){
+            "click .doEditProjects":function(e){
                 var self = this;
-                var $this = $(e.currentTarget).closest('.projectsPanel');
-                $this.find('.project').toggle();
-                $this.find('.bootstrap-tagsinput').toggle();
-                $this.find('.btn-primary').toggle();
-                $this.find('.cancel').toggle();
-                self.$('.edit-projects').toggle();
-                self.$('.edit').toggle();
+                var $this = $(e.currentTarget);
+                var id = $this.data('id');
+                var team = _.find(this.data.teams, function (team) { return team._id==id;});
+                var $anchor = $this.closest('div');
+                var $current = $anchor;
+                require(["views/teams/tagsedit"],function(TagsEdit){
+                    var p = new TagsEdit({app:self.app});
+                    p.data = {current:[],variants:[]};
+                    _.each(team.projects, function (project) {
+                        p.data.current.push({value:project._t_project._id, text:project._t_project.name});
+                    });
+                    _.each(self.data.proj, function (project) {
+                        p.data.variants.push({value:project._id, text:project.name});
+                    });
+                    p.locals = {};
+                    p.render(safe.sure(self.app.errHandler,function(text){
+                        var $p = $(text);
+                        $anchor.after($p);
+						$current.hide();
+                        p.bindDom($p);
+                    }));
+                    p.on('cancel',function () {
+						$current.show();
+						p.remove();
+					});
+                    p.on('save',function(projects) {
+                        var data = {projects:[],_id:id};
+                        _.each(projects,function(r){
+                            data.projects.push({_idp:r.value});
+                        });
+
+                        api("assets.setProjects", "public", data, safe.sure(this.app.errHandler, function (data) {
+                            api.invalidate();
+                            self.app.router.reload();
+                        }));
+                    });
+                },this.app.errHandler);
+
+            },
+            "click .doCancelEditProjects":function(e){
+                this.$('.project-tags-edit').toggle();
+                this.$('.project-tags').toggle();
             },
             "click .edit":function(e){
                 var self = this;
@@ -244,4 +278,3 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','bootstrap/typeah
     View.id = "views/teams/teams";
     return View;
 })
-
