@@ -171,7 +171,7 @@ module.exports.init = function (ctx, cb) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -966,9 +966,9 @@ module.exports.init = function (ctx, cb) {
 							//find().sort().limit(1).toArray
 							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
-									data._dtl = edtl[0]._dtl;
+									data._dtf = edtl[0]._dtf;
 								else
-									data._dtl = new Date();
+									data._dtf = new Date();
 
 									events.insert(data, safe.sure(cb, function(res){
 										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {

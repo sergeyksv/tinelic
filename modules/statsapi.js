@@ -76,7 +76,7 @@ module.exports.init = function (ctx, cb) {
                         dtlPages: function(cb) {
                             var q = {
                                 _idp: p._idp,
-                                _dtl: {
+                                _dtf: {
                                     $lte: p._dt.$lte,
                                     $gt: p._dt._dtPagesErrAck
                                 }
@@ -627,8 +627,7 @@ module.exports.init = function (ctx, cb) {
                                 var sessions = {}; sessions[this.shash]=1;
                                 var views = {}; views[this._idpv]=1;
                                 var ids = [this._id];
-                                var idt = [this._dt];
-                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids,idt:idt});
+                                emit(this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
                             },
                             function (k, v) {
                                 var r=null;
@@ -663,11 +662,10 @@ module.exports.init = function (ctx, cb) {
                                 out: {inline:1}
                             },
                             safe.sure(cb, function (stats) {
-                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[],idt:[]};
+                                var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
                                 if (stats.length) {
                                     var res = stats[0].value;
                                     res1.count = res.c;
-                                    res1.idt = res.idt;
                                     res1.sessions = _.size(res.sessions);
                                     res1.views = _.size(res.views);
                                     res1.ids =_.sortBy(res.ids);
@@ -767,7 +765,7 @@ module.exports.init = function (ctx, cb) {
                                         });
                                         data = _.sortBy(data, function(r) {
                                             if (p.st == "mr")
-                                                return new Date(r.error._dtl)*-1;
+                                                return new Date(r.error._dtf)*-1;
                                             else
                                                 return r.stats[f]*-1;
                                         });
