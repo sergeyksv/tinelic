@@ -1,4 +1,4 @@
-<input class="input-sm" type="text" role="tagsinput">
+<input id='tagedit' class="input-sm" type="text" role="tagsinput">
 <div class="pull-right btn-group">
     <div style="cursor:pointer;" class="btn btn-xs btn-primary doSave">Save</div>
     <div style="cursor:pointer;" class="btn btn-xs btn-default doCancel">Cancel</div>

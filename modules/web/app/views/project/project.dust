@@ -134,7 +134,6 @@
 					</div>
 				</div>
 			{/database}
-			</div>
         </div>
     {/stats}
 </div>
