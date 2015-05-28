@@ -203,51 +203,7 @@ module.exports.init = function (ctx, cb) {
                                     key.apdex = (key.ag+key.aa/2)/key.c;
                                     key.tta = key.tt/key.c;
                                 });
-                                var st = p.st;
-                                if (st) {
-                                    data =_.sortBy(data, function(v){
-                                        if (st == "rpm")
-                                            return -1*v.value.r;
-                                        if (st == "mtc")
-                                            return -1* (v.value.tta*v.value.c);
-                                        if (st == "sar")
-                                            return -1* v.value.tta;
-                                        if (st == "wa")
-                                            return 1* v.value.apdex;
-                                    });
-
-                                    var sum=0;
-                                    _.each(data, function(r){
-                                        if (st == "rpm")
-                                            sum+=r.value.r;
-                                        if (st == "mtc")
-                                            sum += r.value.tta*r.value.c;
-                                        if (st == "sar")
-                                            sum += r.value.tta;
-                                        if (st == "wa") {
-                                            sum += r.value.apdex;
-                                        }
-                                    });
-                                    var percent = sum/100;
-                                    _.each(data, function (r) {
-                                        if (st == "rpm") {
-                                            r.value.bar = Math.round(r.value.r/percent);
-                                        }
-                                        if (st == "mtc") {
-                                            r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
-                                        }
-                                        if (st == "sar") {
-                                            r.value.bar = Math.round(r.value.tta/percent);
-                                        }
-                                        if (st == "wa") {
-                                            r.value.bar = Math.round(r.value.apdex/percent);
-                                            r.value.apdex = r.value.apdex;
-                                        }
-                                        r.value.r = r.value.c/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
-                                        r.value.tta = (r.value.tta/1000);
-                                    });
-                                }
-                                else {
+                                if (!p.st) {
                                     data = _.take(_.sortBy(data, function(r) {
                                         return (r.value.tta*r.value.c)*-1;
                                     }),10);

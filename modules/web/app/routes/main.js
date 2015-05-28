@@ -224,7 +224,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		project:function (req, res, cb) {
-			var quant = 10,
+			var quant = res.locals.quant,
 				dta,
 				dtp
 
@@ -535,6 +535,44 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							stat.rpm=stat.rpm/r.data.length;
 							stat.tta=stat.tta/r.data.length;
 						}
+						// sorting "mtc", "sar" etc
+						r.data =_.sortBy(r.data, function(v){
+							if (st == "rpm")
+								return -1*v.value.r;
+							if (st == "mtc")
+								return -1* (v.value.tta*v.value.c);
+							if (st == "sar")
+								return -1* v.value.tta;
+							if (st == "wa")
+								return 1* v.value.apdex;
+                        });
+                        var sum=0;
+                        _.each(r.data, function(r){
+							if (st == "rpm")
+								sum+=r.value.r;
+                            if (st == "mtc")
+								sum += r.value.tta*r.value.c;
+							if (st == "sar")
+								sum += r.value.tta;
+							if (st == "wa") {
+								sum += r.value.apdex;
+                            }
+                        });
+                        var percent = sum/100;
+                        _.each(r.data, function (r) {
+							if (st == "rpm")
+								r.value.bar = Math.round(r.value.r/percent);
+                            if (st == "mtc")
+                                r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+                            if (st == "sar")
+                                r.value.bar = Math.round(r.value.tta/percent);
+                            if (st == "wa") {
+                                r.value.bar = Math.round(r.value.apdex/percent);
+                                r.value.apdex = r.value.apdex;
+                            }
+                            r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+                            r.value.tta = (r.value.tta/1000);
+                        });
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
