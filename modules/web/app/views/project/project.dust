@@ -125,7 +125,7 @@
 						<div class="panel-body" >
 							{#db}
 								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-danger" role="progressbar" style="width: {value.bar}%;">
+									<div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
 										{_id} <span class="text-danger numRight">{@formatnumber val=value.avg type="tm"/}</span>
 									</div>
 								</div>
