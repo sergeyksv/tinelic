@@ -134,7 +134,6 @@ define(['views/layout/layout','module','safe',"dust",
 				router.get("/event/:id/:st", main.event);
 				router.get("/event/:id", main.event);
 				router.get("/server-error/:id", main.serror);
-				router.get("/page", main.page);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
 				router.get("/project/:slug/ajax/:stats", main.ajax);

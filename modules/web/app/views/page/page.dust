@@ -1,6 +1,0 @@
-{>"views/base_page"/}
-{<main}
-Hello Page!<br>
-{title}
-<a href=".">Home!</a>
-{/main}

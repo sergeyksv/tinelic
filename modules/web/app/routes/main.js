@@ -132,11 +132,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				res.renderX({view:r.view,data:_.extend(r.res,{title:"Server error"+'-'+r.res.event.exception._s_value, st: st})})
 			}))
 		},
-		page:function (req, res, cb) {
-			requirejs(["views/page/page"], safe.trap(cb, function (view) {
-				res.renderX({view:view,data:{title:"Page Page"}})
-			}), cb);
-		},
 		users:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {
