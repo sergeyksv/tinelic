@@ -67,7 +67,7 @@ module.exports.block = function(){
 					b.findElement(By.id("login")).sendKeys("obram");
 					b.findElement(By.id("signup")).click();
 
-					helpers.waitPageReload.call(self, null).then(function (pid) {
+					helpers.waitPageReload.call(self, pid).then(function (pid) {
 						b.findElement(By.id("logout")).click();
 						self.done();
 					});
@@ -107,7 +107,7 @@ module.exports.block = function(){
 						b.findElement(By.id("name")).sendKeys("NewTeam");
 						b.findElement(By.className("do-save")).click();
 
-						helpers.waitPageReload.call(self, null).then(function (pid) {
+						helpers.waitPageReload.call(self, pid).then(function (pid) {
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
