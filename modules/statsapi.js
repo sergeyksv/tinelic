@@ -203,19 +203,6 @@ module.exports.init = function (ctx, cb) {
                                     key.apdex = (key.ag+key.aa/2)/key.c;
                                     key.tta = key.tt/key.c;
                                 });
-                                if (!p.st) {
-                                    data = _.take(_.sortBy(data, function(r) {
-                                        return (r.value.tta*r.value.c)*-1;
-                                    }),10);
-                                    var progress =0;
-                                    _.forEach(data,function(r) {
-                                        progress += r.value.tta*r.value.c;
-                                    });
-                                    _.forEach(data, function(r) {
-                                        r.value.progress = (r.value.tta*r.value.c/progress)*100;
-                                        r.value.tta = r.value.tta/1000;
-                                    });
-                                }
                                 cb(null, data);
                             })
                         );
@@ -260,50 +247,6 @@ module.exports.init = function (ctx, cb) {
                                     key.tta = key.tt/key.c;
                                     key.e = key.e/key.c;
                                 });
-                                var st = p.st;
-                                if (st) {
-                                    data =_.sortBy(data, function(v){
-                                        if (st == "rpm")
-                                            return -1*v.value.r;
-                                        if (st == "mtc")
-                                            return -1* (v.value.tta*v.value.c);
-                                        if (st == "sar")
-                                            return -1* v.value.tta;
-                                        if (st == "wa")
-                                            return 1* v.value.apdex;
-                                    });
-
-                                    var sum=0;
-                                    _.each(data, function(r){
-                                        if (st == "rpm")
-                                            sum+=r.value.r;
-                                        if (st == "mtc")
-                                            sum += r.value.tta*r.value.c;
-                                        if (st == "sar")
-                                            sum += r.value.tta;
-                                        if (st == "wa") {
-                                            sum += r.value.apdex;
-                                        }
-                                    });
-                                    var percent = sum/100;
-                                    _.each(data, function (r) {
-                                        if (st == "rpm") {
-                                            r.value.bar = Math.round(r.value.r/percent);
-                                        }
-                                        if (st == "mtc") {
-                                            r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
-                                        }
-                                        if (st == "sar") {
-                                            r.value.bar = Math.round(r.value.tta/percent);
-                                        }
-                                        if (st == "wa") {
-                                            r.value.bar = Math.round(r.value.apdex/percent);
-                                            r.value.apdex = r.value.apdex;
-                                        }
-                                        r.value.r = r.value.c/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
-                                        r.value.tta = (r.value.tta/1000);
-                                    });
-                                }
                                 cb(null, data);
                             })
                         );
@@ -347,50 +290,6 @@ module.exports.init = function (ctx, cb) {
                                     key.tta = key.tt/key.c;
                                     key.e = key.e/key.c;
                                 });
-                                var st = p.st;
-                                if (st) {
-                                    data =_.sortBy(data, function(v){
-                                        if (st == "rpm")
-                                            return -1*v.value.r;
-                                        if (st == "mtc")
-                                            return -1* (v.value.tta*v.value.c);
-                                        if (st == "sar")
-                                            return -1* v.value.tta;
-                                        if (st == "wa")
-                                            return 1* v.value.apdex;
-                                    });
-
-                                    var sum=0;
-                                    _.each(data, function(r){
-                                        if (st == "rpm")
-                                            sum+=r.value.r;
-                                        if (st == "mtc")
-                                            sum += r.value.tta*r.value.c;
-                                        if (st == "sar")
-                                            sum += r.value.tta;
-                                        if (st == "wa") {
-                                            sum += r.value.apdex;
-                                        }
-                                    });
-                                    var percent = sum/100;
-                                    _.each(data, function (r) {
-                                        if (st == "rpm") {
-                                            r.value.bar = Math.round(r.value.r/percent);
-                                        }
-                                        if (st == "mtc") {
-                                            r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
-                                        }
-                                        if (st == "sar") {
-                                            r.value.bar = Math.round(r.value.tta/percent);
-                                        }
-                                        if (st == "wa") {
-                                            r.value.bar = Math.round(r.value.apdex/percent);
-                                            r.value.apdex = r.value.apdex;
-                                        }
-                                        r.value.r = r.value.c/((p.filter._dt.$lte - p.filter._dt.$gt)/(1000*60))
-                                        r.value.tta = (r.value.tta/1000);
-                                    });
-                                }
                                 cb(null, data);
                             })
                         );
@@ -930,38 +829,6 @@ module.exports.init = function (ctx, cb) {
 								key.avg = key.avg1/key.r;
 								key.tta = key.tt/key.r;
 							});
-                            var sum = 0;
-                            _.forEach(data, function(r) {
-                                if (st == "req")
-                                    sum += r.value.r;
-                                if (st == 'mtc' || st === undefined)
-                                    sum += r.value.tta*r.value.r;
-                                if (st == 'sar')
-                                    sum += r.value.avg;
-                            });
-                            var procent = sum/100;
-                            _.forEach(data, function(r) {
-                                if (st == 'req')
-                                    r.value.bar = r.value.r/procent;
-                                if (st == 'mtc' || st === undefined) {
-                                    r.value.bar = (r.value.tta*r.value.r)/procent;
-								}
-                                if (st == 'sar')
-                                    r.value.bar = r.value.avg/procent;
-                            });
-                            data = _.sortBy(data, function(r) {
-                                r.value.avg = r.value.avg/1000;
-                                r.value.tta = r.value.tta/1000;
-                                if (st == 'req')
-                                    return r.value.r*-1;
-                                if (st == 'mtc' || st === undefined)
-                                    return (r.value.tta*r.value.r)*-1;
-                                if (st == 'sar')
-                                    return r.value.avg*-1;
-                            });
-                            if (st === undefined) {
-                                data = _.take(data,10);
-                            }
                             cb(null, data);
                         })
                     );
