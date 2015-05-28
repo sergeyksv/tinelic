@@ -36,16 +36,17 @@ module.exports.block = function(){
 
 						b.findElement(By.id("addnu")).click();
 
-						helpers.waitModal.call(self).then(function () {
+						helpers.waitModal.call(self, "New user").then(function () {
 							b.findElement(By.id("firstname")).sendKeys("obram");
 							b.findElement(By.id("lastname")).sendKeys("tinelic");
 							b.findElement(By.id("login")).sendKeys("obram");
+							b.findElement(By.id("userpass")).sendKeys("123456");
+							b.findElement(By.id("userrpass")).sendKeys("123456");
 							b.findElement(By.id("role")).click();
 							b.findElements(By.className("li-role")).then(function (body) {
 								body[body.length-1].click();
 							});
-							b.findElement(By.id("userpass")).sendKeys("123456");
-							b.findElement(By.id("userrpass")).sendKeys("123456");
+
 							b.findElement(By.id("savebtn")).click();
 
 							helpers.waitPageReload.call(self, pid).then(function (pid) {
@@ -103,7 +104,7 @@ module.exports.block = function(){
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.className("doEditTeam")).click();
 
-					helpers.waitModal.call(self).then(function () {
+					helpers.waitModal.call(self,"Edit Team").then(function () {
 						b.findElement(By.id("name")).sendKeys("NewTeam");
 						b.findElement(By.className("do-save")).click();
 
@@ -145,7 +146,7 @@ module.exports.block = function(){
 
 					b.findElement(By.className("doNewProject")).click();
 
-					helpers.waitModal.call(self).then(function () {
+					helpers.waitModal.call(self, "New project").then(function () {
 
 						b.findElement(By.css("input#name")).sendKeys("NewProject");
 						b.findElement(By.css(".do-save")).click();
