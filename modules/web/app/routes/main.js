@@ -375,7 +375,22 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				}
 				if (r.data.topTransactions.length != 0) {
 					views.transactions = {}
-					views.transactions.top = r.data.topTransactions
+					views.transactions.top = _.take(_.sortBy(r.data.topTransactions,function(r) {
+						return r.value.tta*r.value.c
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.transactions.top,function(r) {
+						if (!progress) {
+							progress = r.value.tta*r.value.c
+						}
+						else {
+							progress += r.value.tta*r.value.c
+						}
+					})
+					_.forEach(views.transactions.top, function(r) {
+						r.value.progress = (r.value.tta*r.value.c/progress)*100
+						r.value.tta = r.value.tta/1000
+					})
 				}
 
 				if (r.data.metrics) {
@@ -399,7 +414,23 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 
 				if (r.data.database.length != 0) {
 					views.database = {}
-					views.database.db = r.data.database
+					views.database.db = _.take(_.sortBy(r.data.database,function(r) {
+						return r.value.tta*r.value.r
+					}).reverse(),10)
+					var progress = null;
+					_.forEach(views.database.db,function(r) {
+						if (!progress) {
+							progress = r.value.tta*r.value.r
+						}
+						else {
+							progress += r.value.tta*r.value.r
+						}
+					})
+					_.forEach(views.database.db, function(r) {
+						r.value.progress = (r.value.tta*r.value.r/progress)*100;
+						r.value.tta = r.value.tta/1000;
+						r.value.avg = r.value.avg/1000;
+					})
 				}
 
 				res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: graphOn, fr:filter})})
@@ -419,8 +450,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					api("stats.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
 						_idp:project._id,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-						},
-						st: st
+						}
 					}, cb);
 				},
 				breakdown: function (cb) {
@@ -470,6 +500,43 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					stat.tta=stat.tta/r.rpm.length;
 					stat.epm=stat.epm/r.rpm.length;
 				}
+				// sorting "mtc", "sar" etc
+				r.rpm =_.sortBy(r.rpm, function(v){
+					if (st == "rpm")
+						return -1*v.value.r;
+                    if (st == "mtc")
+                        return -1* (v.value.tta*v.value.c);
+                    if (st == "sar")
+                        return -1* v.value.tta;
+                    if (st == "wa")
+                        return 1* v.value.apdex;
+                });
+                var sum=0;
+                _.each(r.rpm, function(r){
+                    if (st == "rpm")
+						sum+=r.value.r;
+                    if (st == "mtc")
+                        sum += r.value.tta*r.value.c;
+                    if (st == "sar")
+                        sum += r.value.tta;
+                    if (st == "wa")
+                        sum += r.value.apdex;
+                });
+                var percent = sum/100;
+                _.each(r.rpm, function (r) {
+					if (st == "rpm")
+						r.value.bar = Math.round(r.value.r/percent);
+                    if (st == "mtc")
+                        r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+                    if (st == "sar")
+                        r.value.bar = Math.round(r.value.tta/percent);
+                    if (st == "wa") {
+                        r.value.bar = Math.round(r.value.apdex/percent);
+                        r.value.apdex = r.value.apdex;
+                    }
+                    r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+                    r.value.tta = (r.value.tta/1000);
+                 });
 				 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, fr: filter, title:"Ajax", stat:stat, query:req.query.selected}})
 				})
 			)
@@ -490,8 +557,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								},
-								st: st
+								}
 							}, cb)
 						},
 						breakdown: function (cb) {
@@ -593,8 +659,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								},
-								st: st
+								}
 							}, cb)
 						},
 						breakdown: function (cb) {
@@ -644,6 +709,44 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							stat.tta=stat.tta/r.data.length;
 							stat.epm=stat.epm/r.data.length;
 						}
+						// sorting "mtc", "sar" etc
+						r.data =_.sortBy(r.data, function(v){
+							if (st == "rpm")
+								return -1*v.value.r;
+							if (st == "mtc")
+								return -1* (v.value.tta*v.value.c);
+							if (st == "sar")
+								return -1* v.value.tta;
+							if (st == "wa")
+								return 1* v.value.apdex;
+                        });
+                        var sum=0;
+                        _.each(r.data, function(r){
+							if (st == "rpm")
+								sum+=r.value.r;
+                            if (st == "mtc")
+								sum += r.value.tta*r.value.c;
+							if (st == "sar")
+								sum += r.value.tta;
+							if (st == "wa") {
+								sum += r.value.apdex;
+                            }
+                        });
+                        var percent = sum/100;
+                        _.each(r.data, function (r) {
+							if (st == "rpm")
+								r.value.bar = Math.round(r.value.r/percent);
+                            if (st == "mtc")
+                                r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+                            if (st == "sar")
+                                r.value.bar = Math.round(r.value.tta/percent);
+                            if (st == "wa") {
+                                r.value.bar = Math.round(r.value.apdex/percent);
+                                r.value.apdex = r.value.apdex;
+                            }
+                            r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+                            r.value.tta = (r.value.tta/1000);
+                        });
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
@@ -694,11 +797,11 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						}
 						var total = 0; var session = 0; var page = 0;
 						if (req.params.id) {
-							_.forEach(r.data, function(r) {
-								if(r.error._id == req.params.id) {
-									total = r.stats.count;
-									session = r.stats.session;
-									page = r.stats.pages;
+							_.forEach(r.data, function(rd) {
+								if((rd.error._dtf == r.event.event._dtf) && (rd.error._s_message == r.event.event._s_message)) {
+										total = rd.stats.count;
+										session = rd.stats.session;
+										page = rd.stats.pages;
 								}
 							})
 						} else {
@@ -739,8 +842,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend}
-								},
-								st: st
+								}
 							}, cb)
 						},
 						breakdown: function (cb) {
@@ -787,6 +889,35 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							stat.r=stat.r/r.data.length;
 							stat.tta=stat.tta/r.data.length;
 						}
+						// sorting "req" , "mtc" etc
+						 var sum = 0;
+                         _.forEach(r.data, function(r) {
+							if (st == "req")
+								sum += r.value.r;
+                            if (st == 'mtc')
+                                sum += r.value.tta*r.value.r;
+                            if (st == 'sar')
+                                sum += r.value.avg;
+                         });
+                         var procent = sum/100;
+                         _.forEach(r.data, function(r) {
+							if (st == 'req')
+								r.value.bar = r.value.r/procent;
+							if (st == 'mtc')
+                                r.value.bar = (r.value.tta*r.value.r)/procent;
+                            if (st == 'sar')
+                                r.value.bar = r.value.avg/procent;
+                         });
+                         r.data = _.sortBy(r.data, function(r) {
+							r.value.avg = r.value.avg/1000;
+							r.value.tta = r.value.tta/1000;
+                            if (st == 'req')
+								return r.value.r*-1;
+                            if (st == 'mtc')
+								return (r.value.tta*r.value.r)*-1;
+                            if (st == 'sar')
+                                return r.value.avg*-1;
+                        });
 						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
