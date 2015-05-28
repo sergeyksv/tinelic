@@ -10,7 +10,7 @@
 {#prevId}
 	<a href="{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
 {/prevId}
-<b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>
+{#event}<b>{@formatdate date=_dt format="l"/} {@formatdate date=_dt format="LTS"/}</b>{/event}
 {#nextId}
 	<a href="{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
 {/nextId}
@@ -26,9 +26,17 @@
 {/stacktrace.frames}
 </ul>
 {/event}
+<div class="panel panel-default">
+  <div class="panel-heading">Action</div>
+  <div class="panel-body">
+	{#info.route}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/info.route}
+  </div>
+</div>
 </div>
 <div class="col-xs-12 col-sm-3"><br>
-{@view name="views/server-errors/server-event_stats" data="info"/}
+{@view name="views/server-errors/server-event_stats"/}
 </div>
 {^headless}
 </div>
