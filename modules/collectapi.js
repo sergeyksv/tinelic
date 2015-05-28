@@ -966,7 +966,7 @@ module.exports.init = function (ctx, cb) {
 							//find().sort().limit(1).toArray
 							events.find({ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
-									data._dtf = edtl[0]._dtf;
+									data._dtf = edtl[0]._dtf || new Date();
 								else
 									data._dtf = new Date();
 
