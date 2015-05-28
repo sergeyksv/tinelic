@@ -25,7 +25,7 @@ module.exports.blurFocus = function(input){
 
 module.exports.waitModal = function (selector, timeout) {
 	var self = this;
-	selector = selector || By.css('.modal:not(#livechat)');
+	selector = selector || By.css('.modal');
 	timeout = timeout || 15000;
 	return self.browser.wait(function () {
 		return self.browser.isElementPresent(selector)
