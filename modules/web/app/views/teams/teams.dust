@@ -27,7 +27,7 @@
 			<div class="col-sm-8">
 				<p class="form-control-static">
 					{#projects}
-					<a href="{_t_prefix}/project/{_t_project.slug}/settings"><span class="label label-primary">{_t_project.name}</span></a>
+					<span> </span><a href="{_t_prefix}/project/{_t_project.slug}/settings"><span class="label label-primary">{_t_project.name}</span></a>
 					{/projects}
 					{?obac.team_edit[_id]}
 						<span style="cursor:pointer;" class="pull-right glyphicon glyphicon-pencil doEditProjects" data-id='{_id}'></span>
@@ -44,7 +44,7 @@
 					{#users}
 						{@select key="{role}"}
 							{@eq value="lead"}
-								<span class="glyphicon glyphicon-user" aria-hidden="true"></span> <a>{firstname} {lastname}</a>
+								<span class="glyphicon glyphicon-user" aria-hidden="true"> </span> <a>{firstname} {lastname}</a><span> </span>
 							{/eq}
 						{/select}
 					{/users}
@@ -63,7 +63,7 @@
 					{#users}
 						{@select key="{role}"}
 							{@eq value="member"}
-								<span class="glyphicon glyphicon-user" aria-hidden="true"></span> <a>{firstname} {lastname}</a>
+								<span class="glyphicon glyphicon-user" aria-hidden="true"> </span> <a>{firstname} {lastname}</a><span> </span>
 							{/eq}
 						{/select}
 					{/users}
