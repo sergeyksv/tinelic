@@ -815,7 +815,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb);
 						},
 						event: function (cb) {
-							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
+							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id,
+								_idp:project._id,
+								_dt: {$gt: (dta < res.locals.dtstart)?dta:res.locals.dtstart,$lte:res.locals.dtend}
+							}}, cb)
 						},
 						rpm: function (cb){
 								api("stats.getServerErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
@@ -837,19 +840,29 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						if (data.length == 0) {
 							data.push({error: {_s_message: "Not errors on this client"}})
 						}
-						var sum = 0.0
-						_.forEach(data, function(r) {
-							sum += r.stats.c
-							if (r.error._dtl > dta)
-								r.error.new = 1
-							if (r.error._dtl)
-								r.error._dtl = moment(r.error._dtl).fromNow()
-						})
+						var total = 0, sum = 0.0;
+						if (req.params.id) {
+							_.forEach(data, function(rd) {
+								sum += rd.stats.c;
+								if((rd.error._dtf == r.event.event._dtf) && (rd.error._s_message == r.event.event._s_message)) {
+										total = rd.stats.c;
+								}
+							})
+						} else {
+							_.forEach(data, function(r) {
+								total += r.stats.c;
+								sum += r.stats.c;
+								if (r.error._dtf> dta)
+									r.error.new = 1
+								if (r.error._dtf)
+									r.error._dtf = moment(r.error._dtf).fromNow()
+							})
+						}
 						var percent = sum/100
 						_.forEach(data, function(r) {
 							r.bar = r.stats.c/percent
 						})
-						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: sum, lastAck: lastAck}})
+						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: total, lastAck: lastAck,id:req.params.id}})
 					})
 				)
 			}))

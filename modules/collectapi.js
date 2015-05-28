@@ -210,7 +210,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -562,11 +562,11 @@ module.exports.init = function (ctx, cb) {
 											md5sum.update(te.exception._s_type);
 											md5sum.update(te._s_message + te.stacktrace.frames.length);
 											te.ehash = md5sum.digest('hex');
-											action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+											action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 												if (edtl.length)
-													te._dtl = edtl[0]._dtl;
+													te._dtf = edtl[0]._dtf || new Date();
 												else
-													te._dtl = new Date();
+													te._dtf = new Date();
 
 												action_errors.insert(te, cb);
 											}));
@@ -859,11 +859,11 @@ module.exports.init = function (ctx, cb) {
 									md5sum.update(te.exception._s_type);
 									md5sum.update(te._s_message + te.stacktrace.frames.length);
 									te.ehash = md5sum.digest('hex');
-									action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+									action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 										if (edtl.length)
-											te._dtl = edtl[0]._dtl;
+											te._dtf = edtl[0]._dtf || new Date();
 										else
-											te._dtl = new Date();
+											te._dtf = new Date();
 
 										action_errors.insert(te, cb);
 									}));
