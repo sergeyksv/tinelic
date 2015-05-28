@@ -76,7 +76,7 @@ module.exports.init = function (ctx, cb) {
                         dtlPages: function(cb) {
                             var q = {
                                 _idp: p._idp,
-                                _dtl: {
+                                _dtf: {
                                     $lte: p._dt.$lte,
                                     $gt: p._dt._dtPagesErrAck
                                 }
@@ -550,7 +550,6 @@ module.exports.init = function (ctx, cb) {
                         events.findOne({_id:query._id}, safe.sure(cb, function (event) {
                             if (!event)
                                 cb(new CustomError("No event found", "Not Found"));
-                            query._idp = event._idp;
                             query.ehash = event.ehash;
                             delete query._id;
                             cb();
@@ -620,7 +619,7 @@ module.exports.init = function (ctx, cb) {
                                         });
                                         data = _.sortBy(data, function(r) {
                                             if (p.st == "mr")
-                                                return new Date(r.error._dtl)*-1;
+                                                return new Date(r.error._dtf)*-1;
                                             else
                                                 return r.stats[f]*-1;
                                         });
