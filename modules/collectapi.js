@@ -964,7 +964,7 @@ module.exports.init = function (ctx, cb) {
 							md5sum.update(data._s_message + data.stacktrace.frames.length);
 							data.ehash = md5sum.digest('hex');
 							//find().sort().limit(1).toArray
-							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+							events.find({ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
 									data._dtf = edtl[0]._dtf;
 								else

@@ -656,11 +656,11 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						}
 						var total = 0; var session = 0; var page = 0;
 						if (req.params.id) {
-							_.forEach(r.data, function(r) {
-								if(r.error._id == req.params.id) {
-									total = r.stats.count;
-									session = r.stats.session;
-									page = r.stats.pages;
+							_.forEach(r.data, function(rd) {
+								if((rd.error._dtf == r.event.event._dtf) && (rd.error._s_message == r.event.event._s_message)) {
+										total = rd.stats.count;
+										session = rd.stats.session;
+										page = rd.stats.pages;
 								}
 							})
 						} else {

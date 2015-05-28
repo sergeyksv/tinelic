@@ -695,7 +695,6 @@ module.exports.init = function (ctx, cb) {
                         events.findOne({_id:query._id}, safe.sure(cb, function (event) {
                             if (!event)
                                 cb(new CustomError("No event found", "Not Found"));
-                            query._idp = event._idp;
                             query.ehash = event.ehash;
                             delete query._id;
                             cb();
