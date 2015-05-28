@@ -35,6 +35,8 @@ module.exports.waitModal = function (selector, timeout) {
 				return modal.getCssValue("opacity").then(function (v) {return v==1; });
 			},timeout);
 		});
+	}).then(function () {
+		return self.browser.sleep(100);
 	})
 }
 
@@ -50,8 +52,8 @@ module.exports.waitElementExist = function (selector, hint, timeout) {
 	var self = this;
 	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(selector)
-	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
+		return self.browser.isElementPresent(selector);
+	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
 };
 
 module.exports.waitElementVisible = function (selector, hint, timeout) {

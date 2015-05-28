@@ -142,7 +142,7 @@ module.exports.init = function (ctx, cb) {
 					}))
                 },
                 updateTeam: function (t,u,cb) {
-                    var _id = new mongo.ObjectID(u.id)
+                    var _id = new mongo.ObjectID(u._id)
                     tm.teams.update({_id: _id},
                         { $set: {
                                 name: u.name
@@ -179,18 +179,23 @@ module.exports.init = function (ctx, cb) {
 						tm.teams.update({_id: id}, update, {multi:true},cb)
 					}))
                 },
-                addUsers: function(t, u, cb) {
+                saveTeamUsersForRole: function(t, u, cb) {
 					u = prefixify(u);
+					_.each(u.users,function (user) {
+						user.role = u._s_type;
+					});
 					var update = {
 						$addToSet: {
 								users: {$each:u.users}
 						}
-					}
-					tm.teams.update({_id: u._id},{$pull:{users:{role: u._s_type}}},{},safe.sure(cb,function(){
+					};
+					tm.teams.update({_id: u._id},{$pull:{users:{role: u._s_type}}},{},safe.sure(cb,function() {
+						if (!(u.users && u.users.length))
+							return cb(null);
 						ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-							tm.teams.update({_id: u._id}, update, {},cb)
-						}))
-					}))
+							tm.teams.update({_id: u._id}, update, {},cb);
+						}));
+					}));
                 },
                 pullData: function(t, u, cb) {
 					u = prefixify(u);
