@@ -54,7 +54,7 @@ module.exports.init = function (ctx, cb) {
                         dtlActions: function(cb) {
                             var q = {
                                 _idp: p._idp,
-                                _dtl: {
+                                _dtf: {
                                     $lte: p._dt.$lte,
                                     $gt: p._dt._dtActionsErrAck
                                 }
@@ -301,11 +301,21 @@ module.exports.init = function (ctx, cb) {
                 },
                 getServerErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);
-
-                    serverErrors.findOne(query, safe.sure(cb, function (err) {
-                        var st = (err.stacktrace && err.stacktrace.frames && err.stacktrace.frames.length) || 0;
-                        var query = {_idp:err._idp,_s_logger:err._s_logger,"exception._s_value": err.exception._s_value,"stacktrace.frames":{$size:st}};
-
+                    var query1 = queryfix(p.filter);
+                    safe.run(function (cb) {
+                        // to identify error type we can provide id of existing error
+                        if (!query._id)
+                            // overwise we assume that called knows what to do
+                            return cb();
+                        // then we need to fetch it and grap required info (projec and ehash)
+                        serverErrors.findOne({_id:query._id}, safe.sure(cb, function (err) {
+                            if (!err)
+                                cb(new CustomError("No event found", "Not Found"));
+							query.ehash = err.ehash;
+                            delete query._id;
+                            cb();
+                        }));
+                    },safe.sure(cb, function () {
                         serverErrors.mapReduce(function () {
                                 var route = {};
                                 if (this.action){
@@ -315,7 +325,7 @@ module.exports.init = function (ctx, cb) {
                                 var server = {}; server[this._s_server]=1;
                                 var lang = {}; lang[this._s_logger]=1;
                                 var ids = [this._id];
-                                emit(this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
+                                emit(ALL?this._idp:this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
                             },
                             function (k, v) {
                                 var r=null;
@@ -344,7 +354,8 @@ module.exports.init = function (ctx, cb) {
                             },
                             {
                                 query: query,
-                                out: {inline:1}
+                                out: {inline:1},
+                                scope: {ALL:query.ehash?0:1}
                             },
                             safe.sure(cb, function (stats) {
                                 var res = stats[0].value;
@@ -364,7 +375,7 @@ module.exports.init = function (ctx, cb) {
                                 cb(null,res1);
                             })
                         );
-                    }));
+					}));
                 },
                 getServerError:function (t, p, cb) {
                     // dummy, just get it all out
@@ -746,7 +757,7 @@ module.exports.init = function (ctx, cb) {
                                         if (p.st == 'terr')
                                             return r.stats.c * -1
                                         if (p.st == 'mr')
-                                            return new Date(r.error._dtl)*-1
+                                            return new Date(r.error._dtf)*-1
                                     }).value()
                                     cb(null, ids);
                                 }));

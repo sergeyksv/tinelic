@@ -1,15 +1,9 @@
+{#info}
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
   <div class="panel-body">
+	{#event}First error: <b>{@formatdate date=_dtf format="l"/} {@formatdate date=_dtf format="LTS"/}</b><br>{/event}
 	Total count: <b>{count}</b><br>
-  </div>
-</div>
-<div class="panel panel-default">
-  <div class="panel-heading">Action</div>
-  <div class="panel-body">
-	{#route}
-		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
-	{/route}
   </div>
 </div>
 <div class="panel panel-default">
@@ -36,3 +30,4 @@
 	{/lang}
   </div>
 </div>
+{/info}
