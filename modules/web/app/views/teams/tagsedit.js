@@ -1,4 +1,4 @@
-define(['tinybone/base','dustc!views/teams/tagsedit.dust'],function (tb) {
+define(['tinybone/base','dustc!views/teams/tagsedit.dust','bootstrap/typeahead','bootstrap/tagsinput'],function (tb) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/teams/tagsedit",
