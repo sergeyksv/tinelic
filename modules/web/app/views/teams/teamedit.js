@@ -24,6 +24,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
                 }
 
                 var data = {name: name};
+                var func = "";
                 if (id) {
                     func = "assets.updateTeam";
                     data._id = id;
