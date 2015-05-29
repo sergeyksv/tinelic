@@ -564,7 +564,7 @@ module.exports.init = function (ctx, cb) {
 											te.ehash = md5sum.digest('hex');
 											action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 												if (edtl.length)
-													te._dtf = edtl[0]._dtf || new Date();
+													te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 												else
 													te._dtf = new Date();
 
@@ -861,7 +861,7 @@ module.exports.init = function (ctx, cb) {
 									te.ehash = md5sum.digest('hex');
 									action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 										if (edtl.length)
-											te._dtf = edtl[0]._dtf || new Date();
+											te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 										else
 											te._dtf = new Date();
 
@@ -966,7 +966,7 @@ module.exports.init = function (ctx, cb) {
 							//find().sort().limit(1).toArray
 							events.find({ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
-									data._dtf = edtl[0]._dtf || new Date();
+									data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 								else
 									data._dtf = new Date();
 

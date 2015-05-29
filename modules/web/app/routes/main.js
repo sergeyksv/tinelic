@@ -922,7 +922,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			// we want to server on folder style url
 			if (req.path.substr(-1) != "/" && !req.params.id)
 				return res.redirect(req.baseUrl+req.path+"/");
-			var quant = 10,
+			var quant = res.locals.quant,
 				dta,
 				st = req.params.sort
 

@@ -301,7 +301,6 @@ module.exports.init = function (ctx, cb) {
                 },
                 getServerErrorInfo:function (t, p, cb) {
                     var query = queryfix(p.filter);
-                    var query1 = queryfix(p.filter);
                     safe.run(function (cb) {
                         // to identify error type we can provide id of existing error
                         if (!query._id)
