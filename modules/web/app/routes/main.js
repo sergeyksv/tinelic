@@ -111,6 +111,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								return memo;
 							});
 					});
+					
 					_.forEach(tmetrics.apdex, function(stat, key){
 						tmetrics.apdex[key] = stat / tmetrics[key].r;
 					});	

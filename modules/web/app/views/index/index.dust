@@ -11,46 +11,46 @@
 		{/gt}
 	</div>
 	<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
-    	<span style="white-space: nowrap;"><b>
-    	<span>{@math key=errAck.dtlActions method="round"/} ( {@math key=errAck.actions method="round"/} )</span> / <span>{@math key=errAck.dtlPages method="round"/} ( {@math key=errAck.pages method="round"/} )</span>
-    	</b></span>
-    	&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
-    	{@gt key=server.r value=0}
-    		<span>{@formatnumber val=apdex.server type="apdex"/}</span>
-    	{/gt}
-    	{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-    		<span>{@formatnumber val=apdex.client type="apdex"/}
-    		</span> / <span>{@formatnumber val=apdex.ajax type="apdex"/}</span>
-    	{/gt}
-    	</span>
-    	&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
-    	{@gt key=server.r value=0}
-    		<span>{@formatnumber val=server.r type="rpm"/}</span>
-    	{/gt}
-    	{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-    		<span>{@formatnumber val=client.r type="rpm"/}
-    		</span> / <span>{@formatnumber val=ajax.r type="rpm"/}</span>
-    	{/gt}
-    	</span>
-    	&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
-    	{@gt key=server.r value=0}
-    		<span>{@formatnumber val=server.etu type="tm"/}</span>
-    	{/gt}
-    	{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-    		<span>{@formatnumber val=client.etu type="tm"/}
-    		</span> / <span>{@formatnumber val=ajax.etu type="tm"/}</span>
-    	{/gt}
-    	</span>
-    	&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
-    	{@gt key=server.r value=0}
-    		<span>{@formatnumber val=server.e type="erate"/}</span>
-    	{/gt}
-    	{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-    		<span>{@formatnumber val=client.e type="erate"/}
-    		</span> / <span>{@formatnumber val=ajax.e type="erate"/}</span>
-    	{/gt}
-    </div>
-    {/t_metrics}
+		<span style="white-space: nowrap;"><b>
+		<span>{@math key=errAck.dtlActions method="round"/} ( {@math key=errAck.actions method="round"/} )</span> / <span>{@math key=errAck.dtlPages method="round"/} ( {@math key=errAck.pages method="round"/} )</span>
+		</b></span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=server.r value=0}
+			<span>{@formatnumber val=apdex.server type="apdex"/}</span>
+		{/gt}
+		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+			<span>{@formatnumber val=apdex.client type="apdex"/}
+			</span> / <span>{@formatnumber val=apdex.ajax type="apdex"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=server.r value=0}
+			<span>{@formatnumber val=server.r type="rpm"/}</span>
+		{/gt}
+		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+			<span>{@formatnumber val=client.r type="rpm"/}
+			</span> / <span>{@formatnumber val=ajax.r type="rpm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=server.r value=0}
+			<span>{@formatnumber val=server.etu type="tm"/}</span>
+		{/gt}
+		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+			<span>{@formatnumber val=client.etu type="tm"/}
+			</span> / <span>{@formatnumber val=ajax.etu type="tm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
+		{@gt key=server.r value=0}
+			<span>{@formatnumber val=server.e type="erate"/}</span>
+		{/gt}
+		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
+			<span>{@formatnumber val=client.e type="erate"/}
+			</span> / <span>{@formatnumber val=ajax.e type="erate"/}</span>
+		{/gt}
+	</div>
+	{/t_metrics}
 </div>
 	{#projects}
 		<div class="row">
@@ -106,6 +106,6 @@
 			{/_t_proj}
 		</div>
 		{/projects}
-    {/teams}
+	{/teams}
 </div>
 
