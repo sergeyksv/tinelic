@@ -11,6 +11,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/pa
                 return false;
             }
         },
+        preRender: function () {
+			var locals = this.locals;
+			locals.metrics = this.parent.data.metrics;
+		},
         postRender:function () {
             view.prototype.postRender.call(this);
             var self = this;

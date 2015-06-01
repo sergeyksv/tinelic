@@ -1,6 +1,7 @@
 {>"views/base_page"/}
 {<main}
-	<legend>{project.name}
+	<legend>
+		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 		<span class="text-info h5" data-id="{project._id}"> {total} total</span>
 		<div class="dropdown pull-right">
 				<span class="btn btn-sm btn-info sortingSelection" data-toggle="dropdown">

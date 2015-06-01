@@ -21,6 +21,7 @@ define(['tinybone/base','lodash','moment/moment',"tinybone/backadapter",'highcha
 		},
 		postRender:function () {
 			view.prototype.postRender.call(this);
+	//console.log('this',this)
 			var errorsView = _.find(this.views,function(v){
 				return v.name == "views/project/errors_view";
 			});
