@@ -1,0 +1,105 @@
+{>"views/base_page"/}
+{<main}
+	<div class="row">
+		<div class="col-sm-2"></div>
+        <div class="col-sm-8">
+			<div class="row-fluid">
+				{#project}
+                    <legend class="h2">Project
+						<div class="btn btn-sm btn-danger pull-right" id="doDeleteProject">Delete</div>
+                    </legend>
+					<div class="form-horizontal">
+                        <div class="form-group">
+                            <form>
+                                <label class="col-sm-2 control-label">Name</label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Name" data-type="name" data-val="{project.name}" class="btn btn-default btn-xs doEditProjectName">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{project.name}</p>
+                                </div>
+                            </form>
+                        </div>
+					</div>
+					<br>
+				{/project}
+				{#apdexConfig}
+                    <legend class="h2">Apdex Time</legend>
+					<div class="form-horizontal">
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Server</label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Server" data-type="_i_serverT" data-val="{_i_serverT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_serverT}</p>
+                                </div>
+							</form>
+                        </div>
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Pages
+                                </label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Pages" data-type="_i_pagesT" data-val="{_i_pagesT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_pagesT}</p>
+                                </div>
+							</form>
+                        </div>
+                        <div class="form-group">
+							<form>
+                                <label class="col-sm-2 control-label">Ajax
+                                </label>
+                                <div class="container-fluid pull-right">
+                                    <div data-title="Ajax" data-type="_i_ajaxT" data-val="{_i_ajaxT}" class="btn btn-default btn-xs doEditApdex">Edit</div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <p class="form-control-static">{_i_ajaxT}</p>
+                                </div>
+							</form>
+                        </div>
+					</div>
+					<br>
+					<div type="submit" data-send="apdexT" style="display: none" class="btn btn-sm btn-primary send">Save</div>
+					<br>
+				{/apdexConfig}
+                <legend class="h2">Page Rules <div type="submit" data-add="pageRules" class="btn btn-sm btn-default doEditRule pull-right">Add Rule</div></legend>
+                <div class="row-fluid">
+					{#project.pageRules}
+					<form class="form-horizontal" data-index="{$idx}">
+						<legend class="h3">Rule {$idx}
+							<div class="pull-right btn-group">
+								<div class="btn btn-default btn-xs doEditRule" data-id="{_id}">Edit</div>
+								<div data-id='{_id}' class="btn btn-xs btn-danger deletePageRule">Delete</div>
+							</div>
+						</legend>
+						<div class="form-group">
+							<label class="col-sm-2 control-label">Condition</label>
+							<div class="col-sm-10">
+								<p class="form-control-static">{_s_condition}</p>
+							</div>
+						</div>
+						{#actions}
+						<div class="form-group">
+							<label class="col-sm-2 control-label">Action</label>
+							<div class="col-sm-10 ">
+							<p class="form-control-static">
+							{@eq key=_s_type value="replacer"}
+								{_s_field} = {_s_field}.replace(new RegExp("{_s_matcher}"),"{_s_replacer}");
+							{/eq}
+							</p>
+							</div>
+						</div>
+						{/actions}
+					</form>
+					{/project.pageRules}
+					<br>
+                </div><br>
+			</div>
+		</div>
+        <div class="col-sm-3"></div>
+	</div>
+{/main}

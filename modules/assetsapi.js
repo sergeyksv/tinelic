@@ -36,7 +36,11 @@ module.exports.init = function (ctx, cb) {
                 db.collection("teams",cb);
             },
             "projects":function (cb) {
-                db.collection("projects",cb);
+                db.collection("projects",safe.sure(cb, function (col) {
+					safe.parallel([
+						function (cb) { ctx.api.mongo.ensureIndex(col,{slug:1}, cb); }
+					], safe.sure(cb, col));
+				}));
             }
         }, safe.sure(cb,function (tm) {
 			var projects = tm.projects;
@@ -138,7 +142,7 @@ module.exports.init = function (ctx, cb) {
 					}))
                 },
                 updateTeam: function (t,u,cb) {
-                    var _id = new mongo.ObjectID(u.id)
+                    var _id = new mongo.ObjectID(u._id)
                     tm.teams.update({_id: _id},
                         { $set: {
                                 name: u.name
@@ -150,26 +154,48 @@ module.exports.init = function (ctx, cb) {
                     var _id = new mongo.ObjectID(u.id)
                     tm.teams.remove({_id: _id}, cb)
                 },
+				setProjects: function(t,p,cb){
+					p = prefixify(p);
+					tm.teams.update({_id: p._id},{$set: {projects: p.projects}}, {multi:true},cb)
+				},
                 addProjects: function(t, u, cb) {
-					u = prefixify(u);
+					var id;
+					if (!Array.isArray(u._id)) {
+						u = prefixify(u);
+						id = u._id
+					}
+					else {
+						id = {$in: []}
+						_.each(u._id,function(thisid){
+							id.$in.push(mongo.ObjectID(thisid))
+						})
+						u = prefixify(u);
+					}
 					var update = {
-							$addToSet: {
-								projects: {$each: u.projects}
-							}}
+						$addToSet: {
+							projects: {$each: u.projects}
+						}}
 					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
+						tm.teams.update({_id: id}, update, {multi:true},cb)
 					}))
                 },
-                addUsers: function(t, u, cb) {
+                saveTeamUsersForRole: function(t, u, cb) {
 					u = prefixify(u);
+					_.each(u.users,function (user) {
+						user.role = u._s_type;
+					});
 					var update = {
 						$addToSet: {
 								users: {$each:u.users}
 						}
-					}
-					ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
-						tm.teams.update({_id: u._id}, update, {},cb)
-					}))
+					};
+					tm.teams.update({_id: u._id},{$pull:{users:{role: u._s_type}}},{},safe.sure(cb,function() {
+						if (!(u.users && u.users.length))
+							return cb(null);
+						ctx.api.validate.check("team", update, {isUpdate:true}, safe.sure(cb, function () {
+							tm.teams.update({_id: u._id}, update, {},cb);
+						}));
+					}));
                 },
                 pullData: function(t, u, cb) {
 					u = prefixify(u);
@@ -182,8 +208,132 @@ module.exports.init = function (ctx, cb) {
 				pullErrAck: function(t, data, cb) {
 					data = prefixify(data)
 					var set = {$set:{}}
-					set.$set[data.type] = new Date();
-					tm.projects.update({_id:data._id},set,cb)
+
+					if (Array.isArray(data.type)) {
+						_.each(data.type,function(t){
+							set.$set[t] = new Date();
+						})
+					}
+					else
+						set.$set[data.type] = new Date();
+
+					tm.projects.update({_id: data._id}, set, cb)
+				},
+				getProjectApdexConfig: function(t, query, cb) {
+					query =  prefixify(query)
+					var serverT = 200;
+					var pagesT = 7000;
+					var ajaxT = 500;
+					projects.findOne(query, safe.sure(cb,function(data) {
+						if (data.apdexConfig){
+							cb(null,data.apdexConfig)
+						}
+						else {
+							cb(null, {
+								_i_serverT: serverT,
+								_i_pagesT: pagesT,
+								_i_ajaxT: ajaxT
+							})
+						}
+					}))
+				},
+				getProjectPageRules: function(t,p,cb) {
+					p = prefixify(p)
+					projects.findOne(p,safe.sure(cb,function(data){
+						cb(null,data.pageRules || [])
+					}))
+				},
+				savePageRule: function(t,p,cb) {
+					p = prefixify(p);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					// ensure that every rule has an id
+					_.each(p.rule.actions, function (action) {
+						if (!action._id)
+							action._id = mongo.ObjectID();
+					})
+					if (p.rule._id) {
+						// update existins
+						projects.update({_id: p._id,'pageRules._id': p.rule._id},{$set: {'pageRules.$':p.rule}},{multi:false},cb);
+					} else {
+						// add new one
+						p.rule._id = mongo.ObjectID();
+						projects.update({_id: p._id},{$push: {pageRules:p.rule}},{},cb);
+					}
+				},
+				saveApdexT: function(t,p,cb){
+					var error = 0;
+					p = prefixify(p);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					_.each(p.filter,function(k,v){
+						if(isNaN(k))
+							error++;
+
+						if (v == '_i_serverT' || v == '_i_ajaxT' || v == '_i_pagesT') {
+							p.filter['apdexConfig.'+v] = k;
+							delete p.filter[v]
+						}
+						else
+							error++;
+					})
+					if (error)
+						return safe.back(cb, new Error('where is apdex? My dear friend'))
+
+					projects.update({_id: p._id},{$set:p.filter},{},cb)
+
+
+				},
+				saveProjectName:function(t,p,cb) {
+					var error = 0;
+					p = prefixify(p);
+					if (!p._id)
+						return safe.back(cb, new Error("_id of project is required"));
+
+					_.each(p.filter,function(k,v){
+						if (v == 'name' && _.isString(k)) {}
+						else
+							error++
+					})
+
+					if (error)
+						return safe.back(cb, new Error('data is not valid'));
+
+					this.saveProject(t,{project:{name: p.filter.name,_id: p._id}},safe.sure(cb,function(id,name,slug){
+						cb(null,{slug:slug})
+					}));
+				},
+				deletePageRule: function(t,p,cb){
+					p = prefixify(p);
+					projects.update({_id: p._id},{$pull:{pageRules:p.filter}},{},cb)
+				},
+				deleteProject: function(t,id,cb){
+					ctx.api.users.getCurrentUser(t, safe.sure(cb, function(u) {
+						if (u.role == "admin") {
+							id = prefixify(id)
+							var collections = ['action_errors','action_stats','actions','metrics','page_errors','page_reqs','pages']
+							safe.parallel([
+								function(cb){
+									safe.forEach(collections,function(collection,eachCb){
+										db.collection(collection,safe.sure(eachCb,function(thisCollection){
+											thisCollection.remove(id,eachCb)
+										}))
+									},cb)
+								},
+								function(cb){
+									tm.projects.remove({_id: id._idp},cb)
+								},
+								function(cb){
+									tm.teams.update({'projects._idp': id._idp},{$pull:{projects: id}},{multi:true},cb)
+								}
+							],cb)
+						}
+						else {
+							throw new CustomError('You are not admin',"Access forbidden")
+						}
+					}))
 				}
             }});
         }))

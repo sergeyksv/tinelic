@@ -1,0 +1,27 @@
+{#info}
+<div class="panel panel-default">
+  <div class="panel-heading">Information</div>
+  <div class="panel-body">
+	{?event}First error: <b>{@formatdate date=event._dtf format="l"/} {@formatdate date=event._dtf format="LTS"/}</b><br>{/event}
+	Total count: <b>{count}</b><br>
+	Affected sessions: <b>{sessions}</b><br>
+	Affected pages views: <b>{views}</b><br>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Error Browsers</div>
+  <div class="panel-body">
+	{#browser}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/browser}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Error OS</div>
+  <div class="panel-body">
+	{#os}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/os}
+  </div>
+</div>
+{/info}

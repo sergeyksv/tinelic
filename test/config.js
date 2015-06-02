@@ -1,5 +1,5 @@
 module.exports = {
-	env:"test",
+	env:"production",
 	automated:true,
 	mongo:{
 		main:{

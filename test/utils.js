@@ -1,3 +1,4 @@
+/*jslint node: true */
 "use strict";
 
 var Db = require('mongodb').Db;
@@ -12,6 +13,7 @@ var mutils = require('mongo-utils');
 var async = require('safe');
 var fs = require('fs');
 var os = require("os");
+var argv = require('yargs').argv;
 
 var childs = [];
 
@@ -21,7 +23,7 @@ process.on('uncaughtException', STOP);
 
 function STOP (err) {
 	if (err)
-		console.trace(err);
+		console.log(err.stack);
 
 	killChilds();
 
@@ -33,8 +35,8 @@ function dropDb(cb){
 	var tag = "tinelic_test";
 	var dbs = new Db(tag, new Server('localhost', 27017), {w:1});
 	dbs.open(safe.sure(cb, function (db) {
-		db.dropDatabase(cb)
-	}))
+		db.dropDatabase(cb);
+	}));
 }
 
 module.exports.shutdownContext = function (done) {
@@ -47,7 +49,7 @@ module.exports.shutdownContext = function (done) {
 	}, 100);
 
 	return deferred.promise;
-}
+};
 
 module.exports.getApp = function (opts, cb) {
 	var fixture = opts.fixture || false;
@@ -59,20 +61,21 @@ module.exports.getApp = function (opts, cb) {
 		else
 			cb();
 	}, safe.sure(cb,function () {
-		var app = childProcess.fork(__dirname+"/../app.js",['--config','./test/config.js'],{silent:true});
+		var app = childProcess.fork(__dirname+"/../app.js",['--config',argv.testenv!='test'?'./test/config.js':'./test/config-test.js'],{silent:true});
 		app.on('message',function (msg) {
 			if (msg.c=='startapp_repl')
 				cb(msg.data);
-		})
+		});
 		childs.push(app);
-	}))
-}
+	}));
+};
 
-var browser = "phantomjs";
+var browser = argv.browser || "phantomjs";
 module.exports.getBrowser = function(cb) {
 	safe.run(function (cb) {
+		var driver = null;
 		if (browser === "firefox") {
-			var driver = new webdriver.Builder().
+			driver = new webdriver.Builder().
 				forBrowser('firefox').
 				build();
 
@@ -80,7 +83,7 @@ module.exports.getBrowser = function(cb) {
 		}
 
 		if (browser === "chrome") {
-			var driver = new webdriver.Builder().
+			driver = new webdriver.Builder().
 				forBrowser('chrome').
 				build();
 
@@ -89,11 +92,10 @@ module.exports.getBrowser = function(cb) {
 
 		if (browser === "phantomjs") {
 			var phantom = childProcess.spawn(require("phantomjs").path, ["--webdriver=127.0.0.1:9134"/*,"--remote-debugger-port=9000"*/]);
-			var driver = null;
 			var error = null;
 			phantom.stdout.on('data', function (data) {
 				var line = data.toString();
-				if (driver==null) {
+				if (!driver) {
 					if (/GhostDriver - Main - running /.test(line)) {
 						driver = new webdriver.Builder().
 							usingServer("http://127.0.0.1:9134").
@@ -108,8 +110,8 @@ module.exports.getBrowser = function(cb) {
 					if (/Error/.test(line)) {
 						error = line;
 						setTimeout(function () {
-							driver.controlFlow().abortNow_(new Error(error))
-						},100)
+							driver.controlFlow().abortNow_(new Error(error));
+						},100);
 					}
 				}
 			});
@@ -119,29 +121,29 @@ module.exports.getBrowser = function(cb) {
 	}, safe.sure(cb, function (driver) {
 		driver.manage().timeouts().implicitlyWait(0).then(function () {
 			cb(null, driver);
-		})
+		});
 	}));
-}
+};
 
 module.exports.makeDbSnapshot = function (snapname, cb) {
 	mutils.dumpDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
-}
+};
 
 module.exports.restoreDbSnapshot = function (snapname, cb) {
 	dropDb(safe.sure(cb,function(){
 		mutils.restoreDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
 	}));
-}
+};
 
 module.exports.noerror = function (f) {
 	return function (data) {
 		f.call(this, null, data);
-	}
-}
+	};
+};
 
 module.exports.notError = function (v) {
 	if (v instanceof Error) throw v.message;
-}
+};
 
 var tutils = module.exports;
 module.exports.setupContext = function (done) {
@@ -156,11 +158,11 @@ module.exports.setupContext = function (done) {
 				self._done(err);
 			},100);
 		});
-	}
+	};
 	this.trackError = function (done) {
 		self._done = done;
-		self.browser.controlFlow().once('uncaughtException', this._uncaughtException)
-	}
+		self.browser.controlFlow().once('uncaughtException', this._uncaughtException);
+	};
 	this.fixture = function (tag) {
 		if (!self.fixtures)
 			self.fixtures={};
@@ -170,12 +172,12 @@ module.exports.setupContext = function (done) {
 				return self.fixtures[tag];
 			return webdriver.promise.checkedNodeCall(function(cb) {
 				fs.readFile(__dirname+"/fixtures/"+tag+".json", safe.sure(cb, function (data) {
-					self.fixtures[tag]=JSON.parse(data.toString())
+					self.fixtures[tag]=JSON.parse(data.toString());
 					cb(null, self.fixtures[tag]);
-				}))
-			})
-		})
-	}
+				}));
+			});
+		});
+	};
 	this.restoreDb = function (tag) {
 		var deferred = new webdriver.promise.Deferred();
 
@@ -184,7 +186,7 @@ module.exports.setupContext = function (done) {
 		});
 
 		return deferred.promise;
-	}
+	};
 	this.saveDb = function (tag) {
 		var deferred = new webdriver.promise.Deferred();
 
@@ -193,10 +195,10 @@ module.exports.setupContext = function (done) {
 		});
 
 		return deferred.promise;
-	}
+	};
 	this.done = function () {
 		self.browser.controlFlow().execute(self._done);
-	}
+	};
 	this.findInDb = function(collection, query, sort, skip, limit, cb1) {
 		self.browser.controlFlow().execute(function () {
 			return webdriver.promise.checkedNodeCall(function(cb) {
@@ -213,7 +215,7 @@ module.exports.setupContext = function (done) {
 			tutils.getBrowser(safe.sure(cb, function (browser_) {
 				self.browser = browser_;
 				cb();
-			}))
+			}));
 		},
 		function(cb) {
 			tutils.getApp({fixture:"empty"},cb);
@@ -224,7 +226,7 @@ module.exports.setupContext = function (done) {
 	});
 
 	return deferred.promise;
-}
+};
 
 module.exports.afterEach = function () {
 	if (this.currentTest.state == "failed") {
@@ -236,11 +238,11 @@ module.exports.afterEach = function () {
 		this.browser.controlFlow().removeListener('uncaughtException', this._uncaughtException);
 		delete this._done;
 	}
-}
+};
 
 function killChilds(){
 	_.each(childs, function (c) {
-		c.kill('SIGTERM')
-	})
+		c.kill('SIGTERM');
+	});
 	childs = [];
 }

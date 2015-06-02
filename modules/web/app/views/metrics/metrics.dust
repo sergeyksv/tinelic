@@ -1,0 +1,4 @@
+{>"views/base_page"/}
+{<main}
+	<div id="memory"></div>
+{/main}

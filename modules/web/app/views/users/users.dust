@@ -1,0 +1,51 @@
+{>"views/base_page"/}
+{<main}
+		<button type="button" id="addnu" class="btn btn-default btn-xs doEditUser">Add new user</button>
+		<p class="bg-primary"></p>
+		<table style="margin-top: 20px;"class="table table-striped">
+			<tr>
+				 <th data-field="id" class="col-md-3">
+                    First name
+                 </th>
+                 <th data-field="id" class="col-md-3">
+                    Last name
+                 </th>
+                 <th data-field="id" class="col-md-3">
+                    Login
+                 </th>
+                 <th data-field="id" class="col-md-3">
+                    Role
+                 </th>
+                 <th data-field="id" >
+
+                 </th>
+			</tr>
+          {#users}
+          	<tr>
+          		<td>
+          			{firstname}
+          		</td>
+          		<td>
+                  {lastname}
+                </td>
+                <td>
+                    {login}
+                </td>
+                <td>
+                    {role}
+                </td>
+          		<td>
+          		    <div class="dropdown">
+          			    <button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs">Actions</button>
+
+                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="edit" class="doEditUser" href="#" data-edit="{_id}">Edit</a></li>
+                        <li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
+
+                      </ul>
+                    <div>
+          		</td>
+          	</tr>
+          {/users}
+        </table>
+{/main}

@@ -3,10 +3,10 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 		errorInfo:function (token, params, cb) {
 			safe.parallel({
 				event:function (cb) {
-					api("stats.getEvent",token, _.extend({_t_age:"30d"},params.filter), cb)
+					api("stats.getPageError",token, _.extend({_t_age:"30d"},params.filter), cb)
 				},
 				info:function (cb) {
-					api("stats.getEventInfo",token, _.extend({_t_age:"10m"},params), cb)
+					api("stats.getPagesErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
 				}
 			}, cb)
 		},
@@ -25,7 +25,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			var dtp = params._dtPagesErrAck; delete params._dtPagesErrAck;
 			safe.parallel({
 				views: function (cb) {
-					api("stats.getPageViews",token, params, cb);
+					api("stats.getPagesTimings",token, params, cb);
 				},
 				errors: function (cb) {
 					api("stats.getPagesErrorStats",token, {
@@ -43,16 +43,16 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 					api("stats.getAjaxTimings",token,params, cb);
 				},
 				actions: function (cb) {
-					api("stats.getActions", token, params, cb);
+					api("stats.getActionsTimings", token, params, cb);
 				},
 				topAjax: function (cb) {
 					api("stats.getAjaxStats", token, params, cb);
 				},
 				topPages: function (cb) {
-					api("stats.getTopPages", token, params, cb);
+					api("stats.getPagesStats", token, params, cb);
 				},
 				topTransactions: function(cb) {
-					api("stats.getTopTransactions", token, params, cb);
+					api("stats.getActionsStats", token, params, cb);
 				},
 				serverErrors: function (cb) {
 					api("stats.getServerErrorStats",token, {
@@ -90,7 +90,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							}}, cb)
 						},
 						views: function (cb) {
-							api("stats.getPageViews",token, params, cb);
+							api("stats.getPagesTimings",token, params, cb);
 						},
 						errors: function (cb) {
 							api("stats.getPagesErrorStats",token, params, cb);
@@ -99,25 +99,13 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							api("stats.getAjaxTimings",token,params, cb);
 						},
 						actions: function (cb) {
-							api("stats.getActions", token, params, cb);
-						},
-						topAjax: function (cb) {
-							api("stats.getAjaxStats", token, params, cb);
-						},
-						topPages: function (cb) {
-							api("stats.getTopPages", token, params, cb);
-						},
-						topTransactions: function(cb) {
-							api("stats.getTopTransactions", token, params, cb);
+							api("stats.getActionsTimings", token, params, cb);
 						},
 						serverErrors: function (cb) {
 							api("stats.getServerErrorStats",token, params, cb);
 						},
 						metrics: function (cb) {
 							api("stats.getMetrics", token, params, cb)
-						},
-						database: function (cb) {
-							api("stats.getActionsCategoryStats", token, params, cb)
 						}
 					}, safe.sure(cb, function(result) {
 						projectN.result=result;

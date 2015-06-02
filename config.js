@@ -5,8 +5,8 @@ module.exports = {
 			db: "tinelic",
 			host:"localhost",
 			port:27017,
-			scfg:{auto_reconnect: true, poolSize : 40},
-			ccfg:{native_parser: false, safe: true, w:1}
+			scfg:{auto_reconnect: true, poolSize : 100},
+			ccfg:{native_parser: true, w:1}
 		}
 	}
 };

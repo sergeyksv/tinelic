@@ -1,0 +1,25 @@
+<div class="addtrbreak">
+	{@view name="views/common/graph" data="graphs" locals-name="Apdex" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}
+	{@view name="views/common/graph" data="graphs" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="1"/}
+	{@view name="views/common/graph" data="graphs" locals-name="Time" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}
+
+	{?query}<table class="tablesorter table table-hover" id="trbreak">
+		<thead>
+			<tr class="info">
+				<th>Part</th>
+				<th>Count</th>
+				<th>Time</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#datapreRender}
+			<tr>
+				<td>{_id}</td>
+				<td>{count}</td>
+				<td>{@formatnumber val=tta type="tm"/} / {@formatnumber val=proc type="erate"/}</td>
+			</tr>
+			{/datapreRender}
+		</tbody>
+	</table>
+	{/query}
+</div>

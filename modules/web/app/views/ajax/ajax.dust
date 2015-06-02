@@ -1,0 +1,32 @@
+{>"views/base_page"/}
+{<main}
+	<legend>{project.name}
+		<span class="text-info h5"> {query} </span>
+		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {stat.epm} epm /</span>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info" data-toggle="dropdown">
+				{@select key="{st}"}
+					{@eq value="rpm"}highest rpm{/eq}
+					{@eq value="mtc"}most time consuming{/eq}
+					{@eq value="sar"}slowest average response time{/eq}
+					{@eq value="wa"}worst apdex{/eq}
+				{/select}
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="rpm" class="do-stats" href="#">Highest rpm</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mtc" class="do-stats" href="#">Most time consuming</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
+				</ul>
+		</div>
+	</legend>
+
+<div class="row">
+	<div class="col-sm-4">
+		{@view name="views/ajax/ajax_leftlist_pagination"/}
+	</div>
+	<div class="col-sm-8">
+		{@view name="views/ajax/ajax_graph_table"/}
+	</div>
+</div>
+{/main}

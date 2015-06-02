@@ -1,0 +1,23 @@
+
+<div class="starter-template">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <form class="form-signin col-md-4" role="form">
+                <h2 class="form-signin-heading">Please sign in</h2>
+                <div class="panel panel-danger" style="display: none;">
+                    <div class="panel-heading">
+                        Error
+                    </div>
+                    <div class="panel-body"></div>
+                </div>
+                <input type="login" class="form-control" id="login" placeholder="Login">
+                <input type="password" class="form-control" id="pass" placeholder="Password">
+                <br>
+                <div class="btn btn-lg btn-primary btn-block" id="signup">Login</div>
+            </form>
+            <div class="col-md-4"></div>
+        </div>
+    </div>
+</div>
+

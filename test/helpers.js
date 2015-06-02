@@ -23,28 +23,21 @@ module.exports.blurFocus = function(input){
 	input.sendKeys(Key.TAB);
 }
 
-module.exports.runModal = function (selector, run) {
+module.exports.waitModal = function (hint, selector, timeout) {
 	var self = this;
-	selector = selector || By.css('.modal:not(#livechat)');
-	self.browser.wait(function () {
+	selector = selector || By.css('.modal');
+	hint = hint || '';	timeout = timeout || 15000;
+	return self.browser.wait(function () {
 		return self.browser.isElementPresent(selector)
-	});
-	self.browser.findElement(selector).then(function (modal) {
-		var id;
-		modal.getAttribute("id").then(function(text){
-			id = text;
+	},timeout).then(function() {
+		return self.browser.findElement(selector).then(function (modal) {
+			return self.browser.wait(function () {
+				return modal.getCssValue("opacity").then(function (v) { return v==1; });
+			},timeout);
 		});
-		self.browser.wait(function () {
-			return modal.getCssValue("opacity").then(function (v) { return v==1; });
-		});
-		run(modal);
-
-		self.browser.wait(function () {
-			return self.browser.isElementPresent(By.id(id)).then(function (isPresent)
-				{ return !isPresent; } );
-		});
-		self.browser.sleep(256);
-	});
+	}).then(function () {
+		return self.browser.sleep(500);
+	}).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
 }
 
 module.exports.waitNoElement = function (element) {
@@ -59,8 +52,8 @@ module.exports.waitElementExist = function (selector, hint, timeout) {
 	var self = this;
 	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(selector)
-	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
+		return self.browser.isElementPresent(selector);
+	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
 };
 
 module.exports.waitElementVisible = function (selector, hint, timeout) {
@@ -87,14 +80,20 @@ module.exports.waitPageReload = function (old_id, timeout) {
 			return body.getAttribute("data-id").then(function(text){
 				new_id = text;
 				return old_id != text;
-			})
+			});
 		}).then(null, function (err) {
 			return false;
-		})
+		});
 	},timeout).then(function () {
+		return b.wait(function () {
+			return b.isElementPresent(By.xpath("//div[@class='blockUI blockOverlay']")).then(function (isPresent)
+				{ return !isPresent; } );
+			},
+		timeout);
+	}).then(function () {
 		return new_id;
-	})
-}
+	});
+};
 
 module.exports.waitUnblock = function (hint, timeout) {
 	hint = hint || '';	timeout = timeout || 15000;

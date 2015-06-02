@@ -1,0 +1,8 @@
+{@view name="views/header/header" data="header" /}
+<div class="container starter-template">
+{+main}
+{/main}
+    <div class='row'>
+        <hr>Copyright &copy; 2015 PushOk Software
+    </div>
+</div>

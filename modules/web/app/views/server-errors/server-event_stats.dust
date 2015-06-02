@@ -1,0 +1,33 @@
+{#info}
+<div class="panel panel-default">
+  <div class="panel-heading">Information</div>
+  <div class="panel-body">
+	{#event}First error: <b>{@formatdate date=_dtf format="l"/} {@formatdate date=_dtf format="LTS"/}</b><br>{/event}
+	Total count: <b>{count}</b><br>
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Server</div>
+  <div class="panel-body">
+	{#server}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/server}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Reporter</div>
+  <div class="panel-body">
+	{#reporter}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/reporter}
+  </div>
+</div>
+<div class="panel panel-default">
+  <div class="panel-heading">Language</div>
+  <div class="panel-body">
+	{#lang}
+		<span class="badge text-danger">{v}</span>&nbsp;{k}<br>
+	{/lang}
+  </div>
+</div>
+{/info}

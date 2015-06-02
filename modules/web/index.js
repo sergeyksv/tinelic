@@ -11,8 +11,6 @@ var raven = require('raven');
 
 module.exports.deps = ['assets','users','collect','stats'];
 
-var wires = {};
-
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
 	var cfg = ctx.cfg;
@@ -24,6 +22,7 @@ module.exports.init = function (ctx, cb) {
 			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
 			'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
 			"md5":"../public/js/md5",
+			'jquery.tablesorter.combined': path.resolve(__dirname,'../../node_modules/tablesorter/dist/js/jquery.tablesorter.combined'),
 		},
 		config:{
 			"text":{
@@ -33,11 +32,11 @@ module.exports.init = function (ctx, cb) {
 				debug:cfg.env!="production"
 			}
 		}
-	})
+	});
 
 	requirejs.onError = function (err) {
 		console.log(err.trace);
-	}
+	};
 
 	requirejs.define("dust",dust);
 	requirejs.define("dust-helpers", require('dustjs-helpers'));
@@ -47,21 +46,26 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("jquery-cookie", true);
 	requirejs.define("jquery.blockUI", true);
 	requirejs.define("bootstrap/dropdown", true);
+    requirejs.define("bootstrap/datetimepicker", true);
 	requirejs.define("bootstrap/modal", true);
+	requirejs.define("bootstrap/tagsinput", true);
+	requirejs.define("bootstrap/typeahead", true);
+    requirejs.define("bootstrap/collapse", true);
+    requirejs.define("bootstrap/transition", true);
 	requirejs.define("highcharts",true);
+	requirejs.define("jquery.tablesorter.combined",true);
 	requirejs.define("backctx",ctx);
 
-	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}))
-	ctx.router.use(static(__dirname+"/public"));
+	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}));
+	ctx.router.use(static(__dirname+"/public",{maxAge:600000}));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
-
-		var wire = wires[req.params.id];
-		if (wire) {
-			delete wires[req.params.id];
-			res.json(wire);
-		} else
-			res.send(404)
-	})
+		ctx.api.cache.get("web_wires",req.params.id, safe.sure(next, function (wire) {
+			if (wire) {
+				res.json(wire);
+			} else
+				res.send(404);
+		}));
+	});
 	requirejs(['app'], function (App) {
 		var app = new App({prefix:"/web"});
 		// reuse express router as is
@@ -73,7 +77,7 @@ module.exports.init = function (ctx, cb) {
 				view.data = route.data || {};
 				view.locals = res.locals;
 				var populateTplCtx = view.populateTplCtx;
-				var uniqueId = _.uniqueId("w")
+				var uniqueId = _.uniqueId("w");
 				view.populateTplCtx = function (ctx, cb) {
 					ctx = ctx.push({_t_main_view:route.view.id,
 						_t_prefix:"/web",
@@ -84,67 +88,59 @@ module.exports.init = function (ctx, cb) {
 						_t_rev:cfg.rev,
 						o_newrelic_agent: require("newrelic")
 					});
-					populateTplCtx.call(this,ctx,cb)
-				}
+					populateTplCtx.call(this,ctx,cb);
+				};
 
 				view.render(safe.sure(next, function (text) {
-					var wv = {name:"app",data:route.data,views:[]};
-					function wireView(realView, wiredView) {
-						_.each(realView.views, function (view) {
-							var wv = {md5:view.md5, name:view.constructor.id, data:view.dataPath, cid:view.cid, views:[]};
-							wireView(view,wv);
-							wiredView.views.push(wv)
-						})
-					}
+					var wv = view.getWire();
 					wv.prefix = app.prefix;
 
-					wireView(view,wv);
 					// make wire available for download for 30s
-					wires[uniqueId]=wv;
-					setTimeout(function () {
-						delete wires[uniqueId]
-					}, 30000);
-
-					res.send(text)
-				}))
-			}
+					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(next, function () {
+						res.send(text);
+					}));
+				}));
+			};
 			next();
-		})
+		});
 		var usr_admin=[{}], proj_Def=[{}];
 		safe.series([
 			function (cb) {
-				app.initRoutes(cb)
+				ctx.api.cache.register("web_wires",{maxAge:300},cb);
+			},
+			function (cb) {
+				app.initRoutes(cb);
 			},
 			function (cb) {
 				ctx.api.assets.getProject("public",{filter:{slug:"tinelic-web"}}, safe.sure(cb, function (selfProj) {
-					if (selfProj==null) {
+					if (!selfProj) {
 						ctx.api.assets.saveProject("public", {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id, name, slug) {
 							proj_Def[0]._idp=selfProj_id;
 							self_id = selfProj_id;
-							cb()
-						}))
+							cb();
+						}));
 					} else {
 						self_id = selfProj._id;
-						cb()
+						cb();
 					}
-				}))
+				}));
 			},
 			function (cb) {
 				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
-					if (self) return cb()
+					if (self) return cb();
 
 					ctx.api.users.saveUser("public", {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
 						usr_admin[0]._idu=self[0]._id;
 						usr_admin[0].role="lead";
-					cb()
-					}))
-				}))
+						cb();
+					}));
+				}));
 			},
 			function (cb) {
 				ctx.api.assets.getTeam("public",{filter:{name:"Tinelic"}}, safe.sure(cb, function (self) {
-					if (self) return cb()
-					ctx.api.assets.saveTeam("public", {name:"Tinelic", projects:proj_Def, users:usr_admin},cb)
-				}))
+					if (self) return cb();
+					ctx.api.assets.saveTeam("public", {name:"Tinelic", projects:proj_Def, users:usr_admin},cb);
+				}));
 			}
 		], safe.sure(cb, function () {
 			// Set up Raven
@@ -156,12 +152,14 @@ module.exports.init = function (ctx, cb) {
 
 			cb(null,{api:{
 				getFeed:function (token, p, cb) {
-					feed = p.feed.split(".")
+					if (ctx.locals.newrelic)
+						ctx.locals.newrelic.setTransactionName("/webapi/"+(token=="public"?"public":"token")+"/feed/"+p.feed);
+					feed = p.feed.split(".");
 					requirejs(["feed/"+feed[0]], function (m) {
-						m[feed[1]](token,p.params,cb)
-					},cb)
+						m[feed[1]](token,p.params,cb);
+					},cb);
 				}
-			}})
-		}))
-	},cb)
-}
+			}});
+		}));
+	},cb);
+};

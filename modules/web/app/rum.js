@@ -99,15 +99,16 @@
             document.attachEvent("onreadystatechange", ready2);
 
             if (document.documentElement.doScroll && window == window.top) {
-                (function() {
+                var ready3 = function() {
                     try {
                         document.documentElement.doScroll("left");
                     } catch (error) {
-                        setTimeout(arguments.callee, 0);
+                        setTimeout(ready3, 0);
                         return;
                     }
                     domEvent();
-                })();
+                };
+                ready3();
             }
         }
     }
@@ -196,9 +197,9 @@
         var xhrwrapper = function(XHR) {
             var open = XHR.prototype.open;
             var send = XHR.prototype.send;
-            XHR.prototype.open = function(method, url, async, user, pass) {
-                this._url = url;
-                open.call(this, method, url, async, user, pass);
+            XHR.prototype.open = function() {
+                this._url = arguments[1];
+                open.apply(this, arguments);
             };
             XHR.prototype.send = function(data) {
                 var self = this;
@@ -233,7 +234,7 @@
                         if (self.readyState == 2) {
                             s._i_nt = time;
                         }
-                        if (self.readyState == 4) {
+                        if (self.readyState == 4 ) {
                             s._i_tt = time;
                             s._i_pt = s._i_tt - s._i_nt;
                             s.url = url;
@@ -253,7 +254,7 @@
                         if (oldOnReadyStateChange) {
                             oldOnReadyStateChange();
                         }
-                    }
+                    };
                     if (this.addEventListener) {
                         this.addEventListener("readystatechange", onReadyStateChange, false);
                     } else {
