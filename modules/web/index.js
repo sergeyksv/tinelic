@@ -81,7 +81,8 @@ module.exports.init = function (ctx, cb) {
 						_t_route:res.req.route.path,
 						_t_unique:uniqueId,
 						_t_env_production:cfg.env=="production",
-						_t_rev:cfg.rev
+						_t_rev:cfg.rev,
+						o_newrelic_agent: require("newrelic")
 					});
 					populateTplCtx.call(this,ctx,cb)
 				}

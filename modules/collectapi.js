@@ -346,9 +346,58 @@ module.exports.init = function (ctx, cb) {
 							ctx.api.assets.getProject("public", {filter:query}, safe.sure(cb, function (project) {
 								if (!project)
 									throw new Error( "Project \"" + agent_name + "\" not found" );
-
 								var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
-								res.json({return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}});
+								var _ret = {return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}};
+								// set value to prevent errors from newrelic:api:getBrowserTimingHeader
+								_ret.return_value.application_id = project._id;
+								// need to decode newrelic transaction, see rum.js:decode_newrelic_transaction()
+								_ret.return_value.browser_key = body.settings.license_key.substr(0, 13);
+								// browser script
+								_ret.return_value.js_agent_loader = "";
+								_ret.return_value.js_agent_loader += "</script>";
+								if( ctx.cfg.env=="production" ) {
+									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/js/build/tinelic.js?rev=--7cebdef"></script>\n'
+								} else {
+									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/app/rum.js"></script>\n'
+									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/js/raven.js"></script>\n'
+								}
+								_ret.return_value.js_agent_loader += '<script type="text/javascript">\
+	var _t_page = new Date();\n\
+	var tinelic_protocol = "' + (body.settings["ssl"] ? "https:" : "http:") + '";\n\
+	var tinelic_host = "' + body.settings["host"] + '";\n\
+	var tinelic_port = "' + (body.settings["port"] ? body.settings["port"] : 0) + '";\n\
+	Tinelic.config({\n\
+		url:tinelic_protocol + "//" + tinelic_host + (tinelic_port ? ":" + tinelic_port : ""),\n\
+		project:"' + project._id + '",\n\
+		route:decode_newrelic_transaction( NREUM.info.transactionName, NREUM.info.licenseKey ),\n\
+		_dtp:_t_page,\n\
+		ajaxCallback: function(s, XHR){\n\
+			var re=/(^\\/restapi\\/[A-Za-z]+[0-9]+\\w+\\/)|(^\\/restapi\\/[0-9]+[A-Za-z]+\\w+\\/)/;\n\
+			s.r=s.r.replace(/\\/wire\\/w[0-9]+/,"/wire").replace(/^\\/restapi\\/([^\\/]+)\\//,"/restapi/token/").replace(re,"/restapi/");\n\
+		}\n\
+	});\n\
+	Raven.config(tinelic_protocol + "//nah@" + tinelic_host + (tinelic_port ? ":" + tinelic_port : "")+"/collect/sentry/' + project._id + '", {\n\
+		dataCallback: function(data) {\n\
+			data._dtp = _t_page;\n\
+			data._dt = new Date();\n\
+			return data;\n\
+		}\n\
+	}).install();\n\
+	NREUM.noticeError = function (err) {\n\
+		Raven.captureException(err);\n\
+	}\n\
+	NREUM.inlineHit = function (request_name, queue_time, app_time, total_be_time, dom_time, fe_time) {\n\
+		var m = {\n\
+            _i_nt: queue_time,\n\
+            _i_dt: dom_time,\n\
+            _i_lt: total_be_time,\n\
+            r: request_name\n\
+		};\n\
+		Tinelic.pageLoad(m);\n\
+	}\n\
+</script>\n';
+								_ret.return_value.js_agent_loader += "<script>";
+								res.json(_ret);
 							}))
 						},
 						agent_settings:function () {
@@ -523,7 +572,7 @@ module.exports.init = function (ctx, cb) {
 					}
 					var fn = nrpc[req.query.method];
 					if (!fn)
-						throw new Error("NewRelic: unknown method " + req.query.method)
+						throw new Error("NewRelic: unknown method " + req.query.method);
 					fn();
 				}, function (err) {
 					nrNonFatal(err)
