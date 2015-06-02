@@ -128,8 +128,8 @@ module.exports.init = function (ctx, cb) {
 				ctx.api.users.getUser("public",{filter:{login:"admin"}}, safe.sure(cb, function (self) {
 					if (self) return cb();
 
-					ctx.api.users.saveUser("public", {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (self) {
-						usr_admin[0]._idu=self[0]._id;
+					ctx.api.users.saveUser("public", {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (test, self) {
+						usr_admin[0]._idu=self.upserted[0]._id;
 						usr_admin[0].role="lead";
 						cb();
 					}));

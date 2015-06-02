@@ -36,7 +36,7 @@ define(['tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users
 
                 $this = $(e.currentTarget);
                 self.app.confirm('This will delete user permanently. Are you sure?',function(){
-                    api("users.removeUser", "public", {id: $this.data('delete')}, safe.sure(self.app.errHandler, function () {
+                    api("users.removeUser", "public", {_id: $this.data('delete')}, safe.sure(self.app.errHandler, function () {
 						api.invalidate();
 						self.app.router.reload();
 					}));

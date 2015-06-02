@@ -36,14 +36,9 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
                         }
                         else {
 							var data = {login:login, firstname:fname, lastname:lname, role:role, pass:pass};
-							var func = "";
-                            if (id.length != 0) {
-								func = "users.updateUser";
-								data.id = id;
-                            }
-                            else
-								func = "users.saveUser";
-                            api(func, "public", data, function(err) {
+                            if (id.length != 0)
+								data._id = id;
+                            api("users.saveUser", "public", data, function(err) {
 								if (err)
 									warn.html(err.toString());
 								else {
