@@ -4,7 +4,7 @@
 <div class="row bg-primary">
 	{#t_metrics}
 	<div data-field="name" class="col-md-3 col-xs-12">
-		{#teams} {name} {/teams}
+		{name}
 		{@gt key=server.proc value=0}
 			<span> ( {server.proc} x {@math key=server.mem method="round"/} Mb )</span>
 		{/gt}
@@ -105,5 +105,5 @@
 			{/_t_proj}
 		</div>
 		{/projects}
-    {/teams}
+	{/teams}
 {/main}
