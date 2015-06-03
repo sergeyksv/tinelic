@@ -171,7 +171,7 @@ module.exports.init = function (ctx, cb) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -210,7 +210,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtl:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
@@ -356,9 +356,49 @@ module.exports.init = function (ctx, cb) {
 							ctx.api.assets.getProject("public", {filter:query}, safe.sure(cb, function (project) {
 								if (!project)
 									throw new Error( "Project \"" + agent_name + "\" not found" );
-
 								var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
-								res.json({return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}});
+								var _ret = {return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}};
+								// set value to prevent errors from newrelic:api:getBrowserTimingHeader
+								_ret.return_value.application_id = project._id;
+								// need to decode newrelic transaction, see rum.js:decode_newrelic_transaction()
+								_ret.return_value.browser_key = body.settings.license_key.substr(0, 13);
+								// browser script
+								_ret.return_value.js_agent_loader = '\n</script>\n'+
+								'<script type="text/javascript" src="//'+body.settings.host+
+									'/web/js/build/tinelic.js"></script>\n'+
+								'<script type="text/javascript">\n'+
+								'(function () {\n'+
+									'var _t_page = new Date();\n'+
+									'var _t_host = "' + body.settings.host + '";\n'+
+									'Tinelic.config({\n'+
+										'url:window.location.protocol + "//" + _t_host,\n'+
+										'project:"' + project._id + '",\n'+
+										'route:NREUM.info.transactionName,\n'+
+										'key:NREUM.info.licenseKey,\n'+
+										'_dtp:_t_page,\n'+
+									'});\n'+
+									'Raven.config(window.location.protocol + "//nah@" + _t_host +"/collect/sentry/' + project._id + '", {\n'+
+										'dataCallback: function(data) {\n'+
+										'data._dtp = _t_page;\n'+
+										'data._dt = new Date();\n'+
+										'return data;\n'+
+										'}\n'+
+									'}).install();\n'+
+									'NREUM.noticeError = function (err) {\n'+
+										'Raven.captureException(err);\n'+
+									'}\n'+
+									'NREUM.inlineHit = function (request_name, queue_time, app_time, total_be_time, dom_time, fe_time) {\n'+
+										'var m = {\n'+
+											'_i_nt: queue_time,\n'+
+											'_i_dt: dom_time,\n'+
+											'_i_lt: total_be_time,\n'+
+											'r: request_name\n'+
+										'};\n'+
+									'Tinelic.pageLoad(m);\n'+
+									'}\n'+
+								'})()\n'+
+								'</script>\n';
+								res.json(_ret);
 							}));
 						},
 						agent_settings:function () {
@@ -562,11 +602,11 @@ module.exports.init = function (ctx, cb) {
 											md5sum.update(te.exception._s_type);
 											md5sum.update(te._s_message + te.stacktrace.frames.length);
 											te.ehash = md5sum.digest('hex');
-											action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+											action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 												if (edtl.length)
-													te._dtl = edtl[0]._dtl;
+													te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 												else
-													te._dtl = new Date();
+													te._dtf = new Date();
 
 												action_errors.insert(te, cb);
 											}));
@@ -859,11 +899,11 @@ module.exports.init = function (ctx, cb) {
 									md5sum.update(te.exception._s_type);
 									md5sum.update(te._s_message + te.stacktrace.frames.length);
 									te.ehash = md5sum.digest('hex');
-									action_errors.find({ehash: te.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+									action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 										if (edtl.length)
-											te._dtl = edtl[0]._dtl;
+											te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 										else
-											te._dtl = new Date();
+											te._dtf = new Date();
 
 										action_errors.insert(te, cb);
 									}));
@@ -964,11 +1004,11 @@ module.exports.init = function (ctx, cb) {
 							md5sum.update(data._s_message + data.stacktrace.frames.length);
 							data.ehash = md5sum.digest('hex');
 							//find().sort().limit(1).toArray
-							events.find({ehash: data.ehash}).sort({_dt: -1}).limit(1).toArray(safe.sure(cb,function(edtl){
+							events.find({ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 								if (edtl.length)
-									data._dtl = edtl[0]._dtl;
+									data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 								else
-									data._dtl = new Date();
+									data._dtf = new Date();
 
 									events.insert(data, safe.sure(cb, function(res){
 										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {

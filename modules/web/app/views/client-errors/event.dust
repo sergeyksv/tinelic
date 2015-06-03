@@ -10,7 +10,7 @@
 {#prevId}
 	<a href="{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
 {/prevId}
-<b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>
+{?event}<b>{@formatdate date=event._dt format="l"/} {@formatdate date=event._dt format="LTS"/}</b>{/event}
 {#nextId}
 	<a href="{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
 {/nextId}
@@ -36,7 +36,7 @@
 </div>
 </div>
 <div class="col-xs-12 col-sm-3"><br>
-{@view name="views/client-errors/event_stats" data="info"/}
+{@view name="views/client-errors/event_stats"/}
 </div>
 {^headless}
 </div>

@@ -106,6 +106,18 @@
             this.url = opts.url;
             this._dtp = opts._dtp;
             this.route = opts.route;
+            // support of newrelic style route decoding (when key is set)
+            if (opts.key) {
+                var _encoded = decode64(opts.route);
+                var _key = opts.key;
+                var _decoded = "";
+                for( var i = 0; i < _encoded.length; i++ ) {
+                    var _byte = _encoded.charCodeAt(i) ^ _key.charCodeAt(i % _key.length);
+                    _decoded += String.fromCharCode( _byte );
+                }
+                this.route = _decoded.replace(/[^/]+\/[^/]+\//,'');
+            }
+
             this.project = opts.project;
             this.ajaxCallback = opts.ajaxCallback;
             // work around for legacy initialization
@@ -222,4 +234,32 @@
         };
         xhrwrapper(XMLHttpRequest);
     }
+
+    var base64_key_str = "ABCDEFGHIJKLMNOP" + "QRSTUVWXYZabcdef" + "ghijklmnopqrstuv" + "wxyz0123456789+/" + "=";
+	function decode64(input) {
+		var output = "";
+		var chr1, chr2, chr3 = "";
+		var enc1, enc2, enc3, enc4 = "";
+		var i = 0;
+		input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
+		do {
+			enc1 = base64_key_str.indexOf(input.charAt(i++));
+			enc2 = base64_key_str.indexOf(input.charAt(i++));
+			enc3 = base64_key_str.indexOf(input.charAt(i++));
+			enc4 = base64_key_str.indexOf(input.charAt(i++));
+			chr1 = (enc1 << 2) | (enc2 >> 4);
+			chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
+			chr3 = ((enc3 & 3) << 6) | enc4;
+			output = output + String.fromCharCode(chr1);
+			if (enc3 != 64) {
+				output = output + String.fromCharCode(chr2);
+			}
+			if (enc4 != 64) {
+				output = output + String.fromCharCode(chr3);
+			}
+			chr1 = chr2 = chr3 = "";
+			enc1 = enc2 = enc3 = enc4 = "";
+		} while (i < input.length);
+		return unescape(output);
+	}
 })();

@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header" /}
-
-<div class="starter-template container">
+{>"views/base_page"/}
+{<main}
 	<legend>{project.name}
 		<span class="text-info h5"> {query} </span>
 		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {stat.epm} epm /</span>
@@ -21,7 +20,7 @@
 				</ul>
 		</div>
 	</legend>
-	
+
 <div class="row">
 	<div class="col-sm-4">
 		{@view name="views/ajax/ajax_leftlist_pagination"/}
@@ -30,4 +29,4 @@
 		{@view name="views/ajax/ajax_graph_table"/}
 	</div>
 </div>
-</div>
+{/main}

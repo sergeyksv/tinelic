@@ -1,6 +1,5 @@
-{@view name="views/header/header" data="header"/}
-
-<div class="starter-template container">
+{>"views/base_page"/}
+{<main}
 <legend>{project.name}
     <span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
     <div class="dropdown pull-right">
@@ -26,10 +25,10 @@
 		{@view name="views/client-errors/err_list"/}
 	</div>
 	<div class="col-sm-8">
-	    {@view name="views/client-errors/err_graph" data="rpm"/}
+	    {@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="1"/}
 		<div class="row">
 			{@view name="views/client-errors/event" data="event"/}
     	</div>
     </div>
 </div>
-</div>
+{/main}

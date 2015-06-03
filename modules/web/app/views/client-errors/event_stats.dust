@@ -1,6 +1,8 @@
+{#info}
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
   <div class="panel-body">
+	{?event}First error: <b>{@formatdate date=event._dtf format="l"/} {@formatdate date=event._dtf format="LTS"/}</b><br>{/event}
 	Total count: <b>{count}</b><br>
 	Affected sessions: <b>{sessions}</b><br>
 	Affected pages views: <b>{views}</b><br>
@@ -22,3 +24,4 @@
 	{/os}
   </div>
 </div>
+{/info}

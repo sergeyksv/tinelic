@@ -1,5 +1,5 @@
-{@view name="views/header/header" data="header"/}
-<div class="container">
+{>"views/base_page"/}
+{<main}
 {#teams}
 <br>
 <div class="row bg-primary">
@@ -104,5 +104,4 @@
 		</div>
 		{/projects}
     {/teams}
-</div>
-
+{/main}

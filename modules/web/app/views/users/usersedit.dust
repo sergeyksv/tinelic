@@ -1,0 +1,50 @@
+<!-- Modal settings -->
+<div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close do-close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">{?_id}Edit{:else}Add{/_id} user - Settings</h4>
+        <p class="bg-danger" id="warn"></p>
+      </div>
+      	<form id="form" role="form" style="margin: 5% 15%;">
+			<div class="form-group">
+                <label for="fname">First name</label>
+                <input type="name" class="form-control" id="firstname" placeholder="Enter first name" value="{firstname}">
+              </div>
+             <div class="form-group">
+                <label for="lname">Last name</label>
+                <input type="name" class="form-control" id="lastname" placeholder="Enter last name" value="{lastname}">
+              </div>
+              <div class="form-group">
+                   <label for="name">Login</label>
+                   <input type="name" class="form-control" id="login" placeholder="Enter login" value="{login}">
+              </div>
+              <div class="dropdown" style="margin-bottom: 10px;">
+                  <label for="name">Role</label>
+                  <button id="role" type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
+                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                     <li role="presentation" data-role="admin" class="li-role"><a role="menuitem" tabindex="-1" href="#">admin</a></li>
+                     <li role="presentation" data-role="user" class="li-role"><a role="menuitem" tabindex="-1" href="#">user</a></li>
+                  </ul>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" class="form-control" id="userpass" placeholder="Password">
+            </div>
+            <div class="form-group">
+               <label for="rpassword">Repeat password</label>
+               <input type="password" class="form-control" id="userrpass" placeholder="Repeat password">
+            </div>
+            <div class="form-group">
+              <label for="name"> Id </label>
+              <input type="name" class="form-control" id="_id" placeholder="Id" disabled value="{_id}">
+            </div>
+        </form>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default do-cancel" data-dismiss="modal">Close</button>
+        <button id="savebtn" type="button" class="btn btn-primary do-save">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
