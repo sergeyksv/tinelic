@@ -364,7 +364,7 @@ module.exports.init = function (ctx, cb) {
 								_ret.return_value.browser_key = body.settings.license_key.substr(0, 13);
 								// browser script
 								_ret.return_value.js_agent_loader = '\n</script>\n'+
-								'<script type="text/javascript" src="http://'+body.settings.host+
+								'<script type="text/javascript" src="://'+body.settings.host+
 									'/web/js/build/tinelic.js"</script>\n'+
 								'<script type="text/javascript">\n'+
 								'(function () {\n'+
