@@ -11,17 +11,16 @@
 		{/gt}</strong>
 	</div>
 	<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
-		<span style="white-space: nowrap;"><b>
-		<span class="text-danger">{@math key=errAck.dtlActions method="round"/} ( {@math key=errAck.actions method="round"/} )</span> /
-		<span class="text-success">{@math key=errAck.dtlPages method="round"/} ( {@math key=errAck.pages method="round"/} )</span>
-		</b></span>
+		<span style="white-space: nowrap;">
+		<span class="text-danger">{@gt key=errAck.dtlActions value=0}<b>{errAck.dtlActions}</b>{:else}0{/gt} ( {errAck.actions} )</span> / <span class="text-success">{@gt key=errAck.dtlPages value=0}<b>{errAck.dtlPages}</b>{:else}0{/gt} ( {errAck.pages} )</span>
+		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 		{@gt key=server.r value=0}
 			<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
 			<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}
-			</span> / <span class="text-success">{@formatnumber val=apdex.ajax type="apdex"/}</span>
+			</span> / <span class="text-info">{@formatnumber val=apdex.ajax type="apdex"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
@@ -30,7 +29,7 @@
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
 			<span class="text-success">{@formatnumber val=client.r type="rpm"/}
-			</span> / <span class="text-success">{@formatnumber val=ajax.r type="rpm"/}</span>
+			</span> / <span class="text-info">{@formatnumber val=ajax.r type="rpm"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
@@ -39,7 +38,7 @@
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
 			<span class="text-success">{@formatnumber val=client.etu type="tm"/}
-			</span> / <span class="text-success">{@formatnumber val=ajax.etu type="tm"/}</span>
+			</span> / <span class="text-info">{@formatnumber val=ajax.etu type="tm"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
@@ -48,7 +47,7 @@
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
 			<span class="text-success">{@formatnumber val=client.e type="erate"/}
-			</span> / <span class="text-success">{@formatnumber val=ajax.e type="erate"/}</span>
+			</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
 	</div>
 	{/t_metrics}
@@ -66,9 +65,9 @@
 					</a>
 				</div>
 				<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
-					<span style="white-space: nowrap;"><b>
-					<span class="text-danger">{errAck.dtlActions} ( {errAck.actions} )</span> / <span class="text-success">{errAck.dtlPages} ( {errAck.pages} )</span>
-					</b></span>
+					<span style="white-space: nowrap;">
+						<span class="text-danger">{@gt key=errAck.dtlActions value=0}<b>{errAck.dtlActions}</b>{:else}0{/gt} ( {errAck.actions} )</span> / <span class="text-success">{@gt key=errAck.dtlPages value=0}<b>{errAck.dtlPages}</b>{:else}0{/gt} ( {errAck.pages} )</span>
+					</span>
 					&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 					{@gt key=server.r value=0}
 						<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
