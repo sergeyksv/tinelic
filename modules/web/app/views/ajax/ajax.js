@@ -4,6 +4,7 @@ define(['tinybone/base', 'lodash', 'dustc!views/ajax/ajax.dust', 'views/ajax/aja
 		id:"views/ajax/ajax",
 		postRender:function () {
 			view.prototype.postRender.call(this);
+	console.log('this',this)
 			var ajax = this.data.rpm;
 		},
 		events:{

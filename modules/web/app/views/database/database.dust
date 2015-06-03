@@ -1,6 +1,7 @@
 {>"views/base_page"/}
 {<main}
-	<legend>{project.name}
+	<legend>
+		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 		<span class="text-info h5"> {query} </span>
 		<span class="text-success h5">{@formatnumber val=stat.r type="reqs"/} / {@formatnumber val=stat.tta type="tm"/} / {@formatnumber val=stat.avg type="tm"/} /</span>
 		<div class="pull-right dropdown">
