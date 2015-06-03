@@ -1,6 +1,5 @@
 var _ = require("lodash");
 var safe = require("safe");
-var mongo = require("mongodb");
 var CustomError = require('tinyback').CustomError;
 
 module.exports.deps = ['mongo','obac'];
@@ -18,15 +17,15 @@ module.exports.init = function (ctx, cb) {
 		role:{required:true, enum: [ "admin", "user"]},
 		login:{type:"string",required:true,"maxLength": 32},
 		pass:{type:"string",required:true,"maxLength": 32}
-	}}})
+	}}});
 
-    ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
-        safe.series({
-            "users":function (cb) {
-                db.collection("users",cb);
-            }
-        }, safe.sure(cb,function (usr) {
-            cb(null, {api:{
+	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
+		safe.series({
+			"users":function (cb) {
+				db.collection("users",cb);
+			}
+		}, safe.sure(cb,function (usr) {
+			cb(null, {api:{
 
 /**
 * @apiDefine this
@@ -69,7 +68,7 @@ getPermission:function (t, p, cb) {
 * @apiSuccess {Object} result User
 */
 getUser: function (t,u,cb) {
-    usr.users.findOne(u.filter, cb);
+	usr.users.findOne(u.filter, cb);
 },
 
 /**
@@ -82,14 +81,14 @@ getUser: function (t,u,cb) {
 * @apiSuccess {Object[]} result Users
 */
 getUsers: function (t,u,cb) {
-    this.getCurrentUser(t, safe.sure(cb, function(u) {
-        if (u.role == "admin") {
-            usr.users.find({}).sort({name: 1}).toArray(cb);
-        }
-        else {
-            throw new CustomError('You are not admin',"Access forbidden");
-        }
-    }));
+	this.getCurrentUser(t, safe.sure(cb, function(u) {
+		if (u.role == "admin") {
+			usr.users.find({}).sort({name: 1}).toArray(cb);
+		}
+		else {
+			throw new CustomError('You are not admin',"Access forbidden");
+		}
+	}));
 
 },
 
@@ -102,11 +101,11 @@ getUsers: function (t,u,cb) {
 * @apiSuccess {Object} result Currently authenticated user
 */
 getCurrentUser: function (t,cb) {
-    usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
+	usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
 		if (!user)
-            return cb(new CustomError('Current user is unknown',"Unauthorized"));
+			return cb(new CustomError('Current user is unknown',"Unauthorized"));
 		cb(null, user);
-    }));
+	}));
 },
 
 /**
@@ -121,21 +120,13 @@ getCurrentUser: function (t,cb) {
 *   on existance of _id attribute
 */
 saveUser: function (t,u,cb) {
-    u = prefixify(u);
-    var upsert=false;
-    if (!u._id) {
-		u._id = new mongo.ObjectID();
-		upsert=true;
-	}
-    ctx.api.validate.check("user", u, safe.sure(cb, function (u) {
-    usr.users.update({_id: u._id},{
-            firstname: u.firstname,
-            lastname: u.lastname,
-            role: u.role,
-            login: u.login,
-            pass: u.pass
-        },{upsert: upsert}, cb);
-    }))
+	u = prefixify(u);
+	ctx.api.validate.check("user", u, safe.sure(cb, function (u) {
+		if (u._id)
+			usr.users.update({_id: u._id},u,cb);
+		else
+			usr.users.insert(u,cb);
+	}));
 },
 
 /**
@@ -148,7 +139,7 @@ saveUser: function (t,u,cb) {
 */
 removeUser: function(t,u,cb) {
 	u = prefixify(u);
-    usr.users.remove({_id: u._id}, cb);
+	usr.users.remove({_id: u._id}, cb);
 },
 
 /**
@@ -162,17 +153,17 @@ removeUser: function(t,u,cb) {
 * @apiSuccess {String} result New auth token
 */
 login:function(t,u,cb) {
-    var dt = new Date();
-    var range = 7 * 24 * 60 * 60 * 1000;
-    var dtexp = new Date(Date.parse(Date()) + range);
+	var dt = new Date();
+	var range = 7 * 24 * 60 * 60 * 1000;
+	var dtexp = new Date(Date.parse(Date()) + range);
 
-    usr.users.findAndModify(
-        {login: u.login, pass: u.pass},{},{
-           $push: {tokens:{token: Math.random().toString(36).slice(-14),_dt: dt,_dtexp: dtexp}}
-           },{new: true, fields: {tokens: 1}}, safe.sure(cb, function(t) {
-              cb(null, t.tokens[t.tokens.length-1].token);
-        })
-    );
+	usr.users.findAndModify(
+		{login: u.login, pass: u.pass},{},{
+			$push: {tokens:{token: Math.random().toString(36).slice(-14),_dt: dt,_dtexp: dtexp}}
+			},{new: true, fields: {tokens: 1}}, safe.sure(cb, function(t) {
+				cb(null, t.tokens[t.tokens.length-1].token);
+		})
+	);
 },
 
 /**
@@ -183,7 +174,7 @@ login:function(t,u,cb) {
 * @apiPermission user
 */
 logout: function(t, u, cb) {
-    usr.users.update({'tokens.token':u.token}, { $pull: {tokens: { token: u.token } } },{},cb);
+	usr.users.update({'tokens.token':u.token}, { $pull: {tokens: { token: u.token } } },{},cb);
 }
 
 }});
