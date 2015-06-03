@@ -199,9 +199,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				var rules = [{action:"team_new"}]
 				_.each(r.teams, function (team) {
 					rules.push({action:"team_edit",_id:team._id})
-					_.each(team.projects, function (project) {
-						rules.push({action:"project_edit",_id:project._idp})
-					})
 				})
 				safe.parallel({
 					answers: function(cb){

@@ -10,15 +10,17 @@
 	{#teams}
 	<div class="form-horizontal">
 		<legend class="h2">{name}
-			<button type="button" role="button" data-toggle="dropdown" class="pull-right btn btn-default btn-xs">Actions</button>
+			<div class="dropdown pull-right">
+				<button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs">Actions<span class="caret"></span></button>
 
-			<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu3">
-				<li role="presentation"><a role="menuitem" tabindex="-1" class="doEditTeam" href="#" data-id="{_id}">Edit</a></li>
-				{?obacGranted[_id]}
-				<li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
-				{/obacGranted[_id]}
-				<li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
-			</ul>
+				<ul class="dropdown-menu" role="menu">
+					{?obacGranted[_id]}
+					<li role="presentation"><a role="menuitem" tabindex="-1" class="doEditTeam" href="#" data-id="{_id}">Edit</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
+					{/obacGranted[_id]}
+				</ul>
+			</div>
 		</legend>
 
 		<div class="form-group">
