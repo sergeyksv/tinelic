@@ -120,7 +120,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						tmetrics[key].e = stat.e / tmetrics[key].r;
 						tmetrics[key].etu = stat.etu / tmetrics[key].r;
 					});
-					tmetrics.server.mem = tmetrics.server.mem / tmetrics.server.proc;
+					if (tmetrics.server) {
+						tmetrics.server.mem = tmetrics.server.mem / tmetrics.server.proc;
+					}
 					team.t_metrics = tmetrics;
 				})
 
