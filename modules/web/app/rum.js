@@ -109,7 +109,7 @@
             // support of newrelic style route decoding (when key is set)
             if (opts.key) {
                 var _encoded = decode64(opts.route);
-                var key = opts.key;
+                var _key = opts.key;
                 var _decoded = "";
                 for( var i = 0; i < _encoded.length; i++ ) {
                     var _byte = _encoded.charCodeAt(i) ^ _key.charCodeAt(i % _key.length);
