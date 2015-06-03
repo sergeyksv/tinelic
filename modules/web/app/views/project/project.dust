@@ -1,9 +1,19 @@
 {>"views/base_page"/}
 {<main}
-	<legend><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a> <span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}  <a href="{_t_prefix}/project/{project.slug}/metrics">Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )</span><div class="btn-group pull-right"><div id="acknowledge" class="btn btn-danger btn-xs">Ack</div> <a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a></div></legend>
-<div class="row-fluid">
+<div class='row'>
+	<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
+		<span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}
+			<a href="{_t_prefix}/project/{project.slug}/metrics">Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )
+		</span>
+		<div class="btn-group pull-right">
+			<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
+			<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
+		</div>
+	</legend>
+</div>
+<div class='row'>
 	{#graphOn}
-		<div class="col-md-4">
+		<div class="col-md-4  col-xs-12">
 			{#stats.total}
 			<div class="row center-block">
 				<span class="h4">Apdex</span>
@@ -36,7 +46,8 @@
 		</div>
 	{/graphOn}
 	{#stats}
-		<div style="white-space: nowrap;" class="col-md-8">
+		<div style="white-space: nowrap;" class="col-md-8 col-xs-12">
+			<div class='row'>
 			{#browser}
 				<div class="col-md-6">
 						<div class="panel panel-success" style="padding-bottom:20px">
@@ -135,6 +146,7 @@
 				</div>
 			{/database}
         </div>
+		</div>
     {/stats}
 </div>
 {/main}

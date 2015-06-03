@@ -1,58 +1,61 @@
 {>"views/base_page"/}
 {<main}
 {#teams}
-<div class="row bg-primary">
+<div class="list-group">
+<div class="list-group-item row disabled" data-toggle="collapse" href="#team_{_id}" aria-expanded="false">
 	{#t_metrics}
 	<div data-field="name" class="col-md-3 col-xs-12">
-		{name}
+		<strong>{name}
 		{@gt key=server.proc value=0}
 			<span> ( {server.proc} x {@math key=server.mem method="round"/} Mb )</span>
-		{/gt}
+		{/gt}</strong>
 	</div>
 	<div class="col-md-9 col-md-offset-0 col-xs-offset-1 col-xs-11">
 		<span style="white-space: nowrap;"><b>
-		<span>{@math key=errAck.dtlActions method="round"/} ( {@math key=errAck.actions method="round"/} )</span> / <span>{@math key=errAck.dtlPages method="round"/} ( {@math key=errAck.pages method="round"/} )</span>
+		<span class="text-danger">{@math key=errAck.dtlActions method="round"/} ( {@math key=errAck.actions method="round"/} )</span> /
+		<span class="text-success">{@math key=errAck.dtlPages method="round"/} ( {@math key=errAck.pages method="round"/} )</span>
 		</b></span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 		{@gt key=server.r value=0}
-			<span>{@formatnumber val=apdex.server type="apdex"/}</span>
+			<span class="text-danger">{@formatnumber val=apdex.server type="apdex"/}</span>
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-			<span>{@formatnumber val=apdex.client type="apdex"/}
-			</span> / <span>{@formatnumber val=apdex.ajax type="apdex"/}</span>
+			<span class="text-success">{@formatnumber val=apdex.client type="apdex"/}
+			</span> / <span class="text-success">{@formatnumber val=apdex.ajax type="apdex"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 		{@gt key=server.r value=0}
-			<span>{@formatnumber val=server.r type="rpm"/}</span>
+			<span class="text-danger">{@formatnumber val=server.r type="rpm"/}</span>
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-			<span>{@formatnumber val=client.r type="rpm"/}
-			</span> / <span>{@formatnumber val=ajax.r type="rpm"/}</span>
+			<span class="text-success">{@formatnumber val=client.r type="rpm"/}
+			</span> / <span class="text-success">{@formatnumber val=ajax.r type="rpm"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
 		{@gt key=server.r value=0}
-			<span>{@formatnumber val=server.etu type="tm"/}</span>
+			<span class="text-danger">{@formatnumber val=server.etu type="tm"/}</span>
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-			<span>{@formatnumber val=client.etu type="tm"/}
-			</span> / <span>{@formatnumber val=ajax.etu type="tm"/}</span>
+			<span class="text-success">{@formatnumber val=client.etu type="tm"/}
+			</span> / <span class="text-success">{@formatnumber val=ajax.etu type="tm"/}</span>
 		{/gt}
 		</span>
 		&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
 		{@gt key=server.r value=0}
-			<span>{@formatnumber val=server.e type="erate"/}</span>
+			<span class="text-danger">{@formatnumber val=server.e type="erate"/}</span>
 		{/gt}
 		{@gt key=client.r value=0} {@gt key=server.r value=0} / {/gt}
-			<span>{@formatnumber val=client.e type="erate"/}
-			</span> / <span>{@formatnumber val=ajax.e type="erate"/}</span>
+			<span class="text-success">{@formatnumber val=client.e type="erate"/}
+			</span> / <span class="text-success">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
 	</div>
 	{/t_metrics}
 </div>
+<div id="team_{_id}" class='collapse'>
 	{#projects}
-		<div class="row">
+		<div class="row list-group-item">
 			{#_t_proj}
 				<div data-field="name" class="col-md-3 col-xs-12">
 					<a href='{_t_prefix}/project/{slug}'>
@@ -105,5 +108,7 @@
 			{/_t_proj}
 		</div>
 		{/projects}
+	</div>
+</div>
 	{/teams}
 {/main}
