@@ -365,7 +365,7 @@ module.exports.init = function (ctx, cb) {
 								// browser script
 								_ret.return_value.js_agent_loader = '\n</script>\n'+
 								'<script type="text/javascript" src="//'+body.settings.host+
-									'/web/js/build/tinelic.js"</script>\n'+
+									'/web/js/build/tinelic.js"></script>\n'+
 								'<script type="text/javascript">\n'+
 								'(function () {\n'+
 									'var _t_page = new Date();\n'+
