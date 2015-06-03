@@ -29,7 +29,7 @@ define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header
 			},
 			'click #logout': function(e) {
 				var self = this;
-				api("users.userLogout", $.cookie('token'), {token: $.cookie('token')},  function(err, data) {
+				api("users.logout", $.cookie('token'), {token: $.cookie('token')},  function(err, data) {
 					if (err) {
 						alert('Error');
 					}
