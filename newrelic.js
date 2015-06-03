@@ -5,7 +5,7 @@
  * description of configuration variables and their potential values.
  */
 exports.config = {
-  agent_enabled: false,
+  agent_enabled: true,
   /**
    * Array of application names.
    */

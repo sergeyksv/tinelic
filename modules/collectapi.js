@@ -363,52 +363,43 @@ module.exports.init = function (ctx, cb) {
 								// need to decode newrelic transaction, see rum.js:decode_newrelic_transaction()
 								_ret.return_value.browser_key = body.settings.license_key.substr(0, 13);
 								// browser script
-								_ret.return_value.js_agent_loader = "";
-								_ret.return_value.js_agent_loader += "</script>";
-								if( ctx.cfg.env=="production" ) {
-									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/js/build/tinelic.js?rev=--7cebdef"></script>\n'
-								} else {
-									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/app/rum.js"></script>\n'
-									_ret.return_value.js_agent_loader += '<script type="text/javascript" src="http://tinelic2.com/web/js/raven.js"></script>\n'
-								}
-								_ret.return_value.js_agent_loader += '<script type="text/javascript">\
-	var _t_page = new Date();\n\
-	var tinelic_protocol = "' + (body.settings["ssl"] ? "https:" : "http:") + '";\n\
-	var tinelic_host = "' + body.settings["host"] + '";\n\
-	var tinelic_port = "' + (body.settings["port"] ? body.settings["port"] : 0) + '";\n\
-	Tinelic.config({\n\
-		url:tinelic_protocol + "//" + tinelic_host + (tinelic_port ? ":" + tinelic_port : ""),\n\
-		project:"' + project._id + '",\n\
-		route:decode_newrelic_transaction( NREUM.info.transactionName, NREUM.info.licenseKey ),\n\
-		_dtp:_t_page,\n\
-		ajaxCallback: function(s, XHR){\n\
-			var re=/(^\\/restapi\\/[A-Za-z]+[0-9]+\\w+\\/)|(^\\/restapi\\/[0-9]+[A-Za-z]+\\w+\\/)/;\n\
-			s.r=s.r.replace(/\\/wire\\/w[0-9]+/,"/wire").replace(/^\\/restapi\\/([^\\/]+)\\//,"/restapi/token/").replace(re,"/restapi/");\n\
-		}\n\
-	});\n\
-	Raven.config(tinelic_protocol + "//nah@" + tinelic_host + (tinelic_port ? ":" + tinelic_port : "")+"/collect/sentry/' + project._id + '", {\n\
-		dataCallback: function(data) {\n\
-			data._dtp = _t_page;\n\
-			data._dt = new Date();\n\
-			return data;\n\
-		}\n\
-	}).install();\n\
-	NREUM.noticeError = function (err) {\n\
-		Raven.captureException(err);\n\
-	}\n\
-	NREUM.inlineHit = function (request_name, queue_time, app_time, total_be_time, dom_time, fe_time) {\n\
-		var m = {\n\
-            _i_nt: queue_time,\n\
-            _i_dt: dom_time,\n\
-            _i_lt: total_be_time,\n\
-            r: request_name\n\
-		};\n\
-		Tinelic.pageLoad(m);\n\
-	}\n\
-</script>\n';
-								_ret.return_value.js_agent_loader += "<script>";
+								_ret.return_value.js_agent_loader = '\n</script>\n'+
+								'<script type="text/javascript" src="http://'+body.settings.host+
+									'/web/js/build/tinelic.js"</script>\n'+
+								'<script type="text/javascript">\n'+
+								'(function () {\n'+
+									'var _t_page = new Date();\n'+
+									'var _t_host = "' + body.settings.host + '";\n'+
+									'Tinelic.config({\n'+
+										'url:window.location.protocol + "//" + _t_host,\n'+
+										'project:"' + project._id + '",\n'+
+										'route:NREUM.info.transactionName,\n'+
+										'key:NREUM.info.licenseKey,\n'+
+										'_dtp:_t_page,\n'+
+									'});\n'+
+									'Raven.config(window.location.protocol + "//nah@" + _t_host +"/collect/sentry/' + project._id + '", {\n'+
+										'dataCallback: function(data) {\n'+
+										'data._dtp = _t_page;\n'+
+										'data._dt = new Date();\n'+
+										'return data;\n'+
+										'}\n'+
+									'}).install();\n'+
+									'NREUM.noticeError = function (err) {\n'+
+										'Raven.captureException(err);\n'+
+									'}\n'+
+									'NREUM.inlineHit = function (request_name, queue_time, app_time, total_be_time, dom_time, fe_time) {\n'+
+										'var m = {\n'+
+											'_i_nt: queue_time,\n'+
+											'_i_dt: dom_time,\n'+
+											'_i_lt: total_be_time,\n'+
+											'r: request_name\n'+
+										'};\n'+
+									'Tinelic.pageLoad(m);\n'+
+									'}\n'+
+								'})()\n'+
+								'</script>\n';
 								res.json(_ret);
-							}))
+							}));
 						},
 						agent_settings:function () {
 							// seems to be hook to alter agent settings
