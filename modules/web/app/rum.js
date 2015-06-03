@@ -115,7 +115,7 @@
                     var _byte = _encoded.charCodeAt(i) ^ _key.charCodeAt(i % _key.length);
                     _decoded += String.fromCharCode( _byte );
                 }
-                this.route = _decoded;
+                this.route = _decoded.replace(/[^/]+\/[^/]+\//,'');
             }
 
             this.project = opts.project;
