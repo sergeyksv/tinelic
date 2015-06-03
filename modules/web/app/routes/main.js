@@ -96,39 +96,32 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					});
 
 					var tmetrics = {};
-					if (_.isUndefined(team.projects)) var t_client = 0; else var t_client = team.projects.length;
-					var t_serv = t_client;
 					_.forEach(team.projects, function(proj){
-						if (proj._t_proj.server.r == 0) t_serv = t_serv - 1;
-						if (proj._t_proj.client.r == 0) t_client = t_client - 1;
 						_.assign(tmetrics, _.pick(proj._t_proj, 'apdex', 'server', 'client', 'errAck', 'ajax'),
-							function(oval, sval){
+							function(oval, sval, key){
 								var memo = {};
-								if  (_.isUndefined(oval)) memo = sval; else for (var k in oval) {
-									memo[k] = oval[k] + sval[k];
-								}
+								var rpm = 1;
+								if (key == 'apdex') for (var k in sval) {
+									if (_.isUndefined(proj._t_proj[k].r)) var rpm = 1; else var rpm = proj._t_proj[k].r;
+									if (_.isUndefined(oval)) memo[k] = sval[k]*rpm; else memo[k] = oval[k] + sval[k]*rpm;
+									} else
+								for (var k in sval) {
+									if ((k == 'e')||(k == 'etu')) rpm = sval.r; else rpm = 1;
+									if (_.isUndefined(oval)) memo[k] = sval[k]*rpm; else memo[k] = oval[k] + sval[k]*rpm;
+									};
 								return memo;
 							});
 					});
 
-					_.forEach(tmetrics, function(stat, key){
-						var modifier = 0;
-						switch (key){
-							case 'errAck':
-								modifier = team.projects.length;
-								break;
-							case 'server':
-								modifier = t_serv;
-								break;
-							default:
-								modifier = t_client;
-						}
-						for (var k in stat) {stat[k] = stat[k] / modifier}
-						return stat;
+					_.forEach(tmetrics.apdex, function(stat, key){
+						tmetrics.apdex[key] = stat / tmetrics[key].r;
 					});
-
+					_.forEach(_.pick(tmetrics, 'server', 'client', 'ajax'), function(stat, key){
+						tmetrics[key].e = stat.e / tmetrics[key].r;
+						tmetrics[key].etu = stat.etu / tmetrics[key].r;
+					});
+					tmetrics.server.mem = tmetrics.server.mem / tmetrics.server.proc;
 					team.t_metrics = tmetrics;
-
 				})
 
 				res.renderX({
