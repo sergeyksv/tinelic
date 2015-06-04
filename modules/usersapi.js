@@ -125,7 +125,9 @@ saveUser: function (t,u,cb) {
 		if (u._id)
 			usr.users.update({_id: u._id},u,cb);
 		else
-			usr.users.insert(u,cb);
+			usr.users.insert(u,safe.sure(cb, function (res) {
+				cb(null, res[0]);
+			}));
 	}));
 },
 
