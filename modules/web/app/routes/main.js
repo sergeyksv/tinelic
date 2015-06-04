@@ -231,9 +231,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				data:function (cb) {
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						var projects=[]; projects[0]=project;
-						var dt = res.locals.dtstart
-						var dta = (project._dtActionsErrAck || dt).valueOf();
-						var dtp = (project._dtPagesErrAck || dt).valueOf();
+						var dtp = (project._dtPagesErrAck?new Date(project._dtPagesErrAck):res.locals.dtstart).valueOf();
+						var dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):res.locals.dtstart).valueOf();
 						res.locals.dtcliack = dtp;
 						res.locals.dtseack = dta;
 						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,
