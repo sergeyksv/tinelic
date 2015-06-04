@@ -12,7 +12,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/se
                 return false;
 
             },
-            'click .acknowledge': function(e) {
+            'click .do-ack': function(e) {
                 var self = this;
                 var router = self.app.router;
                 var id = self.$("span[data-id]").data('id')

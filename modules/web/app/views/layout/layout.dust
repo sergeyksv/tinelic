@@ -95,7 +95,7 @@
 	var _t_page = new Date();
 	setTimeout(function () {
 		if (_t_page.valueOf()%2) {
-			throw new Error("Test Error"+(new Date()).getDay());
+			throw new Error("Test Error2"+(new Date()).getDay());
 		};
 	},1000);
 	if (_t_page.valueOf()%2) {

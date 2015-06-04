@@ -4,7 +4,7 @@
 		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 		<span class="text-info h5" data-id="{project._id}"> {total} total</span>
 		<div class="btn-group pull-right" role="group">
-			<div class="btn btn-xs btn-danger" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
+			<div class="btn btn-xs btn-danger do-ack" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 			<div class="btn-group" role="group">
 				<div class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown" role="button">
 					{@select key="{st}"}

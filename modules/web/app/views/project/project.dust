@@ -2,8 +2,8 @@
 {<main}
 <div class='row'>
 	<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
-		<span class="text-info h5" data-id="{project._id}">{#graphOn.server}Processes: {metrics.proc}
-			<a href="{_t_prefix}/project/{project.slug}/metrics">Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )
+		<span class="text-info h5" data-id="{project._id}">{#graphOn.server} Processes: {metrics.proc}
+			<a href="{_t_prefix}/project/{project.slug}/metrics"> Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )
 		</span>
 		<div class="btn-group pull-right">
 			<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
@@ -54,7 +54,10 @@
 							<ul class="list-unstyled h6">
 							{#err}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/event/{error._id}' ><span class="badge text-danger">{stats.pages}</span>{#error.new}<strong>  - {error._s_message}</strong>{/error.new}{^error.new} - {error._s_message}{/error.new}</a><br>
+									<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/{error._id}' >
+										<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
+										<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
+									</a><br>
 								</li>
 							{/err}
 							</ul>
@@ -70,7 +73,9 @@
 							<ul class="list-unstyled h6">
 							{#sErr}
 								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/server-error/{stats._id}' ><span class="badge text-danger">{stats.c}</span>{#error.new}<strong>  - {error._s_message}</strong>{/error.new}{^error.new} - {error._s_message}{/error.new}</a><br>
+									<a class="text-default" href='{_t_prefix}/project/{project.slug}/server_errors/terr/{stats._id}' >
+									<span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
+									<span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>
 								</li>
 							{/sErr}
 							</ul>

@@ -1,8 +1,3 @@
-{^headless}
-{@view name="views/header/header" data="header" /}
-<div class="starter-template container-fluid">
-{/headless}
-
 <div class="row">
 <div class="col-xs-12 col-sm-9">
 <br>
@@ -38,6 +33,3 @@
 <div class="col-xs-12 col-sm-3"><br>
 {@view name="views/client-errors/event_stats"/}
 </div>
-{^headless}
-</div>
-{/headless}

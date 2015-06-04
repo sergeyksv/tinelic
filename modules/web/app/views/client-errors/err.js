@@ -10,7 +10,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/cl
 				this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+"/"+$this.data('sort')+'/');
 				return false;
 			},
-			'click .acknowledge': function(e) {
+			'click .do-ack': function(e) {
 				var self = this;
 				var router = self.app.router;
 				var id = self.$("span[data-id]").data('id');

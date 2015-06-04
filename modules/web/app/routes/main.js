@@ -134,36 +134,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					}})
 			}))
 		},
-		event:function (req, res, next) {
-			var st = req.params.st
-			safe.parallel({
-				view:function (cb) {
-					requirejs(["views/client-errors/event"], function (view) {
-						safe.back(cb, null, view)
-					},cb)
-				},
-				res:function (cb) {
-					feed.errorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
-				}
-			}, safe.sure( next, function (r) {
-				res.renderX({view:r.view,data:_.extend(r.res,{title:"Event "+r.res.event.message, st: st})})
-			}))
-		},
-		serror:function (req, res, next) {
-			var st = req.params.st
-			safe.parallel({
-				view:function (cb) {
-					requirejs(["views/server-errors/server-event"], function (view) {
-						safe.back(cb, null, view)
-					},cb)
-				},
-				res:function (cb) {
-					feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id}}, cb)
-				}
-			}, safe.sure( next, function (r) {
-				res.renderX({view:r.view,data:_.extend(r.res,{title:"Server error"+'-'+r.res.event.exception._s_value, st: st})})
-			}))
-		},
 		users:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {
@@ -262,8 +232,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 						var projects=[]; projects[0]=project;
 						var dt = res.locals.dtstart
-						var dta = project._dtActionsErrAck || dt;
-						var dtp = project._dtPagesErrAck || dt;
+						var dta = (project._dtActionsErrAck || dt).valueOf();
+						var dtp = (project._dtPagesErrAck || dt).valueOf();
+						res.locals.dtcliack = dtp;
+						res.locals.dtseack = dta;
 						api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,
 							filter:{
 								_idp:project._id,
@@ -352,8 +324,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					var total = 0;
 					_.forEach(r.data.serverErrors, function(r) {
 						total += r.stats.c
-						if (r.error._dtl > dta)
-							r.error.new = 1;
 					})
 					var data = _.take(r.data.serverErrors, 10)
 					_.extend(views.serverErr,{sErr:data,total:total})
@@ -788,7 +758,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dtp;
 
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dtp = project._dtPagesErrAck || res.locals.dtstart;
+				dtp = (project._dtPagesErrAck || res.locals.dtstart).valueOf();
+				res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
+				res.locals.dtcliack = dtp;
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/client-errors/err"], function (view) {
@@ -798,13 +770,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						data: function (cb) {
 							api("stats.getPagesErrorStats","public",{st:st, _t_age:quant+"m",filter:{
 								_idp:project._id,
-								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						event: function (cb) {
 							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
 								_idp:project._id,
-								_dt: {$gt: (dtp < res.locals.dtstart)?dtp:res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
 						},
 						rpm: function (cb){
@@ -836,10 +808,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								total += r.stats.count;
 								session += r.stats.session;
 								page += r.stats.pages;
-								if (r.error._dtl > dtp)
-									r.error.new = 1
-								if (r.error._dtl)
-									r.error._dtl = moment(r.error._dtl).fromNow()
 							})
 						}
 						r.event.headless = true;
@@ -956,10 +924,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				return res.redirect(req.baseUrl+req.path+"/");
 			var quant = res.locals.quant,
 				dta,
-				st = req.params.sort
+				st = req.params.sort;
 
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dta = project._dtActionsErrAck || res.locals.dtstart;
+				dta = (project._dtActionsErrAck || res.locals.dtstart).valueOf();
+				res.locals.dtstart = (dta < res.locals.dtstart)?dtp:res.locals.dtstart;
+				res.locals.dtseack = dta;
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/server-errors/server-err"], function (view) {
@@ -969,13 +939,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						data: function (cb) {
 							api("stats.getServerErrorStats","public",{st: st,  _t_age:quant+"m",filter:{
 								_idp:project._id,
-								_dt: {$gt: (dta < res.locals.dtstart)?dta:res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						event: function (cb) {
 							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id,
 								_idp:project._id,
-								_dt: {$gt: (dta < res.locals.dtstart)?dta:res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
 						},
 						rpm: function (cb){
@@ -994,8 +964,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						r.event.headless = true;
-						var data = r.data
-						if (data.length == 0) {
+						var data = r.data;
+						if (!data.length) {
 							data.push({error: {_s_message: "Not errors on this client"}})
 						}
 						var total = 0, sum = 0.0;
@@ -1010,10 +980,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							_.forEach(data, function(r) {
 								total += r.stats.c;
 								sum += r.stats.c;
-								if (r.error._dtf> dta)
-									r.error.new = 1
-								if (r.error._dtf)
-									r.error._dtf = moment(r.error._dtf).fromNow()
 							})
 						}
 						var percent = sum/100
