@@ -666,7 +666,7 @@ module.exports.init = function (ctx, cb) {
 					},safe.sure(cb, function () {
 						events.mapReduce(
 							function() {
-								emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q});
+								emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q, _dt:this._dt});
 							},
 							function (k,v) {
 								var r=null;

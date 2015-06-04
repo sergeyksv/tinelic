@@ -29,7 +29,7 @@
 		{@view name="views/client-errors/err_list"/}
 	</div>
 	<div class="col-sm-8">
-		{@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="0"/}
+		{@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median=0/}
 		<div class="row">
 			{@view name="views/client-errors/event" data="event"/}
 		</div>

@@ -313,8 +313,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						total += r.stats.count;
 						session += r.stats.session;
 						page += r.stats.pages;
-						if (r.error._dtl > dtp)
-							r.error.new = 1
+						if (r.error._dtf)
+							r.error._dtf = new Date(r.error._dtf);
 					})
 					var data = _.take(r.data.errors, 10)
 					_.extend(views.browser,{err: data, total: total, session: session, page: page})
@@ -324,6 +324,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					var total = 0;
 					_.forEach(r.data.serverErrors, function(r) {
 						total += r.stats.c
+						if (r.error._dtf)
+							r.error._dtf = new Date(r.error._dtf);
 					})
 					var data = _.take(r.data.serverErrors, 10)
 					_.extend(views.serverErr,{sErr:data,total:total})
@@ -754,7 +756,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			if (req.path.substr(-1) != "/" && !req.params.id)
 				return res.redirect(req.baseUrl+req.path+"/");
 			var st = req.params.sort,
-				quant = 10,
+				quant = res.locals.quant,
 				dtp;
 
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
@@ -795,22 +797,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var total = 0; var session = 0; var page = 0;
-						if (req.params.id) {
-							_.forEach(r.data, function(rd) {
-								if((rd.error._dtf == r.event.event._dtf) && (rd.error._s_message == r.event.event._s_message)) {
-										total = rd.stats.count;
-										session = rd.stats.session;
-										page = rd.stats.pages;
-								}
-							})
-						} else {
-							_.forEach(r.data, function(r) {
-								total += r.stats.count;
-								session += r.stats.session;
-								page += r.stats.pages;
-							})
-						}
-						r.event.headless = true;
+						_.forEach(r.data, function(r) {
+							total += r.stats.count;
+							session += r.stats.session;
+							page += r.stats.pages;
+							if (r.error._dtf)
+								r.error._dtf = new Date(r.error._dtf);
+						})
 						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck,id:req.params.id}})
 					})
 				)
@@ -969,20 +962,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							data.push({error: {_s_message: "Not errors on this client"}})
 						}
 						var total = 0, sum = 0.0;
-						if (req.params.id) {
-							_.forEach(data, function(rd) {
-								sum += rd.stats.c;
-								if((rd.error._dtf == r.event.event._dtf) && (rd.error._s_message == r.event.event._s_message)) {
-										total = rd.stats.c;
-								}
-							})
-						} else {
-							_.forEach(data, function(r) {
-								total += r.stats.c;
-								sum += r.stats.c;
-							})
-						}
-						var percent = sum/100
+						_.forEach(data, function(r) {
+							total += r.stats.c;
+							sum += r.stats.c;
+							if (r.error._dtf)
+								r.error._dtf = new Date(r.error._dtf);
+						})
+						var percent = sum/100;
 						_.forEach(data, function(r) {
 							r.bar = r.stats.c/percent
 						})
