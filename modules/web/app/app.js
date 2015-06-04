@@ -5,14 +5,14 @@ define(['views/layout/layout','module','safe',"dust",
 	"tinybone/backadapter",
 	"jquery.blockUI"
 ],function (Layout,module,safe,dust,tb,moment,_) {
-    // Make sure dust.helpers is an object before adding a new helper.
-    if (!dust.helpers)
-        dust.helpers = {};
+	// Make sure dust.helpers is an object before adding a new helper.
+	if (!dust.helpers)
+		dust.helpers = {};
 
 	dust.helpers.formatdate = function(chunk, context, bodies, params) {
-        var m = moment(new Date(params.date));
-        var output = m.format(params.format || 'lll');
-        return chunk.write(output);
+		var m = moment(new Date(params.date));
+		var output = m.format(params.format || 'lll');
+		return chunk.write(output);
 	};
 	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
 		var output="";
@@ -73,23 +73,23 @@ define(['views/layout/layout','module','safe',"dust",
 		errHandler: function (err) {
 			if (err) console.log(err.stack);
 		},
-        confirm: function (msg,cb) {
-            $.blockUI({message: '<div class="container-fluid" style="cursor: default" ">\
-                <h4>'+msg+'</h4>\
-                <div class="btn btn-primary" id="yes">Yes</div>\
-                <div class="btn btn-default" type="button" id="no">No</div>\
-                </div> <br>',css:{top:'10%',left:'20%',width:'60%'}});
+		confirm: function (msg,cb) {
+			$.blockUI({message: '<div class="container-fluid" style="cursor: default" ">\
+				<h4>'+msg+'</h4>\
+				<div class="btn btn-primary" id="yes">Yes</div>\
+				<div class="btn btn-default" type="button" id="no">No</div>\
+				</div> <br>',css:{top:'10%',left:'20%',width:'60%'}});
 
-            $('#yes').click(function(){
-                $.unblockUI();
-                safe.back(cb,null);
-            });
+			$('#yes').click(function(){
+				$.unblockUI();
+				safe.back(cb,null);
+			});
 
-            $('#no').click(function(){
-                $.unblockUI();
-                return false
-            })
-        },
+			$('#no').click(function(){
+				$.unblockUI();
+				return false;
+			});
+		},
 		initRoutes: function (cb) {
 			var self = this;
 			var router = self.router;
@@ -103,30 +103,30 @@ define(['views/layout/layout','module','safe',"dust",
 					var range = 60 * 60 * 1000;
 
 					// transcode range paramater into seconds
-                    try {
-                        str = JSON.parse(str);
-                        res.locals.dtend = str.to;
-                        res.locals.dtstart = str.from;
-                        res.locals.header = {range:'Custom'};
-                    }
-                    catch(err) {
-                        var match = str.match(/(\d+)(.)/);
-                        var units = {
-                            h:60 * 60 * 1000,
-                            d:24 * 60 * 60 * 1000,
-                            w:7 * 24 * 60 * 60 * 1000
-                        };
+					try {
+						str = JSON.parse(str);
+						res.locals.dtend = str.to;
+						res.locals.dtstart = str.from;
+						res.locals.header = {range:'Custom'};
+					}
+					catch(err) {
+						var match = str.match(/(\d+)(.)/);
+						var units = {
+							h:60 * 60 * 1000,
+							d:24 * 60 * 60 * 1000,
+							w:7 * 24 * 60 * 60 * 1000
+						};
 
-                        if (match)
-                            if (match.length==3 && units[match[2]])
-                                range = match[1]*units[match[2]];
+						if (match)
+							if (match.length==3 && units[match[2]])
+								range = match[1]*units[match[2]];
 
-                        var tolerance = 10 * 60 * 1000;
-                        res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
-                        res.locals.dtstart = res.locals.dtend - range;
-                        res.locals.header = {range:str};
+						var tolerance = 10 * 60 * 1000;
+						res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+						res.locals.dtstart = res.locals.dtend - range;
+						res.locals.header = {range:str};
 						res.locals.quant = Math.max(Math.round(range/60000/144),1);
-                    }
+					}
 					next();
 				});
 				// routes goes first

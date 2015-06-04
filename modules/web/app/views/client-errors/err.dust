@@ -2,34 +2,37 @@
 {<main}
 <legend>
 	<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
-    <span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
-    <div class="dropdown pull-right">
-			<span class="btn btn-sm btn-info sortingSelection" data-toggle="dropdown">
+	<span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
+	<div class="btn-group pull-right" role="group">
+		<div class="btn btn-xs btn-danger" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
+		<div class="btn-group" role="group">
+			<div class="btn btn-xs btn-info dropdown-toggle" role="button" data-toggle="dropdown">
 				{@select key="{st}"}
 					{@eq value="serr"}Most session concerning{/eq}
-                    {@eq value="perr"}Most page concerning{/eq}
-                    {@eq value="terr"}Most concerning{/eq}
+					{@eq value="perr"}Most page concerning{/eq}
+					{@eq value="terr"}Most concerning{/eq}
 					{@eq value="mr"}Most recent{/eq}
 				{/select}
-			<span class="caret"></span></span><br><br>
+				<span class="caret"></span>
+			</div>
 			<ul class="dropdown-menu" role="menu">
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="serr" class="do-stats" href="#">Most session concerning</a></li>
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="perr" class="do-stats" href="#">Most page concerning</a></li>
 				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="terr" class="do-stats" href="#">Most concerning</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mr" class="do-stats" href="#">Most recent</a></li>
+				<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="mr" class="do-stats" href="#">Most recent</a></li>
 			</ul>
+		</div>
 	</div>
-	<div class="pull-right btn btn-sm btn-danger acknowledge">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 </legend>
 <div class="row">
 	<div class="col-sm-4">
 		{@view name="views/client-errors/err_list"/}
 	</div>
 	<div class="col-sm-8">
-	    {@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="1"/}
+		{@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="0"/}
 		<div class="row">
 			{@view name="views/client-errors/event" data="event"/}
-    	</div>
-    </div>
+		</div>
+	</div>
 </div>
 {/main}

@@ -47,57 +47,57 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 
 			this.$('#graph').highcharts({
 			  chart: {
-			      type: 'spline',
-			      zoomType: 'x'
+				  type: 'spline',
+				  zoomType: 'x'
 			  },
 			  title: {
-			      text: ''
+				  text: ''
 			  },
 			  xAxis: {
-			      type: 'datetime'
+				  type: 'datetime'
 			  },
 			  yAxis: [{
-			      title: {
-			          text: this.get('name')
-			      },
-			      min: 0,
-			      max: this.get('plot-max') || max
+				  title: {
+					  text: this.get('name')
+				  },
+				  min: 0,
+				  max: this.get('plot-max') || max
 			  }
 			  ],
 			  plotOptions: {
-			      series: {
-			          marker: {
-			              enabled: false
-			          },
-			          animation: false
-			      }
+				  series: {
+					  marker: {
+						  enabled: false
+					  },
+					  animation: false
+				  }
 			  },
 			  legend: {
-			      enabled: false
+				  enabled: false
 			  },
 			  credits: {
 						enabled: false
 			  },
 			  series: [
-			      {
-			          name: this.locals.name,
-			          yAxis: 0,
-			          data: plot,
-			          color: this.get('color'),
-			          type: 'area',
-			          fillColor: {
-			              linearGradient: {
-			                  x1: 0,
-			                  y1: 0,
-			                  x2: 0,
-			                  y2: 1
-			              },
-			              stops: [
-			                  [0, this.get('fillColor')],
-			                  [1, 'white']
-			              ]
-			          }
-			      }
+				  {
+					  name: this.locals.name,
+					  yAxis: 0,
+					  data: plot,
+					  color: this.get('color'),
+					  type: 'area',
+					  fillColor: {
+						  linearGradient: {
+							  x1: 0,
+							  y1: 0,
+							  x2: 0,
+							  y2: 1
+						  },
+						  stops: [
+							  [0, this.get('fillColor')],
+							  [1, 'white']
+						  ]
+					  }
+				  }
 			  ]
 			});
 		}

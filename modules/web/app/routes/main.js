@@ -730,11 +730,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								stat.tta+=r.value.tta;
 								stat.epm+=r.value.e;
 							})
-							stat.apdex=stat.apdex/r.data.length;
-							stat.r=stat.r/r.data.length;
-							stat.tta=stat.tta/r.data.length;
-							stat.epm=stat.epm/r.data.length;
 						}
+						stat.apdex=stat.apdex/r.data.length;
+						stat.r=stat.r/r.data.length;
+						stat.tta=stat.tta/r.data.length/1000;
+						stat.epm=stat.epm/r.data.length;
+
 						// sorting "mtc", "sar" etc
 						r.data =_.sortBy(r.data, function(v){
 							if (st == "rpm")
