@@ -234,6 +234,8 @@ module.exports.block = function(){
 						b.findElement(By.id("login")).sendKeys("obram");
 						b.findElement(By.id("signup")).click();
 						helpers.waitPageReload.call(self,pid).then(function() {
+							b.findElement(By.css("div strong")).click();
+							helpers.waitElementVisible.call(self,By.linkText("NewProject"))
 							b.findElement(By.linkText("NewProject")).click();
 							helpers.waitPageReload.call(self,pid).then(function() {
 								self.done();
