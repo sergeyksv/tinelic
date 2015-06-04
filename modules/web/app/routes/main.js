@@ -2,6 +2,7 @@
 define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (api,safe,_,feed,moment) {
 	return {
 		index:function (req, res, cb) {
+			var quant = 5;
 			safe.parallel({
 				view:function (cb) {
 					requirejs(["views/index/index"], function (view) {
@@ -9,9 +10,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					},cb)
 				},
 				data: function (cb) {
-					var quant = 1; var period = 15;
-					var dtend = new Date();
-					var dtstart = new Date(dtend.valueOf() - period * 60 * 1000);
+					var tolerance = 5 * 60 * 1000;
+					var dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+					var dtstart = res.locals.dtend - 20*60*1000;
 					api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant,filter:{
 						_dt: {$gt: dtstart,$lte:dtend}
 					}}}, safe.sure(cb, function (r) {
@@ -83,7 +84,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					}))
 				},
 				teams: function (cb) {
-					api("assets.getTeams", res.locals.token, {}, cb)
+					api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb)
 				}
 			}, safe.sure(cb, function (r) {
 				_.forEach(r.teams, function(team) {
