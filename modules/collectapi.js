@@ -535,6 +535,7 @@ module.exports.init = function (ctx, cb) {
 							var body = nrParseBody(req);
 							var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
+							var arecs = [];
 							safe.each(body[body.length - 1], function (item,cb) {
 								item = item[0];
 								var trnName = nrParseTransactionName(item.name);
@@ -549,16 +550,15 @@ module.exports.init = function (ctx, cb) {
 									"_i_tt": Math.round(item.duration*1000)
 								};
 								ctx.api.validate.check("actions",te, function (err) {
-									if (nrNonFatal(err))
-									 	return cb();
-									actions.insert(te, function (err) {
-										nrNonFatal(err);
-										cb();
-									});
+									if (!nrNonFatal(err))
+										arecs.push(te);
+									safe.back(cb,null);
 								});
 							},function (err) {
-								nrNonFatal(err);
-								res.json( { return_value: "ok" } );
+								actions.insert(arecs, function (err) {
+									nrNonFatal(err);
+									res.json( { return_value: "ok" } );
+								});
 							});
 						},
 						error_data:function () {
