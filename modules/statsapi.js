@@ -276,7 +276,7 @@ getActionStats: function(t, p , cb) {
 * @apiUse this
 * @apiGroup Ajax
 * @apiName getAjaxStats
-* @api {get} /:token/stats/actions-stats Get name grouped ajax stats
+* @api {get} /:token/stats/ajax-stats Get ajax stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
@@ -509,19 +509,19 @@ getActionError:function (t, p, cb) {
 * @apiUse this
 * @apiGroup Ajax
 * @apiName getAjaxTimings
-* @api {get} /:token/stats/ajax-timings Get time sliced ajax stats
+* @api {get} /:token/stats/ajax-timings Get ajax timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of time slots
 * @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.r error count
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.tta average time
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.r rpm
+* @apiSuccess {Number} result.value.e error count
+* @apiSuccess {Number} result.value.tt total time
 */
 getAjaxTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -536,9 +536,8 @@ getAjaxTimings:function(t, p, cb) {
 			function (k,v) {
 				var r=null;
 				v.forEach(function (v) {
-					if (!r) {
+					if (!r)
 						r = v;
-					}
 					else {
 						r.tt+=v.tt;
 						r.r+=v.r;
@@ -556,7 +555,6 @@ getAjaxTimings:function(t, p, cb) {
 				out: {inline:1},
 				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
 			},safe.sure(cb, function (data) {
-				// calculate apdex and average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
@@ -1151,18 +1149,16 @@ getPagesBreakDown: function(t,p,cb){
 * @apiUse this
 * @apiGroup Ajax
 * @apiName getAjaxBreakdown
-* @api {get} /:token/stats/pages-break-down Get perf segements for ajax
+* @api {get} /:token/stats/ajax-breakdown Get ajax breakdown
 * @apiParam {Object} filter Filter for actions
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Ajax name
+* @apiSuccess {String} result._id Route name
 * @apiSuccess {Object} result.value stats
 * @apiSuccess {Integer} result.value.c Count
 * @apiSuccess {Integer} result.value.tt Total time
-* @apiSuccess {Integer} result.value.tta Average time
 */
-getAjaxBreakDown: function(t,p,cb){
+getAjaxBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
-	var q = p.quant || 1;
 	ajax.mapReduce(
 		function() {
 			if (this._s_route)
@@ -1183,14 +1179,7 @@ getAjaxBreakDown: function(t,p,cb){
 		{
 			query: query,
 			out: {inline:1}
-		}, safe.sure(cb, function (data) {
-				// calculate average after aggregation
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.tta = key.tt/key.c;
-				});
-				cb(null, data);
-		})
+		}, cb
 	);
 },
 

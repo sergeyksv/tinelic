@@ -428,7 +428,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb);
 						},
 						breakdown: function (cb) {
-							api("stats.getAjaxBreakDown", "public", {
+							api("stats.getAjaxBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -499,6 +499,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
 							r.value.tta = (r.value.tt/r.value.c/1000);
 						 });
+						_.each(r.breakdown, function (r) {
+							r.value.tta = r.value.tt/r.value.c;
+						})
 						 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, fr: filter, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
 					)
