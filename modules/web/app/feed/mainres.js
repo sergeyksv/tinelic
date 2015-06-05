@@ -13,10 +13,10 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 		serverErrorInfo: function (token, params, cb) {
 			safe.parallel({
 				event:function (cb) {
-					api("stats.getServerError",token, _.extend({_t_age:"30d"},params.filter), cb)
+					api("stats.getActionError",token, _.extend({_t_age:"30d"},params.filter), cb)
 				},
 				info:function (cb) {
-					api("stats.getServerErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
+					api("stats.getActionErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
 				}
 			}, cb)
 		},
@@ -44,16 +44,16 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					api("stats.getAjaxTimings",token,params, cb);
 				},
 				actions: function (cb) {
-					api("stats.getActionsTimings", token, params, cb);
+					api("stats.getActionTimings", token, _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 				},
 				topAjax: function (cb) {
 					api("stats.getAjaxStats", token, params, cb);
 				},
 				topPages: function (cb) {
-					api("stats.getPagesStats", token, params, cb);
+					api("stats.getPageStats", token, params, cb);
 				},
 				topTransactions: function(cb) {
-					api("stats.getActionsStats", token, params, cb);
+					api("stats.getActionStats", token, _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 				},
 				serverErrors: function (cb) {
 					api("stats.getServerErrorStats",token, {
@@ -68,12 +68,12 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					}, cb);
 				},
 				metrics: function (cb) {
-					api("stats.getMetrics", token, params, cb)
+					api("stats.getMetrics", token, params, cb);
 				},
 				database: function (cb) {
-					api("stats.getActionsCategoryStats", token, params, cb)
+					api("stats.getActionSegmentStats", token, _.merge({filter:{'data._s_cat':'Datastore'}},params), cb);
 				}
-			}, cb)
+			}, cb);
 		},
 		homeInfo:function (token, params1, cb) {
 			params1 = prefixify.query(params1);
@@ -102,7 +102,7 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 							api("stats.getAjaxTimings",token,params, cb);
 						},
 						actions: function (cb) {
-							api("stats.getActionsTimings", token, params, cb);
+							api("stats.getActionTimings", token,  _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 						},
 						serverErrors: function (cb) {
 							api("stats.getServerErrorStats",token, params, cb);

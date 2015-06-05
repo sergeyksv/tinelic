@@ -159,22 +159,21 @@ getMetrics: function(t, p, cb) {
 * @apiUse this
 * @apiGroup Actions
 * @apiName getActionTimings
-* @api {get} /:token/stats/actions-timings Get time sliced action stats
+* @api {get} /:token/stats/action-timings Get action timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of time slots
 * @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.tta average time
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.r rpm
+* @apiSuccess {Number} result.value.tt total time
 */
-getActionsTimings: function(t, p, cb) {
+getActionTimings: function(t, p, cb) {
 	var query = queryfix(p.filter);
-	query._s_cat = "WebTransaction";
 	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
 		var ApdexT = apdex._i_serverT;
 		actions.mapReduce(
@@ -208,7 +207,6 @@ getActionsTimings: function(t, p, cb) {
 				out: {inline:1},
 				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
 			}, safe.sure(cb, function (data) {
-				// calculate apdex and average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
@@ -224,37 +222,32 @@ getActionsTimings: function(t, p, cb) {
 * @apiUse this
 * @apiGroup Actions
 * @apiName getActionStats
-* @api {get} /:token/stats/actions-stats Get name grouped action stats
+* @api {get} /:token/stats/action-stats Get action stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Name of action
+* @apiSuccess {String} result._id Name of action
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.tt total time
 */
-getActionsStats: function(t, p , cb) {
+getActionStats: function(t, p , cb) {
 	var query = queryfix(p.filter);
-	query._s_cat = "WebTransaction";
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb, function(apdex){
 		var ApdexT = apdex._i_serverT;
 		actions.mapReduce(
 			function() {
-				emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt,
+				emit(this._s_name, {c:1, tt: this._i_tt,
 					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
 			},
 			function (k,v) {
 				var r=null;
 				v.forEach(function (v) {
-					if (!r) {
+					if (!r)
 						r = v;
-					}
 					else {
 						r.tt+=v.tt;
-						r.r+=v.r;
 						r.c+=v.c;
 						r.ag+=v.ag;
 						r.aa+=v.aa;
@@ -265,14 +258,13 @@ getActionsStats: function(t, p , cb) {
 			{
 				query: query,
 				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				scope: {AG:ApdexT, AA:ApdexT*4}
 			},
 			safe.sure(cb, function(data) {
-				// calculate apdex and average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
+					delete key.ag; delete key.aa;
 				});
 				cb(null, data);
 			})
@@ -288,14 +280,12 @@ getActionsStats: function(t, p , cb) {
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Name of action
+* @apiSuccess {String} result._id Name of action
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.e error count per page
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.e errored count
+* @apiSuccess {Number} result.value.tt total time
 */
 getAjaxStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -304,19 +294,17 @@ getAjaxStats: function(t, p, cb) {
 		var ApdexT = apdex._i_ajaxT;
 		ajax.mapReduce(
 			function() {
-				emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 )/Q,
+				emit(this._s_name, {c:1, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 ),
 					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
 			},
 			function (k,v) {
 				var r=null;
 				v.forEach(function (v) {
-					if (!r) {
+					if (!r)
 						r = v;
-					}
 					else {
 						r.tt += v.tt;
 						r.c+=v.c;
-						r.r+=v.r;
 						r.e+=v.e;
 						r.ag+=v.ag;
 						r.aa+=v.aa;
@@ -327,14 +315,12 @@ getAjaxStats: function(t, p, cb) {
 			{
 				query: query,
 				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				scope: { AG:ApdexT, AA:ApdexT*4}
 			},safe.sure(cb, function (data) {
-				// calculate average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
-					key.e = key.e/key.c;
+					delete key.ag; delete key.aa;
 				});
 				cb(null, data);
 			})
@@ -345,27 +331,25 @@ getAjaxStats: function(t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Pages
-* @apiName getPagesStats
-* @api {get} /:token/stats/pages-stats Get name grouped pages stats
+* @apiName getPageStats
+* @api {get} /:token/stats/page-stats Get name grouped pages stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Name of action
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.e error count per page
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {String} result._id Name of action
+* @apiSuccess {Number} result.value stats
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.e errored count
+* @apiSuccess {Number} result.value.tt total time
 */
-getPagesStats: function(t, p, cb) {
+getPageStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
 	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
 		var ApdexT = apdex._i_pagesT;
 		pages.mapReduce(
 			function() {
-				emit(this._s_route, {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q,
+				emit(this._s_route, {c:1, tt: this._i_tt, e:1.0*(this._i_err?1:0),
 					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
 			},
 			function (k,v) {
@@ -376,7 +360,6 @@ getPagesStats: function(t, p, cb) {
 					}
 					else {
 						r.tt+=v.tt;
-						r.r+=v.r;
 						r.c+=v.c;
 						r.e+=v.e;
 						r.ag+=v.ag;
@@ -388,14 +371,12 @@ getPagesStats: function(t, p, cb) {
 			{
 				query: query,
 				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				scope: {AG:ApdexT, AA:ApdexT*4}
 			}, safe.sure(cb, function (data) {
-				// calculate apdex and average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
-					key.e = key.e/key.c;
+					delete key.ag; delete key.aa;
 				});
 				cb(null, data);
 			})
@@ -419,8 +400,8 @@ getPageError:function (t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getServerErrorInfo
-* @api {get} /:token/stats/server-error-info Get action error type info
+* @apiName getActionErrorInfo
+* @api {get} /:token/stats/action-error-info Get action error type info
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._id Error id
 * @apiSuccess {Object[]} result Array of stats
@@ -433,7 +414,7 @@ getPageError:function (t, p, cb) {
 * @apiSuccess {Integer} result.value.count count
 * @apiSuccess {String[]} result.value.ids prev, curent, next ids of same errors
 */
-getServerErrorInfo:function (t, p, cb) {
+getActionErrorInfo:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -519,7 +500,7 @@ getServerErrorInfo:function (t, p, cb) {
 * @apiParam {String} _id Action error id
 * @apiSuccess {Object} result Action error
 */
-getServerError:function (t, p, cb) {
+getActionError:function (t, p, cb) {
 	// dummy, just get it all out
 	serverErrors.findOne({_id:new mongo.ObjectID(p._id)},cb);
 },
@@ -915,7 +896,7 @@ getPagesErrorTiming:function(t, p, cb) {
 
 /**
 * @apiUse this
-* @apiGroup Actions
+* @apiGroup Errors
 * @apiName getServerErrorTimings
 * @api {get} /:token/stats/server-error-timings Get time sliced action error stats
 * @apiParam {Integer} quant Amount of minutes in time slot
@@ -1027,38 +1008,34 @@ getServerErrorStats:function (t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Actions
-* @apiName getActionsBreakdown
-* @api {get} /:token/stats/actions-breakdown Get perf stats for action
+* @apiName getActionBreakdown
+* @api {get} /:token/stats/action-breakdown Get action breakdown
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._s_name Action name
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Action name
+* @apiSuccess {String} result._id Action name
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.tt Total time
-* @apiSuccess {Integer} result.value.cnt Count
-* @apiSuccess {Integer} result.value.own Own time
-* @apiSuccess {Integer} result.value.tta Average time
-* @apiSuccess {Integer} result.value.owna Average own time
+* @apiSuccess {Number} result.value.tt Total time
+* @apiSuccess {Number} result.value.c Count
+* @apiSuccess {Number} result.value.ot Own time
 */
-getActionsBreakdown: function(t,p, cb) {
+getActionBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	query._s_cat = "WebTransaction";
 	as.mapReduce(
 		function() {
-				this.data.forEach(function(k,v) {
-					emit(k._s_name, {cnt: k._i_cnt, tt: k._i_tt, own: k._i_own});
-				});
+			this.data.forEach(function(k,v) {
+				emit(k._s_name, {c: k._i_cnt, tt: k._i_tt, ot: k._i_own});
+			});
 		},
 		function (k,v) {
 			var r=null;
 			v.forEach(function(v) {
-				if (!r) {
+				if (!r)
 					r = v;
-				}
 				else {
 					r.tt += v.tt;
-					r.cnt += v.cnt;
-					r.own += v.own;
+					r.c += v.c;
+					r.ot += v.ot;
 				}
 			});
 			return r;
@@ -1066,55 +1043,42 @@ getActionsBreakdown: function(t,p, cb) {
 		{
 			query: query,
 			out: {inline:1}
-		}, safe.sure(cb, function (data) {
-			// calculate average after aggregation
-			_.each(data, function (metric) {
-				var key = metric.value;
-				key.tta = key.tt/key.cnt;
-				key.owna = key.own/key.cnt;
-			});
-			cb(null, data);
-		})
+		}, cb
 	);
 },
 
 /**
 * @apiUse this
 * @apiGroup Actions
-* @apiName getActionsCategoryStats
-* @api {get} /:token/stats/actions-category-stats Get stats for specific actions category
+* @apiName getActionSegemntStats
+* @api {get} /:token/stats/action-segment-stats Get action segment stats
 * @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter.data._s_cat Category name
+* @apiParam {String} filter._idp Project id
+* @apiParam {String} filter.data._s_cat Segment category
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Action name
+* @apiSuccess {String} result._id Action name
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.tt Total time
-* @apiSuccess {Integer} result.value.r Count
-* @apiSuccess {Integer} result.value.tta Average time
+* @apiSuccess {Number} result.value.tt Total Time
+* @apiSuccess {Number} result.value.c Count
 */
-getActionsCategoryStats: function(t,p, cb) {
+getActionSegmentStats: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	query['data._s_cat'] = "Datastore";
-	var st = p.st;
-	var q = p.quant || 1;
 	as.mapReduce(
 		function() {
 			this.data.forEach(function(k) {
 				if (k._s_cat == CAT) {
-					emit(k._s_name, {tt: k._i_tt, r: k._i_cnt, avg1: k._i_tt/k._i_cnt});
+					emit(k._s_name, {tt: k._i_tt, c: k._i_cnt});
 				}
 			});
 		},
 		function (k,v) {
 			var r = null;
 			v.forEach(function(v) {
-				if (!r) {
+				if (!r)
 					r = v;
-				}
 				else {
 					r.tt += v.tt;
-					r.avg1 += v.avg1;
-					r.r += v.r;
+					r.c += v.c;
 				}
 			});
 			return r;
@@ -1124,14 +1088,7 @@ getActionsCategoryStats: function(t,p, cb) {
 			out: {inline:1},
 			scope: {CAT: query['data._s_cat']}
 		},
-		safe.sure(cb, function(data) {
-			_.each(data, function (metric) {
-				var key = metric.value;
-				key.avg = key.avg1/key.r;
-				key.tta = key.tt/key.r;
-			});
-			cb(null, data);
-		})
+		cb
 	);
 },
 
@@ -1240,26 +1197,28 @@ getAjaxBreakDown: function(t,p,cb){
 /**
 * @apiUse this
 * @apiGroup Actions
-* @apiName getActionsCategoryTimings
-* @api {get} /:token/stats/server-error-timings Get time sliced action category stats
+* @apiName getActionSegmentTimings
+* @api {get} /:token/stats/action-segment-timings Get action segment timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._id Id of specific error
+* @apiParam {String} filter._idp Project id
+* @apiParam {String} filter.data._s_name Segment name
 * @apiSuccess {Object[]} result Array of time slots
 * @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.r count
-* @apiSuccess {Object} result.value.tt tt
-* @apiSuccess {Object} result.value.tta tta
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.r rpm
+* @apiSuccess {Number} result.value.tt total time
+* @apiSuccess {Number} result.value.tta average
 */
-getActionsCategoryTimings:function (t, p, cb) {
+getActionSegmentTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	var name = query["data._s_name"];
 	as.mapReduce(function () {
-			var dt = parseInt(this._dt.valueOf()/(QUANT*60000));
+			var dt = parseInt(this._dt.valueOf()/(Q*60000));
 			this.data.forEach(function(k) {
 				if (!NAME || k._s_name == NAME) {
-					emit(dt,{r: k._i_cnt, tt: k._i_tt});
+					emit(dt,{c: k._i_cnt, r: k._i_cnt/Q, tt: k._i_tt});
 				}
 			});
 		},
@@ -1270,6 +1229,7 @@ getActionsCategoryTimings:function (t, p, cb) {
 					r = v;
 				}
 				else {
+					r.c += v.c;
 					r.r += v.r;
 					r.tt += v.tt;
 				}
@@ -1279,12 +1239,11 @@ getActionsCategoryTimings:function (t, p, cb) {
 		{
 			query: query,
 			out: {inline:1},
-			scope: {NAME: name, QUANT: p.quant || 1}
+			scope: {NAME: name, Q: p.quant || 1}
 		}, safe.sure(cb, function (data) {
-			// calculate average after aggregation
 			_.each(data, function (metric) {
 				var key = metric.value;
-				key.tta = key.tt/key.r;
+				key.tta = key.tt/key.c;
 			});
 			cb(null, data);
 		})
@@ -1348,8 +1307,8 @@ getActionsCategoryBreakDown: function(t,p, cb) {
 /**
 * @apiUse this
 * @apiGroup Metrics
-* @apiName getActionsCategoryTimings
-* @api {get} /:token/stats/server-error-timings Get time sliced metrics
+* @apiName getMetricsView
+* @api {get} /:token/stats/metrics-view Get time sliced metrics
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiSuccess {Object[]} result Array of time slots

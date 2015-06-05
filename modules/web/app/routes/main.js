@@ -257,7 +257,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					}
 				}
 				var views = {}; // total | server | browser | transaction | page | ajax
-				var valtt; var vale; var valr; var valapd; var period;
+				var valtt; var vale; var valr; var valapd; var period, progress;
 				if (r.data.views.length != 0) {
 					valtt = vale = valr = valapd = 0;
 					period = r.data.views.length;
@@ -331,62 +331,46 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					var data = _.take(r.data.serverErrors, 10)
 					_.extend(views.serverErr,{sErr:data,total:total})
 				}
-				if (r.data.topAjax.length != 0) {
+				if (r.data.topAjax.length) {
 					views.topa = {}
 					views.topa.a = _.take(_.sortBy(r.data.topAjax, function(r) {
-						return r.value.tta*r.value.c
+						return r.value.tt
 					}).reverse(),10)
-					var progress = null;
+					progress = 0;
 					_.forEach(views.topa.a,function(r) {
-						if (!progress) {
-							progress = r.value.tta*r.value.c
-						}
-						else {
-							progress += r.value.tta*r.value.c
-						}
+						progress += r.value.tt
 					})
 					_.forEach(views.topa.a, function(r) {
-						r.value.progress = (r.value.tta*r.value.c/progress)*100
-						r.value.tta = r.value.tta/1000
-						r._id = r._id.replace(/(^https:\/\/www.)?(^http:\/\/www.)?/,"")
+						r.value.progress = (r.value.tt/progress)*100
+						r.value.tta = r.value.tt/r.value.c/1000
 					})
 				}
-				if (r.data.topPages.length != 0) {
+				if (r.data.topPages.length) {
 					views.topp = {}
 					views.topp.p = _.take(_.sortBy(r.data.topPages,function(r) {
-						return r.value.tta*r.value.c
+						return r.value.tt
 					}).reverse(),10)
-					var progress = null;
+					progress=0;
 					_.forEach(views.topp.p,function(r) {
-						if (!progress) {
-							progress = r.value.tta*r.value.c
-						}
-						else {
-							progress += r.value.tta*r.value.c
-						}
+						progress += r.value.tt;
 					})
 					_.forEach(views.topp.p, function(r) {
-						r.value.progress = (r.value.tta*r.value.c/progress)*100
-						r.value.tta = r.value.tta/1000
+						r.value.progress = (r.value.tt/progress)*100
+						r.value.tta = r.value.tt/r.value.c/1000
 					})
 				}
-				if (r.data.topTransactions.length != 0) {
+				if (r.data.topTransactions.length) {
 					views.transactions = {}
 					views.transactions.top = _.take(_.sortBy(r.data.topTransactions,function(r) {
-						return r.value.tta*r.value.c
+						return r.value.tt
 					}).reverse(),10)
-					var progress = null;
+					progress = 0;
 					_.forEach(views.transactions.top,function(r) {
-						if (!progress) {
-							progress = r.value.tta*r.value.c
-						}
-						else {
-							progress += r.value.tta*r.value.c
-						}
+						progress += r.value.tt
 					})
 					_.forEach(views.transactions.top, function(r) {
-						r.value.progress = (r.value.tta*r.value.c/progress)*100
-						r.value.tta = r.value.tta/1000
+						r.value.progress = (r.value.tt/progress)*100
+						r.value.tta = r.value.tt/r.value.c/1000
 					})
 				}
 
@@ -401,32 +385,26 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					var graphOn = {}
 
 				if (r.data.views.length)
-					graphOn.browser = 1
+					graphOn.browser = 1;
 
 				if (r.data.ajax.length)
-					graphOn.ajax = 1
+					graphOn.ajax = 1;
 
 				if (r.data.actions.length)
-					graphOn.server = 1
+					graphOn.server = 1;
 
-				if (r.data.database.length != 0) {
+				if (r.data.database.length) {
 					views.database = {}
 					views.database.db = _.take(_.sortBy(r.data.database,function(r) {
-						return r.value.tta*r.value.r
+						return r.value.tt
 					}).reverse(),10)
-					var progress = null;
+					progress = 0;
 					_.forEach(views.database.db,function(r) {
-						if (!progress) {
-							progress = r.value.tta*r.value.r
-						}
-						else {
-							progress += r.value.tta*r.value.r
-						}
+						progress += r.value.tt
 					})
 					_.forEach(views.database.db, function(r) {
-						r.value.progress = (r.value.tta*r.value.r/progress)*100;
-						r.value.tta = r.value.tta/1000;
-						r.value.avg = r.value.avg/1000;
+						r.value.progress = (r.value.tt/progress)*100;
+						r.value.avg = r.value.tt/r.value.c/1000;
 					})
 				}
 
@@ -444,12 +422,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						rpm: function (cb) {
-							api("stats.getAjaxStats","public",{_t_age:quant+"m",quant:quant,filter:{
+							api("stats.getAjaxStats","public",{_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							},
-								st: st
-							}, cb);
+							}}, cb);
 						},
 						breakdown: function (cb) {
 							api("stats.getAjaxBreakDown", "public", {
@@ -476,64 +452,52 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var stat = {};
-						stat.apdex=0.0; stat.r=0.0; stat.tta=0.0; stat.epm=0.0;
-						if (req.query.selected) {
-							_.forEach(r.rpm, function(r) {
-								if(r._id == req.query.selected) {
-									stat.apdex=r.value.apdex;
-									stat.r=r.value.r;
-									stat.tta=r.value.tta;
-									stat.epm=r.value.e;
-								}
-							})
-						} else {
-							_.forEach(r.rpm, function(r) {
-								stat.apdex+=r.value.apdex;
-								stat.r+=r.value.r;
-								stat.tta+=r.value.tta;
-								stat.epm+=r.value.e;
-							})
-							stat.apdex=stat.apdex/r.rpm.length;
-							stat.r=stat.r/r.rpm.length;
-							stat.tta=stat.tta/r.rpm.length;
-							stat.epm=stat.epm/r.rpm.length;
-						}
+						stat.apdex=0.0; stat.c=0.0; stat.tt=0.0; stat.e=0.0;
+						_.forEach(r.rpm, function(r) {
+							stat.apdex+=r.value.apdex;
+							stat.c+=r.value.c;
+							stat.tt+=r.value.tt;
+							stat.e+=r.value.e;
+						})
+						stat.apdex=stat.apdex/r.rpm.length;
+						stat.r=stat.c/r.rpm.length;
+						stat.tta=stat.tt/stat.c/r.rpm.length;
+						stat.epm=stat.e/stat.c/r.rpm.length;
+
 						// sorting "mtc", "sar" etc
 						r.rpm =_.sortBy(r.rpm, function(v){
 							if (st == "rpm")
-								return -1*v.value.r;
+								return -1*v.value.c;
 							if (st == "mtc")
-								return -1* (v.value.tta*v.value.c);
+								return -1* (v.value.tt);
 							if (st == "sar")
-								return -1* v.value.tta;
+								return -1* v.value.tt/v.value.c;
 							if (st == "wa")
 								return 1* v.value.apdex;
 						});
 						var sum=0;
 						_.each(r.rpm, function(r){
 							if (st == "rpm")
-								sum+=r.value.r;
+								sum+=r.value.c;
 							if (st == "mtc")
-								sum += r.value.tta*r.value.c;
+								sum += r.value.tt;
 							if (st == "sar")
-								sum += r.value.tta;
+								sum += r.value.tt/r.value.c;
 							if (st == "wa")
 								sum += r.value.apdex;
 						});
 						var percent = sum/100;
 						_.each(r.rpm, function (r) {
 							if (st == "rpm")
-								r.value.bar = Math.round(r.value.r/percent);
+								r.value.bar = Math.round(r.value.c/percent);
 							if (st == "mtc")
-								r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+								r.value.bar = Math.round(r.value.tt/percent);
 							if (st == "sar")
-								r.value.bar = Math.round(r.value.tta/percent);
-							if (st == "wa") {
-								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex;
-							}
+								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+							if (st == "wa")
+								r.value.bar = r.value.apdex*100;
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = (r.value.tta/1000);
+							r.value.tta = (r.value.tt/r.value.c/1000);
 						 });
 						 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, fr: filter, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
@@ -552,9 +516,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionsStats", "public", {
-								_t_age: quant + "m", quant: quant, filter: {
+							api("stats.getActionStats", "public", {
+								_t_age: quant + "m", filter: {
 									_idp: project._id,
+									_s_cat:"WebTransaction",
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}
 							}, cb)
@@ -562,7 +527,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						breakdown: function (cb) {
 							if (!req.query.selected)
 								return safe.back(cb,null,[]);
-							api("stats.getActionsBreakdown", "public", {
+							api("stats.getActionBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -572,53 +537,45 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						graphs: function (cb) {
 							var filter = {
 								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+								_s_cat:"WebTransaction"
 							}
 							if (req.query.selected)
 								filter._s_name = req.query.selected;
-							api("stats.getActionsTimings", "public", {
+							api("stats.getActionTimings", "public", {
 								_t_age: quant + "m", quant: quant, filter: filter}, cb)
 						}
 					}, safe.sure(cb, function(r){
 						var stat = {};
 						stat.apdex=0.0; stat.rpm=0.0; stat.tta=0.0;
-						if (req.query.selected) {
-							_.forEach(r.data, function(r) {
-								if(r._id == req.query.selected) {
-									stat.apdex=r.value.apdex;
-									stat.rpm=r.value.r;
-									stat.tta=r.value.tta;
-								}
-							})
-						} else {
-							_.forEach(r.data, function(r) {
-								stat.apdex+=r.value.apdex;
-								stat.rpm+=r.value.r;
-								stat.tta+=r.value.tta;
-							})
-							stat.apdex=stat.apdex/r.data.length;
-							stat.rpm=stat.rpm/r.data.length;
-							stat.tta=stat.tta/r.data.length;
-						}
+						_.forEach(r.data, function(r) {
+							stat.apdex+=r.value.apdex;
+							stat.rpm+=r.value.c;
+							stat.tta+=r.value.tt;
+						})
+						stat.apdex=stat.apdex/r.data.length;
+						stat.rpm=stat.rpm/r.data.length;
+						stat.tta=stat.tta/stat.rpm/r.data.length/1000;
+
 						// sorting "mtc", "sar" etc
 						r.data =_.sortBy(r.data, function(v){
 							if (st == "rpm")
-								return -1*v.value.r;
+								return -1*v.value.c;
 							if (st == "mtc")
-								return -1* (v.value.tta*v.value.c);
+								return -1* (v.value.tt);
 							if (st == "sar")
-								return -1* v.value.tta;
+								return -1* v.value.tt/v.value.c;
 							if (st == "wa")
 								return 1* v.value.apdex;
 						});
 						var sum=0;
 						_.each(r.data, function(r){
 							if (st == "rpm")
-								sum+=r.value.r;
+								sum+=r.value.c;
 							if (st == "mtc")
-								sum += r.value.tta*r.value.c;
+								sum += r.value.tt;
 							if (st == "sar")
-								sum += r.value.tta;
+								sum += r.value.tt/r.value.c;
 							if (st == "wa") {
 								sum += r.value.apdex;
 							}
@@ -626,18 +583,23 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						var percent = sum/100;
 						_.each(r.data, function (r) {
 							if (st == "rpm")
-								r.value.bar = Math.round(r.value.r/percent);
+								r.value.bar = Math.round(r.value.c/percent);
 							if (st == "mtc")
-								r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+								r.value.bar = Math.round((r.value.tt)/percent);
 							if (st == "sar")
-								r.value.bar = Math.round(r.value.tta/percent);
-							if (st == "wa") {
-								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex;
-							}
+								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+							if (st == "wa")
+								r.value.bar = r.value.apdex * 100;
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = (r.value.tta/1000);
+							r.value.tta = r.value.tt/r.value.c/1000;
 						});
+
+						_.each(r.breakdown, function (r) {
+							r.value.cnt = r.value.c;
+							r.value.tta = r.value.tt/r.value.c;
+							r.value.owna = r.value.ot/r.value.c;
+						})
+
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
@@ -654,8 +616,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPagesStats", "public", {
-								_t_age: quant + "m", quant: quant, filter: {
+							api("stats.getPageStats", "public", {
+								_t_age: quant + "m", filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 								}
@@ -686,48 +648,37 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var stat = {};
-						stat.apdex=0.0; stat.r=0.0; stat.tta=0.0; stat.epm=0.0;
-						if (req.query.selected) {
-							_.forEach(r.data, function(r) {
-								if(r._id == req.query.selected) {
-									stat.apdex=r.value.apdex;
-									stat.r=r.value.r;
-									stat.tta=r.value.tta;
-									stat.epm=r.value.e;
-								}
-							})
-						} else {
-							_.forEach(r.data, function(r) {
-								stat.apdex+=r.value.apdex;
-								stat.r+=r.value.r;
-								stat.tta+=r.value.tta;
-								stat.epm+=r.value.e;
-							})
-						}
+						stat.apdex=0; stat.c=0; stat.tt=0; stat.e=0;
+						_.forEach(r.data, function(r) {
+							stat.apdex+=r.value.apdex;
+							stat.c+=r.value.c;
+							stat.tt+=r.value.tt;
+							stat.e+=r.value.e;
+						})
 						stat.apdex=stat.apdex/r.data.length;
-						stat.r=stat.r/r.data.length;
-						stat.tta=stat.tta/r.data.length/1000;
-						stat.epm=stat.epm/r.data.length;
+						stat.tta=stat.tt/stat.c/r.data.length/1000;
+						stat.r=stat.c/r.data.length;
+						stat.epm=stat.e/r.data.length;
 
 						// sorting "mtc", "sar" etc
 						r.data =_.sortBy(r.data, function(v){
 							if (st == "rpm")
-								return -1*v.value.r;
+								return -1*v.value.c;
 							if (st == "mtc")
-								return -1* (v.value.tta*v.value.c);
+								return -1*v.value.tt;
 							if (st == "sar")
-								return -1* v.value.tta;
+								return -1*v.value.tt/v.value.c;
 							if (st == "wa")
-								return 1* v.value.apdex;
+								return 1*v.value.apdex;
 						});
 						var sum=0;
 						_.each(r.data, function(r){
 							if (st == "rpm")
-								sum+=r.value.r;
+								sum+=r.value.c;
 							if (st == "mtc")
-								sum += r.value.tta*r.value.c;
+								sum += r.value.tt;
 							if (st == "sar")
-								sum += r.value.tta;
+								sum += r.value.tt/r.value.c;
 							if (st == "wa") {
 								sum += r.value.apdex;
 							}
@@ -735,17 +686,15 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						var percent = sum/100;
 						_.each(r.data, function (r) {
 							if (st == "rpm")
-								r.value.bar = Math.round(r.value.r/percent);
+								r.value.bar = Math.round(r.value.c/percent);
 							if (st == "mtc")
-								r.value.bar = Math.round((r.value.tta*r.value.c)/percent);
+								r.value.bar = Math.round((r.value.tt)/percent);
 							if (st == "sar")
-								r.value.bar = Math.round(r.value.tta/percent);
-							if (st == "wa") {
-								r.value.bar = Math.round(r.value.apdex/percent);
-								r.value.apdex = r.value.apdex;
-							}
+								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+							if (st == "wa")
+								r.value.bar = r.value.apdex * 100;
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = (r.value.tta/1000);
+							r.value.tta = r.value.tt/r.value.c/1000;
 						});
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
@@ -825,12 +774,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionsCategoryStats", "public", {
+							api("stats.getActionSegmentStats", "public", {
 								_t_age: quant + "m",
 								quant: quant,
 								filter: {
 									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend}
+									_dt: {$gt: dtstart, $lte: dtend},
+									'data._s_cat':'Datastore'
 								}
 							}, cb)
 						},
@@ -843,7 +793,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
-							api("stats.getActionsCategoryTimings", "public", {
+							api("stats.getActionSegmentTimings", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
@@ -859,53 +809,43 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var stat = {};
-						stat.avg=0.0; stat.r=0.0; stat.tta=0.0;
-						if (req.query.selected) {
-							_.forEach(r.data, function(r) {
-								if(r._id == req.query.selected) {
-									stat.avg=r.value.avg;
-									stat.r=r.value.r;
-									stat.tta=r.value.tta;
-								}
-							})
-						} else {
-							_.forEach(r.data, function(r) {
-								stat.avg+=r.value.avg;
-								stat.r+=r.value.r;
-								stat.tta+=r.value.tta;
-							})
-							stat.avg=stat.avg/r.data.length;
-							stat.r=stat.r/r.data.length;
-							stat.tta=stat.tta/r.data.length;
-						}
+						stat.tt=0; stat.c=0;
+						_.forEach(r.data, function(r) {
+							stat.c+=r.value.c;
+							stat.tt+=r.value.tt;
+						})
+						stat.avg=stat.tt/stat.c/r.data.length;
+						stat.r=stat.c/r.data.length;
+
 						// sorting "req" , "mtc" etc
 						 var sum = 0;
 						 _.forEach(r.data, function(r) {
 							if (st == "req")
-								sum += r.value.r;
+								sum += r.value.c;
 							if (st == 'mtc')
-								sum += r.value.tta*r.value.r;
+								sum += r.value.tt;
 							if (st == 'sar')
-								sum += r.value.avg;
+								sum += r.value.tt/r.value.c;
 						 });
 						 var procent = sum/100;
 						 _.forEach(r.data, function(r) {
 							if (st == 'req')
-								r.value.bar = r.value.r/procent;
+								r.value.bar = r.value.c/procent;
 							if (st == 'mtc')
-								r.value.bar = (r.value.tta*r.value.r)/procent;
+								r.value.bar = r.value.tt/procent;
 							if (st == 'sar')
-								r.value.bar = r.value.avg/procent;
+								r.value.bar = r.value.tt/r.value.c/procent;
 						 });
 						 r.data = _.sortBy(r.data, function(r) {
-							r.value.avg = r.value.avg/1000;
-							r.value.tta = r.value.tta/1000;
+							r.value.avg = r.value.tt/r.value.c/1000;
+							r.value.tta = r.value.avg;
+							r.value.r = r.value.c;
 							if (st == 'req')
-								return r.value.r*-1;
+								return r.value.c*-1;
 							if (st == 'mtc')
-								return (r.value.tta*r.value.r)*-1;
+								return (r.value.tt)*-1;
 							if (st == 'sar')
-								return r.value.avg*-1;
+								return r.value.tt/r.value.c*-1;
 						});
 						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})

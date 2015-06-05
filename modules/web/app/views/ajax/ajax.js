@@ -2,11 +2,6 @@ define(['tinybone/base', 'lodash', 'dustc!views/ajax/ajax.dust', 'views/ajax/aja
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/ajax/ajax",
-		postRender:function () {
-			view.prototype.postRender.call(this);
-	console.log('this',this)
-			var ajax = this.data.rpm;
-		},
 		events:{
 			'click .do-stats': function(e) {
               var self = this;
