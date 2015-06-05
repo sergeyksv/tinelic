@@ -62,6 +62,7 @@ module.exports.init = function (ctx, cb) {
 								}
 							};
 							q = queryfix(q);
+							console.log(q);
 							serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
 								cb(null, res.length);
 							}));

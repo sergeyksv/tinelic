@@ -18,6 +18,7 @@ module.exports.init = function (ctx, cb) {
 	requirejs.config({
 		baseUrl: __dirname+"/app",
 		paths:{
+			"prefixify":path.resolve(__dirname,"../tinyback/prefixify"),
 			"tinybone":path.resolve(__dirname,"../tinybone"),
 			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
 			'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),

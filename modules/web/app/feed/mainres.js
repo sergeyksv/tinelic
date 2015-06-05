@@ -1,4 +1,4 @@
-define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
+define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe,_,prefixify) {
 	return {
 		errorInfo:function (token, params, cb) {
 			safe.parallel({
@@ -21,6 +21,7 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}, cb)
 		},
 		projectInfo:function (token, params, cb) {
+			params = prefixify.query(params);
 			var dta = params._dtActionsErrAck; delete params._dtActionsErrAck;
 			var dtp = params._dtPagesErrAck; delete params._dtPagesErrAck;
 			safe.parallel({
@@ -75,8 +76,10 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 			}, cb)
 		},
 		homeInfo:function (token, params1, cb) {
+			params1 = prefixify.query(params1);
 			api("assets.getProjects", token, {_t_age:"30d"}, safe.sure(cb, function (projects) {
 				safe.forEach(projects, function (projectN, cb) {
+					projectN = prefixify.data(projectN);
 					var params = {quant:1,filter:_.extend({_idp:projectN._id},params1.filter)}
 					safe.parallel({
 						errAck: function(cb) {
@@ -84,8 +87,8 @@ define(["tinybone/backadapter", "safe","lodash"], function (api,safe,_) {
 							var dta = projectN._dtActionsErrAck || dt;
 							var dtp = projectN._dtPagesErrAck || dt;
 							api("stats.getErrAck", token, {_idp: projectN._id, _dt:{
-								_dtActionsErrAck: (dta <= dt)?dt:dta,
-								_dtPagesErrAck: (dtp <= dt)?dt:dtp,
+								_dtActionsErrAck: dta,
+								_dtPagesErrAck: dtp,
 								$lte: params.filter._dt.$lte
 							}}, cb)
 						},

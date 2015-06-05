@@ -922,7 +922,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 
 			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):res.locals.dtstart).valueOf();
-				res.locals.dtstart = (dta < res.locals.dtstart)?dtp:res.locals.dtstart;
+				res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
 				res.locals.dtseack = dta;
 				safe.parallel({
 						view: function (cb) {

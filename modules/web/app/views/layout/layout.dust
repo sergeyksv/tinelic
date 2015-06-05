@@ -53,6 +53,7 @@
 	requirejs.config({
 		baseUrl: "{_t_prefix}/app",
 		paths:{
+			"prefixify":"../tinyback/prefixify",
 			"tinybone":"../tinybone",
 			"lodash":"../js/lodash",
 			"dust":"../js/dust",
