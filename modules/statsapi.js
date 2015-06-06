@@ -47,8 +47,8 @@ module.exports.init = function (ctx, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getErrAck
-* @api {get} /:token/stats/err-ack Get count of errors for period
+* @apiName getErrTotals
+* @api {get} /:token/stats/err-ack Get error totals
 * @apiParam {String} _idp Project id
 * @apiParam {Object} _dt Date filter
 * @apiSuccess {Integer} actions - Number of action errors
@@ -56,7 +56,7 @@ module.exports.init = function (ctx, cb) {
 * @apiSuccess {Integer} pages - Number of page errors
 * @apiSuccess {Integer} dtlPages - Number of action errors
 */
-getErrAck: function(t,p,cb) {
+getErrorTotals: function(t,p,cb) {
 	safe.parallel({
 		actions:function(cb) {
 			var q = {
@@ -116,27 +116,26 @@ getErrAck: function(t,p,cb) {
 /**
 * @apiUse this
 * @apiGroup Metrics
-* @apiName getMetrics
-* @api {get} /:token/stats/metrics Get metrics for specific filter
+* @apiName getMetricTotals
+* @api {get} /:token/stats/metric-totals Get metric totals
 * @apiParam {Object} filter Filter for metrics
-* @apiSuccess {Integer} proc Number of difference processes seen
+* @apiSuccess {Integer} proc Number of different processes seen
 * @apiSuccess {Integer} mem Average amount of memory used  per all processes
 */
-getMetrics: function(t, p, cb) {
+getMetricTotals: function(t, p, cb) {
 	var query = queryfix(p.filter);
 	metrics.mapReduce(
 		function() {
-			/* global emit */
-			emit(this._s_pid, {mem: (this._f_val/this._i_cnt)});
+			emit(this._s_pid, {mem: this._f_val, c:this._i_cnt});
 		},
 		function(k,v) {
 			var r = null;
 			v.forEach(function(v) {
-				if (!r) {
+				if (!r)
 					r = v;
-				}
 				else {
-					r.mem = (r.mem + v.mem)/2;
+					r.mem += r.mem;
+					r.c += r.c;
 				}
 			});
 			return r;
@@ -148,9 +147,9 @@ getMetrics: function(t, p, cb) {
 		safe.sure(cb, function(data) {
 			var memtt = 0;
 			_.forEach(data,function(r) {
-				memtt += parseInt(r.value.mem);
+				memtt += r.value.mem/r.value.c;
 			});
-			cb(null,{proc: data.length, mem: memtt});
+			cb(null,{proc: data.length, mem: Math.round(memtt)});
 		})
 	);
 },
@@ -332,7 +331,7 @@ getAjaxStats: function(t, p, cb) {
 * @apiUse this
 * @apiGroup Pages
 * @apiName getPageStats
-* @api {get} /:token/stats/page-stats Get name grouped pages stats
+* @api {get} /:token/stats/page-stats Get page stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
@@ -393,7 +392,6 @@ getPageStats: function(t, p, cb) {
 * @apiSuccess {Object} result Page error
 */
 getPageError:function (t, p, cb) {
-	// dummy, just get it all out
 	events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 },
 
@@ -401,7 +399,7 @@ getPageError:function (t, p, cb) {
 * @apiUse this
 * @apiGroup Errors
 * @apiName getActionErrorInfo
-* @api {get} /:token/stats/action-error-info Get action error type info
+* @api {get} /:token/stats/action-error-info Get action error info
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._id Error id
 * @apiSuccess {Object[]} result Array of stats
@@ -569,22 +567,22 @@ getAjaxTimings:function(t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Pages
-* @apiName getPagesTimings
-* @api {get} /:token/stats/pages-timings Get time sliced page stats
+* @apiName getPageTimings
+* @api {get} /:token/stats/page-timings Get page timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of time slots
 * @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.apdex apdex
-* @apiSuccess {Object} result.value.tta average time
-* @apiSuccess {Object} result.value.c count
-* @apiSuccess {Object} result.value.r rpm
-* @apiSuccess {Object} result.value.r error count
-* @apiSuccess {Object} result.value.tt total time
+* @apiSuccess {Number} result.value.apdex apdex
+* @apiSuccess {Number} result.value.tta average time
+* @apiSuccess {Number} result.value.c count
+* @apiSuccess {Number} result.value.r rpm
+* @apiSuccess {Number} result.value.e epm
+* @apiSuccess {Number} result.value.tt total time
 */
-getPagesTimings:function (t, p, cb) {
+getPageTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
 		var ApdexT = apdex._i_pagesT;
@@ -596,9 +594,8 @@ getPagesTimings:function (t, p, cb) {
 			function (k, v) {
 				var r=null;
 				v.forEach(function (v) {
-					if (!r) {
+					if (!r)
 						r = v;
-					}
 					else {
 						r.tt+=v.tt;
 						r.r+=v.r;
@@ -615,7 +612,6 @@ getPagesTimings:function (t, p, cb) {
 				out: {inline:1},
 				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
 			}, safe.sure(cb, function (data) {
-				// calculate apdex and average after aggregation
 				_.each(data, function (metric) {
 					var key = metric.value;
 					key.apdex = (key.ag+key.aa/2)/key.c;
@@ -631,12 +627,12 @@ getPagesTimings:function (t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getPagesErrorInfo
-* @api {get} /:token/stats/pages-error-info Get pages error type info
+* @apiName getPageErrorInfo
+* @api {get} /:token/stats/page-error-info Get page error info
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._id Error id
 * @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id ehash or project id
+* @apiSuccess {String} result._id ehash or project id
 * @apiSuccess {Object} result.value stats
 * @apiSuccess {String[]} result.value.route affected routes
 * @apiSuccess {String[]} result.value.browser browsers
@@ -646,7 +642,7 @@ getPagesTimings:function (t, p, cb) {
 * @apiSuccess {Integer} result.value.count count
 * @apiSuccess {String[]} result.value.ids prev, curent, next ids of same errors
 */
-getPagesErrorInfo:function (t, p, cb) {
+getPageErrorInfo:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -731,8 +727,8 @@ getPagesErrorInfo:function (t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getPagesErrorStats
-* @api {get} /:token/stats/pages-stats Get type grouped page error stats
+* @apiName getPageErrorStats
+* @api {get} /:token/stats/page-error-stats Get page error stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
@@ -745,7 +741,7 @@ getPagesErrorInfo:function (t, p, cb) {
 * @apiSuccess {Integer} result.value._dtmax Last seen in period
 * @apiSuccess {Integer} result.value.count Count
 */
-getPagesErrorStats:function (t, p, cb) {
+getPageErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -838,9 +834,9 @@ getPagesErrorStats:function (t, p, cb) {
 
 /**
 * @apiUse this
-* @apiGroup Pages
-* @apiName getPagesErrorTiming
-* @api {get} /:token/stats/pages-error-timing Get time sliced page error stats
+* @apiGroup Errors
+* @apiName getPageErrorTimings
+* @api {get} /:token/stats/page-error-timings Get page error timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._id Id of specific error
@@ -849,7 +845,7 @@ getPagesErrorStats:function (t, p, cb) {
 * @apiSuccess {Object} result.value stats
 * @apiSuccess {Object} result.value.r rpm
 */
-getPagesErrorTiming:function(t, p, cb) {
+getPageErrorTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -895,8 +891,8 @@ getPagesErrorTiming:function(t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getServerErrorTimings
-* @api {get} /:token/stats/server-error-timings Get time sliced action error stats
+* @apiName getActionErrorTimings
+* @api {get} /:token/stats/action-error-timings Get action error timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._id Id of specific error
@@ -905,7 +901,7 @@ getPagesErrorTiming:function(t, p, cb) {
 * @apiSuccess {Object} result.value stats
 * @apiSuccess {Object} result.value.r rpm
 */
-getServerErrorTimings:function(t, p, cb) {
+getActionErrorTimings:function(t, p, cb) {
 	var query1 = queryfix(p.filter);
 	var q = p.quant || 1;
 	serverErrors.findOne(query1, safe.sure(cb, function (event) {
@@ -918,13 +914,10 @@ getServerErrorTimings:function(t, p, cb) {
 				function (k,v) {
 					var r=null;
 					v.forEach(function (v) {
-						if (!r){
+						if (!r)
 							r = v;
-						}
-						else {
+						else
 							r.r+=v.r;
-
-						}
 					});
 					return r;
 				},
@@ -944,8 +937,8 @@ getServerErrorTimings:function(t, p, cb) {
 /**
 * @apiUse this
 * @apiGroup Errors
-* @apiName getServerErrorStats
-* @api {get} /:token/stats/server-errors-stats Get type grouped server error stats
+* @apiName getActionErrorStats
+* @api {get} /:token/stats/action-error-stats Get action error stats
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
@@ -955,7 +948,7 @@ getServerErrorTimings:function(t, p, cb) {
 * @apiSuccess {Integer} result.value._dtmax Last seen in period
 * @apiSuccess {Integer} result.value.count Count
 */
-getServerErrorStats:function (t, p, cb) {
+getActionErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	serverErrors.mapReduce(function () {
 			emit(this.ehash,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id});
@@ -1093,28 +1086,26 @@ getActionSegmentStats: function(t,p, cb) {
 /**
 * @apiUse this
 * @apiGroup Pages
-* @apiName getPagesBreakdown
-* @api {get} /:token/stats/pages-break-down Get perm segements for page
-* @apiParam {Object} filter Filter for actions
+* @apiName getPageBreakdown
+* @api {get} /:token/stats/page-breakdown Get page breakdown
+* @apiParam {Object} filter Filter for pages
+* @apiParam {String} filter._idp Project id
 * @apiSuccess {Object[]} result Array of stats
 * @apiSuccess {Integer} result._id Page name
 * @apiSuccess {Object} result.value stats
 * @apiSuccess {Integer} result.value.c Count
 * @apiSuccess {Integer} result.value.tt Total time
-* @apiSuccess {Integer} result.value.tta Average time
 */
-getPagesBreakDown: function(t,p,cb){
+getPageBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
 	pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-		delete query._s_uri;
 		var idpv = [];
 		_.forEach(data, function(r){
 			idpv.push(r._id);
 		});
-		query._idpv = {$in: idpv};
 		ajax.mapReduce(
 			function() {
-				emit(this._s_name, {c:1, r: 1.0/Q, tt: this._i_tt});
+				emit(this._s_name, {c:1, tt: this._i_tt});
 			},
 			function (k,v) {
 				var r=null;
@@ -1122,7 +1113,6 @@ getPagesBreakDown: function(t,p,cb){
 					if (!r)
 						r = v;
 					else {
-						r.r += v.r;
 						r.tt+=v.tt;
 						r.c+=v.c;
 					}
@@ -1130,17 +1120,10 @@ getPagesBreakDown: function(t,p,cb){
 				return r;
 			},
 			{
-				query: query,
+				query: {_idpv:{$in: idpv}},
 				out: {inline:1},
-				scope: {Q: p.quant || 1}
-			}, safe.sure(cb, function (data) {
-				// calculate average after aggregation
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.tta = key.tt/key.c;
-				});
-				cb(null, data);
-			})
+				scope: {}
+			}, cb
 		);
 	}));
 },
@@ -1241,39 +1224,37 @@ getActionSegmentTimings:function (t, p, cb) {
 
 /**
 * @apiUse this
-* @apiGroup Pages
-* @apiName getActionsCategoryBreakDown
-* @api {get} /:token/stats/actions-category-break-down Get perf segements for action category
+* @apiGroup Actions
+* @apiName getActionSegmentBreakdown
+* @api {get} /:token/stats/actions-category-breakdown Get action segment breakdown
 * @apiParam {Object} filter Filter for actions
 * @apiParam {String} filter._s_name Segment name
 * @apiSuccess {Object[]} result Array of stats
 * @apiSuccess {Integer} result._id Action name
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.cnt Count
+* @apiSuccess {Integer} result.value.c Count
 * @apiSuccess {Integer} result.value.tt Total time
 * @apiSuccess {Integer} result.value.tta Average time
 */
-getActionsCategoryBreakDown: function(t,p, cb) {
+getActionSegmentBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	query._s_cat = "WebTransaction";
 	as.mapReduce(
 		function() {
 			var self=this;
 			this.data.forEach(function(k,v) {
 				if (k._s_name == NAME) {
-					emit(self._s_name, {cnt: k._i_cnt, tt: k._i_tt});
+					emit(self._s_name, {c: k._i_cnt, tt: k._i_tt});
 				}
 			});
 		},
 		function (k,v) {
 			var r=null;
 			v.forEach(function(v) {
-				if (!r) {
+				if (!r)
 					r = v;
-				}
 				else {
 					r.tt += v.tt;
-					r.cnt += v.cnt;
+					r.c += v.c;
 				}
 			});
 			return r;
@@ -1282,43 +1263,38 @@ getActionsCategoryBreakDown: function(t,p, cb) {
 			query: query,
 			out: {inline:1},
 			scope: {CAT: query._s_cat, NAME: p.filter["data._s_name"]}
-		}, safe.sure(cb, function (data) {
-			// calculate average after aggregation
-			_.each(data, function (metric) {
-				var key = metric.value;
-				key.tta = key.tt/key.cnt;
-			});
-			cb(null, data);
-		})
+		}, cb
 	);
 },
 
 /**
 * @apiUse this
 * @apiGroup Metrics
-* @apiName getMetricsView
-* @api {get} /:token/stats/metrics-view Get time sliced metrics
+* @apiName getMetricTimings
+* @api {get} /:token/stats/metric-timingsview Get metric timings
 * @apiParam {Integer} quant Amount of minutes in time slot
 * @apiParam {Object} filter Filter for actions
 * @apiSuccess {Object[]} result Array of time slots
 * @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
 * @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.mem memory
+* @apiSuccess {Number} result.value.mem memory
 */
-getMetricsView:function(t,p,cb) {
+getMetricTimings:function(t,p,cb) {
 	var query = queryfix(p.filter);
 
 	metrics.mapReduce(
 		function(){
-			emit(parseInt(this._dt.valueOf()/(Q*25000)),{mem: this._f_val/this._i_cnt});
+			emit(parseInt(this._dt.valueOf()/(Q*60000)),{mem: this._f_val, c: this._i_cnt});
 		},
 		function (k,v) {
 			var r=null;
 			v.forEach(function(v) {
 				if (!r)
 					r = v;
-				else
-					r.mem = ((v.mem + r.mem)/2);
+				else {
+					r.mem += v.mem;
+					r.c += r.c;
+				}
 			});
 			return r;
 		},
@@ -1326,8 +1302,14 @@ getMetricsView:function(t,p,cb) {
 			query: query,
 			out: {inline:1},
 			scope:{Q: p.quant}
-		},
-	cb);
+		}, safe.sure(cb, function (data) {
+			_.each(data, function (metric) {
+				var key = metric.value;
+				key.mem = key.mem/key.c;
+			});
+			cb(null, data);
+		})
+	);
 }
 
 }});

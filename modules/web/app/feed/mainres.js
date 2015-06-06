@@ -6,7 +6,7 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					api("stats.getPageError",token, _.extend({_t_age:"30d"},params.filter), cb)
 				},
 				info:function (cb) {
-					api("stats.getPagesErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
+					api("stats.getPageErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
 				}
 			}, cb)
 		},
@@ -26,10 +26,10 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 			var dtp = params._dtPagesErrAck; delete params._dtPagesErrAck;
 			safe.parallel({
 				views: function (cb) {
-					api("stats.getPagesTimings",token, params, cb);
+					api("stats.getPageTimings",token, params, cb);
 				},
 				errors: function (cb) {
-					api("stats.getPagesErrorStats",token, {
+					api("stats.getPageErrorStats",token, {
 						quant: params.quant,
 						filter: {
 							_idp: params.filter._idp,
@@ -56,7 +56,7 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					api("stats.getActionStats", token, _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 				},
 				serverErrors: function (cb) {
-					api("stats.getServerErrorStats",token, {
+					api("stats.getActionErrorStats",token, {
 						quant: params.quant,
 						filter: {
 							_idp: params.filter._idp,
@@ -68,7 +68,7 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					}, cb);
 				},
 				metrics: function (cb) {
-					api("stats.getMetrics", token, params, cb);
+					api("stats.getMetricTotals", token, params, cb);
 				},
 				database: function (cb) {
 					api("stats.getActionSegmentStats", token, _.merge({filter:{'data._s_cat':'Datastore'}},params), cb);
@@ -86,17 +86,17 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 							var dt = params.filter._dt.$gt
 							var dta = projectN._dtActionsErrAck || dt;
 							var dtp = projectN._dtPagesErrAck || dt;
-							api("stats.getErrAck", token, {_idp: projectN._id, _dt:{
+							api("stats.getErrorTotals", token, {_idp: projectN._id, _dt:{
 								_dtActionsErrAck: dta,
 								_dtPagesErrAck: dtp,
 								$lte: params.filter._dt.$lte
 							}}, cb)
 						},
 						views: function (cb) {
-							api("stats.getPagesTimings",token, params, cb);
+							api("stats.getPageTimings",token, params, cb);
 						},
 						errors: function (cb) {
-							api("stats.getPagesErrorStats",token, params, cb);
+							api("stats.getPageErrorStats",token, params, cb);
 						},
 						ajax: function (cb) {
 							api("stats.getAjaxTimings",token,params, cb);
@@ -105,10 +105,10 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 							api("stats.getActionTimings", token,  _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 						},
 						serverErrors: function (cb) {
-							api("stats.getServerErrorStats",token, params, cb);
+							api("stats.getActionErrorStats",token, params, cb);
 						},
 						metrics: function (cb) {
-							api("stats.getMetrics", token, params, cb)
+							api("stats.getMetricTotals", token, params, cb)
 						}
 					}, safe.sure(cb, function(result) {
 						projectN.result=result;

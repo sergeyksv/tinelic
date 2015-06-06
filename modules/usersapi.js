@@ -37,7 +37,7 @@ module.exports.init = function (ctx, cb) {
 * @apiGroup Users
 * @apiName getUsers
 * @apiPermission admin
-* @api {get} /:token/users/permissions Query permission to access user
+* @api {get} /:token/users/permissions Query permissions
 * @apiParam {String} _id User id
 * @apiParam {String="user_new", "user_view", "user_edit"} action Action
 * @apiSuccess {Boolean} result Allow or disallow
@@ -97,7 +97,7 @@ getUsers: function (t,u,cb) {
 * @apiGroup Users
 * @apiName getCurrentUser
 * @apiPermission user
-* @api {get} /:token/users Get current (authenticated) user
+* @api {get} /:token/users Get current user
 * @apiSuccess {Object} result Currently authenticated user
 */
 getCurrentUser: function (t,cb) {

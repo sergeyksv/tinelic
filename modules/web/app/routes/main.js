@@ -627,7 +627,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
-							api("stats.getPagesBreakDown", "public", {
+							api("stats.getPageBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -635,7 +635,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
-							api("stats.getPagesTimings", "public", {
+							api("stats.getPageTimings", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -699,6 +699,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
 							r.value.tta = r.value.tt/r.value.c/1000;
 						});
+						_.each(r.breakdown, function (r) {
+							r.value.tta = r.value.tt/r.value.c;
+						})
 						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
@@ -723,7 +726,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPagesErrorStats","public",{st:st, _t_age:quant+"m",filter:{
+							api("stats.getPageErrorStats","public",{st:st, _t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -735,7 +738,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						},
 						rpm: function (cb){
-							api("stats.getPagesErrorTiming", "public", {_t_age:quant+"m",quant:quant, filter:{
+							api("stats.getPageErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
 								_idp:project._id, _id:req.params.id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
@@ -788,7 +791,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
-							api("stats.getActionsCategoryBreakDown", "public", {
+							api("stats.getActionSegmentBreakdown", "public", {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
@@ -850,6 +853,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							if (st == 'sar')
 								return r.value.tt/r.value.c*-1;
 						});
+						_.each(r.breakdown, function (r) {
+							r.value.cnt = r.value.c;
+							r.value.tta = r.value.tt/r.value.c;
+						})
 						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
@@ -874,7 +881,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getServerErrorStats","public",{st: st,  _t_age:quant+"m",filter:{
+							api("stats.getActionErrorStats","public",{st: st,  _t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -886,7 +893,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						},
 						rpm: function (cb){
-							api("stats.getServerErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
+							api("stats.getActionErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
 								_idp:project._id, _id:req.params.id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
@@ -947,7 +954,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							safe.back(cb, null, view)
 						},cb)},
 					memory: function(cb) {
-						api('stats.getMetricsView','public',{quant:quant,
+						api('stats.getMetricTimings','public',{quant:quant,
 							filter:{
 								_s_type: "Memory/Physical",
 								_idp:project._id,
