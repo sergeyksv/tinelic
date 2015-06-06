@@ -1,4 +1,7 @@
 {>"views/base_page"/}
 {<main}
+	<legend>
+		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
+	</legend>
 	<div id="memory"></div>
 {/main}

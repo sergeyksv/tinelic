@@ -59,6 +59,9 @@ define(['tinybone/base','dustc!views/metrics/metrics.dust','highcharts'],functio
                         animation: false
                     }
                 },
+                credits: {
+					enabled: false
+				},
                 series: [
                     {
                         name: 'mem',
