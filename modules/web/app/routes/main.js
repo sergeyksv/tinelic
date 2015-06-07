@@ -414,7 +414,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/ajax/ajax"], function (view) {
@@ -422,13 +422,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						rpm: function (cb) {
-							api("stats.getAjaxStats","public",{_t_age:quant+"m",filter:{
+							api("stats.getAjaxStats",res.locals.token,{_t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						breakdown: function (cb) {
-							api("stats.getAjaxBreakdown", "public", {
+							api("stats.getAjaxBreakdown", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -436,7 +436,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
-							api("stats.getAjaxTimings", "public", {
+							api("stats.getAjaxTimings", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -511,7 +511,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		application:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/application/application"], function (view) {
@@ -519,7 +519,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionStats", "public", {
+							api("stats.getActionStats", res.locals.token, {
 								_t_age: quant + "m", filter: {
 									_idp: project._id,
 									_s_cat:"WebTransaction",
@@ -530,7 +530,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						breakdown: function (cb) {
 							if (!req.query.selected)
 								return safe.back(cb,null,[]);
-							api("stats.getActionBreakdown", "public", {
+							api("stats.getActionBreakdown", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -545,7 +545,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 							if (req.query.selected)
 								filter._s_name = req.query.selected;
-							api("stats.getActionTimings", "public", {
+							api("stats.getActionTimings", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: filter}, cb)
 						}
 					}, safe.sure(cb, function(r){
@@ -611,7 +611,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		pages:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/pages/pages"], function (view) {
@@ -619,7 +619,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPageStats", "public", {
+							api("stats.getPageStats", res.locals.token, {
 								_t_age: quant + "m", filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -627,7 +627,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
-							api("stats.getPageBreakdown", "public", {
+							api("stats.getPageBreakdown", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -635,7 +635,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
-							api("stats.getPageTimings", "public", {
+							api("stats.getPageTimings", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -715,7 +715,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				quant = res.locals.quant,
 				dtp;
 
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				dtp = (project._dtPagesErrAck?new Date(project._dtPagesErrAck):res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
 				res.locals.dtcliack = dtp;
@@ -726,7 +726,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPageErrorStats","public",{st:st, _t_age:quant+"m",filter:{
+							api("stats.getPageErrorStats",res.locals.token,{st:st, _t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -738,7 +738,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						},
 						rpm: function (cb){
-							api("stats.getPageErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
+							api("stats.getPageErrorTimings", res.locals.token, {_t_age:quant+"m",quant:quant, filter:{
 								_idp:project._id, _id:req.params.id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
@@ -772,7 +772,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 
 			var dtstart = res.locals.dtstart;
 			var dtend = res.locals.dtend;
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/database/database"], function (view) {
@@ -780,7 +780,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionSegmentStats", "public", {
+							api("stats.getActionSegmentStats", res.locals.token, {
 								_t_age: quant + "m",
 								quant: quant,
 								filter: {
@@ -791,7 +791,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}, cb)
 						},
 						breakdown: function (cb) {
-							api("stats.getActionSegmentBreakdown", "public", {
+							api("stats.getActionSegmentBreakdown", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
@@ -799,7 +799,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						},
 						graphs: function (cb) {
-							api("stats.getActionSegmentTimings", "public", {
+							api("stats.getActionSegmentTimings", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
@@ -870,7 +870,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dta,
 				st = req.params.sort;
 
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
 				res.locals.dtseack = dta;
@@ -881,7 +881,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionErrorStats","public",{st: st,  _t_age:quant+"m",filter:{
+							api("stats.getActionErrorStats",res.locals.token,{st: st,  _t_age:quant+"m",filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
@@ -893,7 +893,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}}, cb)
 						},
 						rpm: function (cb){
-							api("stats.getActionErrorTimings", "public", {_t_age:quant+"m",quant:quant, filter:{
+							api("stats.getActionErrorTimings", res.locals.token, {_t_age:quant+"m",quant:quant, filter:{
 								_idp:project._id, _id:req.params.id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb)
@@ -929,7 +929,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 			}))
 		},
 		settings: function(req,res,cb) {
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/project-settings/settings"], function (view) {
@@ -937,7 +937,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							},cb)
 						},
 						apdexConfig: function(cb) {
-							api("assets.getProjectApdexConfig", "public", {_id:project._id}, cb)
+							api("assets.getProjectApdexConfig", res.locals.token, {_id:project._id}, cb)
 						}
 					},safe.sure(cb, function(r){
 						res.renderX({view:r.view,data:{title:"Settings", project:project, apdexConfig: r.apdexConfig}})
@@ -947,14 +947,14 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		},
 		metrics: function(req,res,cb) {
 			var quant = 10;
-			api("assets.getProject","public", {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 					view: function (cb) {
 						requirejs(["views/metrics/metrics"], function (view) {
 							safe.back(cb, null, view)
 						},cb)},
 					memory: function(cb) {
-						api('stats.getMetricTimings','public',{quant:quant,
+						api('stats.getMetricTimings',res.locals.token,{quant:quant,
 							filter:{
 								_s_type: "Memory/Physical",
 								_idp:project._id,

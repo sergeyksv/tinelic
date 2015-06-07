@@ -77,60 +77,62 @@ api:{
 * @return {{actions:string, dtlActions:string, pages:string, dtlPages:string}}
 */
 getErrorTotals: function(t,p,cb) {
-	safe.parallel({
-		actions:function(cb) {
-			var q = {
-				_idp: p._idp,
-				_dt: {
-					$lte: p._dt.$lte,
-					$gt: p._dt._dtActionsErrAck
-				}
-			};
-			q = queryfix(q);
-			serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
-				cb(null, res.length);
-			}));
-		},
-		dtlActions: function(cb) {
-			var q = {
-				_idp: p._idp,
-				_dtf: {
-					$lte: p._dt.$lte,
-					$gt: p._dt._dtActionsErrAck
-				}
-			};
-			q = queryfix(q);
-			serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
-				cb(null, res.length);
-			}));
-		},
-		pages:function(cb) {
-			var q = {
-				_idp: p._idp,
-				_dt: {
-					$lte: p._dt.$lte,
-					$gt: p._dt._dtPagesErrAck
-				}
-			};
-			q = queryfix(q);
-			events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
-				cb(null, res.length);
-			}));
-		},
-		dtlPages: function(cb) {
-			var q = {
-				_idp: p._idp,
-				_dtf: {
-					$lte: p._dt.$lte,
-					$gt: p._dt._dtPagesErrAck
-				}
-			};
-			q = queryfix(q);
-			events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
-				cb(null, res.length);
-			}));
-		}
-	},cb);
+	checkAccess(t, p, safe.sure(cb, function () {
+		safe.parallel({
+			actions:function(cb) {
+				var q = {
+					_idp: p._idp,
+					_dt: {
+						$lte: p._dt.$lte,
+						$gt: p._dt._dtActionsErrAck
+					}
+				};
+				q = queryfix(q);
+				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+					cb(null, res.length);
+				}));
+			},
+			dtlActions: function(cb) {
+				var q = {
+					_idp: p._idp,
+					_dtf: {
+						$lte: p._dt.$lte,
+						$gt: p._dt._dtActionsErrAck
+					}
+				};
+				q = queryfix(q);
+				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+					cb(null, res.length);
+				}));
+			},
+			pages:function(cb) {
+				var q = {
+					_idp: p._idp,
+					_dt: {
+						$lte: p._dt.$lte,
+						$gt: p._dt._dtPagesErrAck
+					}
+				};
+				q = queryfix(q);
+				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+					cb(null, res.length);
+				}));
+			},
+			dtlPages: function(cb) {
+				var q = {
+					_idp: p._idp,
+					_dtf: {
+						$lte: p._dt.$lte,
+						$gt: p._dt._dtPagesErrAck
+					}
+				};
+				q = queryfix(q);
+				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+					cb(null, res.length);
+				}));
+			}
+		},cb);
+	}));
 },
 
 /**
@@ -141,34 +143,36 @@ getErrorTotals: function(t,p,cb) {
 */
 getMetricTotals: function(t, p, cb) {
 	var query = queryfix(p.filter);
-	metrics.mapReduce(
-		function() {
-			emit(this._s_pid, {mem: this._f_val, c:this._i_cnt});
-		},
-		function(k,v) {
-			var r = null;
-			v.forEach(function(v) {
-				if (!r)
-					r = v;
-				else {
-					r.mem += r.mem;
-					r.c += r.c;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out:{inline: 1}
-		},
-		safe.sure(cb, function(data) {
-			var memtt = 0;
-			_.forEach(data,function(r) {
-				memtt += r.value.mem/r.value.c;
-			});
-			cb(null,{proc: data.length, mem: Math.round(memtt)});
-		})
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		metrics.mapReduce(
+			function() {
+				emit(this._s_pid, {mem: this._f_val, c:this._i_cnt});
+			},
+			function(k,v) {
+				var r = null;
+				v.forEach(function(v) {
+					if (!r)
+						r = v;
+					else {
+						r.mem += r.mem;
+						r.c += r.c;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out:{inline: 1}
+			},
+			safe.sure(cb, function(data) {
+				var memtt = 0;
+				_.forEach(data,function(r) {
+					memtt += r.value.mem/r.value.c;
+				});
+				cb(null,{proc: data.length, mem: Math.round(memtt)});
+			})
+		);
+	}));
 },
 
 /**
@@ -180,47 +184,49 @@ getMetricTotals: function(t, p, cb) {
 */
 getActionTimings: function(t, p, cb) {
 	var query = queryfix(p.filter);
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-		var ApdexT = apdex._i_serverT;
-		actions.mapReduce(
-			function() {
-				emit(parseInt(this._dt.valueOf()/(Q*60000)), {
-					c:1,
-					r: 1.0/Q,
-					tt: this._i_tt,
-					ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
-					aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
-				});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r) {
-						r = v;
-					}
-					else {
-						r.tt+=v.tt;
-						r.r+=v.r;
-						r.c+=v.c;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-			}, safe.sure(cb, function (data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
-				});
-				cb(null, data);
-			})
-		);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_serverT;
+			actions.mapReduce(
+				function() {
+					emit(parseInt(this._dt.valueOf()/(Q*60000)), {
+						c:1,
+						r: 1.0/Q,
+						tt: this._i_tt,
+						ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
+					});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r) {
+							r = v;
+						}
+						else {
+							r.tt+=v.tt;
+							r.r+=v.r;
+							r.c+=v.c;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				}, safe.sure(cb, function (data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						key.tta = key.tt/key.c;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
 },
 
@@ -235,41 +241,43 @@ getActionTimings: function(t, p, cb) {
 */
 getActionStats: function(t, p , cb) {
 	var query = queryfix(p.filter);
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb, function(apdex){
-		var ApdexT = apdex._i_serverT;
-		actions.mapReduce(
-			function() {
-				emit(this._s_name, {c:1, tt: this._i_tt,
-					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r)
-						r = v;
-					else {
-						r.tt+=v.tt;
-						r.c+=v.c;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {AG:ApdexT, AA:ApdexT*4}
-			},
-			safe.sure(cb, function(data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					delete key.ag; delete key.aa;
-				});
-				cb(null, data);
-			})
-		);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb, function(apdex){
+			var ApdexT = apdex._i_serverT;
+			actions.mapReduce(
+				function() {
+					emit(this._s_name, {c:1, tt: this._i_tt,
+						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r)
+							r = v;
+						else {
+							r.tt+=v.tt;
+							r.c+=v.c;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {AG:ApdexT, AA:ApdexT*4}
+				},
+				safe.sure(cb, function(data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						delete key.ag; delete key.aa;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
 },
 
@@ -285,41 +293,43 @@ getActionStats: function(t, p , cb) {
 getAjaxStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
 
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-		var ApdexT = apdex._i_ajaxT;
-		ajax.mapReduce(
-			function() {
-				emit(this._s_name, {c:1, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 ),
-					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r)
-						r = v;
-					else {
-						r.tt += v.tt;
-						r.c+=v.c;
-						r.e+=v.e;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: { AG:ApdexT, AA:ApdexT*4}
-			},safe.sure(cb, function (data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					delete key.ag; delete key.aa;
-				});
-				cb(null, data);
-			})
-		);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_ajaxT;
+			ajax.mapReduce(
+				function() {
+					emit(this._s_name, {c:1, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 ),
+						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r)
+							r = v;
+						else {
+							r.tt += v.tt;
+							r.c+=v.c;
+							r.e+=v.e;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: { AG:ApdexT, AA:ApdexT*4}
+				},safe.sure(cb, function (data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						delete key.ag; delete key.aa;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
 },
 
@@ -334,42 +344,45 @@ getAjaxStats: function(t, p, cb) {
 */
 getPageStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-		var ApdexT = apdex._i_pagesT;
-		pages.mapReduce(
-			function() {
-				emit(this._s_route, {c:1, tt: this._i_tt, e:1.0*(this._i_err?1:0),
-					ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r) {
-						r = v;
-					}
-					else {
-						r.tt+=v.tt;
-						r.c+=v.c;
-						r.e+=v.e;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {AG:ApdexT, AA:ApdexT*4}
-			}, safe.sure(cb, function (data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					delete key.ag; delete key.aa;
-				});
-				cb(null, data);
-			})
-		);
+
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_pagesT;
+			pages.mapReduce(
+				function() {
+					emit(this._s_route, {c:1, tt: this._i_tt, e:1.0*(this._i_err?1:0),
+						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r) {
+							r = v;
+						}
+						else {
+							r.tt+=v.tt;
+							r.c+=v.c;
+							r.e+=v.e;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {AG:ApdexT, AA:ApdexT*4}
+				}, safe.sure(cb, function (data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						delete key.ag; delete key.aa;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
 },
 
@@ -381,7 +394,13 @@ getPageStats: function(t, p, cb) {
 * @return {PageError}
 */
 getPageError:function (t, p, cb) {
-	events.findOne({_id:new mongo.ObjectID(p._id)},cb);
+	events.findOne({_id:new mongo.ObjectID(p._id)},safe.sure(cb, function (error){
+		if (!error)
+			return cb(null, null);
+		checkAccess(t,error,safe.sure(cb, function () {
+			cb(null, error);
+		}));
+	}));
 },
 
 /**
@@ -409,65 +428,67 @@ getActionErrorInfo:function (t, p, cb) {
 			cb();
 		}));
 	},safe.sure(cb, function () {
-		serverErrors.mapReduce(function () {
-				var route = {};
-				if (this.action){
-					route[this.action._s_name]=1;
-				}
-				var reporter = {}; reporter[this._s_reporter]=1;
-				var server = {}; server[this._s_server]=1;
-				var lang = {}; lang[this._s_logger]=1;
-				var ids = [this._id];
-				emit(ALL?this._idp:this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
-			},
-			function (k, v) {
-				var r=null;
-				v.forEach(function (v) {
-					var k;
-					if (!r)
-						r = v;
-					else {
-						r.ids = r.ids.concat(v.ids);
-						r.c+=v.c;
-						for (k in v.route) {
-							r.route[k]=(r.route[k] || 0) + v.route[k];
-						}
-						for (k in v.reporter) {
-							r.reporter[k]=(r.reporter[k] || 0) + v.reporter[k];
-						}
-						for (k in v.server) {
-							r.server[k]=(r.server[k] || 0) + v.server[k];
-						}
-						for (k in v.lang) {
-							r.lang[k]=(r.lang[k] || 0) + v.lang[k];
-						}
+		checkAccess(t, query, safe.sure(cb, function () {
+			serverErrors.mapReduce(function () {
+					var route = {};
+					if (this.action){
+						route[this.action._s_name]=1;
 					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {ALL:query.ehash?0:1}
-			},
-			safe.sure(cb, function (stats) {
-				var res = stats[0].value;
-				var res1 = {route:[],server:[],reporter:[],lang:[], count:res.c,ids:_.sortBy(res.ids)};
-				_.each(res.route, function (v,k) {
-					res1.route.push({k:k,v:v});
-				});
-				_.each(res.server, function (v,k) {
-					res1.server.push({k:k,v:v});
-				});
-				_.each(res.reporter, function (v,k) {
-					res1.reporter.push({k:k,v:v});
-				});
-				_.each(res.lang, function (v,k) {
-					res1.lang.push({k:k,v:v});
-				});
-				cb(null,res1);
-			})
-		);
+					var reporter = {}; reporter[this._s_reporter]=1;
+					var server = {}; server[this._s_server]=1;
+					var lang = {}; lang[this._s_logger]=1;
+					var ids = [this._id];
+					emit(ALL?this._idp:this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
+				},
+				function (k, v) {
+					var r=null;
+					v.forEach(function (v) {
+						var k;
+						if (!r)
+							r = v;
+						else {
+							r.ids = r.ids.concat(v.ids);
+							r.c+=v.c;
+							for (k in v.route) {
+								r.route[k]=(r.route[k] || 0) + v.route[k];
+							}
+							for (k in v.reporter) {
+								r.reporter[k]=(r.reporter[k] || 0) + v.reporter[k];
+							}
+							for (k in v.server) {
+								r.server[k]=(r.server[k] || 0) + v.server[k];
+							}
+							for (k in v.lang) {
+								r.lang[k]=(r.lang[k] || 0) + v.lang[k];
+							}
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {ALL:query.ehash?0:1}
+				},
+				safe.sure(cb, function (stats) {
+					var res = stats[0].value;
+					var res1 = {route:[],server:[],reporter:[],lang:[], count:res.c,ids:_.sortBy(res.ids)};
+					_.each(res.route, function (v,k) {
+						res1.route.push({k:k,v:v});
+					});
+					_.each(res.server, function (v,k) {
+						res1.server.push({k:k,v:v});
+					});
+					_.each(res.reporter, function (v,k) {
+						res1.reporter.push({k:k,v:v});
+					});
+					_.each(res.lang, function (v,k) {
+						res1.lang.push({k:k,v:v});
+					});
+					cb(null,res1);
+				})
+			);
+		}));
 	}));
 },
 
@@ -479,8 +500,13 @@ getActionErrorInfo:function (t, p, cb) {
 * @return {ActionError}
 */
 getActionError:function (t, p, cb) {
-	// dummy, just get it all out
-	serverErrors.findOne({_id:new mongo.ObjectID(p._id)},cb);
+	serverErrors.findOne({_id:new mongo.ObjectID(p._id)},safe.sure(cb, function (error){
+		if (!error)
+			return cb(null, null);
+		checkAccess(t,error,safe.sure(cb, function () {
+			cb(null, error);
+		}));
+	}));
 },
 
 /**
@@ -493,43 +519,45 @@ getActionError:function (t, p, cb) {
 getAjaxTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
 	query =(p._idurl)? _.extend(query,{_s_name:p._idurl}): query;
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-		var ApdexT = apdex._i_ajaxT;
-		ajax.mapReduce(
-			function() {
-				emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code,
-					e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r)
-						r = v;
-					else {
-						r.tt+=v.tt;
-						r.r+=v.r;
-						r.c+=v.c;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-						r.e+=v.e;
-						r.pt+= v.pt;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-			},safe.sure(cb, function (data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
-				});
-				cb(null, data);
-			})
-		);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_ajaxT;
+			ajax.mapReduce(
+				function() {
+					emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code,
+						e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r)
+							r = v;
+						else {
+							r.tt+=v.tt;
+							r.r+=v.r;
+							r.c+=v.c;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+							r.e+=v.e;
+							r.pt+= v.pt;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				},safe.sure(cb, function (data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						key.tta = key.tt/key.c;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
 },
 
@@ -542,44 +570,45 @@ getAjaxTimings:function(t, p, cb) {
 */
 getPageTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
-	ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-		var ApdexT = apdex._i_pagesT;
-		pages.mapReduce(function () {
-				emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q,
-					ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
-					aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
-			},
-			function (k, v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r)
-						r = v;
-					else {
-						r.tt+=v.tt;
-						r.r+=v.r;
-						r.c+=v.c;
-						r.ag+=v.ag;
-						r.aa+=v.aa;
-						r.e+=v.e;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
-			}, safe.sure(cb, function (data) {
-				_.each(data, function (metric) {
-					var key = metric.value;
-					key.apdex = (key.ag+key.aa/2)/key.c;
-					key.tta = key.tt/key.c;
-				});
-				cb(null, data);
-			})
-		);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_pagesT;
+			pages.mapReduce(function () {
+					emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, e:1.0*(this._i_err?1:0)/Q,
+						ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
+				},
+				function (k, v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r)
+							r = v;
+						else {
+							r.tt+=v.tt;
+							r.r+=v.r;
+							r.c+=v.c;
+							r.ag+=v.ag;
+							r.aa+=v.aa;
+							r.e+=v.e;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+				}, safe.sure(cb, function (data) {
+					_.each(data, function (metric) {
+						var key = metric.value;
+						key.apdex = (key.ag+key.aa/2)/key.c;
+						key.tta = key.tt/key.c;
+					});
+					cb(null, data);
+				})
+			);
+		}));
 	}));
-
 },
 
 /**
@@ -608,7 +637,8 @@ getPageErrorInfo:function (t, p, cb) {
 			cb();
 		}));
 	},safe.sure(cb, function () {
-		events.mapReduce(function () {
+		checkAccess(t, query, safe.sure(cb, function () {
+			events.mapReduce(function () {
 				var route = {}; route[this.request._s_route]=1;
 				var browser = {}; browser[this.agent.family+" "+this.agent.major]=1;
 				var os = {}; os[this.agent.os.family]=1;
@@ -669,8 +699,8 @@ getPageErrorInfo:function (t, p, cb) {
 					});
 				}
 				cb(null,res1);
-			})
-		);
+			}));
+		}));
 	}));
 },
 
@@ -699,7 +729,8 @@ getPageErrorStats:function (t, p, cb) {
 			cb();
 		}));
 	},safe.sure(cb, function () {
-		events.mapReduce(function () {
+		checkAccess(t, query, safe.sure(cb, function () {
+			events.mapReduce(function () {
 				var s = {}; s[this.shash]=1;
 				var epm = {}; epm[this._idpv]=1;
 				emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
@@ -769,8 +800,8 @@ getPageErrorStats:function (t, p, cb) {
 						});
 						cb(null, data);
 					}));
-			})
-		);
+			}));
+		}));
 	}));
 },
 
@@ -799,29 +830,31 @@ getPageErrorTimings:function(t, p, cb) {
 			cb();
 		}));
 	},safe.sure(cb, function () {
-		events.mapReduce(
-			function() {
-				emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q, _dt:this._dt});
-			},
-			function (k,v) {
-				var r=null;
-				v.forEach(function (v) {
-					if (!r){
-						r = v;
-					}
-					else {
-						r.r+=v.r;
-					}
-				});
-				return r;
-			},
-			{
-				query: query,
-				out: {inline:1},
-				scope: {Q:p.quant || 1}
-			},
-			cb
-		);
+		checkAccess(t, query, safe.sure(cb, function () {
+			events.mapReduce(
+				function() {
+					emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q, _dt:this._dt});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r){
+							r = v;
+						}
+						else {
+							r.r+=v.r;
+						}
+					});
+					return r;
+				},
+				{
+					query: query,
+					out: {inline:1},
+					scope: {Q:p.quant || 1}
+				},
+				cb
+			);
+		}));
 	}));
 },
 
@@ -838,27 +871,29 @@ getActionErrorTimings:function(t, p, cb) {
 	serverErrors.findOne(query1, safe.sure(cb, function (event) {
 		if (event) {
 			var query =(query1._id)? {_idp:event._idp, _s_message:event._s_message,_dt:query1._dt}: query1;
-			serverErrors.mapReduce(
-				function() {
-					emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q});
-				},
-				function (k,v) {
-					var r=null;
-					v.forEach(function (v) {
-						if (!r)
-							r = v;
-						else
-							r.r+=v.r;
-					});
-					return r;
-				},
-				{
-					query: query,
-					out: {inline:1},
-					scope: {Q:q}
-				},
-				cb
-			);
+			checkAccess(t, query, safe.sure(cb, function () {
+				serverErrors.mapReduce(
+					function() {
+						emit(parseInt(this._dt.valueOf()/(Q*60000)), { r:1.0/Q});
+					},
+					function (k,v) {
+						var r=null;
+						v.forEach(function (v) {
+							if (!r)
+								r = v;
+							else
+								r.r+=v.r;
+						});
+						return r;
+					},
+					{
+						query: query,
+						out: {inline:1},
+						scope: {Q:q}
+					},
+					cb
+				);
+			}));
 		}
 		else
 			cb();
@@ -876,7 +911,8 @@ getActionErrorTimings:function(t, p, cb) {
 */
 getActionErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
-	serverErrors.mapReduce(function () {
+	checkAccess(t, query, safe.sure(cb, function () {
+		serverErrors.mapReduce(function () {
 			emit(this.ehash,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id});
 		},
 		function (k, v) {
@@ -918,8 +954,8 @@ getActionErrorStats:function (t, p, cb) {
 					}).value();
 					cb(null, ids);
 				}));
-		})
-	);
+		}));
+	}));
 },
 
 /**
@@ -932,30 +968,32 @@ getActionErrorStats:function (t, p, cb) {
 */
 getActionBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	as.mapReduce(
-		function() {
-			this.data.forEach(function(k,v) {
-				emit(k._s_name, {c: k._i_cnt, tt: k._i_tt, ot: k._i_own});
-			});
-		},
-		function (k,v) {
-			var r=null;
-			v.forEach(function(v) {
-				if (!r)
-					r = v;
-				else {
-					r.tt += v.tt;
-					r.c += v.c;
-					r.ot += v.ot;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1}
-		}, cb
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		as.mapReduce(
+			function() {
+				this.data.forEach(function(k,v) {
+					emit(k._s_name, {c: k._i_cnt, tt: k._i_tt, ot: k._i_own});
+				});
+			},
+			function (k,v) {
+				var r=null;
+				v.forEach(function(v) {
+					if (!r)
+						r = v;
+					else {
+						r.tt += v.tt;
+						r.c += v.c;
+						r.ot += v.ot;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1}
+			}, cb
+		);
+	}));
 },
 
 /**
@@ -969,33 +1007,35 @@ getActionBreakdown: function(t,p, cb) {
 */
 getActionSegmentStats: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	as.mapReduce(
-		function() {
-			this.data.forEach(function(k) {
-				if (k._s_cat == CAT) {
-					emit(k._s_name, {tt: k._i_tt, c: k._i_cnt});
-				}
-			});
-		},
-		function (k,v) {
-			var r = null;
-			v.forEach(function(v) {
-				if (!r)
-					r = v;
-				else {
-					r.tt += v.tt;
-					r.c += v.c;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1},
-			scope: {CAT: query['data._s_cat']}
-		},
-		cb
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		as.mapReduce(
+			function() {
+				this.data.forEach(function(k) {
+					if (k._s_cat == CAT) {
+						emit(k._s_name, {tt: k._i_tt, c: k._i_cnt});
+					}
+				});
+			},
+			function (k,v) {
+				var r = null;
+				v.forEach(function(v) {
+					if (!r)
+						r = v;
+					else {
+						r.tt += v.tt;
+						r.c += v.c;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1},
+				scope: {CAT: query['data._s_cat']}
+			},
+			cb
+		);
+	}));
 },
 
 /**
@@ -1007,14 +1047,52 @@ getActionSegmentStats: function(t,p, cb) {
 */
 getPageBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
-	pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-		var idpv = [];
-		_.forEach(data, function(r){
-			idpv.push(r._id);
-		});
+	checkAccess(t, query, safe.sure(cb, function () {
+		pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
+			var idpv = [];
+			_.forEach(data, function(r){
+				idpv.push(r._id);
+			});
+			ajax.mapReduce(
+				function() {
+					emit(this._s_name, {c:1, tt: this._i_tt});
+				},
+				function (k,v) {
+					var r=null;
+					v.forEach(function (v) {
+						if (!r)
+							r = v;
+						else {
+							r.tt+=v.tt;
+							r.c+=v.c;
+						}
+					});
+					return r;
+				},
+				{
+					query: {_idpv:{$in: idpv}},
+					out: {inline:1},
+					scope: {}
+				}, cb
+			);
+		}));
+	}));
+},
+
+/**
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_name Ajax name
+* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
+*/
+getAjaxBreakdown: function(t,p,cb){
+	var query = queryfix(p.filter);
+	checkAccess(t, query, safe.sure(cb, function () {
 		ajax.mapReduce(
 			function() {
-				emit(this._s_name, {c:1, tt: this._i_tt});
+				if (this._s_route)
+					emit(this._s_route, {c:1, tt: this._i_tt} );
 			},
 			function (k,v) {
 				var r=null;
@@ -1029,45 +1107,11 @@ getPageBreakdown: function(t,p,cb){
 				return r;
 			},
 			{
-				query: {_idpv:{$in: idpv}},
-				out: {inline:1},
-				scope: {}
+				query: query,
+				out: {inline:1}
 			}, cb
 		);
 	}));
-},
-
-/**
-* @param {String} token Auth token
-* @param {Object} filter Filter for actions
-* @param {String} filter._idp Project id
-* @param {String} filter._s_name Ajax name
-* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
-*/
-getAjaxBreakdown: function(t,p,cb){
-	var query = queryfix(p.filter);
-	ajax.mapReduce(
-		function() {
-			if (this._s_route)
-				emit(this._s_route, {c:1, tt: this._i_tt} );
-		},
-		function (k,v) {
-			var r=null;
-			v.forEach(function (v) {
-				if (!r)
-					r = v;
-				else {
-					r.tt+=v.tt;
-					r.c+=v.c;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1}
-		}, cb
-	);
 },
 
 /**
@@ -1079,41 +1123,43 @@ getAjaxBreakdown: function(t,p,cb){
 */
 getActionSegmentTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
-	var name = query["data._s_name"];
-	as.mapReduce(function () {
-			var dt = parseInt(this._dt.valueOf()/(Q*60000));
-			this.data.forEach(function(k) {
-				if (!NAME || k._s_name == NAME) {
-					emit(dt,{c: k._i_cnt, r: k._i_cnt/Q, tt: k._i_tt});
-				}
-			});
-		},
-		function (k, v) {
-			var r=null;
-			v.forEach(function (v) {
-				if (!r) {
-					r = v;
-				}
-				else {
-					r.c += v.c;
-					r.r += v.r;
-					r.tt += v.tt;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1},
-			scope: {NAME: name, Q: p.quant || 1}
-		}, safe.sure(cb, function (data) {
-			_.each(data, function (metric) {
-				var key = metric.value;
-				key.tta = key.tt/key.c;
-			});
-			cb(null, data);
-		})
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		var name = query["data._s_name"];
+		as.mapReduce(function () {
+				var dt = parseInt(this._dt.valueOf()/(Q*60000));
+				this.data.forEach(function(k) {
+					if (!NAME || k._s_name == NAME) {
+						emit(dt,{c: k._i_cnt, r: k._i_cnt/Q, tt: k._i_tt});
+					}
+				});
+			},
+			function (k, v) {
+				var r=null;
+				v.forEach(function (v) {
+					if (!r) {
+						r = v;
+					}
+					else {
+						r.c += v.c;
+						r.r += v.r;
+						r.tt += v.tt;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1},
+				scope: {NAME: name, Q: p.quant || 1}
+			}, safe.sure(cb, function (data) {
+				_.each(data, function (metric) {
+					var key = metric.value;
+					key.tta = key.tt/key.c;
+				});
+				cb(null, data);
+			})
+		);
+	}));
 },
 
 /**
@@ -1125,33 +1171,35 @@ getActionSegmentTimings:function (t, p, cb) {
 */
 getActionSegmentBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
-	as.mapReduce(
-		function() {
-			var self=this;
-			this.data.forEach(function(k,v) {
-				if (k._s_name == NAME) {
-					emit(self._s_name, {c: k._i_cnt, tt: k._i_tt});
-				}
-			});
-		},
-		function (k,v) {
-			var r=null;
-			v.forEach(function(v) {
-				if (!r)
-					r = v;
-				else {
-					r.tt += v.tt;
-					r.c += v.c;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1},
-			scope: {CAT: query._s_cat, NAME: p.filter["data._s_name"]}
-		}, cb
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		as.mapReduce(
+			function() {
+				var self=this;
+				this.data.forEach(function(k,v) {
+					if (k._s_name == NAME) {
+						emit(self._s_name, {c: k._i_cnt, tt: k._i_tt});
+					}
+				});
+			},
+			function (k,v) {
+				var r=null;
+				v.forEach(function(v) {
+					if (!r)
+						r = v;
+					else {
+						r.tt += v.tt;
+						r.c += v.c;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1},
+				scope: {CAT: query._s_cat, NAME: p.filter["data._s_name"]}
+			}, cb
+		);
+	}));
 },
 
 /**
@@ -1163,38 +1211,48 @@ getActionSegmentBreakdown: function(t,p, cb) {
 */
 getMetricTimings:function(t,p,cb) {
 	var query = queryfix(p.filter);
-
-	metrics.mapReduce(
-		function(){
-			emit(parseInt(this._dt.valueOf()/(Q*60000)),{mem: this._f_val, c: this._i_cnt});
-		},
-		function (k,v) {
-			var r=null;
-			v.forEach(function(v) {
-				if (!r)
-					r = v;
-				else {
-					r.mem += v.mem;
-					r.c += r.c;
-				}
-			});
-			return r;
-		},
-		{
-			query: query,
-			out: {inline:1},
-			scope:{Q: p.quant}
-		}, safe.sure(cb, function (data) {
-			_.each(data, function (metric) {
-				var key = metric.value;
-				key.mema = key.mem/key.c;
-			});
-			cb(null, data);
-		})
-	);
+	checkAccess(t, query, safe.sure(cb, function () {
+		metrics.mapReduce(
+			function(){
+				emit(parseInt(this._dt.valueOf()/(Q*60000)),{mem: this._f_val, c: this._i_cnt});
+			},
+			function (k,v) {
+				var r=null;
+				v.forEach(function(v) {
+					if (!r)
+						r = v;
+					else {
+						r.mem += v.mem;
+						r.c += r.c;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1},
+				scope:{Q: p.quant}
+			}, safe.sure(cb, function (data) {
+				_.each(data, function (metric) {
+					var key = metric.value;
+					key.mema = key.mem/key.c;
+				});
+				cb(null, data);
+			})
+		);
+	}));
 }
 
 }});
+
+function checkAccess(token, query, cb ) {
+	ctx.api.obac.getPermissions(token, {rules:[{_id:query._idp, action:'project_view'}]}, safe.sure(cb, function (res) {
+		if (!res.project_view[query._idp])
+			return cb(new CustomError('Current user is unknown',"Unauthorized"));
+		cb();
+	}));
+}
+
 }));
 }));
 };
