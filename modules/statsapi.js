@@ -13,6 +13,7 @@ module.exports.deps = ['mongo','prefixify','validate'];
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
 	var queryfix = ctx.api.prefixify.queryfix;
+	var sortfix = ctx.api.prefixify.sort;
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		safe.parallel([
 			function (cb) {
@@ -387,14 +388,17 @@ getPageStats: function(t, p, cb) {
 },
 
 /**
-* Get page error by id
-*
 * @param {String} token Auth token
-* @param {String} _id Page error id
+* @param {Object} filter Filter for page error
+* @param {Object?} sort Sort order
 * @return {PageError}
 */
 getPageError:function (t, p, cb) {
-	events.findOne({_id:new mongo.ObjectID(p._id)},safe.sure(cb, function (error){
+	var c = events.find(queryfix(p.filter));
+	if (p.sort)
+		c.sort(sortfix(p.sort));
+	c.limit(1).toArray(safe.sure(cb, function (errors){
+		var error = errors.length?errors[0]:null;
 		if (!error)
 			return cb(null, null);
 		checkAccess(t,error,safe.sure(cb, function () {
@@ -644,8 +648,7 @@ getPageErrorInfo:function (t, p, cb) {
 				var os = {}; os[this.agent.os.family]=1;
 				var sessions = {}; sessions[this.shash]=1;
 				var views = {}; views[this._idpv]=1;
-				var ids = [this._id];
-				emit(ALL?this._idp:this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views,ids:ids});
+				emit(ALL?this._idp:this.ehash,{c:1,route:route,browser:browser,os:os,sessions:sessions,views:views});
 			},
 			function (k, v) {
 				var r=null;
@@ -654,7 +657,6 @@ getPageErrorInfo:function (t, p, cb) {
 					if (!r)
 						r = v;
 					else {
-						r.ids = r.ids.concat(v.ids);
 						for (k in v.sessions) {
 							r.sessions[k]=1;
 						}
@@ -681,13 +683,12 @@ getPageErrorInfo:function (t, p, cb) {
 				scope: {ALL:query.ehash?0:1}
 			},
 			safe.sure(cb, function (stats) {
-				var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0,ids:[]};
+				var res1 = {route:[],os:[],browser:[],count:0,sessions:0,views:0};
 				if (stats.length) {
 					var res = stats[0].value;
 					res1.count = res.c;
 					res1.sessions = _.size(res.sessions);
 					res1.views = _.size(res.views);
-					res1.ids =_.sortBy(res.ids);
 					_.each(res.route, function (v,k) {
 						res1.route.push({k:k,v:v});
 					});
@@ -733,7 +734,7 @@ getPageErrorStats:function (t, p, cb) {
 			events.mapReduce(function () {
 				var s = {}; s[this.shash]=1;
 				var epm = {}; epm[this._idpv]=1;
-				emit(this.ehash,{count:1,session:s,_dtmax:this._dt,_dtmin:this._dt, _id:this._id,pages:epm});
+				emit(this.ehash,{count:1,session:s,_dtmax:this._dt.valueOf(),_dtmin:this._dt.valueOf(), _id:this._id,pages:epm});
 			},
 			function (k, v) {
 				var r=null;
@@ -750,7 +751,7 @@ getPageErrorStats:function (t, p, cb) {
 						}
 						r.count+=v.count;
 						r._dtmin = Math.min(r._dtmin, v._dtmin);
-						r._dtmax = Math.min(r._dtmax, v._dtmax);
+						r._dtmax = Math.max(r._dtmax, v._dtmax);
 						if (r._dtmax==v._dtmax)
 							r._id = v._id;
 					}
@@ -777,27 +778,6 @@ getPageErrorStats:function (t, p, cb) {
 							ids[e._id].error = e;
 						});
 						var data = _.values(ids);
-						var f = null;
-						if (p.st == "terr" || p.st === undefined || p.st == 'mr')
-							f = 'count';
-						if (p.st == "perr")
-							f = 'pages';
-						if (p.st == "serr")
-							f = 'session';
-						var sum = 0.0;
-						_.forEach(data, function(r) {
-							sum += r.stats[f];
-						});
-						var percent = sum/100;
-						_.forEach(data, function(r) {
-							r.bar = r.stats[f]/percent;
-						});
-						data = _.sortBy(data, function(r) {
-							if (p.st == "mr")
-								return new Date(r.error._dtf)*-1;
-							else
-								return r.stats[f]*-1;
-						});
 						cb(null, data);
 					}));
 			}));

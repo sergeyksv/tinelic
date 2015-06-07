@@ -2,7 +2,7 @@
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
   <div class="panel-body">
-	{?event}First at: <b>{@formatdate date=event._dtf format="l"/} {@formatdate date=event._dtf format="LTS"/}</b><br>{/event}
+	{?event}First at: <b>{@formatdate date=event._dtf/}</b><br>{/event}
 	Total: <b>{count}</b><br>
 	Sessions: <b>{sessions}</b><br>
 	Pages: <b>{views}</b><br>

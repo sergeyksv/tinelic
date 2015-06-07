@@ -719,50 +719,73 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dtp = (project._dtPagesErrAck?new Date(project._dtPagesErrAck):res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
 				res.locals.dtcliack = dtp;
-				safe.parallel({
+				safe.run(function (cb) {
+					if (req.params.id)
+						api("stats.getPageError", res.locals.token, {_t_age:"30d", filter:{_id:req.params.id}}, cb)
+					else
+						cb()
+				}, safe.sure(cb, function (error) {
+					var plan = error?{
+						prev: function (cb) {
+							api("stats.getPageError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},ehash:error.ehash},sort:{_id:-1}}, cb);
+						},
+						next: function (cb) {
+							api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},ehash:error.ehash},sort:{_id:1}}, cb);
+						},
+					}:{};
+
+					var params1 = {_t_age:"10m",filter:{
+						_idp:project._id,
+						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+					}}
+					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
+
+					plan = _.extend(plan, {
 						view: function (cb) {
 							requirejs(["views/client-errors/err"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getPageErrorStats",res.locals.token,{st:st, _t_age:quant+"m",filter:{
-								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb);
+							api("stats.getPageErrorStats",res.locals.token,params1, cb);
 						},
-						event: function (cb) {
-							feed.errorInfo(res.locals.token, {filter:{_id:req.params.id,
-								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb)
+						info: function (cb) {
+							api("stats.getPageErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getPageErrorTimings", res.locals.token, {_t_age:quant+"m",quant:quant, filter:{
-								_idp:project._id, _id:req.params.id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb)
+							api("stats.getPageErrorTimings", res.locals.token,params2, cb)
 						}
-					}, safe.sure(cb, function(r){
-						var lastAck = moment(dtp).fromNow()
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
-						var total = 0; var session = 0; var page = 0;
-						_.forEach(r.data, function(r) {
-							total += r.stats.count;
-							session += r.stats.session;
-							page += r.stats.pages;
-							if (r.error._dtf)
-								r.error._dtf = new Date(r.error._dtf);
-						})
-						res.renderX({view:r.view,data:{data: r.data,event:r.event, rpm:r.rpm, title:"Errors",st: st, fr: filter, project: project, total: total, session: session, page:page, lastAck: lastAck,id:req.params.id}})
 					})
-				)
+					safe.parallel( plan, safe.sure(cb, function(r){
+						r.event = {event:error?error:false,info:r.info};
+						var lastAck = moment(dtp).fromNow()
+						var f = null;
+						if (st == "terr" ||st === undefined || st == 'mr')
+							f = 'count';
+						else if (st == "perr")
+							f = 'pages';
+						else if (st == "serr")
+							f = 'session';
+
+						var sum = 0.0;
+						_.forEach(r.data, function(r) {
+							sum += r.stats[f];
+						});
+						var percent = sum/100;
+						_.forEach(r.data, function(r) {
+							r.bar = r.stats[f]/percent;
+						});
+						r.data = _.sortBy(r.data, function(r) {
+							if (st == "mr")
+								return new Date(r.error._dtf)*-1;
+							else
+								return r.stats[f]*-1;
+						});
+						res.renderX({view:r.view,data:_.extend(r,{title:"Errors",
+							st: st, project: project, lastAck: lastAck,
+							id:req.params.id})})
+					}))
+				}))
 			}))
 		},
 		database:function (req, res, cb) {

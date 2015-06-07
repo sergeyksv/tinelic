@@ -2,7 +2,7 @@
 {<main}
 <legend>
 	<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
-	<span class="text-info h5" data-id="{project._id}"> {total} total / {page} page / {session} session</span>
+	<span class="text-info h5" data-id="{project._id}"> {info.count} total / {info.views} page / {info.sessions} session</span>
 	<div class="btn-group pull-right" role="group">
 		<div class="btn btn-xs btn-danger do-ack" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 		<div class="btn-group" role="group">
