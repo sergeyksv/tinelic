@@ -310,6 +310,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				if (r.data.errors.length != 0) {
 					views.browser = {};
 					var total = 0; var session = 0; var page = 0
+					r.data.errors = _.sortBy(r.data.errors, function (s) { return -1*s.stats.session*s.stats.pages; } );
 					_.forEach(r.data.errors, function(r){
 						total += r.stats.count;
 						session += r.stats.session;
@@ -323,6 +324,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				if (r.data.serverErrors.length != 0) {
 					views.serverErr = {};
 					var total = 0;
+					r.data.serverErrors = _.sortBy(r.data.serverErrors, function (s) { return -1*s.stats.c; } );
 					_.forEach(r.data.serverErrors, function(r) {
 						total += r.stats.c
 						if (r.error._dtf)
@@ -770,6 +772,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						var sum = 0.0;
 						_.forEach(r.data, function(r) {
 							sum += r.stats[f];
+							if (r.error._dtf)
+								r.error._dtf = new Date(r.error._dtf);
 						});
 						var percent = sum/100;
 						_.forEach(r.data, function(r) {
@@ -897,58 +901,68 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
 				res.locals.dtseack = dta;
-				safe.parallel({
+				safe.run(function (cb) {
+					if (req.params.id)
+						api("stats.getActionError", res.locals.token, {_t_age:"30d", filter:{_id:req.params.id}}, cb)
+					else
+						cb()
+				}, safe.sure(cb, function (error) {
+					var plan = error?{
+						prev: function (cb) {
+							api("stats.getActionError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},ehash:error.ehash},sort:{_id:-1}}, cb);
+						},
+						next: function (cb) {
+							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},ehash:error.ehash},sort:{_id:1}}, cb);
+						},
+					}:{};
+
+					var params1 = {_t_age:"10m",filter:{
+						_idp:project._id,
+						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+					}}
+					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
+
+					plan = _.extend(plan, {
 						view: function (cb) {
 							requirejs(["views/server-errors/server-err"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionErrorStats",res.locals.token,{st: st,  _t_age:quant+"m",filter:{
-								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb);
+							api("stats.getActionErrorStats",res.locals.token,params1, cb);
 						},
-						event: function (cb) {
-							feed.serverErrorInfo(res.locals.token, {filter:{_id:req.params.id,
-								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb)
+						info: function (cb) {
+							api("stats.getActionErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getActionErrorTimings", res.locals.token, {_t_age:quant+"m",quant:quant, filter:{
-								_idp:project._id, _id:req.params.id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb)
+							api("stats.getActionErrorTimings", res.locals.token,params2, cb)
 						}
-					}, safe.sure(cb, function(r){
+					})
+					safe.parallel( plan, safe.sure(cb, function(r){
+						r.event = {event:error?error:false,info:r.info};
 						var lastAck = moment(dta).fromNow()
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
-						r.event.headless = true;
-						var data = r.data;
-						if (!data.length) {
-							data.push({error: {_s_message: "Not errors on this client"}})
-						}
-						var total = 0, sum = 0.0;
-						_.forEach(data, function(r) {
-							total += r.stats.c;
+
+						var sum = 0.0;
+						_.forEach(r.data, function(r) {
 							sum += r.stats.c;
 							if (r.error._dtf)
 								r.error._dtf = new Date(r.error._dtf);
-						})
+						});
 						var percent = sum/100;
-						_.forEach(data, function(r) {
-							r.bar = r.stats.c/percent
-						})
-						res.renderX({view:r.view,data:{data:data,event:r.event,rpm:r.rpm, title:"Server-errors",st: st, fr: filter, project:project, total: total, lastAck: lastAck,id:req.params.id}})
-					})
-				)
+						_.forEach(r.data, function(r) {
+							r.bar = r.stats.c/percent;
+						});
+						r.data = _.sortBy(r.data, function(r) {
+							if (st == "mr")
+								return new Date(r.error._dtf)*-1;
+							else
+								return r.stats.c*-1;
+						});
+						res.renderX({view:r.view,data:_.extend(r,
+							{title:"Server-errors", st: st, project:project,
+							lastAck: lastAck, id:req.params.id})})
+					}))
+				}));
 			}))
 		},
 		settings: function(req,res,cb) {

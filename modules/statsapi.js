@@ -389,7 +389,7 @@ getPageStats: function(t, p, cb) {
 
 /**
 * @param {String} token Auth token
-* @param {Object} filter Filter for page error
+* @param {Object} filter Filter for page errors
 * @param {Object?} sort Sort order
 * @return {PageError}
 */
@@ -416,7 +416,6 @@ getPageError:function (t, p, cb) {
 *		reporter: string[],count:integer}}>}
 */
 getActionErrorInfo:function (t, p, cb) {
-
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -441,8 +440,7 @@ getActionErrorInfo:function (t, p, cb) {
 					var reporter = {}; reporter[this._s_reporter]=1;
 					var server = {}; server[this._s_server]=1;
 					var lang = {}; lang[this._s_logger]=1;
-					var ids = [this._id];
-					emit(ALL?this._idp:this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang,ids:ids});
+					emit(ALL?this._idp:this.ehash,{c:1,route:route,reporter:reporter,server:server,lang:lang});
 				},
 				function (k, v) {
 					var r=null;
@@ -451,7 +449,6 @@ getActionErrorInfo:function (t, p, cb) {
 						if (!r)
 							r = v;
 						else {
-							r.ids = r.ids.concat(v.ids);
 							r.c+=v.c;
 							for (k in v.route) {
 								r.route[k]=(r.route[k] || 0) + v.route[k];
@@ -476,7 +473,7 @@ getActionErrorInfo:function (t, p, cb) {
 				},
 				safe.sure(cb, function (stats) {
 					var res = stats[0].value;
-					var res1 = {route:[],server:[],reporter:[],lang:[], count:res.c,ids:_.sortBy(res.ids)};
+					var res1 = {route:[],server:[],reporter:[],lang:[], count:res.c};
 					_.each(res.route, function (v,k) {
 						res1.route.push({k:k,v:v});
 					});
@@ -497,14 +494,17 @@ getActionErrorInfo:function (t, p, cb) {
 },
 
 /**
-* Get action error by id
-*
 * @param {String} token Auth token
-* @param {String} _id Page error id
-* @return {ActionError}
+* @param {Object} filter Filter for actions errors
+* @param {Object?} sort Sort order
+* @return {PageError}
 */
 getActionError:function (t, p, cb) {
-	serverErrors.findOne({_id:new mongo.ObjectID(p._id)},safe.sure(cb, function (error){
+	var c = serverErrors.find(queryfix(p.filter));
+	if (p.sort)
+		c.sort(sortfix(p.sort));
+	c.limit(1).toArray(safe.sure(cb, function (errors){
+		var error = errors.length?errors[0]:null;
 		if (!error)
 			return cb(null, null);
 		checkAccess(t,error,safe.sure(cb, function () {
@@ -767,7 +767,6 @@ getPageErrorStats:function (t, p, cb) {
 					s.value.session = _.size(s.value.session);
 					s.value.pages = _.size(s.value.pages);
 				} );
-				stats = _.sortBy(stats, function (s) { return -1*s.value.session*s.value.pages; } );
 				var ids = {};
 				_.each(stats, function (s) {
 					ids[s.value._id]={stats:s.value};
@@ -893,7 +892,7 @@ getActionErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		serverErrors.mapReduce(function () {
-			emit(this.ehash,{c:1,_dtmax:this._dt,_dtmin:this._dt, _id:this._id});
+			emit(this.ehash,{c:1,_dtmax:this._dt.valueOf(),_dtmin:this._dt.valueOf(), _id:this._id});
 		},
 		function (k, v) {
 			var r=null;
@@ -903,7 +902,7 @@ getActionErrorStats:function (t, p, cb) {
 				else {
 					r.c+=v.c;
 					r._dtmin = Math.min(r._dtmin, v._dtmin);
-					r._dtmax = Math.min(r._dtmax, v._dtmax);
+					r._dtmax = Math.max(r._dtmax, v._dtmax);
 					if (r._dtmax==v._dtmax)
 						r._id = v._id;
 				}
@@ -915,7 +914,6 @@ getActionErrorStats:function (t, p, cb) {
 			out: {inline:1}
 		},
 		safe.sure(cb, function (stats) {
-			stats = _.sortBy(stats, function (s) { return (-1*s.value.c); } );
 			var ids = {};
 			_.each(stats, function (s) {
 				ids[s.value._id]={stats:s.value, error: s._id};
@@ -925,14 +923,8 @@ getActionErrorStats:function (t, p, cb) {
 					_.each(errors, function (e) {
 						ids[e._id].error = e;
 					});
-
-					ids = _(ids).values().sortBy(function(r){
-						if (p.st == 'terr')
-							return r.stats.c * -1;
-						if (p.st == 'mr')
-							return new Date(r.error._dtf)*-1;
-					}).value();
-					cb(null, ids);
+					var data = _.values(ids);
+					cb(null, data);
 				}));
 		}));
 	}));

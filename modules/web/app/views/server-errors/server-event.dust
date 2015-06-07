@@ -1,15 +1,17 @@
 <div class="row">
 <div class="col-xs-12 col-sm-9">
 <br>
+{?event}
 <div class='text-center'>
-{#prevId}
-	<a href="{.}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
-{/prevId}
-{#event}<b>{@formatdate date=_dt format="l"/} {@formatdate date=_dt format="LTS"/}</b>{/event}
-{#nextId}
-	<a href="{.}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
-{/nextId}
+{?prev}
+	<a href="{prev._id}" class="pull-left do-prev-sample btn btn-default">&lt; Prev sample</a>
+{/prev}
+<b>{@formatdate date=event._dt/}</b>
+{?next}
+	<a href="{next._id}" class="pull-right do-next-sample btn btn-default">Next sample &gt;</a>
+{/next}
 </div>
+{/event}
 <br>
 {#event}
 <h1>{exception._s_value}</h1>

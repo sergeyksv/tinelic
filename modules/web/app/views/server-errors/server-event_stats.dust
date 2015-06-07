@@ -2,7 +2,7 @@
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
   <div class="panel-body">
-	{#event}First error: <b>{@formatdate date=_dtf format="l"/} {@formatdate date=_dtf format="LTS"/}</b><br>{/event}
+	{#event}First error: <b>{@formatdate date=_dtf/}</b><br>{/event}
 	Total count: <b>{count}</b><br>
   </div>
 </div>

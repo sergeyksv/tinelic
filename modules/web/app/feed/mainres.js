@@ -1,25 +1,5 @@
 define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe,_,prefixify) {
 	return {
-		errorInfo:function (token, params, cb) {
-			safe.parallel({
-				event:function (cb) {
-					api("stats.getPageError",token, _.extend({_t_age:"30d"},params.filter), cb)
-				},
-				info:function (cb) {
-					api("stats.getPageErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
-				}
-			}, cb)
-		},
-		serverErrorInfo: function (token, params, cb) {
-			safe.parallel({
-				event:function (cb) {
-					api("stats.getActionError",token, _.extend({_t_age:"30d"},params.filter), cb)
-				},
-				info:function (cb) {
-					api("stats.getActionErrorInfo",token, _.extend({_t_age:"10m"},params), cb)
-				}
-			}, cb)
-		},
 		projectInfo:function (token, params, cb) {
 			params = prefixify.query(params);
 			var dta = params._dtActionsErrAck; delete params._dtActionsErrAck;
