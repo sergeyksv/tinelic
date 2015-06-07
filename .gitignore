@@ -8,3 +8,4 @@ dump
 test/snapshots
 screenshot*
 doc
+out

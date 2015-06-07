@@ -25,22 +25,20 @@ module.exports.init = function (ctx, cb) {
 				db.collection("users",cb);
 			}
 		}, safe.sure(cb,function (usr) {
-			cb(null, {api:{
+			cb(null, {
 
 /**
-* @apiDefine this
-* @apiHeader {String} token Valid authentication token
+* REST API to manage users
+*
+* @exports UsersApi
 */
+api:{
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName getUsers
-* @apiPermission admin
-* @api {get} /:token/users/permissions Query permissions
-* @apiParam {String} _id User id
-* @apiParam {String="user_new", "user_view", "user_edit"} action Action
-* @apiSuccess {Boolean} result Allow or disallow
+* @param {String} token Auth token
+* @param {String} _id User id
+* @param {String} action One of "user_new", "user_view", "user_edit"
+* @return {Boolean} result Allow or disallow
 */
 getPermission:function (t, p, cb) {
 	this.getCurrentUser(t, safe.sure(cb, function (u) {
@@ -60,25 +58,18 @@ getPermission:function (t, p, cb) {
 },
 
 /**
-* @apiName getUser
-* @apiGroup Users
-* @apiPermission admin
-* @api {get} /:token/users/user Get all users
-* @apiParam {Object} filter Mongo Query against user object
-* @apiSuccess {Object} result User
+* @param {String} token Auth token
+* @param {Object} filter Mongo Query against user object
+* @return {User} User
 */
 getUser: function (t,u,cb) {
 	usr.users.findOne(u.filter, cb);
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName getUsers
-* @apiPermission admin
-* @api {get} /:token/users/users Get users
-* @apiParam {Object} filter Mongo Query against user object
-* @apiSuccess {Object[]} result Users
+* @param {String} token Auth token
+* @param {Object} filter Mongo Query against user object
+* @return {User[]}
 */
 getUsers: function (t,u,cb) {
 	this.getCurrentUser(t, safe.sure(cb, function(u) {
@@ -89,16 +80,12 @@ getUsers: function (t,u,cb) {
 			throw new CustomError('You are not admin',"Access forbidden");
 		}
 	}));
-
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName getCurrentUser
-* @apiPermission user
-* @api {get} /:token/users Get current user
-* @apiSuccess {Object} result Currently authenticated user
+* Get current user
+* @param {String} token Auth token
+* @return {User} result Currently authenticated user
 */
 getCurrentUser: function (t,cb) {
 	usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
@@ -109,15 +96,13 @@ getCurrentUser: function (t,cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName saveUser
-* @apiPermission admin
-* @api {post} /:token/save-user Update or create user
-* @apiParam {Object} user User object
-* @apiParam {String} user._id Id of user or null for new
-* @apiDescription Creates of updates user object depending
+* Creates of updates user object depending
 *   on existance of _id attribute
+*
+* @param {String} token Auth token
+* @param {User} user User object
+* @param {String} user._id Id of user or null for new
+* @return {User}
 */
 saveUser: function (t,u,cb) {
 	u = prefixify(u);
@@ -132,12 +117,8 @@ saveUser: function (t,u,cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName removeUser
-* @api {post} /:token/remove-user Remove user
-* @apiPermission admin
-* @apiParam {String} _id User id
+* @param {String} token Auth token
+* @param {String} _id User id
 */
 removeUser: function(t,u,cb) {
 	u = prefixify(u);
@@ -145,14 +126,10 @@ removeUser: function(t,u,cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName signUp
-* @api {post} /:token/sign-up Log-in
-* @apiPermission none
-* @apiParam {String} login Login name
-* @apiParam {String} pass Passworde
-* @apiSuccess {String} result New auth token
+* @param {String} token Auth token
+* @param {String} login Login name
+* @param {String} pass Passworde
+* @return {String} New auth token
 */
 login:function(t,u,cb) {
 	var dt = new Date();
@@ -169,11 +146,7 @@ login:function(t,u,cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Users
-* @apiName userLogout
-* @api {post} /:token/user-logout Logout
-* @apiPermission user
+* @param {String} token Auth token
 */
 logout: function(t, u, cb) {
 	usr.users.update({'tokens.token':u.token}, { $pull: {tokens: { token: u.token } } },{},cb);

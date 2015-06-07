@@ -37,24 +37,44 @@ module.exports.init = function (ctx, cb) {
 				db.collection("metrics", cb);
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, serverErrors, metrics) {
-			cb(null, {api:{
+			cb(null, {
 
 /**
-* @apiDefine this
-* @apiHeader {String} token Valid authentication token
+* REST API to request various statistics information, all functions readonly
+*
+* @exports StatsApi
+*/
+api:{
+
+/**
+* TimeSlot ( ms / quant / 60000 )
+* @typedef TimeSlot
+* @type {Number}
 */
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getErrTotals
-* @api {get} /:token/stats/err-ack Get error totals
-* @apiParam {String} _idp Project id
-* @apiParam {Object} _dt Date filter
-* @apiSuccess {Integer} actions - Number of action errors
-* @apiSuccess {Integer} dtlActions - Number of new action errors
-* @apiSuccess {Integer} pages - Number of page errors
-* @apiSuccess {Integer} dtlPages - Number of action errors
+* @global
+* @typedef PageError
+* @type {Object}
+*/
+
+/**
+* @global
+* @typedef ActionError
+* @type {Object}
+*/
+
+/**
+* Get total/new error counts for specific date range
+*
+* @param {String} token Auth token
+* @param {String} _idp Project id
+* @param {Object} _dt Date filter
+* @param {Date} _dt.$lte End date of range
+* @param {Date} _dt._dtActionsErrorAck Start date for action errors
+* @param {Date} _dt._dtPagesErrorAck Start date for pages errors
+*
+* @return {{actions:string, dtlActions:string, pages:string, dtlPages:string}}
 */
 getErrorTotals: function(t,p,cb) {
 	safe.parallel({
@@ -114,13 +134,10 @@ getErrorTotals: function(t,p,cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Metrics
-* @apiName getMetricTotals
-* @api {get} /:token/stats/metric-totals Get metric totals
-* @apiParam {Object} filter Filter for metrics
-* @apiSuccess {Integer} proc Number of different processes seen
-* @apiSuccess {Integer} mem Average amount of memory used  per all processes
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{proc:number, mem:number}>}
 */
 getMetricTotals: function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -155,21 +172,11 @@ getMetricTotals: function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionTimings
-* @api {get} /:token/stats/action-timings Get action timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.tta average time
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.r rpm
-* @apiSuccess {Number} result.value.tt total time
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,tt:number}}>}
 */
 getActionTimings: function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -218,18 +225,13 @@ getActionTimings: function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionStats
-* @api {get} /:token/stats/action-stats Get action stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Name of action
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.tt total time
+* Agregate actions stats grouped by name
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{string},value:{apdex:number,c:number,tt:number}}>}
+*	Data grouped by action name
 */
 getActionStats: function(t, p , cb) {
 	var query = queryfix(p.filter);
@@ -272,19 +274,13 @@ getActionStats: function(t, p , cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Ajax
-* @apiName getAjaxStats
-* @api {get} /:token/stats/ajax-stats Get ajax stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Name of action
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.e errored count
-* @apiSuccess {Number} result.value.tt total time
+* Agregate ajax stats grouped by route
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{string},value:{apdex:number,c:number,e:number,tt:number}}>}
+*	Data grouped by ajax route
 */
 getAjaxStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -328,19 +324,13 @@ getAjaxStats: function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Pages
-* @apiName getPageStats
-* @api {get} /:token/stats/page-stats Get page stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Name of action
-* @apiSuccess {Number} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.e errored count
-* @apiSuccess {Number} result.value.tt total time
+* Agregate page stats grouped by route
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{string},value:{apdex:number,c:number,e:number,tt:number}}>}
+*	Data grouped by page route
 */
 getPageStats: function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -384,35 +374,26 @@ getPageStats: function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getPageError
-* @api {get} /:token/stats/page-error Get page error
-* @apiParam {String} _id Page error id
-* @apiSuccess {Object} result Page error
+* Get page error by id
+*
+* @param {String} token Auth token
+* @param {String} _id Page error id
+* @return {PageError}
 */
 getPageError:function (t, p, cb) {
 	events.findOne({_id:new mongo.ObjectID(p._id)},cb);
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getActionErrorInfo
-* @api {get} /:token/stats/action-error-info Get action error info
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._id Error id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id ehash or project id
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {String[]} result.value.route affected routes
-* @apiSuccess {String[]} result.value.lang languages
-* @apiSuccess {String[]} result.value.server servers
-* @apiSuccess {String[]} result.value.reporter reporters
-* @apiSuccess {Integer} result.value.count count
-* @apiSuccess {String[]} result.value.ids prev, curent, next ids of same errors
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._id Error id
+* @return {Array<{_id:string,
+* 		value:{route: string[],lang: string[],server: string[],
+*		reporter: string[],count:integer}}>}
 */
 getActionErrorInfo:function (t, p, cb) {
+
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -491,12 +472,11 @@ getActionErrorInfo:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getServerError
-* @api {get} /:token/stats/server-error Get action error
-* @apiParam {String} _id Action error id
-* @apiSuccess {Object} result Action error
+* Get action error by id
+*
+* @param {String} token Auth token
+* @param {String} _id Page error id
+* @return {ActionError}
 */
 getActionError:function (t, p, cb) {
 	// dummy, just get it all out
@@ -504,22 +484,11 @@ getActionError:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Ajax
-* @apiName getAjaxTimings
-* @api {get} /:token/stats/ajax-timings Get ajax timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.tta average time
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.r rpm
-* @apiSuccess {Number} result.value.e error count
-* @apiSuccess {Number} result.value.tt total time
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
 getAjaxTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -565,22 +534,11 @@ getAjaxTimings:function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Pages
-* @apiName getPageTimings
-* @api {get} /:token/stats/page-timings Get page timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.apdex apdex
-* @apiSuccess {Number} result.value.tta average time
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.r rpm
-* @apiSuccess {Number} result.value.e epm
-* @apiSuccess {Number} result.value.tt total time
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
 getPageTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
@@ -625,22 +583,14 @@ getPageTimings:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getPageErrorInfo
-* @api {get} /:token/stats/page-error-info Get page error info
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._id Error id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id ehash or project id
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {String[]} result.value.route affected routes
-* @apiSuccess {String[]} result.value.browser browsers
-* @apiSuccess {String[]} result.value.os operation systems
-* @apiSuccess {Integer} result.value.sessions afected sessions
-* @apiSuccess {Integer} result.value.views afected pages
-* @apiSuccess {Integer} result.value.count count
-* @apiSuccess {String[]} result.value.ids prev, curent, next ids of same errors
+* Get statistic information about page error by its id
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._id Error id
+* @return {Array<{_id:string,
+* 		value:{route: string[], browser: string[], os: string[],
+*		sessions: number, view: number, count: number}}>}
 */
 getPageErrorInfo:function (t, p, cb) {
 	var query = queryfix(p.filter);
@@ -649,7 +599,7 @@ getPageErrorInfo:function (t, p, cb) {
 		if (!query._id)
 			// overwise we assume that called knows what to do
 			return cb();
-		// then we need to fetch it and grap required info (projec and ehash)
+		// then we need to fetch it and grap required info (project and ehash)
 		events.findOne({_id:query._id}, safe.sure(cb, function (event) {
 			if (!event)
 				cb(new CustomError("No event found", "Not Found"));
@@ -725,21 +675,13 @@ getPageErrorInfo:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getPageErrorStats
-* @api {get} /:token/stats/page-error-stats Get page error stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id ehash of error
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.session Affected sessions
-* @apiSuccess {Integer} result.value.pages Affected pages
-* @apiSuccess {Integer} result.value.count Count
-* @apiSuccess {Integer} result.value._dtmin First seen in period
-* @apiSuccess {Integer} result.value._dtmax Last seen in period
-* @apiSuccess {Integer} result.value.count Count
+* Agregate page error stats grouped by error type (ehash)
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._id Page error id
+* @return {Array<{_id:{string},value:{count:number, pages: number,
+*	sessions: number, _dtmax: date, _dtmin: date, error: PageError}}>}
 */
 getPageErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
@@ -833,17 +775,12 @@ getPageErrorStats:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getPageErrorTimings
-* @api {get} /:token/stats/page-error-timings Get page error timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._id Id of specific error
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.r rpm
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._id Page error id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{r:number}}>}
 */
 getPageErrorTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
@@ -889,17 +826,11 @@ getPageErrorTimings:function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getActionErrorTimings
-* @api {get} /:token/stats/action-error-timings Get action error timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._id Id of specific error
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Object} result.value.r rpm
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{r:number}}>}
 */
 getActionErrorTimings:function(t, p, cb) {
 	var query1 = queryfix(p.filter);
@@ -935,18 +866,13 @@ getActionErrorTimings:function(t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Errors
-* @apiName getActionErrorStats
-* @api {get} /:token/stats/action-error-stats Get action error stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id ehash of error
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value._dtmin First seen in period
-* @apiSuccess {Integer} result.value._dtmax Last seen in period
-* @apiSuccess {Integer} result.value.count Count
+* Agregate action error stats grouped by error type (ehash)
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{string},value:{c:number,
+*	_dtmax: date, _dtmin: date, error: ActionError}}>}
 */
 getActionErrorStats:function (t, p, cb) {
 	var query = queryfix(p.filter);
@@ -997,18 +923,12 @@ getActionErrorStats:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionBreakdown
-* @api {get} /:token/stats/action-breakdown Get action breakdown
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._s_name Action name
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Action name
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.tt Total time
-* @apiSuccess {Number} result.value.c Count
-* @apiSuccess {Number} result.value.ot Own time
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_name Action name
+* @return {Array<{_id:{string},value:{c:number,
+*	tt: number, ot: number}}>}
 */
 getActionBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
@@ -1039,18 +959,13 @@ getActionBreakdown: function(t,p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionSegemntStats
-* @api {get} /:token/stats/action-segment-stats Get action segment stats
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiParam {String} filter.data._s_cat Segment category
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Action name
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.tt Total Time
-* @apiSuccess {Number} result.value.c Count
+* Agregate action segement stats by ame (ehash)
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter.data._s_cat Segment category
+* @return {Array<{_id:{string},value:{c:number, tt: number}}>}
 */
 getActionSegmentStats: function(t,p, cb) {
 	var query = queryfix(p.filter);
@@ -1084,17 +999,11 @@ getActionSegmentStats: function(t,p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Pages
-* @apiName getPageBreakdown
-* @api {get} /:token/stats/page-breakdown Get page breakdown
-* @apiParam {Object} filter Filter for pages
-* @apiParam {String} filter._idp Project id
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Page name
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.c Count
-* @apiSuccess {Integer} result.value.tt Total time
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_route Page route
+* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
 */
 getPageBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
@@ -1129,16 +1038,11 @@ getPageBreakdown: function(t,p,cb){
 },
 
 /**
-* @apiUse this
-* @apiGroup Ajax
-* @apiName getAjaxBreakdown
-* @api {get} /:token/stats/ajax-breakdown Get ajax breakdown
-* @apiParam {Object} filter Filter for actions
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {String} result._id Route name
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.c Count
-* @apiSuccess {Integer} result.value.tt Total time
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_name Ajax name
+* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
 */
 getAjaxBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
@@ -1167,21 +1071,11 @@ getAjaxBreakdown: function(t,p,cb){
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionSegmentTimings
-* @api {get} /:token/stats/action-segment-timings Get action segment timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._idp Project id
-* @apiParam {String} filter.data._s_name Segment name
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.c count
-* @apiSuccess {Number} result.value.r rpm
-* @apiSuccess {Number} result.value.tt total time
-* @apiSuccess {Number} result.value.tta average
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, r: number, tt: number, tta: number}}>}
 */
 getActionSegmentTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
@@ -1223,18 +1117,11 @@ getActionSegmentTimings:function (t, p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Actions
-* @apiName getActionSegmentBreakdown
-* @api {get} /:token/stats/actions-category-breakdown Get action segment breakdown
-* @apiParam {Object} filter Filter for actions
-* @apiParam {String} filter._s_name Segment name
-* @apiSuccess {Object[]} result Array of stats
-* @apiSuccess {Integer} result._id Action name
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Integer} result.value.c Count
-* @apiSuccess {Integer} result.value.tt Total time
-* @apiSuccess {Integer} result.value.tta Average time
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_name Ajax name
+* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
 */
 getActionSegmentBreakdown: function(t,p, cb) {
 	var query = queryfix(p.filter);
@@ -1268,16 +1155,11 @@ getActionSegmentBreakdown: function(t,p, cb) {
 },
 
 /**
-* @apiUse this
-* @apiGroup Metrics
-* @apiName getMetricTimings
-* @api {get} /:token/stats/metric-timingsview Get metric timings
-* @apiParam {Integer} quant Amount of minutes in time slot
-* @apiParam {Object} filter Filter for actions
-* @apiSuccess {Object[]} result Array of time slots
-* @apiSuccess {Integer} result._id TimeSlot ( ms / quant / 60000 )
-* @apiSuccess {Object} result.value stats
-* @apiSuccess {Number} result.value.mem memory
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, mem: number, mema: number}}>}
 */
 getMetricTimings:function(t,p,cb) {
 	var query = queryfix(p.filter);
@@ -1305,7 +1187,7 @@ getMetricTimings:function(t,p,cb) {
 		}, safe.sure(cb, function (data) {
 			_.each(data, function (metric) {
 				var key = metric.value;
-				key.mem = key.mem/key.c;
+				key.mema = key.mem/key.c;
 			});
 			cb(null, data);
 		})
