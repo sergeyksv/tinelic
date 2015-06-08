@@ -10,7 +10,18 @@ module.exports.init = function (ctx, cb) {
 
 	ctx.api.obac.register(['user_new','user_edit','user_view','*'],'users',{permission:'getPermission'});
 
-	ctx.api.validate.register("user", {$set:{properties:{
+	/**
+	* @typedef User
+	* @type {Object}
+	* @property {String} _id
+	* @property {String} firstname
+	* @property {String} lastname
+	* @property {String} login
+	* @property {String} pass
+	* @property {('admin'|'user')} pass
+	*/
+	ctx.api.validate.register("user", {$set:{
+		properties:{
 		_id:{type:"mongoId"},
 		firstname:{type:"string",required:true,"maxLength": 64},
 		lastname:{type:"string",required:true,"maxLength": 64},
