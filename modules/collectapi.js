@@ -788,7 +788,7 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 				safe.parallel([
 					function(cb) {
 						var n = 0;
-						ctx.api.assets.getProjectPageRules('public',{_id: data._idp},safe.sure(cb,function(pageRules){
+						ctx.api.assets.getProjectPageRules(ctx.locals.systoken,{_id: data._idp},safe.sure(cb,function(pageRules){
 							safe.forEach(pageRules,function(pageRule,cb){
 								var condition = JSON.parse(pageRule._s_condition);
 								condition._id = _id;

@@ -1,26 +1,29 @@
 {>"views/base_page"/}
 {<main}
 <div class='row'> <div class='col-sm-12'>
-	{?obac.team_new.global}
+
 	    <div class="btn-group">
+			{?obac.team_new.global}
 	        <div class="btn btn-default btn-xs doEditTeam">Create team</div>
+			{/obac.team_new.global}
+			{?obac.project_new.global}
 	        <div class="btn btn-default btn-xs doNewProject">Create project</div>
+			{/obac.project_new.global}
 	    </div>
-	{/obac.team_new.global}
 	{#teams}
 	<div class="form-horizontal">
 		<legend class="h2">{name}
+			{?obac.team_edit[_id]}
 			<div class="dropdown pull-right">
 				<button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs">Actions<span class="caret"></span></button>
 
 				<ul class="dropdown-menu" role="menu">
-					{?obacGranted[_id]}
 					<li role="presentation"><a role="menuitem" tabindex="-1" class="doEditTeam" href="#" data-id="{_id}">Edit</a></li>
 					<li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
 					<li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
-					{/obacGranted[_id]}
 				</ul>
 			</div>
+			{/obac.team_edit[_id]}
 		</legend>
 
 		<div class="form-group">

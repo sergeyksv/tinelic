@@ -10,7 +10,7 @@ module.exports.init = function (ctx, cb) {
 	var queryfix = ctx.api.prefixify.queryfix;
 
 	ctx.api.obac.register(['team_view','team_edit'],'assets',{permission:'getTeamPermission',grantids:'getGrantedTeamIds'});
-	ctx.api.obac.register(['project_view','project_edit'],'assets',{permission:'getProjectPermission',grantids:'getGrantedProjectIds'});
+	ctx.api.obac.register(['project_view','project_edit','project_new'],'assets',{permission:'getProjectPermission',grantids:'getGrantedProjectIds'});
 
 	ctx.api.validate.register("team", {$set:{properties:{
 		_id:{type:"mongoId"},
@@ -71,11 +71,11 @@ api:{
 getTeamPermission:function (t, p, cb) {
 	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
 		if (p.action == "team_view")
-			tm.teams.findOne({'users._idu':u._id}, safe.sure(cb, function (user) {
+			tm.teams.findOne({'users._idu':u._id,_id:p._id}, safe.sure(cb, function (user) {
 				cb(null,!!user);
 			}));
 		else if (p.action == "team_edit")
-			tm.teams.findOne(queryfix({users:{$elemMatch:{_idu:u._id,role:"lead"}}}), safe.sure(cb, function (user) {
+			tm.teams.findOne(queryfix({users:{$elemMatch:{_idu:u._id,role:"lead"}},_id:p._id}), safe.sure(cb, function (user) {
 				cb(null,!!user);
 			}));
 		else
@@ -97,6 +97,10 @@ getProjectPermission:function (t, p, cb) {
 			}));
 		else if (p.action == "project_edit")
 			tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"}},"projects._idp":p._id}), safe.sure(cb, function (user) {
+				cb(null,!!user);
+			}));
+		else if (p.action == "project_new")
+			tm.teams.findOne(queryfix({'users':{$elemMatch:{_idu:u._id,role:"lead"}}}), safe.sure(cb, function (user) {
 				cb(null,!!user);
 			}));
 		else
@@ -195,7 +199,7 @@ getProject:function (t, p, cb) {
 */
 saveProject:function (t, p, cb) {
 	var project = prefixify(p.project);
-	ctx.api.obac.getPermission(t,{action:'project_edit',_id:p.project._id,throw:1}, safe.sure(cb, function () {
+	ctx.api.obac.getPermission(t,{action:p.project._id?'project_edit':'project_new',_id:p.project._id,throw:1}, safe.sure(cb, function () {
 		var id = project._id || new mongo.ObjectID();
 		var data = _.pick(project,["name"]); // for now we can only update name, how smart :)
 		ctx.api.validate.check("project", data, {isUpdate:true}, safe.sure(cb, function () {
@@ -250,7 +254,7 @@ getTeams: function (t,p,cb) {
 */
 saveTeam: function (t,p,cb) {
 	var team = prefixify(p.team);
-	ctx.api.obac.getPermission(t,{action:'team_edit',_id:p.team._id,throw:1}, safe.sure(cb, function () {
+	ctx.api.obac.getPermission(t,{action:p.team._id?'team_edit':'team_new',_id:p.team._id,throw:1}, safe.sure(cb, function () {
 		var id = team._id || new mongo.ObjectID();
 		var data = _.pick(team,["name"]); // for now we can only update name, how smart :)
 		ctx.api.validate.check("team", data, {isUpdate:true}, safe.sure(cb, function () {

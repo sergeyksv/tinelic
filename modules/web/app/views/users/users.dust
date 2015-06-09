@@ -1,6 +1,8 @@
 {>"views/base_page"/}
 {<main}
+{?obac.user_new.global}
 		<button type="button" id="addnu" class="btn btn-default btn-xs doEditUser">Add new user</button>
+{/obac.user_new.global}
 		<p class="bg-primary"></p>
 		<table style="margin-top: 20px;"class="table table-striped">
 			<tr>
@@ -35,6 +37,7 @@
                     {role}
                 </td>
           		<td>
+					{?obac.user_edit[_id]}
           		    <div class="dropdown">
           			    <button type="button" role="button" data-toggle="dropdown" class="btn btn-default btn-xs">Actions</button>
 
@@ -44,6 +47,7 @@
 
                       </ul>
                     <div>
+					{/obac.user_edit[_id]}
           		</td>
           	</tr>
           {/users}

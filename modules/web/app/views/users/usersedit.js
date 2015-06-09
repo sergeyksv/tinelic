@@ -38,7 +38,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
 							var data = {login:login, firstname:fname, lastname:lname, role:role, pass:pass};
                             if (id.length != 0)
 								data._id = id;
-                            api("users.saveUser", "public", data, function(err) {
+                            api("users.saveUser", $.cookie('token'), data, function(err) {
 								if (err)
 									warn.html(err.toString());
 								else {

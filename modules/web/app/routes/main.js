@@ -22,8 +22,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					api("users.getUsers", res.locals.token, {}, cb)
 				}
 			},safe.sure(cb, function(r) {
-				res.renderX({view: r.view, data: {title: "Manage users", users: r.users}})
-
+				var rules = [{action:"user_new"}]
+				_.each(r.users, function (user) {
+					rules.push({action:"user_edit",_id:user._id})
+				})
+				api("obac.getPermissions", res.locals.token, {rules:rules}, safe.sure(cb, function (answers) {
+					res.renderX({view: r.view, data: {title: "Manage users", users: r.users, obac: answers}})
+				}))
 			}))
 		},
 		teams:function (req, res, cb) {
@@ -43,16 +48,13 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					api("users.getUsers", res.locals.token, {}, cb)
 				}
 			}, safe.sure(cb,function(r) {
-				var rules = [{action:"team_new"}]
+				var rules = [{action:"team_new"},{action:"project_new"}]
 				_.each(r.teams, function (team) {
 					rules.push({action:"team_edit",_id:team._id})
 				})
 				safe.parallel({
 					answers: function(cb){
 						api("obac.getPermissions", res.locals.token, {rules:rules}, cb)
-					},
-					granted: function(cb) {
-						api("obac.getGrantedIds", res.locals.token, {action:"team_edit"}, cb)
 					}
 				},safe.sure(cb,function(result){
 					_.forEach(r.teams, function(teams) {
@@ -77,18 +79,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						}
 					})
 
-					result.granted = _.reduce(result.granted,function(memo,i){
-						memo[i] = true
-						return memo
-					},{})
-
 					res.renderX({view: r.view, data: {
 						title: "Manage teams",
 						teams: r.teams,
 						proj: r.proj,
 						usr: r.users,
-						obac: result.answers,
-						obacGranted: result.granted
+						obac: result.answers
 					}})
 				}))
 

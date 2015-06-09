@@ -230,6 +230,7 @@ module.exports.block = function(){
 					b.findElement(By.id("logout")).click();
 
 					helpers.waitPageReload.call(self,pid).then(function(pid){
+						b.get("http://localhost/web/");
 						b.findElement(By.id("pass")).sendKeys("123456");
 						b.findElement(By.id("login")).sendKeys("obram");
 						b.findElement(By.id("signup")).click();
