@@ -353,7 +353,7 @@ module.exports.init = function (ctx, cb) {
 								query.name = agent_name;
 
 							// check that project exist
-							ctx.api.assets.getProject("public", {filter:query}, safe.sure(cb, function (project) {
+							ctx.api.assets.getProject(ctx.locals.systoken, {filter:query}, safe.sure(cb, function (project) {
 								if (!project)
 									throw new Error( "Project \"" + agent_name + "\" not found" );
 								var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
@@ -1011,7 +1011,7 @@ module.exports.init = function (ctx, cb) {
 									data._dtf = new Date();
 
 									events.insert(data, safe.sure(cb, function(res){
-										ctx.api.collect.getStackTraceContext("public",res[0].stacktrace.frames, function (err,frames) {
+										ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
 											events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
 											}));
 										});
@@ -1110,7 +1110,7 @@ module.exports.init = function (ctx, cb) {
         },
         getStackTraceContext:function (t, frames, cb) {
 			safe.eachSeries(frames, function(r, cb) {
-				ctx.api.collect.getTraceLineContext("public",r, safe.sure(cb, function (context) {
+				ctx.api.collect.getTraceLineContext(ctx.locals.systoken,r, safe.sure(cb, function (context) {
 					r._s_context=context._s_context;
 					r.pre_context=context.pre_context;
 					r.post_context=context.post_context;

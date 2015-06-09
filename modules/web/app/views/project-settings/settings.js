@@ -6,7 +6,7 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
             "click #doDeleteProject": function(e) {
                 var self = this;
                 self.app.confirm('Do you realy delete this project and all of this data?',safe.sure(self.app.errHandler,function(){
-                    var id = {_idp:self.data.project._id};
+                    var id = {_id:self.data.project._id};
                     api('assets.deleteProject', $.cookie('token'), id, function(err, data){
                         if (err)
                             self.app.errHandler(err);
@@ -61,7 +61,7 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                         _t_title : $curr.data('title'),
                         _t_type : $curr.data('type'),
                         _t_val : $curr.data('val')
-                    }
+                    };
 
                     p.render(safe.sure(self.app.errHandler,function(text){
                         var $p = $(text);
@@ -73,22 +73,25 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                         $form.show();
                         p.remove();
                     });
-                    p.on('save',function(data){
-                        if (self.$('.doSaveStroke:visible').length > 1)
-                            self.app.confirm('Are you sure save this property, other editing props to be lose?',function(){
-                                data._id = self.data.project._id;
+                    p.on('save',function(data) {
+                        safe.run(function (cb){
+                            if (self.$('.doSaveStroke:visible').length > 1)
+                                self.app.confirm('Are you sure save this property, other editing props to be lose?',cb);
+                            else cb();
+                        }, function() {
+                            data.filter._id = self.data.project._id;
 
-                                api('assets.saveProjectName', $.cookie('token'),data,function(err,data){
-                                    if (err)
-                                        alert(err);
-                                    else {
-                                        api.invalidate();
-                                        self.app.router.navigateTo('/web/project/'+data.slug+'/settings');
-                                    }
-                                })
+                            api('assets.saveProject', $.cookie('token'),{project:data.filter},function(err,data){
+                                if (err)
+                                    alert(err);
+                                else {
+                                    api.invalidate();
+                                    self.app.router.navigateTo('/web/project/'+data.slug+'/settings');
+                                }
                             });
-                    })
-                },this.app.errHandler)
+                        });
+                    });
+                },this.app.errHandler);
             },
             "click .doEditApdex": function(e) {
                 var self = this;
@@ -111,21 +114,22 @@ define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/proj
                         a.remove();
                     });
                     a.on('save',function(data){
-                        if (self.$('.doSaveStroke:visible').length > 1)
-                            self.app.confirm('Are you sure save this property, other editing props to be lose?',function(){
-                                data._id = self.data.project._id;
-
-                                api('assets.saveApdexT', $.cookie('token'),data,function(err,data){
-                                    if (err)
-                                        alert(err);
-                                    else {
-                                        api.invalidate();
-                                        self.app.router.reload();
-                                    }
-                                })
+                        safe.run(function (cb){
+                            if (self.$('.doSaveStroke:visible').length > 1)
+                                self.app.confirm('Are you sure save this property, other editing props to be lose?',cb);
+                            else cb();
+                        }, function() {
+                            api('assets.saveApdexT', $.cookie('token'),{_id:self.data.project._id,apdexConfig:data.filter},function(err,data){
+                                if (err)
+                                    alert(err);
+                                else {
+                                    api.invalidate();
+                                    self.app.router.reload();
+                                }
                             });
-                    })
-                },this.app.errHandler)
+                        });
+                    });
+                },this.app.errHandler);
             },
             'click .deletePageRule':function(e){
                 var self = this;

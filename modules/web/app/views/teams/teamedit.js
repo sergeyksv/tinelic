@@ -24,14 +24,10 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
                 }
 
                 var data = {name: name};
-                var func = "";
-                if (id) {
-                    func = "assets.updateTeam";
+                if (id)
                     data._id = id;
-                } else
-                    func = "assets.saveTeam";
 
-                api(func, "public", data, function(err) {
+                api("assets.saveTeam", $.cookie('token'), {team:data}, function(err) {
                     if (err)
                         warn.html(err.toString());
 					else {

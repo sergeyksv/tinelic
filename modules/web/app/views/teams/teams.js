@@ -37,7 +37,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                             data.projects.push({_idp:r.value});
                         });
 
-                        api("assets.setProjects", "public", data, safe.sure(this.app.errHandler, function (data) {
+                        api("assets.saveTeamProjects",$.cookie('token'), data, safe.sure(this.app.errHandler, function (data) {
                             api.invalidate();
                             self.app.router.reload();
                         }));
@@ -126,7 +126,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                 var self = this;
                 $this = $(e.currentTarget);
                 self.app.confirm('This will destroy team permanently. Are you sure?',function(){
-                    api("assets.removeTeam", "public", {id: $this.data('delete')}, safe.sure(self.app.errHandler, function () {
+                    api("assets.removeTeam",$.cookie('token'), {_id: $this.data('delete')}, safe.sure(self.app.errHandler, function () {
                         api.invalidate();
                         self.app.router.reload();
                     }));

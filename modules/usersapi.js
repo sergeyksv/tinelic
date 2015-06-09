@@ -36,7 +36,12 @@ module.exports.init = function (ctx, cb) {
 				db.collection("users",cb);
 			}
 		}, safe.sure(cb,function (usr) {
+
+			ctx.locals.systoken = Math.random().toString(36).slice(-14);
+
 			cb(null, {
+
+
 
 /**
 * REST API to manage users
@@ -99,6 +104,9 @@ getUsers: function (t,u,cb) {
 * @return {User} result Currently authenticated user
 */
 getCurrentUser: function (t,cb) {
+	if (t==ctx.locals.systoken)
+		return safe.back(cb, null, {role:"admin"});
+		
 	usr.users.findOne({'tokens.token' : t }, safe.sure(cb, function(user){
 		if (!user)
 			return cb(new CustomError('Current user is unknown',"Unauthorized"));

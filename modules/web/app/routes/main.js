@@ -399,7 +399,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				dtp;
 
 			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dtp = (project._dtPagesErrAck?new Date(project._dtPagesErrAck):res.locals.dtstart).valueOf();
+				dtp = (project._dtPagesErrAck || res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
 				res.locals.dtcliack = dtp;
 				safe.run(function (cb) {
@@ -577,7 +577,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				st = req.params.sort;
 
 			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):res.locals.dtstart).valueOf();
+				dta = (project._dtActionsErrAck || res.locals.dtstart).valueOf();
 				res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
 				res.locals.dtseack = dta;
 				safe.run(function (cb) {

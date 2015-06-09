@@ -82,11 +82,11 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 				if (data._id.length) {
 					safe.auto({
 						saveProject: function (cb) {
-							api("assets.saveProject", "public", {project: project}, cb)
+							api("assets.saveProject", $.cookie('token'), {project: project}, cb)
 						},
 						saveIntoTeams:['saveProject',function(cb,result) {
-							data.projects.push({_idp: result.saveProject});
-							api('assets.addProjects', "public", data, cb)
+							data.projects.push({_idp: result.saveProject._id});
+							api('assets.saveTeamsProjects', $.cookie('token'), data, cb)
 						}]
 					},safe.sure(this.app.errHandler, function () {
 						api.invalidate();
