@@ -1,4 +1,4 @@
-var newrelic = require('newrelic')
+var newrelic = require('newrelic');
 var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');
@@ -11,6 +11,7 @@ var argv = require('yargs').argv;
 var cfg = {
 	modules:[
 		{name:"prefixify",object:tinyback.prefixify()},
+		{name:"tson",object:tinyback.tson()},
 		{name:"validate",object:tinyback.validate()},
 		{name:"mongo",object:tinyback.mongodb()},
 		{name:"cache",object:tinyback.mongocache()},
@@ -23,7 +24,7 @@ var cfg = {
 		{name:"web",require:"./modules/web"}
 	],
 	config:require("./config.js")
-}
+};
 
 var lcfgPath = argv.config || "./local-config.js";
 if(fs.existsSync(lcfgPath)){
@@ -55,35 +56,35 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 								if (err)
 									newrelic.noticeError(err);
 								cb.apply(this, arguments);
-							})
-							func.apply(this,args)
+							});
+							func.apply(this,args);
 						} else {
-							func.apply(this,arguments)
+							return func.apply(this,arguments);
 						}
-					}
-				})
-			})
-			console.timeEnd("Live !")
+					};
+				});
+			});
+			console.timeEnd("Live !");
 			try {
 				var options = {
 					key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
 					cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
 					ssl: true,
 					plain: false
-				}
+				};
 
 				var httpsServer = https.createServer(options, app.express);
 
-				httpsServer.listen(443)
-			} catch (e) {};
+				httpsServer.listen(443);
+			} catch (e) {}
 
 			var httpServer = http.createServer(app.express);
 
 			httpServer.listen(80);
 
 			if (cfg.config.automated && process.send) {
-				process.send({c: "startapp_repl", data: null})
+				process.send({c: "startapp_repl", data: null});
 			}
-		}))
-	}))
-}))
+		}));
+	}));
+}));

@@ -18,6 +18,7 @@ module.exports.init = function (ctx, cb) {
 	requirejs.config({
 		baseUrl: __dirname+"/app",
 		paths:{
+			"tson":path.resolve(__dirname,"../tinyback/tson"),
 			"prefixify":path.resolve(__dirname,"../tinyback/prefixify"),
 			"tinybone":path.resolve(__dirname,"../tinybone"),
 			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
@@ -30,6 +31,10 @@ module.exports.init = function (ctx, cb) {
 				env:"node"
 			},
 			"tinybone/base":{
+				debug:cfg.env!="production"
+			},
+			"tinybone/backadapter":{
+				_t_son:"out",
 				debug:cfg.env!="production"
 			}
 		}

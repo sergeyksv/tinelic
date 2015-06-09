@@ -26,6 +26,7 @@ module.exports = function(grunt) {
                         ]
                     }],
                     paths: {
+                        "tson": "../../tinyback/tson",
                         "prefixify": "../../tinyback/prefixify",
                         "tinybone": "../../tinybone",
                         "lodash": "../public/js/lodash",

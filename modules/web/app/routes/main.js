@@ -453,8 +453,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						var sum = 0.0;
 						_.forEach(r.data, function(r) {
 							sum += r.stats[f];
-							if (r.error._dtf)
-								r.error._dtf = new Date(r.error._dtf);
 						});
 						var percent = sum/100;
 						_.forEach(r.data, function(r) {
@@ -462,7 +460,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						});
 						r.data = _.sortBy(r.data, function(r) {
 							if (st == "mr")
-								return new Date(r.error._dtf)*-1;
+								return r.error._dtf*-1;
 							else
 								return r.stats[f]*-1;
 						});
@@ -626,8 +624,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						var sum = 0.0;
 						_.forEach(r.data, function(r) {
 							sum += r.stats.c;
-							if (r.error._dtf)
-								r.error._dtf = new Date(r.error._dtf);
 						});
 						var percent = sum/100;
 						_.forEach(r.data, function(r) {
@@ -635,7 +631,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						});
 						r.data = _.sortBy(r.data, function(r) {
 							if (st == "mr")
-								return new Date(r.error._dtf)*-1;
+								return r.error._dtf*-1;
 							else
 								return r.stats.c*-1;
 						});

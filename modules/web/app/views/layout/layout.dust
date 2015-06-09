@@ -53,6 +53,7 @@
 	requirejs.config({
 		baseUrl: "{_t_prefix}/app",
 		paths:{
+			"tson":"../tinyback/tson",
 			"prefixify":"../tinyback/prefixify",
 			"tinybone":"../tinybone",
 			"lodash":"../js/lodash",
@@ -68,6 +69,11 @@
 			"jquery.blockUI": "../js/jquery.blockUI",
 			"bootstrap":"../js/bootstrap",
 			"jquery.tablesorter.combined":"../js/jquery.tablesorter.combined"
+		},
+		config:{
+			"tinybone/backadapter":{
+				_t_son:'out'
+			}
 		},
 		shim: {
 			'dust-helpers': {

@@ -14,8 +14,8 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 					var projects=[]; projects[0]=project;
 					var dt = res.locals.dtstart;
-					var dtp = (project._dtPagesErrAck?new Date(project._dtPagesErrAck):dt).valueOf();
-					var dta = (project._dtActionsErrAck?new Date(project._dtActionsErrAck):dt).valueOf();
+					var dtp = (project._dtPagesErrAck || dt).valueOf();
+					var dta = (project._dtActionsErrAck || dt).valueOf();
 					res.locals.dtcliack = dtp;
 					res.locals.dtseack = dta;
 					api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.projectInfo", params:{quant:quant,
@@ -97,8 +97,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					total += r.stats.count;
 					session += r.stats.session;
 					page += r.stats.pages;
-					if (r.error._dtf)
-						r.error._dtf = new Date(r.error._dtf);
 				});
 				data = _.take(r.data.errors, 10);
 				_.extend(views.browser,{err: data, total: total, session: session, page: page});
@@ -109,8 +107,6 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				r.data.serverErrors = _.sortBy(r.data.serverErrors, function (s) { return -1*s.stats.c; } );
 				_.forEach(r.data.serverErrors, function(r) {
 					total += r.stats.c;
-					if (r.error._dtf)
-						r.error._dtf = new Date(r.error._dtf);
 				});
 				data = _.take(r.data.serverErrors, 10);
 				_.extend(views.serverErr,{sErr:data,total:total});
