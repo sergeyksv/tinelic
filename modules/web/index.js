@@ -108,7 +108,7 @@ module.exports.init = function (ctx, cb) {
 			};
 			next();
 		});
-		var usr_admin=[{}], proj_Def=[{}];
+		var _idadmin;
 		safe.series([
 			function (cb) {
 				ctx.api.cache.register("web_wires",{maxAge:300},cb);
@@ -119,9 +119,8 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				ctx.api.assets.getProject(ctx.locals.systoken,{filter:{slug:"tinelic-web"}}, safe.sure(cb, function (selfProj) {
 					if (!selfProj) {
-						ctx.api.assets.saveProject(ctx.locals.systoken, {project:{name:"Tinelic Web"}}, safe.sure(cb, function (selfProj_id, name, slug) {
-							proj_Def[0]._idp=selfProj_id;
-							self_id = selfProj_id;
+						ctx.api.assets.saveProject(ctx.locals.systoken, {project:{name:"Tinelic Web"}}, safe.sure(cb, function (proj) {
+							self_id = proj._id;
 							cb();
 						}));
 					} else {
@@ -131,20 +130,26 @@ module.exports.init = function (ctx, cb) {
 				}));
 			},
 			function (cb) {
-				ctx.api.users.getUser(ctx.locals.systoken,{filter:{login:"admin"}}, safe.sure(cb, function (self) {
-					if (self) return cb();
+				ctx.api.users.getUser(ctx.locals.systoken,{filter:{login:"admin"}}, safe.sure(cb, function (admin) {
+					if (admin) {
+						_idamin = admin._id;
+						return cb();
+					}
 
-					ctx.api.users.saveUser(ctx.locals.systoken, {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (res) {
-						usr_admin[0]._idu=res._id;
-						usr_admin[0].role="lead";
+					ctx.api.users.saveUser(ctx.locals.systoken, {login:"admin",firstname: 'Tinelic', lastname: 'Admin', role: 'admin', pass: "tinelic"},safe.sure(cb, function (admin) {
+						_idadmin=admin._id;
 						cb();
 					}));
 				}));
 			},
 			function (cb) {
-				ctx.api.assets.getTeam(ctx.locals.systoken,{filter:{name:"Tinelic"}}, safe.sure(cb, function (self) {
-					if (self) return cb();
-					ctx.api.assets.saveTeam(ctx.locals.systoken, {name:"Tinelic", projects:proj_Def, users:usr_admin},cb);
+				ctx.api.assets.getTeam(ctx.locals.systoken,{filter:{name:"Tinelic"}}, safe.sure(cb, function (team) {
+					if (team) return cb();
+					ctx.api.assets.saveTeam(ctx.locals.systoken, {team:{name:"Tinelic"}},safe.sure(cb, function (team) {
+						ctx.api.assets.saveTeamUsersForRole(ctx.locals.systtoken,{_id:team._id, _s_type:'lead', users:[{_idu:_idadmin}]}, safe.sure(cb, function() {
+							ctx.api.assets.saveTeamProjects(ctx.locals.systtoken,{_id:team._id, projects:[{_idp:self_id}]},cb);
+						}));
+					}));
 				}));
 			}
 		], safe.sure(cb, function () {

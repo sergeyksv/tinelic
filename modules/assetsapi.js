@@ -214,9 +214,10 @@ saveProject:function (t, p, cb) {
 * @return {Project}
 */
 getTeam: function (t,p,cb) {
-    tm.teams.findOne(p.filter, safe.sure(cb, function (p) {
-		if (!p)	return cb(null,null);
-		ctx.api.obac.getPermission(t,{_id:p._id, action:"team_view",throw:1}, safe.sure(cb, p));
+    tm.teams.findOne(prefixify(p.filter), safe.sure(cb, function (team) {
+		if (!team)
+			return cb(null,null);
+		ctx.api.obac.getPermission(t,{_id:team._id, action:"team_view",throw:1}, safe.sure(cb, team));
 	}));
 },
 
@@ -244,7 +245,7 @@ getTeams: function (t,p,cb) {
 
 /**
 * @param {String} token Auth token
-* @param {Team} project New or updated team
+* @param {Team} team New or updated team
 * @return {Team}
 */
 saveTeam: function (t,p,cb) {
@@ -290,7 +291,7 @@ saveTeamProjects: function(t,p,cb) {
 * @param {String} token Auth token
 * @param {String} _id Team id
 * @param {('lead'|'member')} _s_type User type
-* @param {Array<{_udu:mongoid}>} users Team users
+* @param {Array<{_idu:mongoid}>} users Team users
 */
 saveTeamUsersForRole: function(t, u, cb) {
 	u = prefixify(u);

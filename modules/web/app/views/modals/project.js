@@ -84,9 +84,12 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 						saveProject: function (cb) {
 							api("assets.saveProject", $.cookie('token'), {project: project}, cb)
 						},
-						saveIntoTeams:['saveProject',function(cb,result) {
-							data.projects.push({_idp: result.saveProject._id});
-							api('assets.saveTeamsProjects', $.cookie('token'), data, cb)
+						team: function (cb) {
+							api("assets.getTeam", $.cookie('token'), {filter:{_id:data._id[0]}}, cb);
+						},
+						saveIntoTeams:['saveProject','team',function(cb,result) {
+							result.team.projects.push({_idp: result.saveProject._id});
+							api('assets.saveTeamProjects', $.cookie('token'), {_id:data._id[0],projects:result.team.projects}, cb);
 						}]
 					},safe.sure(this.app.errHandler, function () {
 						api.invalidate();

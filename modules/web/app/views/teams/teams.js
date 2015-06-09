@@ -80,7 +80,7 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                             data.users.push({_idu:r.value});
                         });
 
-                        api("assets.saveTeamUsersForRole", "public", data, safe.sure(this.app.errHandler, function (data) {
+                        api("assets.saveTeamUsersForRole",$.cookie('token'), data, safe.sure(this.app.errHandler, function (data) {
                             api.invalidate();
                             self.app.router.reload();
                         }));
