@@ -8,5 +8,8 @@ module.exports = {
 			scfg:{auto_reconnect: true, poolSize : 100},
 			ccfg:{native_parser: true, w:1}
 		}
+	},
+	server:{
+		port:80
 	}
 };

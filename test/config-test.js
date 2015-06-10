@@ -5,5 +5,8 @@ module.exports = {
 		main:{
 			db: "tinelic_test",
 		}
+	},
+	server:{
+		port:3000
 	}
 };

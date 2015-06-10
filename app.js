@@ -80,7 +80,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 
 			var httpServer = http.createServer(app.express);
 
-			httpServer.listen(80);
+			httpServer.listen(cfg.config.server.port);
 
 			if (cfg.config.automated && process.send) {
 				process.send({c: "startapp_repl", data: null});
