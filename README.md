@@ -1,6 +1,9 @@
 # Tinelic
 Lightweight application performance and error monitoring server for Raven (GetSentry) and Newrelic agents.
+
 [![Build Status](https://travis-ci.org/sergeyksv/tinelic.svg?branch=master)](https://travis-ci.org/sergeyksv/tinelic)
+
+Live system with demo account (log-in: demo, password: demo): http://tinelic.skilap.org/web
 
 ## Intro
 We are developers. We see a lot of benefits from using of error reporting and app monitoring software. We tried to use
