@@ -233,11 +233,11 @@ module.exports.block = function(){
 						b.findElement(By.id("pass")).sendKeys("123456");
 						b.findElement(By.id("login")).sendKeys("obram");
 						b.findElement(By.id("signup")).click();
-						helpers.waitPageReload.call(self,pid).then(function() {
+						helpers.waitPageReload.call(self,pid).then(function(pid) {
 
 							b.findElement(By.css("#navbar .doGoHome")).click();
 
-							helpers.waitPageReload.call(self,pid).then(function() {
+							helpers.waitPageReload.call(self,pid).then(function(pid) {
 								b.findElement(By.css("div strong")).click();
 								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
 								b.findElement(By.linkText("NewProject")).click();
