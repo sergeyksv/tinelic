@@ -65,18 +65,20 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 				});
 			});
 			console.timeEnd("Live !");
-			try {
-				var options = {
-					key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
-					cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
-					ssl: true,
-					plain: false
-				};
+			if (cfg.config.server.ssl_port) {
+				try {
+					var options = {
+						key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
+						cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
+						ssl: true,
+						plain: false
+					};
 
-				var httpsServer = https.createServer(options, app.express);
+					var httpsServer = https.createServer(options, app.express);
 
-				httpsServer.listen(443);
-			} catch (e) {}
+					httpsServer.listen(cfg.config.server.ssl_port);
+				} catch (e) {}
+			}
 
 			var httpServer = http.createServer(app.express);
 

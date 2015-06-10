@@ -7,6 +7,7 @@ module.exports = {
 		}
 	},
 	server:{
-		port:3000
+		port:3000,
+		ssl_port:false
 	}
 };

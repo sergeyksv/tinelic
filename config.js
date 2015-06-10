@@ -10,6 +10,7 @@ module.exports = {
 		}
 	},
 	server:{
-		port:80
+		port:80,
+		ssl_port:false
 	}
 };
