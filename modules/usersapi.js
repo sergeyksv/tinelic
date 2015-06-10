@@ -218,7 +218,10 @@ login:function(t,u,cb) {
 		function(t) {
 			// remove expired tokens
 			usr.users.update({"token._dtexp":{$lt:dt}},{$pull:{"token._dtexp":{$lt:dt}}},safe.sure(cb, function () {
-				cb(null, token);
+				if (t)
+					cb(null, token);
+				else
+					cb(new CustomError("Log-in, password or both is not valid","Unauthorized"));
 			}));
 		})
 	);

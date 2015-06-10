@@ -3,5 +3,5 @@
 	<legend>
 		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 	</legend>
-	<div id="memory"></div>
+	{@view name="views/common/graph" data="mem" locals-name="Memory" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="mema" locals-filter-median=0/}
 {/main}

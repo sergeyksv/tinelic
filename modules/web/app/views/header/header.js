@@ -35,6 +35,7 @@ define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header
 					}
 					else {
 						$.removeCookie("token");
+						api.invalidate();
 						self.app.router.reload();
 					}
 				});

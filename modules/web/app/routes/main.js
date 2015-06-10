@@ -675,7 +675,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						},cb)}
 				},safe.sure(cb, function(r){
-					res.renderX({view:r.view,data:{title:"Metrics", project:project, mem: r.memory,quant:quant}})
+					res.renderX({view:r.view,data:{title:"Metrics", project:project, mem: r.memory}})
 				}))
 
 			}))
