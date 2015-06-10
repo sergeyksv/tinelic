@@ -230,16 +230,20 @@ module.exports.block = function(){
 					b.findElement(By.id("logout")).click();
 
 					helpers.waitPageReload.call(self,pid).then(function(pid){
-						b.get("http://localhost:8080/web/");
 						b.findElement(By.id("pass")).sendKeys("123456");
 						b.findElement(By.id("login")).sendKeys("obram");
 						b.findElement(By.id("signup")).click();
 						helpers.waitPageReload.call(self,pid).then(function() {
-							b.findElement(By.css("div strong")).click();
-							helpers.waitElementVisible.call(self,By.linkText("NewProject"))
-							b.findElement(By.linkText("NewProject")).click();
+
+							b.findElement(By.css("#navbar .doGoHome")).click();
+
 							helpers.waitPageReload.call(self,pid).then(function() {
-								self.done();
+								b.findElement(By.css("div strong")).click();
+								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
+								b.findElement(By.linkText("NewProject")).click();
+								helpers.waitPageReload.call(self,pid).then(function() {
+									self.done();
+								});
 							});
 						});
 					});

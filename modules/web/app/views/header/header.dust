@@ -11,7 +11,7 @@
 	</div>
 	<div id="navbar" class="collapse navbar-collapse">
 	  <ul class="nav navbar-nav">
-		<li class="active"><a href="{_t_prefix}/">Home</a></li>
+		<li><a href="{_t_prefix}/" class="doGoHome">Home</a></li>
 		<li><a href="{_t_prefix}/users" class="doManageUsers">Users</a></li>
 		<li><a href="{_t_prefix}/teams" class="doManageTeams">Teams</a></li>
 		<li><a id="logout" href="#">Log out</a></li>
