@@ -1195,7 +1195,7 @@ getMetricTimings:function(t,p,cb) {
 						r = v;
 					else {
 						r.mem += v.mem;
-						r.c += r.c;
+						r.c += v.c;
 					}
 				});
 				return r;
