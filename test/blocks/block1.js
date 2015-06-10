@@ -14,7 +14,7 @@ module.exports.block = function(){
 			it("Log-in as admin", function (done) {
 				var self = this, b = self.browser;
 				self.trackError(done);
-				b.get("http://localhost:3000/web/");
+				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
@@ -80,7 +80,7 @@ module.exports.block = function(){
 			it("Log-in as admin and open teams page", function (done) {
 				var self = this, b = self.browser;
 				self.trackError(done);
-				b.get("http://localhost:3000/web/");
+				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
@@ -121,7 +121,7 @@ module.exports.block = function(){
 			it("Log-in as admin and open teams page", function (done) {
 				var self = this, b = self.browser;
 				self.trackError(done);
-				b.get("http://localhost:3000/web/");
+				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
@@ -163,7 +163,7 @@ module.exports.block = function(){
 			it("Login and open teams page", function (done) {
 				var self = this, b = self.browser;
 				self.trackError(done);
-				b.get("http://localhost:3000/web/");
+				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
@@ -230,7 +230,7 @@ module.exports.block = function(){
 					b.findElement(By.id("logout")).click();
 
 					helpers.waitPageReload.call(self,pid).then(function(pid){
-						b.get("http://localhost:3000/web/");
+						b.get("http://localhost:8080/web/");
 						b.findElement(By.id("pass")).sendKeys("123456");
 						b.findElement(By.id("login")).sendKeys("obram");
 						b.findElement(By.id("signup")).click();

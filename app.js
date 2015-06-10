@@ -82,6 +82,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 
 			var httpServer = http.createServer(app.express);
 
+			console.log(cfg.config.server.port);
 			httpServer.listen(cfg.config.server.port);
 
 			if (cfg.config.automated && process.send) {
