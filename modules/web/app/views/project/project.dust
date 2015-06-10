@@ -6,7 +6,9 @@
 			<a href="{_t_prefix}/project/{project.slug}/metrics"> Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )
 		</span>
 		<div class="btn-group pull-right">
+			{?obac.project_edit[project._id]}
 			<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
+			{/obac.project_edit[project._id]}			
 			<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
 		</div>
 	</legend>

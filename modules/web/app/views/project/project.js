@@ -8,7 +8,7 @@ define(['tinybone/base','lodash','moment/moment',"tinybone/backadapter",'highcha
 				var self = this;
 				var router = self.app.router;
 				var id = self.$("span[data-id]").data('id')
-				api('assets.pullErrAck', $.cookie('token'),{type:['_dtPagesErrAck','_dtActionsErrAck'],_id:id}, function(err, data) {
+				api('assets.ackProjectState', $.cookie('token'),{type:['_dtPagesErrAck','_dtActionsErrAck'],_id:id}, function(err, data) {
 					if (err)
 						alert(err)
 					else {

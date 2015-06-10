@@ -2,7 +2,7 @@
 {<main}
 {#teams}
 <div class="list-group">
-<div class="list-group-item row disabled" data-toggle="collapse" href="#team_{_id}" aria-expanded="false">
+<div class="list-group-item row disabled" data-toggle="collapse" href="#team_{_id}" aria-expanded="true{@first}true{:else}false{/first}">
 	{#t_metrics}
 	<div data-field="name" class="col-md-3 col-xs-12">
 		<strong>{name}
@@ -52,7 +52,7 @@
 	</div>
 	{/t_metrics}
 </div>
-<div id="team_{_id}" class='collapse'>
+<div id="team_{_id}" class='collapse' data-toggle='false'>
 	{#projects}
 		<div class="row list-group-item">
 			{#_t_proj}

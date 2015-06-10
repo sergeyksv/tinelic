@@ -648,9 +648,12 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						},
 						apdexConfig: function(cb) {
 							api("assets.getProjectApdexConfig", res.locals.token, {_id:project._id}, cb)
+						},
+						obac: function (cb) {
+							api("obac.getPermissions", res.locals.token, {rules:[{action:"project_edit",_id:project._id}]}, cb);
 						}
 					},safe.sure(cb, function(r){
-						res.renderX({view:r.view,data:{title:"Settings", project:project, apdexConfig: r.apdexConfig}})
+						res.renderX({view:r.view,data:{title:"Settings", project:project, apdexConfig: r.apdexConfig, obac: r.obac}})
 					})
 				)
 			}))

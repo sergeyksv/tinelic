@@ -52,6 +52,9 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 				},
 				database: function (cb) {
 					api("stats.getActionSegmentStats", token, _.merge({filter:{'data._s_cat':'Datastore'}},params), cb);
+				},
+				obac: function (cb) {
+					api("obac.getPermissions", token, {rules:[{action:"project_edit",_id:params.filter._idp}]}, cb);
 				}
 			}, cb);
 		},

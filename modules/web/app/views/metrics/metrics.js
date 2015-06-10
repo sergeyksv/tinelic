@@ -29,7 +29,7 @@ define(['tinybone/base','dustc!views/metrics/metrics.dust','highcharts'],functio
                 var d = new Date(a._id*quant*25000);
                 d.setMinutes(d.getMinutes()-offset);
                 d = d.valueOf();
-                var memrpm1 = a.value? a.value.mem:0;
+                var memrpm1 = a.value? a.value.mema:0;
                 memrpm.push([d,memrpm1]);
             })
 
@@ -46,7 +46,7 @@ define(['tinybone/base','dustc!views/metrics/metrics.dust','highcharts'],functio
                 },
                 yAxis: [{
                     title: {
-                        text: 'Timing (s)'
+                        text: 'Memory (mb)'
                     },
                     min: 0
                 }
