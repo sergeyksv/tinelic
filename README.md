@@ -1,13 +1,14 @@
 # Tinelic
 Lightweight application performance and error monitoring server for Raven (GetSentry) and Newrelic agents.
+[![Build Status](https://travis-ci.org/sergeyksv/tinelic.svg?branch=master)](https://travis-ci.org/sergeyksv/tinelic)
 
 ## Intro
 We are developers. We see a lot of benefits from using of error reporting and app monitoring software. We tried to use
-many tools and no one satisfy us. We tried to improove some of them but at the end we build our own. 
+many tools and no one satisfy us. We tried to improove some of them but at the end we build our own.
 
 ## Concept
 Tinelic is Node.JS application which works as backend for application and error reporting agents and as GUI. In order
-to simplify things we didn't do any complex data processing and fully rely to MongoDB scalability. This gives us 
+to simplify things we didn't do any complex data processing and fully rely to MongoDB scalability. This gives us
 flexibility and enough capacity for midle sized apps.
 For data collection Tinelic uses following agents:
 
@@ -40,13 +41,13 @@ You can login into system with default admin user (admin/tinelic). Tinelic monit
 7. (optional) Compile minified code and launch in production mode
   - Install grunt and build production code ```grunt build```
   - copy ```config.json``` to ```local-config.json``` and change ```env``` property to ```production```
-  
+
 ## Agent configuration
 
 Tinelic integrated all agents to monitor itself. So you can check its code for more details. Here is some brief details:
 
 1. NewRelic
-Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. If your server has not https connection also add 
+Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. If your server has not https connection also add
 ```port:80``` and ```ssl:false``` properties. This will enable server side application performance and error reporting
 and client side real user behavior monitoring if it was already inegrated using ```newrelic.getBrowserTimingHeader()```
 
