@@ -37,8 +37,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 					_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 				}
 			};
-			var views = {}; // total | server | browser | transaction | page | ajax
+			var views = {total:{}}; // total | server | browser | transaction | page | ajax
 			var valtt; var vale; var valr; var valapd; var period, progress;
+
 			if (r.data.views.length) {
 				valtt = vale = valr = valapd = 0;
 				period = r.data.views.length;
@@ -54,7 +55,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				valr=valr/period;
 				vale=vale/period/valr;
 				valapd=valapd/period;
-				views.total = {rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd};
+				_.extend(views.total,{rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd});
 
 			}
 			if (r.data.actions.length) {

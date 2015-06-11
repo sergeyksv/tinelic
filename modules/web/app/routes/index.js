@@ -65,6 +65,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 
 							Server.etu=Server.etu/period/1000;
 							Server.r=Server.r/period;
+							Server.e=Server.e/period;
 							Apdex.server=Apdex.server/period;
 						}
 						if (r.result.metrics) {
