@@ -193,8 +193,9 @@ getActionTimings: function(t, p, cb) {
 					emit(parseInt(this._dt.valueOf()/(Q*60000)), {
 						c:1,
 						r: 1.0/Q,
+						e: (this._i_err?1:0)/Q,
 						tt: this._i_tt,
-						ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+						ag: (this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
 						aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
 					});
 				},
@@ -207,6 +208,7 @@ getActionTimings: function(t, p, cb) {
 						else {
 							r.tt+=v.tt;
 							r.r+=v.r;
+							r.e+=v.e;
 							r.c+=v.c;
 							r.ag+=v.ag;
 							r.aa+=v.aa;
@@ -248,7 +250,9 @@ getActionStats: function(t, p , cb) {
 			actions.mapReduce(
 				function() {
 					emit(this._s_name, {c:1, tt: this._i_tt,
-						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+						ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa: (this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)
+					});
 				},
 				function (k,v) {
 					var r=null;
@@ -300,7 +304,8 @@ getAjaxStats: function(t, p, cb) {
 			ajax.mapReduce(
 				function() {
 					emit(this._s_name, {c:1, tt: this._i_tt, e:1.0*(this._i_code != 200 ? 1:0 ),
-						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+						ag:(this._i_code != 200)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa:(this._i_code != 200)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
 				},
 				function (k,v) {
 					var r=null;
@@ -352,7 +357,8 @@ getPageStats: function(t, p, cb) {
 			pages.mapReduce(
 				function() {
 					emit(this._s_route, {c:1, tt: this._i_tt, e:1.0*(this._i_err?1:0),
-						ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+						ag:(this._i_err)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa:(this._i_err)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
 				},
 				function (k,v) {
 					var r=null;
@@ -378,7 +384,7 @@ getPageStats: function(t, p, cb) {
 					_.each(data, function (metric) {
 						var key = metric.value;
 						key.apdex = (key.ag+key.aa/2)/key.c;
-						delete key.ag; delete key.aa;
+						//delete key.ag; delete key.aa;
 					});
 					cb(null, data);
 				})
@@ -529,7 +535,9 @@ getAjaxTimings:function(t, p, cb) {
 			ajax.mapReduce(
 				function() {
 					emit(parseInt(this._dt.valueOf()/(Q*60000)), {c:1, r: 1.0/Q, tt: this._i_tt, pt: this._i_pt, code: this._i_code,
-						e:1.0*(this._i_code != 200 ? 1:0 )/Q, ag:(this._i_tt <= AG) ? 1 : 0, aa: (this._i_tt > AG && this._i_tt <= AA) ? 1 : 0});
+						e:1.0*(this._i_code != 200 ? 1:0 )/Q,
+						ag:(this._i_code != 200)?0:((this._i_tt <= AG) ? 1 : 0),
+						aa:(this._i_code != 200)?0:((this._i_tt > AG && this._i_tt <= AA) ? 1 : 0)});
 				},
 				function (k,v) {
 					var r=null;
@@ -1100,7 +1108,7 @@ getActionSegmentTimings:function (t, p, cb) {
 		as.mapReduce(function () {
 				var dt = parseInt(this._dt.valueOf()/(Q*60000));
 				this.data.forEach(function(k) {
-					if (!NAME || k._s_name == NAME) {
+					if (CAT==k._s_cat && (!NAME || k._s_name == NAME)) {
 						emit(dt,{c: k._i_cnt, r: k._i_cnt/Q, tt: k._i_tt});
 					}
 				});
@@ -1122,7 +1130,7 @@ getActionSegmentTimings:function (t, p, cb) {
 			{
 				query: query,
 				out: {inline:1},
-				scope: {NAME: name, Q: p.quant || 1}
+				scope: {NAME: name, Q: p.quant || 1, CAT: query['data._s_cat']}
 			}, safe.sure(cb, function (data) {
 				_.each(data, function (metric) {
 					var key = metric.value;

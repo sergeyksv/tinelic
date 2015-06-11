@@ -63,23 +63,20 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 			api("assets.getProjects", token, {_t_age:"30d"}, safe.sure(cb, function (projects) {
 				safe.forEach(projects, function (projectN, cb) {
 					projectN = prefixify.data(projectN);
-					var params = {quant:1,filter:_.extend({_idp:projectN._id},params1.filter)}
+					var params = {quant:1,filter:_.extend({_idp:projectN._id},params1.filter)};
 					safe.parallel({
 						errAck: function(cb) {
-							var dt = params.filter._dt.$gt
+							var dt = params.filter._dt.$gt;
 							var dta = projectN._dtActionsErrAck || dt;
 							var dtp = projectN._dtPagesErrAck || dt;
 							api("stats.getErrorTotals", token, {_idp: projectN._id, _dt:{
 								_dtActionsErrAck: dta,
 								_dtPagesErrAck: dtp,
 								$lte: params.filter._dt.$lte
-							}}, cb)
+							}}, cb);
 						},
 						views: function (cb) {
 							api("stats.getPageTimings",token, params, cb);
-						},
-						errors: function (cb) {
-							api("stats.getPageErrorStats",token, params, cb);
 						},
 						ajax: function (cb) {
 							api("stats.getAjaxTimings",token,params, cb);
@@ -87,20 +84,17 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 						actions: function (cb) {
 							api("stats.getActionTimings", token,  _.merge({filter:{_s_cat:"WebTransaction"}},params), cb);
 						},
-						serverErrors: function (cb) {
-							api("stats.getActionErrorStats",token, params, cb);
-						},
 						metrics: function (cb) {
-							api("stats.getMetricTotals", token, params, cb)
+							api("stats.getMetricTotals", token, params, cb);
 						}
 					}, safe.sure(cb, function(result) {
 						projectN.result=result;
-						cb(null, projectN)
-					}))
+						cb(null, projectN);
+					}));
 				}, safe.sure(cb, function() {
-					cb(null, projects)
-				}))
-			}))
+					cb(null, projects);
+				}));
+			}));
 		}
-	}
-})
+	};
+});

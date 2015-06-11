@@ -44,6 +44,7 @@ define(['views/layout/layout','module','safe',"dust",
 			return chunk.write(output);
 		}
 		if (params.type == "erate") {
+			params.val *=100;
 			output = params.val.toFixed(params.val<10?2:0).toString()+"&nbsp;%";
 
 			return chunk.write(output);

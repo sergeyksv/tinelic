@@ -3,7 +3,7 @@
 	<legend>
 		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 		<span class="text-info h5"> {query} </span>
-		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {stat.epm} epm /</span>
+		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {@formatnumber val=stat.e type="erate"/} /</span>
 		<div class="pull-right dropdown">
 				<span class="btn btn-xs btn-info" data-toggle="dropdown">
 				{@select key="{st}"}

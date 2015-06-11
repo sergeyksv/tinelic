@@ -8,7 +8,7 @@
 		<div class="btn-group pull-right">
 			{?obac.project_edit[project._id]}
 			<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
-			{/obac.project_edit[project._id]}			
+			{/obac.project_edit[project._id]}
 			<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
 		</div>
 	</legend>
@@ -51,7 +51,8 @@
 			{#browser}
 				<div class="col-md-6">
 						<div class="panel panel-success" style="padding-bottom:20px">
-							<div class="panel-heading"><a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a><span class="text-success h6" style="margin-left: 5px;">&nbsp{total} total / {page} page / {session} sess</span></div>
+							<div class="panel-heading"><a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a>
+							<span class="text-success h6" style="margin-left: 5px;">&nbsp{total} total / {page} page / {session} sess</span></div>
 							<div class="panel-body">
 							<ul class="list-unstyled h6">
 							{#err}
@@ -88,7 +89,8 @@
 			{#topp}
 				<div class="col-md-6">
 					<div class="panel panel-success">
-						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rpm type="rpm"/} / {total.errorpage} epm / {@formatnumber val=total.etupage type="tm"/}</span></div>
+						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a>
+						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rpm type="rpm"/} / {@formatnumber val=total.errorpage type="erate"/} / {@formatnumber val=total.etupage type="tm"/}</span></div>
 						<div class="panel-body" >
 							{#p}
 								<div class="progress" style="margin: 2px 0 0 0;">
@@ -104,7 +106,8 @@
 			{#transactions}
 				<div class="col-md-6">
 					<div class="panel panel-danger">
-						<div class="panel-heading"><a class="text-danger" href="{_t_prefix}/project/{project.slug}/application/rpm">Application</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rsm type="rpm"/} / {@formatnumber val=total.ttserver type="tm"/}</span></div>
+						<div class="panel-heading"><a class="text-danger" href="{_t_prefix}/project/{project.slug}/application/rpm">Application</a>
+						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rsm type="rpm"/} / {@formatnumber val=total.erroraction type="erate"/} / {@formatnumber val=total.ttserver type="tm"/}</span></div>
 						<div class="panel-body">
 							{#top}
 								<div class="progress" style="margin: 2px 0 0 0;">
@@ -120,7 +123,8 @@
 			{#topa}
 				<div class="col-md-6">
 					<div class="panel panel-info">
-						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a><span class="h6" style="margin-left: 5px;">{@formatnumber val=total.ram type="rpm"/} / {total.errorajax} epm / {@formatnumber val=total.etuajax type="tm"/}</span></div>
+						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a>
+						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.ram type="rpm"/} / {@formatnumber val=total.errorajax type="erate"/} / {@formatnumber val=total.etuajax type="tm"/}</span></div>
 						<div class="panel-body">
 							{#a}
 								<div class="progress" style="margin: 2px 0 0 0;">

@@ -27,9 +27,6 @@ define(['tinybone/base','safe','tinybone/backadapter','lodash','highcharts','dus
 		postRender:function () {
 			view.prototype.postRender.call(this);
 			var self = this;
-			//var ajax = this.data.rpm;
-			var filter = this.data.fr
-			var quant = this.data.fr.quant;
 			var r = this.data.graphs;
 			if (this.data.query) {
 				var trbreak = self.$('#trbreak');

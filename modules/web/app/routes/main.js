@@ -93,6 +93,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
+
 			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
@@ -123,25 +124,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						}
 					}, safe.sure(cb, function(r){
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
 						var stat = {};
-						stat.apdex=0.0; stat.c=0.0; stat.tt=0.0; stat.e=0.0;
-						_.forEach(r.rpm, function(r) {
-							stat.apdex+=r.value.apdex;
-							stat.c+=r.value.c;
-							stat.tt+=r.value.tt;
-							stat.e+=r.value.e;
+						stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
+						_.forEach(r.graphs, function(r) {
+							r = r.value;
+							stat.apdex+=r.apdex;
+							stat.r+=r.r;
+							stat.tta+=r.tta;
+							stat.e+=r.e;
 						})
-						stat.apdex=stat.apdex/r.rpm.length;
-						stat.r=stat.c/r.rpm.length;
-						stat.tta=stat.tt/stat.c/r.rpm.length;
-						stat.epm=stat.e/stat.c/r.rpm.length;
+						var c = r.graphs.length;
+						stat.apdex=stat.apdex/c;
+						stat.r=stat.r/c;
+						stat.tta=stat.tta/c/1000;
+						stat.epm=stat.e/c;
+						stat.e=stat.epm/stat.r;
 
 						// sorting "mtc", "sar" etc
 						r.rpm =_.sortBy(r.rpm, function(v){
@@ -181,7 +178,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						_.each(r.breakdown, function (r) {
 							r.value.tta = r.value.tt/r.value.c;
 						})
-						 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, fr: filter, title:"Ajax", stat:stat, query:req.query.selected}})
+						 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
 					)
 				}
@@ -229,15 +226,17 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						}
 					}, safe.sure(cb, function(r){
 						var stat = {};
-						stat.apdex=0.0; stat.rpm=0.0; stat.tta=0.0;
-						_.forEach(r.data, function(r) {
-							stat.apdex+=r.value.apdex;
-							stat.rpm+=r.value.c;
-							stat.tta+=r.value.tt;
+						stat.apdex=0; stat.rpm=0; stat.tta=0;
+						_.forEach(r.graphs, function(r) {
+							r = r.value;
+							stat.apdex+=r.apdex;
+							stat.rpm+=r.r;
+							stat.tta+=r.tta;
 						})
-						stat.apdex=stat.apdex/r.data.length;
-						stat.rpm=stat.rpm/r.data.length;
-						stat.tta=stat.tta/stat.rpm/r.data.length/1000;
+						var c = r.graphs.length;
+						stat.apdex=stat.apdex/c;
+						stat.tta=stat.tta/c/1000;
+						stat.rpm=stat.rpm/c;
 
 						// sorting "mtc", "sar" etc
 						r.data =_.sortBy(r.data, function(v){
@@ -322,25 +321,21 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								}}, cb)
 						}
 					}, safe.sure(cb, function(r){
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						}
 						var stat = {};
-						stat.apdex=0; stat.c=0; stat.tt=0; stat.e=0;
-						_.forEach(r.data, function(r) {
-							stat.apdex+=r.value.apdex;
-							stat.c+=r.value.c;
-							stat.tt+=r.value.tt;
-							stat.e+=r.value.e;
+						stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
+						_.forEach(r.graphs, function(r) {
+							r = r.value;
+							stat.apdex+=r.apdex;
+							stat.r+=r.r;
+							stat.tta+=r.tta;
+							stat.e+=r.e;
 						})
-						stat.apdex=stat.apdex/r.data.length;
-						stat.tta=stat.tt/stat.c/r.data.length/1000;
-						stat.r=stat.c/r.data.length;
-						stat.epm=stat.e/r.data.length;
+						var c = r.graphs.length;
+						stat.apdex=stat.apdex/c;
+						stat.tta=stat.tta/c/1000;
+						stat.r=stat.r/c;
+						stat.epm=stat.e/c;
+						stat.erate=stat.epm/stat.r;
 
 						// sorting "mtc", "sar" etc
 						r.data =_.sortBy(r.data, function(v){
@@ -381,7 +376,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						_.each(r.breakdown, function (r) {
 							r.value.tta = r.value.tt/r.value.c;
 						})
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
+						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))
@@ -508,6 +503,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
+									'data._s_cat':'Datastore',
 									'data._s_name': req.query.selected
 								}}, cb)
 						}
@@ -520,13 +516,15 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							}
 						}
 						var stat = {};
-						stat.tt=0; stat.c=0;
-						_.forEach(r.data, function(r) {
-							stat.c+=r.value.c;
-							stat.tt+=r.value.tt;
+						stat.tta=0; stat.r=0;
+						_.forEach(r.graphs, function(r) {
+							r = r.value;
+							stat.r+=r.r;
+							stat.tta+=r.tta;
 						})
-						stat.avg=stat.tt/stat.c/r.data.length;
-						stat.r=stat.c/r.data.length;
+						var c = r.graphs.length;
+						stat.tta=stat.tta/c/1000;
+						stat.r=stat.r/c;
 
 						// sorting "req" , "mtc" etc
 						 var sum = 0;
@@ -546,11 +544,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 								r.value.bar = r.value.tt/procent;
 							if (st == 'sar')
 								r.value.bar = r.value.tt/r.value.c/procent;
+							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+							r.value.tta = r.value.tt/r.value.c/1000;
 						 });
 						 r.data = _.sortBy(r.data, function(r) {
-							r.value.avg = r.value.tt/r.value.c/1000;
-							r.value.tta = r.value.avg;
-							r.value.r = r.value.c;
 							if (st == 'req')
 								return r.value.c*-1;
 							if (st == 'mtc')

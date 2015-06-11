@@ -5,9 +5,9 @@
 			<div class="progress" data-idx='{$idx}' style="border-radius:20px">
 				<span style="text-align:right;position:absolute; right:20px">
 					{@select key="{st}"}
-						{@eq value="req"}{@formatnumber val=r type="reqs"/} <span class="text-info">req</span>{/eq}
-						{@eq value="mtc"}{@formatnumber val=r type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
-						{@eq value="sar"}{@formatnumber val=avg type="tm"/}{/eq}
+						{@eq value="req"}{@formatnumber val=r type="rpm"/}{/eq}
+						{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
+						{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
 					{/select}
 				</span>
 				<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">

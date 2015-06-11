@@ -43,48 +43,53 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				valtt = vale = valr = valapd = 0;
 				period = r.data.views.length;
 				_.forEach(r.data.views, function (v) {
-					valr+=v.value?v.value.r:0;
-					valtt+=v.value?(v.value.tta/1000):0;
-					vale+=v.value?v.value.e:0;
-					valapd+=v.value?v.value.apdex:0;
+					v = v.value;
+					valr+=v.r;
+					valtt+=v.tta;
+					vale+=v.e;
+					valapd+=v.apdex;
 				});
 
-				valtt=(valtt/period);
-				vale=(vale/period).toFixed(2);
-				valr=(valr/period);
-				valapd=(valapd/period);
+				valtt=valtt/period/1000;
+				valr=valr/period;
+				vale=vale/period/valr;
+				valapd=valapd/period;
 				views.total = {rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd};
 
 			}
 			if (r.data.actions.length) {
-				valtt = vale = valr = valapd = 0;
+				vale = valtt = vale = valr = valapd = 0;
 				period = r.data.actions.length;
 				_.forEach(r.data.actions, function (v) {
-					valr+=v.value?v.value.r:0;
-					valtt+=v.value?(v.value.tta/1000):0;
-					valapd+=v.value?v.value.apdex:0;
+					v = v.value;
+					vale+=v.e;
+					valr+=v.r;
+					valtt+=v.tta;
+					valapd+=v.apdex;
 				});
 
-				valtt=(valtt/period);
-				valr=(valr/period);
-				valapd=(valapd/period);
-				_.extend(views.total,{rsm: valr, ttserver: valtt, apdserver: valapd});
+				valtt=valtt/period/1000;
+				valr=valr/period;
+				vale=vale/period/valr;
+				valapd=valapd/period;
+				_.extend(views.total,{rsm: valr, ttserver: valtt, apdserver: valapd, erroraction: vale,});
 
 			}
 			if (r.data.ajax.length) {
 				valtt = vale = valr = valapd = 0;
 				period = r.data.ajax.length;
 				_.forEach(r.data.ajax, function (v) {
-					valr+=v.value?v.value.r:0;
-					valtt+=v.value?(v.value.tta/1000):0;
-					vale+=v.value?v.value.e:0;
-					valapd+=v.value?v.value.apdex:0;
+					v = v.value;
+					valr+=v.r;
+					valtt+=v.tta;
+					vale+=v.e;
+					valapd+=v.apdex;
 				});
 
-				valtt=(valtt/period);
-				vale=(vale/period).toFixed(2);
-				valr=(valr/period);
-				valapd=(valapd/period);
+				valtt=valtt/period/1000;
+				valr=valr/period;
+				vale=vale/period/valr;
+				valapd=valapd/period;
 				_.extend(views.total,{ram: valr, errorajax: vale, etuajax: valtt, apdajax: valapd});
 
 			}
