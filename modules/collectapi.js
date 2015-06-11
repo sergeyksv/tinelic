@@ -170,8 +170,7 @@ module.exports.init = function (ctx, cb) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1, ehash:1, _dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
 			},
@@ -209,8 +208,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{ehash:1,_dt:1}, cb); }
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1, ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
 			},
@@ -601,7 +599,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 								md5sum.update(te.exception._s_type);
 								md5sum.update(te._s_message + te.stacktrace.frames.length);
 								te.ehash = md5sum.digest('hex');
-								action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+								action_errors.find({_idp:te._idp,ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 									if (edtl.length)
 										te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 									else
@@ -898,7 +896,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 						md5sum.update(te.exception._s_type);
 						md5sum.update(te._s_message + te.stacktrace.frames.length);
 						te.ehash = md5sum.digest('hex');
-						action_errors.find({ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+						action_errors.find({_idp:te._idp, ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 							if (edtl.length)
 								te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 							else
@@ -1003,7 +1001,7 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				md5sum.update(data._s_message + data.stacktrace.frames.length);
 				data.ehash = md5sum.digest('hex');
 				//find().sort().limit(1).toArray
-				events.find({ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+				events.find({_idp:data._idp, ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
 					if (edtl.length)
 						data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 					else
