@@ -155,8 +155,8 @@ getMetricTotals: function(t, p, cb) {
 					if (!r)
 						r = v;
 					else {
-						r.mem += r.mem;
-						r.c += r.c;
+						r.mem += v.mem;
+						r.c += v.c;
 					}
 				});
 				return r;

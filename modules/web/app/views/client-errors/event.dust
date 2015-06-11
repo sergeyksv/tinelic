@@ -14,8 +14,8 @@
 <br>
 {/event}
 {#event}
-<h1>{_s_message}</h1>
---- {_id} - {_s_culprit}
+<h3>{_s_message}</h3>
+{_s_culprit}
 <br><br>
 <ul>
 {#stacktrace.frames}

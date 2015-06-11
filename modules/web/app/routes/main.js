@@ -432,7 +432,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							api("stats.getPageErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getPageErrorTimings", res.locals.token,params2, cb)
+							api("stats.getPageErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
 						},
 						obac: function (cb) {
 							api("obac.getPermissions", res.locals.token, {rules:[{action:"project_edit",_id:project._id}]}, cb);
@@ -613,7 +613,7 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 							api("stats.getActionErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getActionErrorTimings", res.locals.token,params2, cb)
+							api("stats.getActionErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
 						},
 						obac: function (cb) {
 							api("obac.getPermissions", res.locals.token, {rules:[{action:"project_edit",_id:project._id}]}, cb);

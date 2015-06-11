@@ -14,8 +14,8 @@
 {/event}
 <br>
 {#event}
-<h1>{exception._s_value}</h1>
---- {_id} - {_s_culprit}
+<h3>{exception._s_value}</h3>
+{_s_culprit}
 <br><br>
 <ul>
 {#stacktrace.frames}
