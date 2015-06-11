@@ -1,5 +1,6 @@
 var _ = require("lodash");
 var safe = require("safe");
+var crypto = require("crypto");
 var CustomError = require('tinyback').CustomError;
 
 module.exports.deps = ['mongo','obac'];
@@ -37,7 +38,7 @@ module.exports.init = function (ctx, cb) {
 			"users":function (cb) {
 				db.collection("users",safe.sure(cb, function (col) {
 					safe.parallel([
-						function (cb) { ctx.api.mongo.ensureIndex(col,{"token.token":1}, cb); }
+						function (cb) { ctx.api.mongo.ensureIndex(col,{"tokens.token":1}, cb); }
 					], safe.sure(cb, col));
 				}));
 			},
@@ -119,7 +120,7 @@ getGrantedUserIds:function (t, p, cb) {
 * @return {User} User
 */
 getUser: function (t,p,cb) {
-	usr.users.findOne(prefixify(p.filter), safe.sure(cb, function (user) {
+	usr.users.findOne(prefixify(p.filter),{pass:0,tokens:0}, safe.sure(cb, function (user) {
 		if (!user)
 			return cb(null,null);
 		ctx.api.obac.getPermission(t,{_id:user._id, action:"user_view",throw:1}, safe.sure(cb, user));
@@ -138,7 +139,7 @@ getUsers: function (t,p,cb) {
 			idsmap[id]=1;
 		});
 		var res = [];
-		usr.users.find(queryfix(p.filter)).toArray(safe.sure(cb, function (users) {
+		usr.users.find(queryfix(p.filter),{pass:0,tokens:0}).toArray(safe.sure(cb, function (users) {
 			_.each(users, function (p) {
 				if (idsmap[p._id])
 					res.push(p);
@@ -175,6 +176,9 @@ getCurrentUser: function (t,cb) {
 */
 saveUser: function (t,p,cb) {
 	p = prefixify(p);
+	if (p.pass) {
+		p.pass = crypto.createHash('md5').update(p.pass).digest('hex');
+	}
 	ctx.api.obac.getPermission(t,{action:p._id?'user_edit':'user_new',_id:p._id,throw:1}, safe.sure(cb, function () {
 		ctx.api.validate.check("user", p, safe.sure(cb, function (u) {
 			if (p._id)
@@ -203,16 +207,20 @@ removeUser: function(t,p,cb) {
 /**
 * @param {String} token Auth token
 * @param {String} login Login name
-* @param {String} pass Passworde
+* @param {String} pass Password
 * @return {String} New auth token
 */
-login:function(t,u,cb) {
+login:function(t,p,cb) {
 	var dt = new Date();
 	var range = 7 * 24 * 60 * 60 * 1000;
 	var dtexp = new Date(Date.parse(Date()) + range);
 	var token = Math.random().toString(36).slice(-14);
 
-	usr.users.findAndModify( {login: u.login, pass: u.pass},{},
+	if (p.pass) {
+		p.pass = crypto.createHash('md5').update(p.pass).digest('hex');
+	}
+
+	usr.users.findAndModify( {login: p.login, pass: p.pass},{},
 		{$push: {tokens:{token: token,_dt: dt,_dtexp: dtexp}}},
 		{new: true, fields: {tokens: 1}}, safe.sure(cb,
 		function(t) {

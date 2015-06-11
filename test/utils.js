@@ -61,7 +61,7 @@ module.exports.getApp = function (opts, cb) {
 		else
 			cb();
 	}, safe.sure(cb,function () {
-		var app = childProcess.fork(__dirname+"/../app.js",['--config',argv.testenv!='test'?'./test/config.js':'./test/config-test.js'],{silent:true});
+		var app = childProcess.fork(__dirname+"/../app.js",['--config',argv.testenv!='test'?'./test/config.js':'./test/config-test.js'],{silent:false});
 		app.on('message',function (msg) {
 			if (msg.c=='startapp_repl')
 				cb(msg.data);

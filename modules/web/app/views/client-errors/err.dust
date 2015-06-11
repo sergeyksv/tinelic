@@ -4,7 +4,9 @@
 	<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 	<span class="text-info h5" data-id="{project._id}"> {info.count} total / {info.views} page / {info.sessions} session</span>
 	<div class="btn-group pull-right" role="group">
+		{?obac.project_edit[project._id]}
 		<div class="btn btn-xs btn-danger do-ack" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
+		{/obac.project_edit[project._id]}
 		<div class="btn-group" role="group">
 			<div class="btn btn-xs btn-info dropdown-toggle" role="button" data-toggle="dropdown">
 				{@select key="{st}"}

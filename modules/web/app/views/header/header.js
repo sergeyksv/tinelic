@@ -29,20 +29,19 @@ define(['tinybone/base',"tinybone/backadapter",'safe','dustc!views/header/header
 			},
 			'click #logout': function(e) {
 				var self = this;
-				api("users.logout", $.cookie('token'), {token: $.cookie('token')},  function(err, data) {
+				api("users.logout", $.cookie('token'), {},  function(err, data) {
 					if (err) {
 						alert('Error');
 					}
 					else {
-						$.removeCookie("token");
+						$.removeCookie("token",{path: '/'});
 						api.invalidate();
 						self.app.router.reload();
 					}
 				});
 			}
 		}
-
-	})
+	});
 	View.id = "views/header/header";
 	return View;
-})
+});

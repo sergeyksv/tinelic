@@ -433,6 +433,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						},
 						rpm: function (cb){
 							api("stats.getPageErrorTimings", res.locals.token,params2, cb)
+						},
+						obac: function (cb) {
+							api("obac.getPermissions", res.locals.token, {rules:[{action:"project_edit",_id:project._id}]}, cb);
 						}
 					})
 					safe.parallel( plan, safe.sure(cb, function(r){
@@ -611,6 +614,9 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 						},
 						rpm: function (cb){
 							api("stats.getActionErrorTimings", res.locals.token,params2, cb)
+						},
+						obac: function (cb) {
+							api("obac.getPermissions", res.locals.token, {rules:[{action:"project_edit",_id:project._id}]}, cb);
 						}
 					})
 					safe.parallel( plan, safe.sure(cb, function(r){
