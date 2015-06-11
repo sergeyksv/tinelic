@@ -406,10 +406,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				}, safe.sure(cb, function (error) {
 					var plan = error?{
 						prev: function (cb) {
-							api("stats.getPageError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project.id,ehash:error.ehash},sort:{_id:-1}}, cb);
+							api("stats.getPageError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:-1}}, cb);
 						},
 						next: function (cb) {
-							api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project.id,ehash:error.ehash},sort:{_id:1}}, cb);
+							api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
 						},
 					}:{};
 
@@ -587,10 +587,10 @@ define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"],
 				}, safe.sure(cb, function (error) {
 					var plan = error?{
 						prev: function (cb) {
-							api("stats.getActionError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project.id,ehash:error.ehash},sort:{_id:-1}}, cb);
+							api("stats.getActionError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:-1}}, cb);
 						},
 						next: function (cb) {
-							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project.id,ehash:error.ehash},sort:{_id:1}}, cb);
+							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
 						},
 					}:{};
 
