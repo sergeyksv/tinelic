@@ -81,7 +81,7 @@
         };
     }
 
-    window.addEventListener("beforeunload", function(e) {
+    var beforeUnload = function(e) {
         if (window.performance && performance.timing && performance.timing.navigationStart) {
             return;
         }
@@ -89,7 +89,12 @@
         var ttl = new Date(start + 60000);
 
         document.cookie = '_t_rum=' + (new Date().valueOf()) + ";expires=" + ttl + ";path=/";
-    });
+    };
+
+    if (window.addEventListener)
+        window.addEventListener("beforeunload",beforeUnload);
+    else
+        window.attachEvent("beforeunload",beforeUnload);
 
     function sendPixel(m, u) {
         var i = new Image();
