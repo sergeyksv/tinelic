@@ -1028,34 +1028,28 @@ getActionSegmentStats: function(t,p, cb) {
 getPageBreakdown: function(t,p,cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
-		pages.find(query,{_id: 1}).toArray(safe.sure(cb, function(data){
-			var idpv = [];
-			_.forEach(data, function(r){
-				idpv.push(r._id);
-			});
-			ajax.mapReduce(
-				function() {
-					emit(this._s_name, {c:1, tt: this._i_tt});
-				},
-				function (k,v) {
-					var r=null;
-					v.forEach(function (v) {
-						if (!r)
-							r = v;
-						else {
-							r.tt+=v.tt;
-							r.c+=v.c;
-						}
-					});
-					return r;
-				},
-				{
-					query: {_idpv:{$in: idpv}},
-					out: {inline:1},
-					scope: {}
-				}, cb
-			);
-		}));
+		ajax.mapReduce(
+			function() {
+				emit(this._s_name, {c:1, tt: this._i_tt});
+			},
+			function (k,v) {
+				var r=null;
+				v.forEach(function (v) {
+					if (!r)
+						r = v;
+					else {
+						r.tt+=v.tt;
+						r.c+=v.c;
+					}
+				});
+				return r;
+			},
+			{
+				query: query,
+				out: {inline:1},
+				scope: {}
+			}, cb
+		);
 	}));
 },
 

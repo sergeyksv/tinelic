@@ -178,7 +178,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("pages",safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1,_dtc:1}, cb); },
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); }
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1,_s_route:1}, cb);}
 					], safe.sure(cb, col));
 				}));
 			},
@@ -186,7 +186,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("page_reqs", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{chash:1}, cb);},
-						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb);}
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1,_s_route:1}, cb);}
 					], safe.sure(cb, col));
 				}));
 			},
