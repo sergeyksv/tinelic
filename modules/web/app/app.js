@@ -232,7 +232,7 @@ define(['views/layout/layout','module','safe',"dust",
 			if (err) {
 				$('body').html("<div class='hard-client-error'><h1>Oops, looks like somethething went wrong.</h1><br>"+
 					"We've get notified and looking on it. <b>Meanwhile try to refresh page or go back</b>.<br><br>"+
-					"<pre>"+err.stack+"</pre></div>");
+					"<pre>"+err+"\n"+err.stack+"</pre></div>");
 			}
 		},
 		clientRender:function (res, route, cb) {

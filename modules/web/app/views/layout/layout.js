@@ -6,7 +6,7 @@ define(['tinybone/base','dustc!views/layout/layout.dust','dustc!views/base_page.
 			"click a":function (e) {
 				e.preventDefault();
 				var href = $(e.currentTarget).attr("href");
-				if (href && href.length)
+				if (href && href.length && href != "#")
 					this.app.router.navigateTo($(e.currentTarget).attr("href"), this.app.errHandler);
 			}
 		}

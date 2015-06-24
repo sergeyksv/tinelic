@@ -238,7 +238,6 @@ module.exports.block = function(){
 							b.findElement(By.css("#navbar .doGoHome")).click();
 
 							helpers.waitPageReload.call(self,pid).then(function(pid) {
-								b.findElement(By.css("div strong")).click();
 								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
 								b.findElement(By.linkText("NewProject")).click();
 								helpers.waitPageReload.call(self,pid).then(function() {
