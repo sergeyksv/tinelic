@@ -4,7 +4,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
 		id:"views/teams/teamedit",
         postRender:function () {
             view.prototype.postRender.call(this);
-            this.$('.modal').modal({});
+            this.$el.modal({});
         },
         events:{
             'click .do-cancel, click .do-close': function(e) {
@@ -16,7 +16,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
                 var name = self.$('#name').val();
                 var id = self.get('_id');
                 var warn = self.$('#warn');
-                var modal = self.$('#settings');
+                var modal = self.$el;
 
                 if (name.length < 3) {
                     warn.html('Name is to short');
@@ -39,7 +39,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
             }
         },
         remove: function () {
-			self.$('.modal').modal('hide');
+			this.$el.modal('hide');
 			return view.prototype.remove.call(this);
 		},
 	});

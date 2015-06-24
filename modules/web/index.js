@@ -79,6 +79,10 @@ module.exports.init = function (ctx, cb) {
 		// register render function
 		ctx.router.get('*',function (req,res,next) {
 			res.renderX = function (route) {
+				var req = this.req;
+				cb = cb || function (err) {
+					req.next(err);
+				};
 				var view = app.getView();
 				view.data = route.data || {};
 				view.locals = res.locals;
@@ -96,12 +100,12 @@ module.exports.init = function (ctx, cb) {
 					populateTplCtx.call(this,ctx,cb);
 				};
 
-				view.render(safe.sure(next, function (text) {
+				view.render(safe.sure(cb, function (text) {
 					var wv = view.getWire();
 					wv.prefix = app.prefix;
 
 					// make wire available for download for 30s
-					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(next, function () {
+					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(cb, function () {
 						res.send(text);
 					}));
 				}));

@@ -1,1 +1,1 @@
-<div id="graph" style="width:100%; height:110px;"></div>
+<div id="{_t_view.cid}" style="width:100%; height:110px;"></div>

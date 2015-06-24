@@ -75,11 +75,11 @@ define(['views/layout/layout','module','safe',"dust",
 			if (err) console.log(err.stack);
 		},
 		confirm: function (msg,cb) {
-			$.blockUI({message: '<div class="container-fluid" style="cursor: default" ">\
-				<h4>'+msg+'</h4>\
-				<div class="btn btn-primary" id="yes">Yes</div>\
-				<div class="btn btn-default" type="button" id="no">No</div>\
-				</div> <br>',css:{top:'10%',left:'20%',width:'60%'}});
+			$.blockUI({message: '<div class="container-fluid" style="cursor: default" ">'+
+				'<h4>'+msg+'</h4>'+
+				'<div class="btn btn-primary" id="yes">Yes</div>'+
+				'<div class="btn btn-default" type="button" id="no">No</div>'+
+				'</div> <br>',css:{top:'10%',left:'20%',width:'60%'}});
 
 			$('#yes').click(function(){
 				$.unblockUI();
@@ -164,17 +164,22 @@ define(['views/layout/layout','module','safe',"dust",
 				});
 				router.use(function (err, req, res, cb) {
 					self.errHandler(err);
+					cb(err);
 				});
 				cb();
 			},cb);
 		},
-		init:function(wire, next) {
+		init:function(wire, cb) {
+			if (!cb)
+				cb = this.clientHardError;
+
 			$.blockUI.defaults.message = "<h4>Loading ...</h4>";
 			$.blockUI.defaults.overlayCSS = {
 				backgroundColor: '#FFF',
 				opacity:         0,
 				cursor:          'wait'
 			};
+
 			this.prefix = wire.prefix;
 			var self = this;
 			this.router = new tb.Router({
@@ -184,54 +189,83 @@ define(['views/layout/layout','module','safe',"dust",
 				$.blockUI();
 				self._pageLoad = {start:new Date(),route:route.route};
 			});
-			if (!next)
-				next = this.errHandler;
+
 			if (!this.mainView)
 				this.mainView = new Layout({app:this});
 			var mainView = this.mainView;
+
+			// inject some common midlewares
 			this.router.use(function (req, res, next) {
 				res.status = function () {};
-				res.redirect = function (path) {
-					self.router.navigateTo(path,{replace:true});
+				res.redirect = function (path,cb) {
+					var req = this.req;
+					cb = cb || function (err) {
+						req.next(err);
+					};
+					self.router.navigateTo(path,{replace:true},cb);
 				};
-				res.renderX = function (route) {
-					self.clientRender(this,route);
+				res.renderX = function (route, cb) {
+					var req = this.req;
+					cb = cb || function (err) {
+						req.next(err);
+					};
+					self.clientRender(this,route,cb);
 				};
 				next();
 			});
-			this.initRoutes(safe.sure(next, function () {
-				mainView.bindWire(wire, null, null, safe.sure(next, function () {
-					mainView.postRender();
+
+			// init routes
+			this.initRoutes(safe.sure(cb, function () {
+				// register last chance error handler
+				self.router.use(function (err,res,req,next) {
+					self.clientHardError(err);
+					cb(null);
+				});
+				// make app alive
+				mainView.bindWire(wire, null, null, safe.sure(cb, function () {
+
 					$('body').attr('data-id',(new Date()).valueOf());
 				}));
 			}));
 		},
-		clientRender:function (res, route, next) {
+		clientHardError:function (err) {
+			if (err) {
+				$('body').html("<div class='hard-client-error'><h1>Oops, looks like somethething went wrong.</h1><br>"+
+					"We've get notified and looking on it. <b>Meanwhile try to refresh page or go back</b>.<br><br>"+
+					"<pre>"+err.stack+"</pre></div>");
+			}
+		},
+		clientRender:function (res, route, cb) {
 			var self = this;
-			$.unblockUI();
+
+			// tickmark for data ready time
 			this._pageLoad.data = new Date();
 
-
+			// create new view, bind data to it and bind to main view
 			var mainView = this.mainView;
 			var view = new route.view({app:self});
 			view.data = route.data;
-			var locals = mainView.locals;
-			mainView.locals = res.locals;
+			view.locals = res.locals;
 			mainView.attachSubView(view);
-			view.render(function (err, text) {
-				if (err) {
-					// santize
-					mainView.detachSubView(view);
-					mainView.locals = locals;
-					return nexr(err);
-				}
-				var oldView = mainView.views[0];
-				document.title = route.data.title;
+
+			// render
+			view.render(safe.sure(cb, function (text) {
+				// render dom nodes and bind view
+				var oldView = mainView.views.length==1?mainView.views[0]:undefined;
 				var $dom = $(text);
-				$("#content").append($dom);
+				mainView.$el.append($dom);
 				view.bindDom($dom, oldView);
-				oldView.remove();
+				// remove all root views except new one and hard error (if any)
+				$(".hard-client-error").remove();
+				_.each(_.filter(mainView.views, function (v) { return v.cid!=view.cid; }), function (v) {
+					v.remove();
+				});
+				// view is actually ready, finalizing
+				document.title = route.data.title;
+				$.unblockUI();
 				$('body').attr('data-id',(new Date()).valueOf());
+
+				// do analytics
 				self._pageLoad.dom = new Date();
 				var m = {
 					_i_nt:self._pageLoad.data.valueOf()-self._pageLoad.start.valueOf(),
@@ -240,7 +274,9 @@ define(['views/layout/layout','module','safe',"dust",
 					r:self._pageLoad.route
 				};
 				window.Tinelic.pageLoad(m);
-			});
+
+				cb(null);
+			}));
 		}
 	});
 });

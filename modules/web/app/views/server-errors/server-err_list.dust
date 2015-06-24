@@ -1,3 +1,4 @@
+<div id="{_t_view.cid}">
 {#data}
 	{@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
 	<div class="progress" style="border-radius:20px">
@@ -32,4 +33,5 @@
 			{/eq}
 		{/paging}
 	</ul>
+</div>
 </div>

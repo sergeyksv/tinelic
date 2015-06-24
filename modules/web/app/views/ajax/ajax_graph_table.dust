@@ -1,4 +1,4 @@
-<div class="addtrbreak">
+<div id="{_t_view.cid}" class="addtrbreak">
 		{@view name="views/common/graph" data="graphs" locals-name="Apdex" locals-color="blue" locals-fillColor="lightblue" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}
 		{@view name="views/common/graph" data="graphs" locals-name="Rpm" locals-color="blue" locals-fillColor="lightblue" locals-plot-value="r" locals-filter-median="1"/}
 		{@view name="views/common/graph" data="graphs" locals-name="Time" locals-color="blue" locals-fillColor="lightblue" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}

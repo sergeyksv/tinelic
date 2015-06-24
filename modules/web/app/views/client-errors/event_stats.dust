@@ -1,3 +1,4 @@
+<div id="{_t_view.cid}">
 {#info}
 <div class="panel panel-default">
   <div class="panel-heading">Information</div>
@@ -25,3 +26,4 @@
   </div>
 </div>
 {/info}
+</div>

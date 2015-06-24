@@ -38,7 +38,7 @@
 })();
 </script>
 </head>
-<body id="content">
+<body id="{_t_view.cid}">
 {@view name=_t_main_view /}
 
 {#_t_env_production}

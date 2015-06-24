@@ -1,3 +1,4 @@
+<div id="{_t_view.cid}">
 <div>
 	{#data}
 		{#value}
@@ -34,4 +35,5 @@
 			{/eq}
 		{/paging}
 	</ul>
+</div>
 </div>

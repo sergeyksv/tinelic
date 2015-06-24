@@ -1,5 +1,4 @@
-<!-- Modal settings -->
-<div class="modal fade" data-backdrop="" id="settings" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+<div id="{_t_view.cid}" class="modal fade" data-backdrop="" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -24,8 +23,8 @@
                   <label for="name">Role</label>
                   <button id="role" type="button" name="{_id}" role="button" class="btn btn-info btn-xs" data-toggle="dropdown" data-target="dropdown">Role is not checked</button>
                      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                     <li role="presentation" data-role="admin" class="li-role"><a role="menuitem" tabindex="-1" href="#">admin</a></li>
-                     <li role="presentation" data-role="user" class="li-role"><a role="menuitem" tabindex="-1" href="#">user</a></li>
+                     <li role="presentation" data-role="admin" class="li-role"><a role="menuitem" tabindex="-1" data-target="#">admin</a></li>
+                     <li role="presentation" data-role="user" class="li-role"><a role="menuitem" tabindex="-1" data-target="#">user</a></li>
                   </ul>
               </div>
               <div class="form-group">

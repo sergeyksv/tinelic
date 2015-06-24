@@ -4,7 +4,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
 		id:"views/users/usersedit",
         postRender:function () {
             view.prototype.postRender.call(this);
-            this.$('.modal').modal({});
+            this.$el.modal({});
         },
         events:{
             'click .do-cancel, click .do-close': function(e) {
@@ -12,6 +12,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
                 this.remove();
             },
             'click .do-save': function(e) {
+				e.preventDefault();
                 var self = this;
                 var fname = self.$('#firstname')[0].value;
                 var lname = self.$('#lastname')[0].value;
@@ -21,22 +22,22 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
                 var rpass = self.$('#userrpass')[0].value;
                 var id = self.$('#_id')[0].value;
                 var warn = self.$('#warn');
-                var modal = self.$('#settings');
+                var modal = self.$el;
 
                 if (role == "Role is not checked") {
-                    warn.html('Role is not checked')
+                    warn.html('Role is not checked');
                 }
                 else {
                     if (pass.length < 3 || lname.length < 3 || fname.length < 3 || login.length < 3) {
-                        warn.html('Name or password or login is to short')
+                        warn.html('Name or password or login is to short');
                     }
                     else {
                         if ((pass != rpass) || (!pass)) {
-                            warn.html('Password does not match')
+                            warn.html('Password does not match');
                         }
                         else {
 							var data = {login:login, firstname:fname, lastname:lname, role:role, pass:pass};
-                            if (id.length != 0)
+                            if (id.length)
 								data._id = id;
                             api("users.saveUser", $.cookie('token'), data, function(err) {
 								if (err)
@@ -53,7 +54,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
             }
         },
         remove: function () {
-			self.$('.modal').modal('hide');
+			this.$el.modal('hide');
 			return view.prototype.remove.call(this);
 		},
 	});

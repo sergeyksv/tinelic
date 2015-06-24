@@ -1,4 +1,4 @@
-<form class="form-horizontal">
+<form id="{_t_view.cid}" class="form-horizontal">
 	<div id="error" class="alert alert-danger" role="alert" style="display:none;"></div>
 	<legend class="h3">Rule {idx}
 		<div class="pull-right btn-group">
@@ -21,4 +21,3 @@
         <div  data-id='{_id}' class="btn btn-sm btn-default addAction">AddAction</div>
     </div>
 </form>
-<hr>

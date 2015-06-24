@@ -1,3 +1,4 @@
+<div id="{_t_view.cid}">
 <legend class='h4'>Action <div type="submit" class="close deletePageRuleAction"><div aria-hidden="true">&times;</div></div></legend>
 <div class="form-group">
 	<label class="col-sm-2 control-label">Type:</label>
@@ -22,4 +23,5 @@
 	<div class="col-sm-9">
 		<input type="text" id="_s_replacer" class="form-control" value="{_s_replacer}" placeholder="String to repalce with">
 	</div>
+</div>
 </div>

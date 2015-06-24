@@ -45,7 +45,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 					fw.shift();
 			}
 
-			this.$('#graph').highcharts({
+			this.$el.highcharts({
 			  chart: {
 				  type: 'spline',
 				  zoomType: 'x'

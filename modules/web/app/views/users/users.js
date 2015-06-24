@@ -9,8 +9,8 @@ define(['tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users
                 var role = self.$('.li-role');
                 role.on('click', function(e) {
                     ebtn.currentTarget.innerHTML = $(e.currentTarget).data('role');
-                    role.off()
-                })
+                    role.off();
+                });
             },
             'click .doEditUser':function(e) {
                 var self = this;
@@ -30,6 +30,7 @@ define(['tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users
                         self.app.router.reload();
                     });
                 }, this.app.errHandler);
+                return false;
             },
             'click #delete':function (e) {
                 var self = this;
@@ -44,8 +45,8 @@ define(['tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users
                 return false;
             }
         }
-    })
+    });
 
     View.id = "views/users/users";
     return View;
-})
+});

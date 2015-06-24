@@ -3,8 +3,8 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
     var View = view.extend({
         id:"views/teams/teams",
         events: {
-            //'click .doUpdate':"doUpdate",
             "click .doEditProjects":function(e){
+                e.preventDefault();
                 var self = this;
                 var $this = $(e.currentTarget);
                 var id = $this.data('id');
@@ -43,9 +43,10 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                         }));
                     });
                 },this.app.errHandler);
-
+                return false;
             },
             "click .doEditUsers":function(e){
+                e.preventDefault();
                 var self = this;
                 var $this = $(e.currentTarget);
                 var id = $this.data('id');
@@ -86,8 +87,10 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                         }));
                     });
                 },this.app.errHandler);
+                return false;
             },
             'click .doNewProject': function(e) {
+                e.preventDefault();
                 var self = this;
                 require(["views/modals/project"],function (Modal) {
                     var modal = new Modal({app:self.app});
@@ -102,8 +105,10 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                         self.app.router.reload();
                     });
                 }, this.app.errHandler);
+                return false;
             },
             'click .doEditTeam':function(e) {
+                e.preventDefault();
                 var self = this;
                 var $this = $(e.currentTarget);
                 var id = $this.data('id');
@@ -121,8 +126,10 @@ define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/team
                         self.app.router.reload();
                     });
                 }, this.app.errHandler);
+                return false;
             },
             'click #delete':function (e) {
+                e.preventDefault();
                 var self = this;
                 $this = $(e.currentTarget);
                 self.app.confirm('This will destroy team permanently. Are you sure?',function(){

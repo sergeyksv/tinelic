@@ -9,23 +9,20 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 					var bool = false;
 					_.each(r.users,function(u){
 						if (u.role == 'lead')
-							bool = true
-					})
-					return bool
-				})
+							bool = true;
+					});
+					return bool;
+				});
 
 				if (teams.length) {
-					var tags = self.$('.tags')
-					view.prototype.postRender.call(this);
-					self.$('.modal').modal({});
+					var tags = self.$('.tags');
+					self.$el.modal({});
 
-					var teamnames = []
+					var teamnames = [];
 					_.each(teams, function(team){
-						teamnames.push({name:team.name})
-						tags.append('\
-							<option data-teamid="'+team._id+'" selected="selected" value="'+team.name+'">'+team.name+'</option>\
-						')
-					})
+						teamnames.push({name:team.name});
+						tags.append('<option data-teamid="'+team._id+'" selected="selected" value="'+team.name+'">'+team.name+'</option>');
+					});
 					var tnames = new Bloodhound({
 						local: teamnames,
 						datumTokenizer: function(d) {
@@ -45,9 +42,9 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 					});
 				}
 				else
-					alert('Not have Team with Lead')
+					alert('Not have Team with Lead');
 
-			}))
+			}));
 		},
 		events:{
 			"click .do-close":function (e) {
@@ -63,26 +60,26 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 		},
 		doSave:function (e) {
 			var self = this;
-			var checkTeam = self.$('select').val()
+			var checkTeam = self.$('select').val();
 			if (checkTeam) {
 				e.preventDefault();
 				var project = {
 					name:this.$("#name").val()
-				}
+				};
 				var tags = _.reduce($('option[data-teamid]'),function(memo,i){
-					memo[$(i).val()] = $(i).data('teamid')
-					return memo
-				},{})
+					memo[$(i).val()] = $(i).data('teamid');
+					return memo;
+				},{});
 				var data = {_id:[],projects:[]};
 				_.each(checkTeam,function(k){
 					if (tags[k])
-						data._id.push(tags[k])
-				})
+						data._id.push(tags[k]);
+				});
 
 				if (data._id.length) {
 					safe.auto({
 						saveProject: function (cb) {
-							api("assets.saveProject", $.cookie('token'), {project: project}, cb)
+							api("assets.saveProject", $.cookie('token'), {project: project}, cb);
 						},
 						team: function (cb) {
 							api("assets.getTeam", $.cookie('token'), {filter:{_id:data._id[0]}}, cb);
@@ -95,15 +92,15 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 						api.invalidate();
 						self.remove();
 						self.trigger("saved");
-					}))
+					}));
 				}
 				else
-					self.$('#warn').html('Teams not found')
+					self.$('#warn').html('Teams not found');
 			}
 			else
-				self.$('#warn').html('Team is not checked')
+				self.$('#warn').html('Team is not checked');
 		}
-	})
+	});
 	View.id = "views/modals/project";
 	return View;
-})
+});
