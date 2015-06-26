@@ -1,4 +1,4 @@
-define(['tinybone/base','dustc!views/layout/layout.dust','dustc!views/base_page.dust','views/header/header'],function (tb) {
+define(['tinybone/base','dustc!views/layout/layout.dust','dustc!views/base_page.dust'],function (tb) {
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/layout/layout",

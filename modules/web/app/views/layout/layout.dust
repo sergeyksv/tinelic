@@ -73,7 +73,13 @@
 		config:{
 			"tinybone/backadapter":{
 				_t_son:'out'
-			}
+			}{?_t_env_production}{:else},
+			"tinybone/base":{
+				debug:true
+			},
+			"dustc":{
+				debug:true
+			}{/_t_env_production}
 		},
 		shim: {
 			'dust-helpers': {

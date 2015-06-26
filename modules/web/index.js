@@ -33,6 +33,9 @@ module.exports.init = function (ctx, cb) {
 			"tinybone/base":{
 				debug:cfg.env!="production"
 			},
+			"dustc":{
+				debug:cfg.env!="production"
+			},
 			"tinybone/backadapter":{
 				_t_son:"out",
 				debug:cfg.env!="production"
@@ -105,7 +108,7 @@ module.exports.init = function (ctx, cb) {
 					wv.prefix = app.prefix;
 
 					// make wire available for download for 30s
-					ctx.api.cache.set("web_wires",uniqueId,wv, safe.sure(cb, function () {
+					ctx.api.cache.set("web_wires",uniqueId,ctx.api.tson.encode(wv), safe.sure(cb, function () {
 						res.send(text);
 					}));
 				}));
