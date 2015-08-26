@@ -1,5 +1,5 @@
 # Tinelic
-Light weight application performance and error monitoring server for GetSentry (raven.js) and New Relic agents.
+Lightweight application performance and error monitoring server for GetSentry (raven.js) and New Relic agents.
 
 [![Build Status](https://travis-ci.org/sergeyksv/tinelic.svg?branch=master)](https://travis-ci.org/sergeyksv/tinelic)
 
@@ -7,25 +7,25 @@ Live system with demo account (log-in: demo, password: demo): http://tinelic.ski
 
 ## Intro
 We are developers. We see a lot of benefits from using of error reporting and app monitoring software. We tried to use
-many tools and no one satisfy us. We tried to improove some of them but at the end we build our own. Everybody do the same ;)
+many tools and nothing satisfied us. We tried to improve some of them but at the end we built our own. Everybody does the same ;)
 
 ## Concept
 Tinelic is Node.JS application which works as backend for application and error reporting agents and as GUI. In order
-to simplify things we didn't do any complex data processing and fully rely to MongoDB scalability. This gives us
+to simplify things we didn't do any complex data processing and fully rely to MongoDB scalability. It gives us
 flexibility and enough capacity for midle sized apps.
 
 For data collection Tinelic uses following agents:
 
-1. NewRelic APM agent (currently tested only Node.JS agent). Agent used as is and just report to Tinelic instead of
-original server. Application performcance and error reporting is supported.
-2. GetSentry (Raven.JS) agent for browser error reporting. Agent used as is and the same report to Tinelic.
+1. NewRelic APM agent (currently tested only Node.JS agent). Agent is used as is and just reports to Tinelic instead of
+original server. Application performance and error reporting is supported.
+2. GetSentry (Raven.JS) agent for browser error reporting. Agent is used as is and the same report to Tinelic.
 3. GetSentry (Raven.NodeJS) agent for server side error reporting. Useful when you need only error reporting.
 4. Tinelic code for end user browser side monitoring (Ajax & Page load)
 
 ## Launch
 
 1. Install mongodb
-Preferable (but nor requieed) version 3.0 and above
+Preferable (but nor required) version 3.0 and above
 
 2. Get the code
 Pull this repository code and submodules (git pull & git submodule init & git submodule update)
@@ -38,7 +38,7 @@ NodeJS > 0.12 or IO.JS
   node app
   ```
 5. Use the app
-You can login into system with default admin user (admin/tinelic). Tinelic monitor itself so you'll immedially see some data.
+You can login into system with default admin user (admin/tinelic). Tinelic monitors itself so you'll immediatelly see some data.
 
 6. (optional) Add ssl certs and host name
 
@@ -48,10 +48,10 @@ You can login into system with default admin user (admin/tinelic). Tinelic monit
 
 ## Agent configuration
 
-Tinelic integrated all agents to monitor itself. So you can check its code for more details. Here is some brief details:
+Tinelic integrates all agents to monitor itself. So you can check its code for more details. Here are some brief details:
 
 1. NewRelic
-Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. If your server has not https connection also add
+Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. If your server doesn't have https connection also add
 ```port:80``` and ```ssl:false``` properties. This will enable server side application performance and error reporting
 and client side real user behavior monitoring if it was already inegrated using ```newrelic.getBrowserTimingHeader()```
 
@@ -61,8 +61,8 @@ Init agent as follows:
   new raven.Client('http://blah:blah@some.server.com/collect/sentry/{project_id});
   ```
 3. GetSentry & Tinelic RUM (client side)
-Its possible to include and use only GetSentry error reporting or Tinelic RUM or both. Approperiate scripts should be
-refferences. In the example below we use combined version
+It's possible to include and use only GetSentry error reporting or Tinelic RUM or both. Approperiate scripts should be
+referenced. In the example below we use combined version
 ```
 <script src="//some.server.com/js/build/tinelic.js></script>
 <script>
