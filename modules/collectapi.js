@@ -140,7 +140,7 @@ module.exports.init = function (ctx, cb) {
 		shash: {type: "string", required: true, "maxLength": 64},
 		chash: {type: "string", required: true, "maxLength": 64},
 		_s_name: {type: "string", required: true, "maxLength": 1024},
-		_s_url: {type: "string", required: true, "maxLength": 4096},
+		_s_url: {type: "string", required: true, "maxLength": 8192},
 		_idpv: {type: "mongoId"},
 		_s_route: {type: "string", "maxLength": 1024},
 		_s_uri: {type: "string", "maxLength": 4096}
@@ -158,7 +158,7 @@ module.exports.init = function (ctx, cb) {
 		shash: {type: "string", required: true, "maxLength": 64},
 		chash: {type: "string", required: true, "maxLength": 64},
 		_s_route:{type: "string", required: true, "maxLength": 1024},
-		_s_uri: {type: "string", required: true, "maxLength": 4096},
+		_s_uri: {type: "string", required: true, "maxLength": 8192},
 		_i_err: {type: "integer", required: true},
 		agent: {type: "object", required: true},
 		geo: {type: "object"}
@@ -224,31 +224,35 @@ module.exports.init = function (ctx, cb) {
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
 setInterval(function() {
-	var dtlw = new Date(Date.parse(Date()) - 1000*60*60*24*7);
+	var dtlw = new Date( (new Date()).valueOf() - 1000*60*60*24*7);
 	var q = {_dt: {$lte: dtlw}};
 	safe.parallel([
-		function() {
-			events.remove(q);
+		function(cb) {
+			events.remove(q,cb);
 		},
-		function() {
-			pages.remove(q);
+		function(cb) {
+			pages.remove(q,cb);
 		},
-		function() {
-			ajax.remove(q);
+		function(cb) {
+			ajax.remove(q,cb);
 		},
-		function() {
-			actions.remove(q);
+		function(cb) {
+			actions.remove(q,cb);
 		},
-		function() {
-			as.remove(q);
+		function(cb) {
+			as.remove(q,cb);
 		},
-		function() {
-			action_errors.remove(q);
+		function(cb) {
+			action_errors.remove(q,cb);
 		},
-		function() {
-			metrics.remove(q);
+		function(cb) {
+			metrics.remove(q,cb);
 		}
-	]);
+	], function (err) {
+		if (err) {
+			newrelic.noticeError(err);
+		}
+	});
 },1000*60*60);
 
 ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next ) {
