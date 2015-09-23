@@ -1,10 +1,10 @@
-define(["tinybone/base",'views/layout/layout','module','safe',"dust",
+define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.core",
 	"moment/moment",
 	"lodash",
 	"tson",
 	"tinybone/backadapter",
 	"jquery.blockUI"
-],function (tb,Layout,module,safe,dust,moment,_,tson) {
+],function (require,tb,Layout,module,safe,dust,moment,_,tson) {
 	// Make sure dust.helpers is an object before adding a new helper.
 	if (!dust.helpers)
 		dust.helpers = {};
@@ -95,7 +95,7 @@ define(["tinybone/base",'views/layout/layout','module','safe',"dust",
 			var self = this;
 			var router = self.router;
 			var routes = ["routes/main"];
-			requirejs(routes, function (main) {
+			require(routes, function (main) {
 				// some standard locals grabber
 				router.use(function (req,res, next) {
 					res.locals.token = req.cookies.token || "public";
@@ -150,7 +150,7 @@ define(["tinybone/base",'views/layout/layout','module','safe',"dust",
 				router.use(function (err, req, res, cb) {
 					if (err.subject) {
 						if (err.subject == "Unauthorized") {
-							requirejs(["views/signup/signup"], safe.trap(cb, function (view) {
+							require(["views/signup/signup"], safe.trap(cb, function (view) {
 								res.status(401);
 								res.renderX({view: view, route: req.route.path, data: {title: "Sign UP"}});
 							}), cb);

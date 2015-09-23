@@ -1,0 +1,1 @@
+../../../../node_modules/dustjs-linkedin/lib/parser.js

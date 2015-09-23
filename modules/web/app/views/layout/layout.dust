@@ -43,21 +43,21 @@
 
 {#_t_env_production}
 <script src="{_t_prefix}/js/build/require.js?rev={_t_rev}"></script>
-<script src="{_t_prefix}/js/build/app.js?rev={_t_rev}"></script>
-<script src="{_t_prefix}/js/build/routes/main.js?rev={_t_rev}"></script>
 {:else}
 <script src="{_t_prefix}/app/require.js"></script>
 {/_t_env_production}
 
 <script>
-	requirejs.config({
+	var reqctx = requirejs.config({
 		baseUrl: "{_t_prefix}/app",
 		paths:{
 			"tson":"../tinyback/tson",
 			"prefixify":"../tinyback/prefixify",
 			"tinybone":"../tinybone",
 			"lodash":"../js/lodash",
-			"dust":"../js/dust",
+			"dust.core": "../js/dust",
+			"dust.parse": "../js/parser",
+			"dust.compile": "../js/compiler",
 			"md5":"../js/md5",
 			"dust-helpers":"../js/dust-helpers",
 			"safe":"../js/safe",
@@ -80,31 +80,23 @@
 			"dustc":{
 				debug:true
 			}{/_t_env_production}
-		},
-		shim: {
-			'dust-helpers': {
-        				deps: ['dust'],
-        				exports: 'helpers'
-        			},
-			'dust': {
-				exports: 'dust'
-			}
 		}
 	});
 	requirejs.onError = function (err) {
 		Raven.captureException(err);
 	};
+    define.amd.dust = true;
 	define("backctx","/restapi/");
 	define("jquery", [], function() {
 		return window.jQuery;
 	});
 
 	$.getJSON("/web/app/wire/{_t_unique}", function (wire) {
-		requirejs(["app"], function (App) {
-			(new App()).init(wire);
-		}, function (err) {
-			Raven.captureException(err);
-		})
+		reqctx([{#_t_env_production}"{_t_prefix}/js/build/app.js?rev={_t_rev}","{_t_prefix}/js/build/routes/main.js?rev={_t_rev}"{/_t_env_production}], function () {
+			reqctx(["app"], function (App) {
+				(new App()).init(wire);
+			})
+		});
 	})
 {#_t_env_production}
 {:else}

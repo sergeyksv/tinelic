@@ -1,6 +1,8 @@
 /*jslint node: true */
 'use strict';
 var path = require('path');
+var requirejs = require('requirejs');
+requirejs.define.amd.dust = true;
 
 module.exports = function(grunt) {
 
@@ -31,10 +33,11 @@ module.exports = function(grunt) {
 						"prefixify": "../../tinyback/prefixify",
 						"tinybone": "../../tinybone",
 						"lodash": "../public/js/lodash",
-						"dust": "../public/js/dust",
+						"dust.core": "../public/js/dust",
+						"dust.parse": "../public/js/parser",
+						"dust.compile": "../public/js/compiler",
 						"md5":"../public/js/md5",
 						"dust-helpers": "../public/js/dust-helpers",
-						"dustjs": "../public/js/dust",
 						"dustc": "../../tinybone/dustc",
 						"text": "../../../node_modules/requirejs-text/text",
 						"safe": "../public/js/safe",
@@ -46,15 +49,6 @@ module.exports = function(grunt) {
 						"jquery-cookie": "../public/js/jquery-cookie",
 						"jquery.blockUI": "../public/js/jquery.blockUI",
 						"jquery.tablesorter.combined": "../public/js/jquery.tablesorter.combined",
-					},
-					shim: {
-						'dust-helpers': {
-							deps: ['dust'],
-							exports: 'helpers'
-						},
-						'dust': {
-							exports: 'dust'
-						}
 					},
 					done: function(done, output) {
 						console.log(output);

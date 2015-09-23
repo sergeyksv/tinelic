@@ -1,5 +1,5 @@
 /*jshint -W033 */
-define(["tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (api,safe,_,feed,moment) {
+define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (require,api,safe,_,feed,moment) {
 	return {
 		index:function (req, res, cb) {
 			require(["routes/index"],function (route) {

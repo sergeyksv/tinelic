@@ -1,1 +1,1 @@
-../../../../node_modules/dustjs-linkedin/dist/dust-full.js
+../../../../node_modules/dustjs-linkedin/lib/dust.js

@@ -1,4 +1,4 @@
-define(['tinybone/base','safe','lodash','dustc!views/project-settings/pageRule_edit.dust'],function (tb,safe,_) {
+define(['require','tinybone/base','safe','lodash','dustc!views/project-settings/pageRule_edit.dust'],function (require,tb,safe,_) {
     var view = tb.View;
     var View = view.extend({
         id:"views/project-settings/pageRule_edit",

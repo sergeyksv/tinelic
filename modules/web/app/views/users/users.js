@@ -1,4 +1,4 @@
-define(['tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users.dust','bootstrap/modal'],function (tb, api,safe) {
+define(['require','tinybone/base', "tinybone/backadapter",'safe', 'dustc!views/users/users.dust','bootstrap/modal'],function (require,tb, api,safe) {
     var view = tb.View;
     var View = view.extend({
         id:"views/users/users",

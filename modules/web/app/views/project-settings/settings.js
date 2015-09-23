@@ -1,4 +1,4 @@
-define(['tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/project-settings/settings.dust'],function (tb,_,api,safe) {
+define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!views/project-settings/settings.dust'],function (require,tb,_,api,safe) {
     var view = tb.View;
     var View = view.extend({
         id:"views/project-settings/settings",

@@ -1,4 +1,4 @@
-define(['tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/teams/teams.dust'],function (tb, api, safe,_) {
+define(['require','tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!views/teams/teams.dust'],function (require,tb, api, safe,_) {
     var view = tb.View;
     var View = view.extend({
         id:"views/teams/teams",
