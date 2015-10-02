@@ -6,20 +6,16 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/pa
             'click .do-stats': function(e) {
                 var self = this;
                 $this = $(e.currentTarget);
-                var h = window.location.pathname.split('/',5)
+                var h = window.location.pathname.split('/',5);
                 this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort'));
                 return false;
             }
         },
-        preRender: function () {
-			var locals = this.locals;
-			locals.metrics = this.parent.data.metrics;
-		},
         postRender:function () {
             view.prototype.postRender.call(this);
             var self = this;
         }
-    })
+    });
     View.id = "views/pages/pages";
     return View;
-})
+});
