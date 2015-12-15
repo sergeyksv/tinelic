@@ -1,0 +1,5 @@
+build:
+ script:
+  - git submodule update --init
+  - npm install
+  - npm test
