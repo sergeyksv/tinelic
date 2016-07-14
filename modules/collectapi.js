@@ -67,7 +67,7 @@ module.exports.init = function (ctx, cb) {
 			_s_uri:{type:"string", "maxLength": 4096},
 			_s_url:{type:"string", "maxLength": 4096},
 			headers:{type:"object", patternProperties:{
-				".*":{type:"string","maxLength": 1024}
+				".*":{type:"string","maxLength": 2048}
 			}}
 		}},
 		geo:{type:"object"},
