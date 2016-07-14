@@ -638,6 +638,18 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 				// .net agent send this request when IIS is stopped or there are no
 				// request to .net applications long time
 				res.json( { return_value: null } );
+			},
+			custom_event_data:function () {
+				// ???? not suppored now
+				res.json( { return_value: "ok" } );
+			},
+			sql_trace_data:function () {
+				// ???? not suppored now
+				res.json( { return_value: "ok" } );
+			},
+			error_event_data:function () {
+				// ???? not suppored now
+				res.json( { return_value: "ok" } );
 			}
 		};
 
