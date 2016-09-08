@@ -1,6 +1,3 @@
 [submodule "modules/tinyback"]
 	path = modules/tinyback
 	url = ../tinyback.git
-[submodule "modules/tinybone"]
-	path = modules/tinybone
-	url = ../tinybone.git
