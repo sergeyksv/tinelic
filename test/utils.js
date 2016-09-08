@@ -39,13 +39,12 @@ function dropDb(cb){
 	}));
 }
 
-module.exports.shutdownContext = function (done) {
+module.exports.shutdownContext = function () {
 	var deferred = new webdriver.promise.Deferred();
 
 	killChilds();
 	setTimeout(function () {
 		deferred.fulfill(true);
-		done();
 	}, 100);
 
 	return deferred.promise;
@@ -146,7 +145,7 @@ module.exports.notError = function (v) {
 };
 
 var tutils = module.exports;
-module.exports.setupContext = function (done) {
+module.exports.setupContext = function () {
 	var self = this;
 	var deferred = new webdriver.promise.Deferred();
 
@@ -221,8 +220,10 @@ module.exports.setupContext = function (done) {
 			tutils.getApp({fixture:"empty"},cb);
 		}
 	], function (err) {
-		done(err);
-		deferred.fulfill(true);
+		if (err)
+			deferred.reject(err)
+		else
+			deferred.fulfill(true);
 	});
 
 	return deferred.promise;
