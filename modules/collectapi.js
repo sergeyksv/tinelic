@@ -208,6 +208,7 @@ module.exports.init = function (ctx, cb) {
 				db.collection("action_errors", safe.sure(cb, function (col) {
 					safe.parallel([
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dt:1}, cb); },
+						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1,_dtf:1}, cb); },
 						function (cb) { ctx.api.mongo.ensureIndex(col,{_idp:1, ehash:1,_dt:1}, cb); }
 					], safe.sure(cb, col));
 				}));
