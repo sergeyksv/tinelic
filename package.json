@@ -40,7 +40,7 @@
     "mongo-utils": "~0.4.5",
     "selenium-webdriver": "~2.42.x",
     "phantomjs": "~1.9.13",
-    "chromedriver": "~2.10.x"
+    "chromedriver": "~2.24.1"
   },
   "scripts": {
     "test": "grunt build && mocha -bR spec test/test.js",

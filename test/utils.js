@@ -83,7 +83,7 @@ module.exports.getBrowser = function(cb) {
 
 		if (browser === "chrome") {
 			driver = new webdriver.Builder().
-				forBrowser('chrome').
+				withCapabilities({'browserName': 'chrome'}).
 				build();
 
 			cb(null, driver);
