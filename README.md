@@ -31,7 +31,7 @@ Preferable (but nor required) version 3.0 and above
 Pull this repository code and submodules (git pull & git submodule init & git submodule update)
 
 3. Install nodejs
-NodeJS > 0.12 or IO.JS
+NodeJS v4 or v6
 
 4. Run server and access it on http://localhost/web
   ```
