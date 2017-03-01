@@ -2,6 +2,7 @@
 /*global emit, Q, AG, AA, CAT, QUANT, NAME, ALL */
 "use strict";
 var _ = require("lodash");
+var async = require("async");
 var safe = require("safe");
 var mongo = require("mongodb");
 var moment = require("moment");
@@ -143,6 +144,11 @@ getErrorTotals: function(t,p,cb) {
 * @return {Array<{proc:number, mem:number}>}
 */
 getMetricTotals: function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		metrics.mapReduce(
@@ -167,6 +173,7 @@ getMetricTotals: function(t, p, cb) {
 			},
 			safe.sure(cb, function(data) {
 				var memtt = 0;
+				//console.log(data);
 				_.forEach(data,function(r) {
 					memtt += r.value.mem/r.value.c;
 				});
@@ -174,6 +181,33 @@ getMetricTotals: function(t, p, cb) {
 			})
 		);
 	}));
+},
+////////////////////
+///////////aggregate
+////////////////////
+function(cb){
+	var query = queryfix(p.filter);
+	checkAccess(t, query, safe.sure(cb, function () {
+		metrics.aggregate([
+			{$match: query},
+			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"} }}
+		],
+		safe.sure(cb, function(res) {
+				var memtt = 0;
+				_.forEach(res,function(r) {
+					memtt += r.mem1/r.c1;
+				});
+				cb(null,{proc: res.length, mem: Math.round(memtt)});
+			})
+		);////////////end of aggregate
+	}));
+},],
+////////////////////
+///////////the choice of grouping
+////////////////////
+function(err,res){
+//console.log("getMetricTotals: ", res);
+cb(null, res[1]);});
 },
 
 /**
@@ -184,6 +218,11 @@ getMetricTotals: function(t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,tt:number}}>}
 */
 getActionTimings: function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
@@ -219,7 +258,7 @@ getActionTimings: function(t, p, cb) {
 				{
 					query: query,
 					out: {inline:1},
-					scope: {Q: p.quant || 1, AG:ApdexT, AA:ApdexT*4}
+					scope: {Q: p.quant || 1 , AG:ApdexT, AA:ApdexT*4}
 				}, safe.sure(cb, function (data) {
 					_.each(data, function (metric) {
 						var key = metric.value;
@@ -232,6 +271,40 @@ getActionTimings: function(t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb){
+	var query = queryfix(p.filter);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
+			var ApdexT = apdex._i_serverT;
+			var Q = p.quant || 1; var AG = ApdexT; var AA = ApdexT*4;
+			var _dt0 = new Date(0);
+			//console.log(actions.find(query));
+			actions.aggregate([
+				{$match: query},
+				{$group: {_id: {$trunc: {$divide: [{$subtract: ["$_dt", _dt0]}, {$multiply: [Q, 60000]}]}}, c: {$sum: 1}, r: {$sum: {$divide: [1, Q]}}, e: {$sum: {$divide: [{$cond: {if: "$_i_err", then: 1, else: 0}}, Q]}}, tt: {$sum: "$_i_tt"}, ag: {$sum: {$cond: {if: "$_i_err", then: 0, else: {$cond: {if: {$lte: ["$_i_tt", AG]}, then: 1, else: 0}}}}}, aa: {$sum: {$cond: {if: "$_i_err", then: 0, else: {$cond: {if: {$and: [{$gt: ["$_i_tt", AG]}, {$lte: ["$_i_tt", AA]}]}, then: 1, else: 0}}}}} }},
+				{$project: {value: {c: "$c", r: "$r", e: "$e", tt: "$tt", ag: "$ag", aa: "$aa", apdex: {$divide: [{$add: ["$ag", {$divide: ["$aa", 2]}]}, "$c"]}, tta: {$divide: ["$tt", "$c"]}}}}
+			],cb);}))}))
+//cb();
+},],
+function(err,res){
+console.log("mapReduce",JSON.stringify(_.sortBy(res[0],"_id")));
+//console.log("==========================");
+console.log("aggregate",JSON.stringify(_.sortBy(res[1],"_id")));
+
+//console.log(res[0].length, res[1].length);
+//console.log("===========================");
+//console.log(res[0]);
+//console.log("===================================================");
+//console.log(res[1]);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(tmpRes0),"_id"), JSON.stringify(_.sortBy(tmpRes1,"_id"))));
+//console.log(res[1]);
+cb(null, res[0]);
+});
+},
+
 
 /**
 * Agregate actions stats grouped by name
@@ -1061,6 +1134,9 @@ getPageBreakdown: function(t,p,cb){
 * @return {Array<{_id:{string},value:{c:number,tt: number}}>}
 */
 getAjaxBreakdown: function(t,p,cb){
+async.series([
+function(cb){
+//	console.log(ajax);
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		ajax.mapReduce(
@@ -1087,6 +1163,35 @@ getAjaxBreakdown: function(t,p,cb){
 		);
 	}));
 },
+function(cb){
+	var query = queryfix(p.filter);
+	checkAccess(t, query, safe.sure(cb, function () {
+		ajax.aggregate([
+			{$match: query},
+			{$group: {_id: "$_s_route", c: {$sum: 1}, tt: {$sum: "$_i_tt"}}},
+			{$project: {value: {c: "$c", tt: "$tt"}}}
+			//{$sort: {_id:1}}
+		], safe.sure(cb, function(r){
+				    var r1=_.filter(r,"_id");
+				    cb(null,r1)
+				}));
+	}));
+//cb(null);
+},],
+function(err,res){
+//console.log("mapReduce",JSON.stringify(res[0]));
+//console.log("==========================");
+//console.log("aggregate",JSON.stringify(res[1]));
+
+//console.log("==========================");
+//console.log(res[0].length, res[1].length);
+
+//console.log("==========================");
+//console.log(_.isEqual(_.sortBy(res[0],"_id"),_.sortBy(res[1],"_id")));
+cb(null,res[1]);
+});
+
+},
 
 /**
 * @param {String} token Auth token
@@ -1096,6 +1201,7 @@ getAjaxBreakdown: function(t,p,cb){
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, r: number, tt: number, tta: number}}>}
 */
 getActionSegmentTimings:function (t, p, cb) {
+	//console.log("getActionSegmentTimings");
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		var name = query["data._s_name"];
