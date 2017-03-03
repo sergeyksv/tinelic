@@ -173,7 +173,6 @@ function(cb){
 			},
 			safe.sure(cb, function(data) {
 				var memtt = 0;
-				//console.log(data);
 				_.forEach(data,function(r) {
 					memtt += r.value.mem/r.value.c;
 				});
@@ -190,7 +189,7 @@ function(cb){
 	checkAccess(t, query, safe.sure(cb, function () {
 		metrics.aggregate([
 			{$match: query},
-			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"} }}
+			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"} }},
 		],
 		safe.sure(cb, function(res) {
 				var memtt = 0;
@@ -274,34 +273,133 @@ function(cb){
 ////////////////////
 ///////////aggregate
 ////////////////////
-function(cb){
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function () {
-		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
-			var ApdexT = apdex._i_serverT;
-			var Q = p.quant || 1; var AG = ApdexT; var AA = ApdexT*4;
-			var _dt0 = new Date(0);
-			//console.log(actions.find(query));
-			actions.aggregate([
-				{$match: query},
-				{$group: {_id: {$trunc: {$divide: [{$subtract: ["$_dt", _dt0]}, {$multiply: [Q, 60000]}]}}, c: {$sum: 1}, r: {$sum: {$divide: [1, Q]}}, e: {$sum: {$divide: [{$cond: {if: "$_i_err", then: 1, else: 0}}, Q]}}, tt: {$sum: "$_i_tt"}, ag: {$sum: {$cond: {if: "$_i_err", then: 0, else: {$cond: {if: {$lte: ["$_i_tt", AG]}, then: 1, else: 0}}}}}, aa: {$sum: {$cond: {if: "$_i_err", then: 0, else: {$cond: {if: {$and: [{$gt: ["$_i_tt", AG]}, {$lte: ["$_i_tt", AA]}]}, then: 1, else: 0}}}}} }},
-				{$project: {value: {c: "$c", r: "$r", e: "$e", tt: "$tt", ag: "$ag", aa: "$aa", apdex: {$divide: [{$add: ["$ag", {$divide: ["$aa", 2]}]}, "$c"]}, tta: {$divide: ["$tt", "$c"]}}}}
-			],cb);}))}))
-//cb();
-},],
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_serverT;
+            var Q = p.quant || 1;
+            var AG = ApdexT;
+            var AA = ApdexT * 4;
+            var _dt0 = new Date(0);
+            actions.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: {
+                            $trunc: {
+                                $divide: [{
+                                    $subtract: ["$_dt", _dt0]
+                                }, {
+                                    $multiply: [Q, 60000]
+                                }]
+                            }
+                        },
+                        c: {
+                            $sum: 1
+                        },
+                        r: {
+                            $sum: {
+                                $divide: [1, Q]
+                            }
+                        },
+                        e: {
+                            $sum: {
+                                $divide: [{
+                                    $cond: {
+                                        if: "$_i_err",
+                                        then: 1,
+                                        else: 0
+                                    }
+                                }, Q]
+                            }
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", AG]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", AG]
+                                                }, {
+                                                    $lte: ["$_i_tt", AA]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            },
+                            tta: {
+                                $divide: ["$tt", "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
 function(err,res){
-console.log("mapReduce",JSON.stringify(_.sortBy(res[0],"_id")));
+//console.log("mapReduce",JSON.stringify(_.sortBy(res[0],"_id")));
 //console.log("==========================");
-console.log("aggregate",JSON.stringify(_.sortBy(res[1],"_id")));
+//console.log("aggregate",JSON.stringify(_.sortBy(res[1],"_id")));
 
 //console.log(res[0].length, res[1].length);
 //console.log("===========================");
 //console.log(res[0]);
-//console.log("===================================================");
+//console.log("============================================================================================");
 //console.log(res[1]);
 //console.log(_.isEqual(JSON.stringify(_.sortBy(tmpRes0),"_id"), JSON.stringify(_.sortBy(tmpRes1,"_id"))));
 //console.log(res[1]);
-cb(null, res[0]);
+cb(null, res[1]);
 });
 },
 
@@ -316,6 +414,11 @@ cb(null, res[0]);
 *	Data grouped by action name
 */
 getActionStats: function(t, p , cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb, function(apdex){
@@ -358,6 +461,104 @@ getActionStats: function(t, p , cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_serverT;
+            actions.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: "$_s_name",
+                        c: {
+                            $sum: 1
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", ApdexT]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", ApdexT]
+                                                }, {
+                                                    $lte: ["$_i_tt", {
+                                                        $multiply: [ApdexT, 4]
+                                                    }]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",
+                            tt: "$tt",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
+function(err,res){
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
+},
 
 /**
 * Agregate ajax stats grouped by route
@@ -369,8 +570,12 @@ getActionStats: function(t, p , cb) {
 *	Data grouped by ajax route
 */
 getAjaxStats: function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
-
 	checkAccess(t, query, safe.sure(cb, function () {
 		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
 			var ApdexT = apdex._i_ajaxT;
@@ -411,6 +616,122 @@ getAjaxStats: function(t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_ajaxT;
+            ajax.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: "$_s_name",
+                        c: {
+                            $sum: 1
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        e: {
+                            $sum: {
+                                $multiply: [1.0, {
+                                    $cond: {
+                                        if: {
+                                            $ne: ["$_i_code", 200]
+                                        },
+                                        then: 1,
+                                        else: 0
+                                    }
+                                }]
+                            }
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: {
+                                        $ne: ["$_i_code", 200]
+                                    },
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", ApdexT]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: {
+                                        $ne: ["$_i_code", 200]
+                                    },
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", ApdexT]
+                                                }, {
+                                                    $lte: ["$_i_tt", {
+                                                        $multiply: [ApdexT, 4]
+                                                    }]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",
+                            tt: "$tt",
+                            e: "$e",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
+function(err,res){
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
+},
 
 /**
 * Agregate page stats grouped by route
@@ -422,8 +743,12 @@ getAjaxStats: function(t, p, cb) {
 *	Data grouped by page route
 */
 getPageStats: function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
-
 	checkAccess(t, query, safe.sure(cb, function () {
 		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
 			var ApdexT = apdex._i_pagesT;
@@ -465,6 +790,114 @@ getPageStats: function(t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_pagesT;
+            pages.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: "$_s_route",
+                        c: {
+                            $sum: 1
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        e: {
+                            $sum: {
+                                $multiply: [1.0, {
+                                    $cond: {
+                                        if: "$_i_err",
+                                        then: 1,
+                                        else: 0
+                                    }
+                                }]
+                            }
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", ApdexT]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", ApdexT]
+                                                }, {
+                                                    $lte: ["$_i_tt", {
+                                                        $multiply: [ApdexT, 4]
+                                                    }]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
+function(err,res){
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
+},
 
 /**
 * @param {String} token Auth token
@@ -495,6 +928,11 @@ getPageError:function (t, p, cb) {
 *		reporter: string[],count:integer}}>}
 */
 getActionErrorInfo:function (t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -571,6 +1009,140 @@ getActionErrorInfo:function (t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb){
+	var query = queryfix(p.filter);var ALL = query.ehash?0:1;
+	safe.run(function (cb) {
+		// to identify error type we can provide id of existing error
+		if (!query._id)
+			// overwise we assume that called knows what to do
+			return cb();
+		// then we need to fetch it and grap required info (projec and ehash)
+		serverErrors.findOne({_id:query._id}, safe.sure(cb, function (err) {
+			if (!err)
+				cb(new CustomError("No event found", "Not Found"));
+			query.ehash = err.ehash;
+			delete query._id;
+			cb();
+		}));
+	},safe.sure(cb, function () {
+		checkAccess(t, query, safe.sure(cb, function () {
+			serverErrors.aggregate([{
+			        $match: query
+			    },
+			    {
+			        $facet: {
+			            _id: [{
+			                $group: {
+			                    _id: {
+			                        $cond: {
+			                            if: ALL,
+			                            then: "$_idp",
+			                            else: "$ehash"
+			                        }
+			                    },
+			                    c: {
+			                        $sum: 1
+			                    }
+			                }
+			            }, {
+			                $sort: {
+			                    _id: 1
+			                }
+			            }],
+			            route: [{
+			                $group: {
+			                    _id: "$action._s_name",
+			                    c: {
+			                        $sum: 1
+			                    }
+			                }
+			            }, {
+			                $sort: {
+			                    _id: 1
+			                }
+			            }],
+			            reporter: [{
+			                $group: {
+			                    _id: "$_s_reporter",
+			                    c: {
+			                        $sum: 1
+			                    }
+			                }
+			            }],
+			            server: [{
+			                $group: {
+			                    _id: "$_s_server",
+			                    c: {
+			                        $sum: 1
+			                    }
+			                }
+			            }, {
+			                $sort: {
+			                    _id: 1
+			                }
+			            }],
+			            lang: [{
+			                $group: {
+			                    _id: "$_s_logger",
+			                    c: {
+			                        $sum: 1
+			                    }
+			                }
+			            }, {
+			                $sort: {
+			                    _id: 1
+			                }
+			            }]
+			        }
+			    }
+			], safe.sure(cb, function(tmpData) {
+			    var tmp_id = tmpData[0]._id[0];
+			    var tmpRoute = tmpData[0].route;
+			    var tmpReporter = tmpData[0].reporter;
+			    var tmpServer = tmpData[0].server;
+			    var tmpLang = tmpData[0].lang;
+			    var res = {route: [],server: [],reporter: [],lang: [],count: tmp_id.c};
+			    _.each(tmpRoute, function(v, k) {
+			        if (v._id != null) {
+			            res.route.push({
+			                k: v._id,
+			                v: v.c
+			            });
+			        };
+			    });
+			    _.each(tmpReporter, function(v, k) {
+			        res.reporter[k] = {
+			            "k": v._id,
+			            "v": v.c
+			        };
+			    });
+			    _.each(tmpServer, function(v, k) {
+			        res.server[k] = {
+			            "k": v._id,
+			            "v": v.c
+			        };
+			    });
+			    _.each(tmpLang, function(v, k) {
+			        res.lang[k] = {
+			            "k": v._id,
+			            "v": v.c
+			        };
+			    });
+			    cb(null, res);
+			}));
+		}));
+	}));
+},],
+function(err,res){
+//console.log("MR1:", _.sortBy(res[0].route, "k"));
+//console.log("ag1:", _.sortBy(res[1].route, "k"));
+//console.log("route:",_.isEqual(_.sortBy(res[0].route,"k"), _.sortBy(res[1].route,"k")));
+cb(null, res[1]);
+});
+},
 
 /**
 * @param {String} token Auth token
@@ -600,6 +1172,11 @@ getActionError:function (t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
 getAjaxTimings:function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	query =(p._idurl)? _.extend(query,{_s_name:p._idurl}): query;
 	checkAccess(t, query, safe.sure(cb, function () {
@@ -618,13 +1195,7 @@ getAjaxTimings:function(t, p, cb) {
 						if (!r)
 							r = v;
 						else {
-							r.tt+=v.tt;
-							r.r+=v.r;
-							r.c+=v.c;
-							r.ag+=v.ag;
-							r.aa+=v.aa;
-							r.e+=v.e;
-							r.pt+= v.pt;
+							r.tt+=v.tt; r.r+=v.r; r.c+=v.c; r.ag+=v.ag; r.aa+=v.aa; r.e+=v.e; r.pt+= v.pt;
 						}
 					});
 					return r;
@@ -645,6 +1216,151 @@ getAjaxTimings:function(t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    query = (p._idurl) ? _.extend(query, {
+        _s_name: p._idurl
+    }) : query;
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_ajaxT;
+            var Q = p.quant || 1;
+            var _dt0 = new Date(0);
+            ajax.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: {
+                            $trunc: {
+                                $divide: [{
+                                    $subtract: ["$_dt", _dt0]
+                                }, {
+                                    $multiply: [Q, 60000]
+                                }]
+                            }
+                        },
+                        c: {
+                            $sum: 1
+                        },
+                        r: {
+                            $sum: {
+                                $divide: [1, Q]
+                            }
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        pt: {
+                            $sum: "$_i_pt"
+                        },
+                        code: {
+                            $first: "$_i_code"
+                        },
+                        e: {
+                            $sum: {
+                                $divide: [{
+                                    $multiply: [1.0, {
+                                        $cond: {
+                                            if: {
+                                                $ne: ["$_i_code", 200]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }]
+                                }, Q]
+                            }
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: {
+                                        $ne: ["$_i_code", 200]
+                                    },
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", ApdexT]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: {
+                                        $ne: ["$_i_code", 200]
+                                    },
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", ApdexT]
+                                                }, {
+                                                    $lte: ["$_i_tt", {
+                                                        $multiply: [ApdexT, 4]
+                                                    }]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",r: "$r",tt: "$tt",pt: "$pt",code: "$code",e: "$e",ag: "$ag",aa: "$aa",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            },
+                            tta: {
+                                $divide: ["$tt", "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
+function(err,res){
+//_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100});
+// console.log("mapReduce:", JSON.stringify(res[0]));
+// console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+// console.log("aggregate:", JSON.stringify(res[1]));
+// console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
+},
 
 /**
 * @param {String} token Auth token
@@ -654,6 +1370,11 @@ getAjaxTimings:function(t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
 getPageTimings:function (t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		ctx.api.assets.getProjectApdexConfig(t,{_id:query._idp},safe.sure(cb,function(apdex){
@@ -669,12 +1390,7 @@ getPageTimings:function (t, p, cb) {
 						if (!r)
 							r = v;
 						else {
-							r.tt+=v.tt;
-							r.r+=v.r;
-							r.c+=v.c;
-							r.ag+=v.ag;
-							r.aa+=v.aa;
-							r.e+=v.e;
+							r.tt+=v.tt;r.r+=v.r;r.c+=v.c;r.ag+=v.ag;r.aa+=v.aa;r.e+=v.e;
 						}
 					});
 					return r;
@@ -694,6 +1410,134 @@ getPageTimings:function (t, p, cb) {
 			);
 		}));
 	}));
+},
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        ctx.api.assets.getProjectApdexConfig(t, {
+            _id: query._idp
+        }, safe.sure(cb, function(apdex) {
+            var ApdexT = apdex._i_pagesT;
+            var Q = p.quant || 1;
+            var _dt0 = new Date(0);
+            pages.aggregate([{
+                    $match: query
+                },
+                {
+                    $group: {
+                        _id: {
+                            $trunc: {
+                                $divide: [{
+                                    $subtract: ["$_dt", _dt0]
+                                }, {
+                                    $multiply: [Q, 60000]
+                                }]
+                            }
+                        },
+                        c: {
+                            $sum: 1
+                        },
+                        r: {
+                            $sum: {
+                                $divide: [1, Q]
+                            }
+                        },
+                        tt: {
+                            $sum: "$_i_tt"
+                        },
+                        e: {
+                            $sum: {
+                                $divide: [{
+                                    $cond: {
+                                        if: "$_i_err",
+                                        then: 1,
+                                        else: 0
+                                    }
+                                }, Q]
+                            }
+                        },
+                        ag: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $lte: ["$_i_tt", ApdexT]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        aa: {
+                            $sum: {
+                                $cond: {
+                                    if: "$_i_err",
+                                    then: 0,
+                                    else: {
+                                        $cond: {
+                                            if: {
+                                                $and: [{
+                                                    $gt: ["$_i_tt", ApdexT]
+                                                }, {
+                                                    $lte: ["$_i_tt", {
+                                                        $multiply: [ApdexT, 4]
+                                                    }]
+                                                }]
+                                            },
+                                            then: 1,
+                                            else: 0
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        value: {
+                            c: "$c",r: "$r",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+                            apdex: {
+                                $divide: [{
+                                    $add: ["$ag", {
+                                        $divide: ["$aa", 2]
+                                    }]
+                                }, "$c"]
+                            },
+                            tta: {
+                                $divide: ["$tt", "$c"]
+                            }
+                        }
+                    }
+                },
+                {
+                    $sort: {
+                        _id: 1
+                    }
+                }
+            ], cb);
+        }))
+    }))
+}
+,],
+function(err,res){
+//_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100; data.value.e = Math.round(data.value.e*100)/100});
+//_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100; data.value.e = Math.round(data.value.e*100)/100});
+// console.log("mapReduce:", JSON.stringify(res[0]));
+// console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+// console.log("aggregate:", JSON.stringify(res[1]));
+// console.log("length:", res[0].length, res[1].length);
+// console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
 },
 
 /**
@@ -874,6 +1718,11 @@ getPageErrorStats:function (t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{r:number}}>}
 */
 getPageErrorTimings:function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
@@ -917,6 +1766,79 @@ getPageErrorTimings:function(t, p, cb) {
 		}));
 	}));
 },
+////////////////////
+///////////aggregate
+////////////////////
+function(cb){
+	var query = queryfix(p.filter);
+	safe.run(function (cb) {
+		// to identify error type we can provide id of existing error
+		if (!query._id)
+			// overwise we assume that called knows what to do
+			return cb();
+		// then we need to fetch it and grap required info (projec and ehash)
+		events.findOne({_id:query._id}, safe.sure(cb, function (event) {
+			if (!event)
+				cb(new CustomError("No event found", "Not Found"));
+			query._idp = event._idp;
+			query.ehash = event.ehash;
+			delete query._id;
+			cb();
+		}));
+	},safe.sure(cb, function () {
+		checkAccess(t, query, safe.sure(cb, function () {
+			var Q = p.quant || 1; var _dt0 = new Date(0);
+			events.aggregate([{
+			        $match: query
+			    },
+			    {
+			        $group: {
+			            _id: {
+			                $trunc: {
+			                    $divide: [{
+			                        $subtract: ["$_dt", _dt0]
+			                    }, {
+			                        $multiply: [Q, 60000]
+			                    }]
+			                }
+			            },
+			            r: {
+			                $sum: {
+			                    $divide: [1, Q]
+			                }
+			            },
+			            _dt: {
+			                $first: "$_dt"
+			            }
+			        }
+			    },
+			    {
+			        $project: {
+			            value: {
+			                r: "$r",_dt: "$_dt"
+			            }
+			        }
+			    },
+			    {
+			        $sort: {
+			            _id: 1
+			        }
+			    }
+			], cb);
+}))}))
+},],
+function(err,res){
+/*_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100});
+_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100});
+console.log("mapReduce:", JSON.stringify(res[0]));
+console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+console.log("aggregate:", JSON.stringify(res[1]));
+console.log("length:", res[0].length, res[1].length);
+console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+*/
+cb(null, res[1]);
+});
+},
 
 /**
 * @param {String} token Auth token
@@ -926,6 +1848,11 @@ getPageErrorTimings:function(t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{r:number}}>}
 */
 getActionErrorTimings:function(t, p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query1 = queryfix(p.filter);
 	var q = p.quant || 1;
 	serverErrors.findOne(query1, safe.sure(cb, function (event) {
@@ -958,6 +1885,71 @@ getActionErrorTimings:function(t, p, cb) {
 		else
 			cb();
 	}));
+},
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query1 = queryfix(p.filter);
+    var Q = p.quant || 1;
+    serverErrors.findOne(query1, safe.sure(cb, function(event) {
+        if (event) {
+            var query = (query1._id) ? {
+                _idp: event._idp,
+                _s_message: event._s_message,
+                _dt: query1._dt
+            } : query1;
+            checkAccess(t, query, safe.sure(cb, function() {
+                var _dt0 = new Date(0);
+                serverErrors.aggregate([{
+                        $match: query
+                    },
+                    {
+                        $group: {
+                            _id: {
+                                $trunc: {
+                                    $divide: [{
+                                        $subtract: ["$_dt", _dt0]
+                                    }, {
+                                        $multiply: [Q, 60000]
+                                    }]
+                                }
+                            },
+                            r: {
+                                $sum: {
+                                    $divide: [1, Q]
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $project: {
+                            value: {
+                                r: "$r"
+                            }
+                        }
+                    },
+                    {
+                        $sort: {
+                            _id: 1
+                        }
+                    }
+                ], cb);
+            }))
+        }
+    }))
+}
+,],
+function(err,res){
+//_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
 },
 
 /**
@@ -1059,6 +2051,11 @@ getActionBreakdown: function(t,p, cb) {
 * @return {Array<{_id:{string},value:{c:number, tt: number}}>}
 */
 getActionSegmentStats: function(t,p, cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		as.mapReduce(
@@ -1089,6 +2086,24 @@ getActionSegmentStats: function(t,p, cb) {
 			cb
 		);
 	}));
+},
+////////////////////
+///////////aggregate
+////////////////////
+function(cb){
+
+cb();
+},],
+function(err,res){
+//_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[0]);
+});
 },
 
 /**
@@ -1136,7 +2151,6 @@ getPageBreakdown: function(t,p,cb){
 getAjaxBreakdown: function(t,p,cb){
 async.series([
 function(cb){
-//	console.log(ajax);
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		ajax.mapReduce(
@@ -1176,7 +2190,6 @@ function(cb){
 				    cb(null,r1)
 				}));
 	}));
-//cb(null);
 },],
 function(err,res){
 //console.log("mapReduce",JSON.stringify(res[0]));
@@ -1201,7 +2214,6 @@ cb(null,res[1]);
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, r: number, tt: number, tta: number}}>}
 */
 getActionSegmentTimings:function (t, p, cb) {
-	//console.log("getActionSegmentTimings");
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		var name = query["data._s_name"];
@@ -1290,6 +2302,11 @@ getActionSegmentBreakdown: function(t,p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, mem: number, mema: number}}>}
 */
 getMetricTimings:function(t,p,cb) {
+async.series([
+////////////////////
+///////////mapReduce
+////////////////////
+function(cb){
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		metrics.mapReduce(
@@ -1321,6 +2338,67 @@ getMetricTimings:function(t,p,cb) {
 			})
 		);
 	}));
+},
+////////////////////
+///////////aggregate
+////////////////////
+function(cb) {
+    var query = queryfix(p.filter);
+    checkAccess(t, query, safe.sure(cb, function() {
+        var Q = p.quant;
+        var _dt0 = new Date(0);
+        metrics.aggregate([{
+                $match: query
+            },
+            {
+                $group: {
+                    _id: {
+                        $trunc: {
+                            $divide: [{
+                                $subtract: ["$_dt", _dt0]
+                            }, {
+                                $multiply: [Q, 60000]
+                            }]
+                        }
+                    },
+                    mem: {
+                        $sum: "$_f_val"
+                    },
+                    c: {
+                        $sum: "$_i_cnt"
+                    }
+                }
+            },
+            {
+                $project: {
+                    value: {
+                        mem: "$mem",
+                        c: "$c",
+                        mema: {
+                            $divide: ["$mem", "$c"]
+                        }
+                    }
+                }
+            },
+            {
+                $sort: {
+                    _id: 1
+                }
+            }
+        ], cb);
+    }))
+}
+,],
+function(err,res){
+//_.forEach(res[0], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//_.forEach(res[1], function(data){data.value.r = Math.round(data.value.r*100)/100});
+//console.log("mapReduce:", JSON.stringify(res[0]));
+//console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+//console.log("aggregate:", JSON.stringify(res[1]));
+//console.log("length:", res[0].length, res[1].length);
+//console.log(_.isEqual(JSON.stringify(_.sortBy(res[0]),"_id"), JSON.stringify(_.sortBy(res[1],"_id"))));
+cb(null, res[1]);
+});
 }
 
 }});
