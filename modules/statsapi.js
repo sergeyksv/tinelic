@@ -176,7 +176,7 @@ getActionTimings: function(t, p, cb) {
             _id: query._idp
         }, safe.sure(cb, function(apdex) {
             var ApdexT = apdex._i_serverT;
-            var Q = parseInt(p.quant || 1);
+            var Q = parseInt(p.quant) || 1;
             var AG = ApdexT;
             var AA = ApdexT * 4;
             var _dt0 = new Date(0);
@@ -635,7 +635,7 @@ getAjaxTimings:function(t, p, cb) {
             _id: query._idp
         }, safe.sure(cb, function(apdex) {
             var ApdexT = apdex._i_ajaxT;
-            var Q = parseInt(p.quant || 1);
+            var Q = parseInt(p.quant) || 1;
             var _dt0 = new Date(0);
             ajax.aggregate([{
                     $match: query
@@ -733,7 +733,7 @@ getPageTimings:function (t, p, cb) {
             _id: query._idp
         }, safe.sure(cb, function(apdex) {
             var ApdexT = apdex._i_pagesT;
-            var Q = parseInt(p.quant || 1);
+            var Q = parseInt(p.quant) || 1;
 
 //						var Q = p.quant || 1;
 //						console.log(Q);
@@ -1058,7 +1058,7 @@ getPageErrorTimings:function(t, p, cb) {
 		}));
 	},safe.sure(cb, function () {
 		checkAccess(t, query, safe.sure(cb, function () {
-			var Q = parseInt(p.quant || 1); var _dt0 = new Date(0);
+			var Q = parseInt(p.quant) || 1; var _dt0 = new Date(0);
 			events.aggregate([{
 			        $match: query
 			    },
@@ -1102,7 +1102,7 @@ getPageErrorTimings:function(t, p, cb) {
 */
 getActionErrorTimings:function(t, p, cb) {
     var query1 = queryfix(p.filter);
-    var Q = parseInt(p.quant || 1);
+    var Q = parseInt(p.quant) || 1;
     serverErrors.findOne(query1, safe.sure(cb, function(event) {
         if (event) {
             var query = (query1._id) ? {
@@ -1341,7 +1341,7 @@ getActionSegmentTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	checkAccess(t, query, safe.sure(cb, function () {
 		var name = query["data._s_name"];
-		var Q = parseInt(p.quant || 1);
+		var Q = parseInt(p.quant) || 1;
 		var _dt0 = new Date(0);
 		var CAT = query['data._s_cat'];
 		as.aggregate([
@@ -1392,7 +1392,7 @@ getActionSegmentBreakdown: function(t,p, cb) {
 getMetricTimings:function(t,p,cb) {
     var query = queryfix(p.filter);
     checkAccess(t, query, safe.sure(cb, function() {
-        var Q = parseInt(p.quant || 1);
+        var Q = parseInt(p.quant) || 1;
         var _dt0 = new Date(0);
         metrics.aggregate([{
                 $match: query
