@@ -247,7 +247,7 @@ getActionTimings: function(t, p, cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ],cb);
+            ],{allowDiskUse: true},cb);
         }))
     }))
 },
@@ -317,7 +317,7 @@ getActionStats: function(t, p , cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ], cb);
+            ],{allowDiskUse: true},cb);
         }))
     }))
 },
@@ -395,7 +395,7 @@ getAjaxStats: function(t, p, cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ], cb);
+            ],{allowDiskUse: true},cb);
         }))
     }))
 },
@@ -473,7 +473,7 @@ getPageStats: function(t, p, cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ], cb);
+            ],{allowDiskUse: true}, cb);
         }))
     }))
 },
@@ -571,7 +571,8 @@ getActionErrorInfo:function (t, p, cb) {
 			            }]
 			        }
 			    }
-			], safe.sure(cb, function(tmpData) {
+			], {allowDiskUse: true},
+			safe.sure(cb, function(tmpData) {
 			    var tmp_id = tmpData[0]._id[0];
 			    var tmpRoute = tmpData[0].route;
 			    var tmpReporter = tmpData[0].reporter;
@@ -814,7 +815,7 @@ getPageTimings:function (t, p, cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ], cb);
+            ], {allowDiskUse: true}, cb);
         }))
     }))
 
@@ -906,7 +907,7 @@ getPageErrorInfo:function (t, p, cb) {
 			                }]
 			            }
 			        }
-			    ],
+			    ], {allowDiskUse: true},
 			    safe.sure(cb, function(tmpData) {
 			        var tmp_id = tmpData[0]._id[0];
 			        var tmpRoute = tmpData[0].route;
@@ -1004,7 +1005,7 @@ getPageErrorStats:function (t, p, cb) {
 			        {
 			            $sort: {_id: 1}
 			        },
-			    ],
+			    ], {allowDiskUse: true},
 			    safe.sure(cb, function(stats) {
 			        var ids = {};
 			        _.each(stats, function(s) {
@@ -1089,7 +1090,7 @@ getPageErrorTimings:function(t, p, cb) {
 			    {
 			        $sort: {_id: 1}
 			    }
-			], cb);
+			], {allowDiskUse: true}, cb);
 }))}))
 },
 
@@ -1232,7 +1233,7 @@ getActionBreakdown: function(t,p, cb) {
 			}, {
 			    $sort: {_id: 1}
 			}
-		],cb);
+		], {allowDiskUse: true}, cb);
 	}))
 },
 
@@ -1286,7 +1287,7 @@ getActionSegmentStats: function(t,p, cb) {
 			}, {
 			    $sort: {_id: 1}
 			}
-		],cb);
+		],{allowDiskUse: true}, cb);
 	}))
 },
 
@@ -1356,7 +1357,7 @@ getActionSegmentTimings:function (t, p, cb) {
 			},
 			{$project: {value: {c: "$c", r: "$r", tt: "$tt", tta: {$divide: ["$tt", "$c"]}}}},
 			{$sort: {_id: 1}}
-		],cb);
+		],{allowDiskUse: true}, cb);
 	}))
 },
 
@@ -1378,7 +1379,7 @@ getActionSegmentBreakdown: function(t,p, cb) {
 			{$group: {_id: "$_s_name", c: {$sum: "$data._i_cnt"}, tt: {$sum: "$data._i_tt"}}},
 			{$project: {value: {c: "$c", tt: "$tt"}}},
 			{$sort: {_id: 1}}
-		],cb);
+		],{allowDiskUse: true},cb);
 	}))
 },
 
