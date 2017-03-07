@@ -90,7 +90,7 @@ getErrorTotals: function(t,p,cb) {
 					}
 				};
 				q = queryfix(q);
-				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], {allowDiskUse: true}, safe.sure(cb, function (res) {
 					cb(null, res.length);
 				}));
 			},
@@ -103,7 +103,7 @@ getErrorTotals: function(t,p,cb) {
 					}
 				};
 				q = queryfix(q);
-				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+				serverErrors.aggregate([{$match:q},{$group:{_id:"$ehash"}}], {allowDiskUse: true}, safe.sure(cb, function (res) {
 					cb(null, res.length);
 				}));
 			},
@@ -116,7 +116,7 @@ getErrorTotals: function(t,p,cb) {
 					}
 				};
 				q = queryfix(q);
-				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], {allowDiskUse: true}, safe.sure(cb, function (res) {
 					cb(null, res.length);
 				}));
 			},
@@ -129,7 +129,7 @@ getErrorTotals: function(t,p,cb) {
 					}
 				};
 				q = queryfix(q);
-				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], safe.sure(cb, function (res) {
+				events.aggregate([{$match:q},{$group:{_id:"$ehash"}}], {allowDiskUse: true}, safe.sure(cb, function (res) {
 					cb(null, res.length);
 				}));
 			}
@@ -149,7 +149,7 @@ getMetricTotals: function(t, p, cb) {
 		metrics.aggregate([
 			{$match: query},
 			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"}}},
-		],
+		], {allowDiskUse: true},
 		safe.sure(cb, function(res) {
 //console.log(res);
 				var memtt = 0;
@@ -715,7 +715,7 @@ getAjaxTimings:function(t, p, cb) {
                     }
                 },
                 {$sort: {_id: 1}}
-            ], cb);
+            ], {allowDiskUse: true}, cb);
         }))
     }))
 },
@@ -1138,7 +1138,7 @@ getActionErrorTimings:function(t, p, cb) {
                     {
                         $sort: {_id: 1}
                     }
-                ], cb);
+                ], {allowDiskUse: true}, cb);
             }))
         }
     }))
@@ -1165,7 +1165,7 @@ getActionErrorStats:function (t, p, cb) {
 				},
 				{$project: {value: {_id: "$_id0", c: "$c", _dtmax: "$_dtmax", _dtmin: "$_dtmin"}}},
 				{$sort: {_id: 1}}
-		],
+		], {allowDiskUse: true},
 		safe.sure(cb, function (stats) {
 			var ids = {};
 			_.each(stats, function (s) {
@@ -1306,7 +1306,7 @@ getPageBreakdown: function(t,p,cb){
 			{$group: {_id: "$_s_name", c: {$sum: 1}, tt: {$sum: "$_i_tt"}}},
 			{$project: {value: {c: "$c", tt: "$tt"}}},
 			{$sort: {_id: 1}}
-		],cb)
+		],{allowDiskUse: true}, cb)
 	}))
 },
 
@@ -1324,7 +1324,8 @@ getAjaxBreakdown: function(t,p,cb){
 			{$match: query},
 			{$group: {_id: "$_s_route", c: {$sum: 1}, tt: {$sum: "$_i_tt"}}},
 			{$project: {value: {c: "$c", tt: "$tt"}}}
-		], safe.sure(cb, function(r){
+		], {allowDiskUse: true},
+		safe.sure(cb, function(r){
 				    var r1=_.filter(r,"_id");
 				    cb(null,r1)
 				}));
@@ -1425,7 +1426,7 @@ getMetricTimings:function(t,p,cb) {
             {
                 $sort: {_id: 1}
             }
-        ], cb);
+        ], {allowDiskUse: true}, cb);
     }))
 }
 
