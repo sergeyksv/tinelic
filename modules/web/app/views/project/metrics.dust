@@ -1,0 +1,6 @@
+<span id="{_t_view.cid}">
+{#metrics}
+Processes: {proc}
+<a href="{_t_prefix}/project/{project.slug}/metrics"> Memory: {mem} Mb</a>
+{/metrics}
+</span>

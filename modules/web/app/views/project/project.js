@@ -3,31 +3,24 @@ define(['tinybone/base','lodash','moment/moment',"tinybone/backadapter",'highcha
 	var view = tb.View;
 	var View = view.extend({
 		id:"views/project/project",
-		events: {
-			'click #acknowledge': function(e) {
-				var self = this;
-				var router = self.app.router;
-				var id = self.$("span[data-id]").data('id')
-				api('assets.ackProjectState', $.cookie('token'),{type:['_dtPagesErrAck','_dtActionsErrAck'],_id:id}, function(err, data) {
-					if (err)
-						alert(err)
-					else {
-						api.invalidate()
-						router.reload();
-
-					}
-				})
-			}
-		},
+		events: {},
 		postRender:function () {
-			view.prototype.postRender.call(this);
-	//console.log('this',this)
-			var errorsView = _.find(this.views,function(v){
-				return v.name == "views/project/errors_view";
+			var self = this;
+			self.on("pageStats", function(data) {
+				refView(self.views, "statGraph");
 			});
 		}
-	})
-
+	});
+	function refView(views, event) {
+		_.forEach(views, function (el) {
+			if (el.locals.depends === event) {
+				el.refresh(function () {});
+			}
+			if (el.views.length) {
+				refView(el.views, event);
+			}
+		});
+	}
 	View.id = "views/project/project";
 	return View;
-})
+});

@@ -1,161 +1,34 @@
 {>"views/base_page"/}
 {<main}
+<div id="{_t_view.cid}" class="project-page">
 <div class='row'>
 	<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
-		<span class="text-info h5" data-id="{project._id}">{#graphOn.server} Processes: {metrics.proc}
-			<a href="{_t_prefix}/project/{project.slug}/metrics"> Memory: {metrics.mem} Mb</a>{/graphOn.server} ( {project._id} )
+		<span class="text-info h5" data-id="{project._id}">
+			{@view name="views/project/metrics"/} ( {project._id} )
 		</span>
-		<div class="btn-group pull-right">
-			{?obac.project_edit[project._id]}
-			<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
-			{/obac.project_edit[project._id]}
-			<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
-		</div>
+		{@view name="views/project/ack"/}
 	</legend>
 </div>
 <div class='row'>
 	<div class="col-md-4  col-xs-12">
-		{#stats.total}
-		<div class="row center-block">
-			<span class="h4">Apdex</span>
-			<span class="text-danger">  {@formatnumber val=apdserver type="apdex"/}</span> /
-			<span class="text-success"> {@formatnumber val=apdclient type="apdex"/}</span> /
-			<span class="text-info"> {@formatnumber val=apdajax type="apdex"/}</span>
-			{@eq key=graphOn.server value=1}{@view name="views/common/graph" data="actions" locals-name="apdex-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.browser value=1}{@view name="views/common/graph" data="views" locals-name="apdex-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.ajax value=1}{@view name="views/common/graph" data="ajax" locals-name="apdex-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="apdex" locals-plot-max="1" locals-filter-median="1"/}{/eq}
-		</div>
-		<div class="row center-block">
-			<span class="h4">Throughput</span>
-			<span class="text-danger">  {@formatnumber val=rsm type="rpm"/}</span> /
-			<span class="text-success"> {@formatnumber val=rpm type="rpm"/}</span> /
-			<span class="text-info"> {@formatnumber val=ram type="rpm"/}</span>
-			{@eq key=graphOn.server value=1}{@view name="views/common/graph" data="actions" locals-name="thr-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="r" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.browser value=1}{@view name="views/common/graph" data="views" locals-name="thr-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.ajax value=1}{@view name="views/common/graph" data="ajax" locals-name="thr-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="r" locals-filter-median="1"/}{/eq}
-		</div>
-		<div class="row center-block">
-			<span class="h4">Time</span>
-			<span class="text-danger">  {@formatnumber val=ttserver type="tm"/}</span> /
-			<span class="text-success"> {@formatnumber val=etupage type="tm"/}</span> /
-			<span class="text-info"> {@formatnumber val=etuajax type="tm"/}</span>
-			{@eq key=graphOn.server value=1}{@view name="views/common/graph" data="actions" locals-name="tt-server" locals-color="brown" locals-fillColor="#F2CAC8" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.browser value=1}{@view name="views/common/graph" data="views" locals-name="tt-browser" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/eq}
-			{@eq key=graphOn.ajax value=1}{@view name="views/common/graph" data="ajax" locals-name="tt-ajax" locals-color="lightblue" locals-fillColor="#CBE0F7" locals-plot-value="tta" locals-plot-factor="0.001" locals-filter-median="1"/}{/eq}
-		</div>
-		{/stats.total}
+		{@view name="views/project/graph"/}
 	</div>
 	{#stats}
-		<div style="white-space: nowrap;" class="col-md-8 col-xs-12">
+		<div class="col-md-8 col-xs-12">
 			<div class='row'>
-			{#browser}
 				<div class="col-md-6">
-						<div class="panel panel-success" style="padding-bottom:20px">
-							<div class="panel-heading"><a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a>
-							<span class="text-success h6" style="margin-left: 5px;">&nbsp{total} total / {page} page / {session} sess</span></div>
-							<div class="panel-body">
-							<ul class="list-unstyled h6">
-							{#err}
-								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/{error._id}' >
-										<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
-										<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
-									</a><br>
-								</li>
-							{/err}
-							</ul>
-						</div>
-					</div>
+					{@view name="views/project/browser"/}
+					{@view name="views/project/server-err"/}
+					{@view name="views/project/top-pages"/}
 				</div>
-			{/browser}
-			{#serverErr}
 				<div class="col-md-6">
-						<div class="panel panel-danger" style="padding-bottom:20px">
-							<div class="panel-heading"><a class="text-danger" href='{_t_prefix}/project/{project.slug}/server_errors/terr'>Server errors</a> <span class="text-danger h6" style="mrgin-left:5px">&nbsp{total} total</span></div>
-							<div class="panel-body">
-							<ul class="list-unstyled h6">
-							{#sErr}
-								<li style="overflow: hidden; text-overflow: ellipsis;">
-									<a class="text-default" href='{_t_prefix}/project/{project.slug}/server_errors/terr/{stats._id}' >
-									<span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
-									<span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>
-								</li>
-							{/sErr}
-							</ul>
-						</div>
-					</div>
+					{@view name="views/project/application"/}
+					{@view name="views/project/top-ajax"/}
+					{@view name="views/project/database"/}
 				</div>
-			{/serverErr}
-			{#topp}
-				<div class="col-md-6">
-					<div class="panel panel-success">
-						<div class="panel-heading"><a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a>
-						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rpm type="rpm"/} / {@formatnumber val=total.errorpage type="erate"/} / {@formatnumber val=total.etupage type="tm"/}</span></div>
-						<div class="panel-body" >
-							{#p}
-								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-success" role="progressbar" style="width: {value.progress}%;">
-											{_id} <span class="text-success numRight">{@formatnumber val=value.tta type="tm"/}</span>
-									</div>
-								</div>
-							{/p}
-						</div>
-					</div>
-				</div>
-			{/topp}
-			{#transactions}
-				<div class="col-md-6">
-					<div class="panel panel-danger">
-						<div class="panel-heading"><a class="text-danger" href="{_t_prefix}/project/{project.slug}/application/rpm">Application</a>
-						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.rsm type="rpm"/} / {@formatnumber val=total.erroraction type="erate"/} / {@formatnumber val=total.ttserver type="tm"/}</span></div>
-						<div class="panel-body">
-							{#top}
-								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
-										{_id} <span class="text-danger numRight">{@formatnumber val=value.tta type="tm"/}</span>
-									</div>
-								</div>
-							{/top}
-						</div>
-					</div>
-				</div>
-			{/transactions}
-			{#topa}
-				<div class="col-md-6">
-					<div class="panel panel-info">
-						<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a>
-						<span class="h6" style="margin-left: 5px;">{@formatnumber val=total.ram type="rpm"/} / {@formatnumber val=total.errorajax type="erate"/} / {@formatnumber val=total.etuajax type="tm"/}</span></div>
-						<div class="panel-body">
-							{#a}
-								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
-										{_id} <span class="text-info numRight">{@formatnumber val=value.tta type="tm"/}</span>
-									</div>
-								</div>
-							{/a}
-						</div>
-					</div>
-				</div>
-			{/topa}
-
-			{#database}
-				<div class="col-md-6">
-					<div class="panel panel-danger">
-						<div class="panel-heading"><a class="text-danger" href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a></div>
-						<div class="panel-body" >
-							{#db}
-								<div class="progress" style="margin: 2px 0 0 0;">
-									<div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
-										{_id} <span class="text-danger numRight">{@formatnumber val=value.avg type="tm"/}</span>
-									</div>
-								</div>
-							{/db}
-						</div>
-					</div>
-				</div>
-			{/database}
         </div>
 		</div>
     {/stats}
+</div>
 </div>
 {/main}

@@ -1,0 +1,17 @@
+<div class="panel panel-danger" id="{_t_view.cid}" style="padding-bottom:20px">
+    <div class="panel-heading">
+        <a class="text-danger" href='{_t_prefix}/project/{project.slug}/server_errors/terr'>Server errors</a> <span class="text-danger h6" style="mrgin-left:5px">&nbsp{#serverErrors.total}{.} total{/serverErrors.total}</span>
+        <span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
+    </div>
+    <div class="panel-body">
+        <ul class="list-unstyled h6">
+        {#serverErrors.data}
+            <li style="overflow: hidden; text-overflow: ellipsis;">
+                <a class="text-default" href='{_t_prefix}/project/{project.slug}/server_errors/terr/{stats._id}' >
+                <span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
+                <span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>
+            </li>
+        {/serverErrors.data}
+        </ul>
+    </div>
+</div>

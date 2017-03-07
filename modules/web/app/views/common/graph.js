@@ -16,7 +16,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 			var vfactor = this.get("plot-factor",1);
 
 			// media (or average) filtration + with averages at the end
-			var dt,i,fw=[],v,j,max=0;
+			var dt,i,fw=[],v,j,sum,max=0;
 			for (dt=dtstart,i=0; dt<dtend+halv; dt++) {
 				if (dt<dtend && i < data.length) {
 					if (data[i]._id == dt ) {
@@ -26,7 +26,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 						fw.push(0);
 					}
 				} else
-					fw.shift();
+				fw.shift();
 
 				if (fw.length>halv) {
 					if (fw.length==flen && median) {
@@ -42,66 +42,66 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 					plot.push([dt*factor,v!==0?v:null]);
 				}
 				if (fw.length ==flen)
-					fw.shift();
+				fw.shift();
 			}
 
 			this.$el.highcharts({
-			  chart: {
-				  type: 'spline',
-				  zoomType: 'x'
-			  },
-			  title: {
-				  text: ''
-			  },
-			  xAxis: {
-				  type: 'datetime'
-			  },
-			  yAxis: [{
-				  title: {
-					  text: this.get('name')
-				  },
-				  min: 0,
-				  max: this.get('plot-max') || max
-			  }
-			  ],
-			  plotOptions: {
-				  series: {
-					  marker: {
-						  enabled: false
-					  },
-					  animation: false
-				  }
-			  },
-			  legend: {
-				  enabled: false
-			  },
-			  credits: {
+				chart: {
+					type: 'spline',
+					zoomType: 'x'
+				},
+				title: {
+					text: ''
+				},
+				xAxis: {
+					type: 'datetime'
+				},
+				yAxis: [{
+					title: {
+						text: this.get('name')
+					},
+					min: 0,
+					max: this.get('plot-max') || max
+				}
+			],
+			plotOptions: {
+				series: {
+					marker: {
 						enabled: false
-			  },
-			  series: [
-				  {
-					  name: this.locals.name,
-					  yAxis: 0,
-					  data: plot,
-					  color: this.get('color'),
-					  type: 'area',
-					  fillColor: {
-						  linearGradient: {
-							  x1: 0,
-							  y1: 0,
-							  x2: 0,
-							  y2: 1
-						  },
-						  stops: [
-							  [0, this.get('fillColor')],
-							  [1, 'white']
-						  ]
-					  }
-				  }
-			  ]
-			});
-		}
-	});
-	View.id = "views/common/graph";
-	return View;
+					},
+					animation: false
+				}
+			},
+			legend: {
+				enabled: false
+			},
+			credits: {
+				enabled: false
+			},
+			series: [
+				{
+					name: this.locals.name,
+					yAxis: 0,
+					data: plot,
+					color: this.get('color'),
+					type: 'area',
+					fillColor: {
+						linearGradient: {
+							x1: 0,
+							y1: 0,
+							x2: 0,
+							y2: 1
+						},
+						stops: [
+							[0, this.get('fillColor')],
+							[1, 'white']
+						]
+					}
+				}
+			]
+		});
+	}
+});
+View.id = "views/common/graph";
+return View;
 });
