@@ -8,6 +8,7 @@ var lcfgPath = argv.config || "./local-config.js";
 if (fs.existsSync(lcfgPath)) {
 	cfg.config = _.merge(cfg.config, require(lcfgPath));
 }
+// eslint-disable-next-line no-process-env
 process.env['NEW_RELIC_PORT'] = cfg.config.server.port;
 
 var newrelic = require('newrelic');
@@ -32,13 +33,7 @@ _.merge(cfg, {
 		{name:"stats",require:"./modules/statsapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
-	// config:require("./config.js")
 });
-
-// var lcfgPath = argv.config || "./local-config.js";
-// if(fs.existsSync(lcfgPath)){
-// 	cfg.config = _.merge(cfg.config,require(lcfgPath));
-// }
 
 console.time("Live !");
 var cb = function (err) {
