@@ -1,14 +1,23 @@
+var argv = require('yargs').argv;
+var fs = require('fs');
+var _ = require("lodash");
+var cfg = {
+	config:require("./config.js")
+};
+var lcfgPath = argv.config || "./local-config.js";
+if (fs.existsSync(lcfgPath)) {
+	cfg.config = _.merge(cfg.config, require(lcfgPath));
+}
+process.env['NEW_RELIC_PORT'] = cfg.config.server.port;
+
 var newrelic = require('newrelic');
 var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');
-var fs = require('fs');
 var path = require('path');
-var _ = require("lodash");
 var safe = require("safe");
-var argv = require('yargs').argv;
 
-var cfg = {
+_.merge(cfg, {
 	modules:[
 		{name:"prefixify",object:tinyback.prefixify()},
 		{name:"tson",object:tinyback.tson()},
@@ -23,13 +32,13 @@ var cfg = {
 		{name:"stats",require:"./modules/statsapi.js"},
 		{name:"web",require:"./modules/web"}
 	],
-	config:require("./config.js")
-};
+	// config:require("./config.js")
+});
 
-var lcfgPath = argv.config || "./local-config.js";
-if(fs.existsSync(lcfgPath)){
-	cfg.config = _.merge(cfg.config,require(lcfgPath));
-}
+// var lcfgPath = argv.config || "./local-config.js";
+// if(fs.existsSync(lcfgPath)){
+// 	cfg.config = _.merge(cfg.config,require(lcfgPath));
+// }
 
 console.time("Live !");
 var cb = function (err) {

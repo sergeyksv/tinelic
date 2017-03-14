@@ -4,18 +4,6 @@
  * See lib/config.defaults.js in the agent distribution for a more complete
  * description of configuration variables and their potential values.
  */
-var fs = require('fs');
-var argv = require('yargs').argv;
-var _ = require("lodash");
-
-var config = require("./config.js");
-
-var lcfgPath = argv.config || "./local-config.js";
-if (fs.existsSync(lcfgPath)) {
-    config = _.merge(config, require(lcfgPath));
-}
-var port = config.server.port;
-
 exports.config = {
   agent_enabled: true,
   /**
@@ -35,6 +23,6 @@ exports.config = {
     level : 'info'
   },
   host : 'localhost',
-  port : port,
+  port : 80,
   ssl : false
 };
