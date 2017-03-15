@@ -4,18 +4,18 @@ define(['tinybone/base','dustc!views/client-errors/err_list.dust'],function (tb)
 		id:"views/client-errors/err_list",
 		events: {
           'click .more': function(e) {
-			  var self = this;
-              e.preventDefault();
-              if ($(e.currentTarget).text() == "Next") {
-				  this.locals.currentPage = parseInt(self.$('.findActive.active').text())+1;
-			  } else if ($(e.currentTarget).text() == "Prev") {
-				  this.locals.currentPage = parseInt(self.$('.findActive.active').text())-1;
-			  } else {
-				  this.locals.currentPage = parseInt($(e.currentTarget).html());
-			  }
-			  this.refresh(this.app.errHandler);
-              return false;
-          }
+                var self = this;
+                e.preventDefault();
+                if ($(e.currentTarget).text() == "Next") {
+                    this.locals.currentPage = parseInt(self.$('.findActive.active').text())+1;
+                } else if ($(e.currentTarget).text() == "Prev") {
+                    this.locals.currentPage = parseInt(self.$('.findActive.active').text())-1;
+                } else {
+                    this.locals.currentPage = parseInt($(e.currentTarget).html());
+                }
+                this.refresh(this.app.errHandler);
+                return false;
+            }
         },
         preRender: function () {
             var locals = this.locals;
@@ -26,7 +26,7 @@ define(['tinybone/base','dustc!views/client-errors/err_list.dust'],function (tb)
                 locals.pageCount = Math.ceil(data.data.length/10);
                 var selIndex = 0;
                 for (i=0; i<data.data.length; i++) {
-                    if (data.data[i].error._id == data.data.id) {
+                    if (data.data[i].error._id == data.id) {
                         selIndex = i;
                         break;
                     }
