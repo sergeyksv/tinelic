@@ -682,6 +682,13 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				}))
 
 			}))
+		},
+		group_info:function (req, res, cb) {
+			require(["routes/group-info"],function (route) {
+//				console.log(req.params.name);
+				route(req,res,cb);
+			},cb)
 		}
+
 	}
 })

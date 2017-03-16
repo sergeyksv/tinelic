@@ -1037,7 +1037,6 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 	}, function (err) {
 		if (err) {
 			newrelic.noticeError(err);
-			console.log(data);
 		}
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);

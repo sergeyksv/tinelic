@@ -151,11 +151,11 @@ getMetricTotals: function(t, p, cb) {
 			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"}}},
 		], {allowDiskUse: true},
 		safe.sure(cb, function(res) {
-//console.log(res);
 				var memtt = 0;
 				_.forEach(res,function(r) {
 					memtt += r.mem1/r.c1;
 				});
+//console.log({proc: res.length, mem: Math.round(memtt)});
 				cb(null,{proc: res.length, mem: Math.round(memtt)});
 			})
 		);

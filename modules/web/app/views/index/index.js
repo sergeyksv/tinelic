@@ -11,5 +11,5 @@ define(['tinybone/base','safe','dustc!views/index/index.dust'],function (tb,safe
         }
 	})
 	View.id = "views/index/index";
-	return View;
+  return View;
 })
