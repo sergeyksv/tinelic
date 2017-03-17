@@ -1,0 +1,96 @@
+{>"views/base_page"/}
+{<main}
+{#teams}
+
+<legend>
+<div class="col-md-20">
+
+		<font size = "4" face="Times New Roman">{name}
+		{@gt key=t_metrics.server.proc value=0}
+			( {t_metrics.server.proc} x {@math key=t_metrics.server.mem method="round"/} Mb )
+		{/gt}:&nbsp&nbsp
+		<span style="white-space: nowrap;">
+		<span class="text-danger">{@gt key=t_metrics.errAck.dtlActions value=0}<b>{t_metrics.errAck.dtlActions}</b>{:else}0{/gt} ( {t_metrics.errAck.actions} )</span> / <span class="text-success">{@gt key=t_metrics.errAck.dtlPages value=0}<b>{t_metrics.errAck.dtlPages}</b>{:else}0{/gt} ( {t_metrics.errAck.pages} )</span>
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.apdex.server type="apdex"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.apdex.client type="apdex"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.apdex.ajax type="apdex"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.r type="rpm"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.r type="rpm"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.r type="rpm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.etu type="tm"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.etu type="tm"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.etu type="tm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.e type="erate"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.e type="erate"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.e type="erate"/}</span>
+		{/gt}
+		</font>
+</div>
+</legend>
+{/teams}
+
+<table class="tablesorter table table-hover" id="trbreak">
+		<thead>
+			<tr class="info" >
+				<th><p align="center">Project name</p></th>
+				<th><p align="center">errAck</p> <p align="center">dtlActions(actions)/dtlPages(pages)</p></th>
+				<th><p align="center">Apdex</p> <p align="center">server/client/ajax</p></th>
+				<th><p align="center">Throughput</p> <p align="center">server/client/ajax</p></th>
+				<th><p align="center">Time</p> <p align="center">server/client/ajax</p></th>
+				<th><p align="center">erate</p> <p align="center">server/client/ajax</p></th>
+			</tr>
+		</thead>
+		<tbody>
+{#teams.projects}	
+{@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
+			<tr align="center">
+				<td>{_t_proj.name}</td>
+				<td>{_t_proj.errAck.dtlActions}({_t_proj.errAck.actions})/{_t_proj.errAck.dtlPages}({_t_proj.errAck.pages})</td>
+				<td>{@formatnumber val=_t_proj.apdex.server type="apdex"/}/{@formatnumber val=_t_proj.apdex.client type="apdex"/}/{@formatnumber val=_t_proj.apdex.ajax type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.server.r type="rpm"/}/{@formatnumber val=_t_proj.client.r type="rpm"/}/{@formatnumber val=_t_proj.ajax.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.etu type="tm"/}/{@formatnumber val=_t_proj.client.etu type="tm"/}/{@formatnumber val=_t_proj.ajax.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.e type="erate"/}/{@formatnumber val=_t_proj.client.e type="erate"/}/{@formatnumber val=_t_proj.ajax.e type="erate"/}</td>
+			</tr>
+{/lte}{/gte}			
+{/teams.projects}
+		</tbody>
+</table>
+
+<div id="paging">
+	<ul class="pagination">
+		{#paging}
+			{@eq key="{index}" value="1"}
+				<li class="{?selected}disabled{/selected}">{^selected}<a href="#" class="more">{/selected}<span>Prev</span>{^selected}</a>{/selected}</li>
+			{/eq}
+			<li class="findActive {?selected}active{/selected}"><a href="#" class="more">{index}</a></li>
+			{@eq key="{index}" value="{pageCount}"}
+				<li class="{?selected}disabled{/selected}">{^selected}<a href="#" class="more">{/selected}<span>Next</span>{^selected}</a>{/selected}</li>
+			{/eq}
+		{/paging}
+	</ul>
+</div>
+
+{/main}
