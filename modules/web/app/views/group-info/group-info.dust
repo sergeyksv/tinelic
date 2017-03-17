@@ -56,11 +56,20 @@
 		<thead>
 			<tr class="info" >
 				<th><p align="center">Project name</p></th>
-				<th><p align="center">errAck</p> <p align="center">dtlActions(actions)/dtlPages(pages)</p></th>
-				<th><p align="center">Apdex</p> <p align="center">server/client/ajax</p></th>
-				<th><p align="center">Throughput</p> <p align="center">server/client/ajax</p></th>
-				<th><p align="center">Time</p> <p align="center">server/client/ajax</p></th>
-				<th><p align="center">erate</p> <p align="center">server/client/ajax</p></th>
+				<th><p align="center">errAck</p> <p align="center">dtlActions(actions)</p></th>
+				<th><p align="center">errAck</p> <p align="center">dtlPages(pages)</p></th>
+				<th><p align="center">Apdex</p> <p align="center">server</p></th>
+				<th><p align="center">Apdex</p> <p align="center">client</p></th>
+				<th><p align="center">Apdex</p> <p align="center">ajax</p></th>
+				<th><p align="center">Throughput</p> <p align="center">server</p></th>
+				<th><p align="center">Throughput</p> <p align="center">client</p></th>
+				<th><p align="center">Throughput</p> <p align="center">ajax</p></th>
+				<th><p align="center">Time</p> <p align="center">server</p></th>
+				<th><p align="center">Time</p> <p align="center">client</p></th>
+				<th><p align="center">Time</p> <p align="center">ajax</p></th>
+				<th><p align="center">erate</p> <p align="center">server</p></th>
+				<th><p align="center">erate</p> <p align="center">client</p></th>
+				<th><p align="center">erate</p> <p align="center">ajax</p></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -68,11 +77,20 @@
 {@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
 			<tr align="center">
 				<td>{_t_proj.name}</td>
-				<td>{_t_proj.errAck.dtlActions}({_t_proj.errAck.actions})/{_t_proj.errAck.dtlPages}({_t_proj.errAck.pages})</td>
-				<td>{@formatnumber val=_t_proj.apdex.server type="apdex"/}/{@formatnumber val=_t_proj.apdex.client type="apdex"/}/{@formatnumber val=_t_proj.apdex.ajax type="apdex"/}</td>
-				<td>{@formatnumber val=_t_proj.server.r type="rpm"/}/{@formatnumber val=_t_proj.client.r type="rpm"/}/{@formatnumber val=_t_proj.ajax.r type="rpm"/}</td>
-				<td>{@formatnumber val=_t_proj.server.etu type="tm"/}/{@formatnumber val=_t_proj.client.etu type="tm"/}/{@formatnumber val=_t_proj.ajax.etu type="tm"/}</td>
-				<td>{@formatnumber val=_t_proj.server.e type="erate"/}/{@formatnumber val=_t_proj.client.e type="erate"/}/{@formatnumber val=_t_proj.ajax.e type="erate"/}</td>
+				<td>{_t_proj.errAck.dtlActions} ({_t_proj.errAck.actions})</td>
+				<td>{_t_proj.errAck.dtlPages} ({_t_proj.errAck.pages})</td>
+				<td>{@formatnumber val=_t_proj.apdex.server type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.apdex.client type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.apdex.ajax type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.server.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.client.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.client.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.e type="erate"/}</td>
+				<td>{@formatnumber val=_t_proj.client.e type="erate"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.e type="erate"/}</td>
 			</tr>
 {/lte}{/gte}			
 {/teams.projects}
