@@ -1,4 +1,6 @@
 /*jshint -W033 */
+/*eslint semi:0, "curly": 0,"eqeqeq": 0 */
+/*global requirejs*/
 define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (require,api,safe,_,feed,moment) {
 	return {
 		index:function (req, res, cb) {
@@ -174,11 +176,11 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								r.value.bar = r.value.apdex*100;
 							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
 							r.value.tta = (r.value.tt/r.value.c/1000);
-						 });
+						});
 						_.each(r.breakdown, function (r) {
 							r.value.tta = r.value.tt/r.value.c;
 						})
-						 res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
+						res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
 					)
 				}

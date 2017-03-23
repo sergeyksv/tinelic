@@ -84,7 +84,7 @@ module.exports.init = function (ctx, cb) {
 		ctx.router.get('*',function (req,res,next) {
 			res.renderX = function (route) {
 				var req = this.req;
-				cb = cb || function (err) {
+				var cb = function (err) {
 					req.next(err);
 				};
 				var view = app.getView();
