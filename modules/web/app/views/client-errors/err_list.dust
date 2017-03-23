@@ -6,8 +6,8 @@
 			<span class="text-info">
 				{@select key="{st}"}
 					{@eq value="serr"}{stats.session}{/eq}
-                    {@eq value="perr"}{stats.pages}{/eq}
-                    {@eq value="terr"}{stats.count}{/eq}
+					{@eq value="perr"}{stats.pages}{/eq}
+					{@eq value="terr"}{stats.count}{/eq}
 					{@eq value="mr"}{error._dtl}{/eq}
 				{/select}
 			</span>
