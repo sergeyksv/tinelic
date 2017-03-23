@@ -1,15 +1,15 @@
 <div class="panel panel-danger" id="{_t_view.cid}">
-    <div class="panel-heading">
-        <a class="text-danger" href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a>
-        <span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
-    </div>
-    <div class="panel-body" >
-        {#database.data}
-            <div class="progress" style="margin: 2px 0 0 0;">
-                <div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
-                    {_id} <span class="text-danger numRight">{@formatnumber val=value.avg type="tm"/}</span>
-                </div>
-            </div>
-        {/database.data}
-    </div>
+	<div class="panel-heading">
+		<a class="text-danger" href='{_t_prefix}/project/{project.slug}/database/req'>Database/statements</a>
+		<span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
+	</div>
+	<div class="panel-body" >
+		{#database.data}
+		<div class="progress" style="margin: 2px 0 0 0;">
+			<div class="progress-bar-danger" role="progressbar" style="width: {value.progress}%;">
+				{_id} <span class="text-danger numRight">{@formatnumber val=value.avg type="tm"/}</span>
+			</div>
+		</div>
+		{/database.data}
+	</div>
 </div>

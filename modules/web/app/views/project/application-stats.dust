@@ -1,5 +1,5 @@
 <span class="h6" style="margin-left: 5px;" id="{_t_view.cid}">
 {#statGraph}
-    {@formatnumber val=rsm type="rpm"/} / {@formatnumber val=erroraction type="erate"/} / {@formatnumber val=ttserver type="tm"/}
+{@formatnumber val=rsm type="rpm"/} / {@formatnumber val=erroraction type="erate"/} / {@formatnumber val=ttserver type="tm"/}
 {/statGraph}
 </span>
