@@ -155,7 +155,6 @@ getMetricTotals: function(t, p, cb) {
 				_.forEach(res,function(r) {
 					memtt += r.mem1/r.c1;
 				});
-//console.log({proc: res.length, mem: Math.round(memtt)});
 				cb(null,{proc: res.length, mem: Math.round(memtt)});
 			})
 		);

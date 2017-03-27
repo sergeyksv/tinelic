@@ -14,24 +14,41 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 			this.locals.currentPage = parseInt($(e.currentTarget).html());
 		}
 		this.refresh(this.app.errHandler);
-					return false;
+					return true;
 			}
-		},
+	},
 		preRender: function () {
 				var locals = this.locals;
-				var data = this.data;
-				var i;
+				var project0 = this.data.teams.projects;
+				var sortMap = {
+												"name": "_t_proj.name",
+												"dtlActions": "_t_proj.errAck.dtlActions",
+												"dtlPages": "_t_proj.errAck.dtlPages",
+												"ApdexServer": "_t_proj.apdex.server",
+												"ApdexClient": "_t_proj.apdex.client",
+												"ApdexAjax": "_t_proj.apdex.ajax",
+												"ThroughputServer": "_t_proj.server.r",
+												"ThroughputClient": "_t_proj.client.r",
+												"ThroughputAjax": "_t_proj.ajax.r",
+												"TimeServer": "_t_proj.server.etu",
+												"TimeClient": "_t_proj.client.etu",
+												"TimeAjax": "_t_proj.ajax.etu",
+												"erateServer": "_t_proj.server.e",
+												"erateClient": "_t_proj.client.e",
+												"erateAjax": "_t_proj.ajax.e"
+											};
+				if	(this.data.sortType) {
+					project0 = safe.sortBy(project0, sortMap[this.data.sortByF]);
+
+					if (this.data.sortType == "desc")
+						project0 = project0.reverse();
+
+					this.data.teams.projects = project0;
+				};
 				if (!locals.pageCount) {
 						// set default data
-						locals.pageCount = Math.ceil(data.teams.projects.length/10);
-						var selIndex = 0;
-						for (i=0; i<data.teams.projects.length; i++) {
-								if (data.teams.projects[i]._idp == data.query) {
-										selIndex = i;
-										break;
-								}
-						}
-						locals.currentPage = 1+Math.floor(selIndex/10);
+						locals.pageCount = Math.ceil(this.data.teams.projects.length/10);
+						locals.currentPage = this.data.tmpCurPage;
 				}
 				// update paging helper variables
 				locals.leftlistEnd = locals.currentPage*10-1;
@@ -39,12 +56,16 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 				locals.paging = [];
 				for (i=1; i<=locals.pageCount; i++) {
 						locals.paging.push({index:i,selected:i==locals.currentPage});
-				}
+				};
 		},
 		postRender:function () {
-				var trbreak = self.$('#trbreak');
-				trbreak.tablesorter();
-}})
+// zebra
+			var trbreak = this.$('#trbreak');
+			for (var i = 1; i < trbreak[0].rows.length; i+=2) {
+				trbreak[0].rows[i].className = "odd";
+			}
+		}
+	});
 	View.id = "views/group-info/group-info";
   return View;
 })
