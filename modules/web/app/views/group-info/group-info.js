@@ -14,24 +14,86 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 			this.locals.currentPage = parseInt($(e.currentTarget).html());
 		}
 		this.refresh(this.app.errHandler);
-					return false;
+					return true;
 			}
-		},
+	},
 		preRender: function () {
 				var locals = this.locals;
-				var data = this.data;
-				var i;
+				var project0 = this.data.teams.projects;
+				if (!this.data.sortType) {
+						;//console.log("this.data.sortType", this.data.sortType)
+				} else {
+					if (this.data.sortType == "asc") {
+							if (this.data.sortByF == "name")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.name');
+							if (this.data.sortByF == "dtlActions")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.errAck.dtlActions');
+							if (this.data.sortByF == "dtlPages")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.errAck.dtlPages');
+							if (this.data.sortByF == "ApdexServer")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.server');
+							if (this.data.sortByF == "ApdexClient")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.client');
+							if (this.data.sortByF == "ApdexAjax")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.ajax');
+							if (this.data.sortByF == "ThroughputServer")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.r');
+							if (this.data.sortByF == "ThroughputClient")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.r');
+							if (this.data.sortByF == "ThroughputAjax")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.r');
+							if (this.data.sortByF == "TimeServer")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.etu');
+							if (this.data.sortByF == "TimeClient")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.etu');
+							if (this.data.sortByF == "TimeAjax")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.etu');
+							if (this.data.sortByF == "erateServer")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.e');
+							if (this.data.sortByF == "erateClient")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.e');
+							if (this.data.sortByF == "erateAjax")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.e');
+					}
+					if (this.data.sortType == "desc") {
+							if (this.data.sortByF == "name")
+								this.data.teams.projects = safe.sortBy(project0, '_t_proj.name').reverse();
+								if (this.data.sortByF == "dtlActions")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.errAck.dtlActions').reverse();
+								if (this.data.sortByF == "dtlPages")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.errAck.dtlPages').reverse();
+								if (this.data.sortByF == "ApdexServer")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.server').reverse();
+								if (this.data.sortByF == "ApdexClient")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.client').reverse();
+								if (this.data.sortByF == "ApdexAjax")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.apdex.ajax').reverse();
+								if (this.data.sortByF == "ThroughputServer")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.r').reverse();
+								if (this.data.sortByF == "ThroughputClient")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.r').reverse();
+								if (this.data.sortByF == "ThroughputAjax")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.r').reverse();
+								if (this.data.sortByF == "TimeServer")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.etu').reverse();
+								if (this.data.sortByF == "TimeClient")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.etu').reverse();
+								if (this.data.sortByF == "TimeAjax")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.etu').reverse();
+								if (this.data.sortByF == "erateServer")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.server.e').reverse();
+								if (this.data.sortByF == "erateClient")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.client.e').reverse();
+								if (this.data.sortByF == "erateAjax")
+									this.data.teams.projects = safe.sortBy(project0, '_t_proj.ajax.e').reverse();
+					}
+				};
 				if (!locals.pageCount) {
 						// set default data
-						locals.pageCount = Math.ceil(data.teams.projects.length/10);
-						var selIndex = 0;
-						for (i=0; i<data.teams.projects.length; i++) {
-								if (data.teams.projects[i]._idp == data.query) {
-										selIndex = i;
-										break;
-								}
-						}
-						locals.currentPage = 1+Math.floor(selIndex/10);
+						locals.pageCount = Math.ceil(this.data.teams.projects.length/10);
+						locals.currentPage = this.data.tmpCurPage;
+						locals.sortField = this.data.sortByF;
+						locals.sortType = this.data.sortType;
 				}
 				// update paging helper variables
 				locals.leftlistEnd = locals.currentPage*10-1;
@@ -39,12 +101,16 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 				locals.paging = [];
 				for (i=1; i<=locals.pageCount; i++) {
 						locals.paging.push({index:i,selected:i==locals.currentPage});
-				}
+				};
 		},
 		postRender:function () {
-				var trbreak = self.$('#trbreak');
-				trbreak.tablesorter();
-}})
+			var trbreak = this.$('#trbreak');
+//			trbreak.tablesorter();
+			for (var i = 1; i < trbreak[0].rows.length; i+=2) {
+				trbreak[0].rows[i].className = "odd";
+			}
+		}
+	});
 	View.id = "views/group-info/group-info";
   return View;
 })

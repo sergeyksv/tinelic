@@ -15,7 +15,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 					_dt: {$gt: dtstart,$lte:dtend}
 				}}}, safe.sure(cb, function (r) {
 					r.forEach(function (r){
-//console.log(JSON.stringify(r));
 						var period;
 						var errAck = r.result.errAck;
 						var Apdex = {}; var Server = {}; var Client = {}; var Ajax = {};
@@ -82,14 +81,11 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
 			}
 		}, safe.sure(cb, function (r) {
-//			var team = _.filter(r.teams, function(team) {return (team.name == req.params.name)});
-//console.log(team);
 			var ind = -1, ind0;
 			_.forEach(r.teams, function(team) {
 				ind += 1;
 				if (team.name == req.params.name) {
 				ind0 = ind;
-//		console.log(ind);
 				var projects = {};
 				_.forEach(r.data, function(proj) {
 					projects[proj._id] = proj;
@@ -97,7 +93,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				_.forEach(team.projects, function(proj) {
 					proj._t_proj = projects[proj._idp];
 				});
-
 				var tmetrics = {};
 				_.forEach(team.projects, function(proj){
 					_.assign(tmetrics, _.pick(proj._t_proj, 'apdex', 'server', 'client', 'errAck', 'ajax'),
@@ -128,12 +123,14 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				}
 				team.t_metrics = tmetrics;
 }});
-//console.log(r.teams[ind0].projects[0]._t_proj);
 			res.renderX({
 				view:r.view,
 				data:{
 					title:"Tinelic - Group-info",
-					teams:r.teams[ind0]
+					teams:r.teams[ind0],
+					tmpCurPage: (req.query.page>1) ? req.query.page : 1,
+					sortType: (req.query.sort) ? req.query.sort : "",
+					sortByF: (req.query.by) ? req.query.by : ""
 				}});
 		}));
 	};
