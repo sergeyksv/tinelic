@@ -349,15 +349,39 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 				// on connect we should link agent with its project id when available
 				var body = nrParseBody(req)[0];
 				var agent_name = body.app_name[0];
-				// agent name is either project id or name
-				var query = prefixify({_id:agent_name});
+				var agent_team, query;
+
+				if (body.app_name[0][24] == '-'){
+					agent_team = body.app_name[0].split('-', 2)[0];
+					agent_name = body.app_name[0].split('-', 2)[1];
+					body.app_name[0] = agent_name;
+				};
+
+				query = prefixify({_id:agent_name});
 				if (!query._id)
 					query.name = agent_name;
 
 				// check that project exist
 				ctx.api.assets.getProject(ctx.locals.systoken, {filter:query}, safe.sure(cb, function (project) {
-					if (!project)
-						throw new Error( "Project \"" + agent_name + "\" not found" );
+					console.log("project",project);
+					if (!project) {
+						if (!agent_team){
+						  throw new Error( "Project \"" + agent_name + "\" not found" );
+						}else{
+							console.log("===", agent_team, "===", agent_name, "===", body.app_name[0]);
+							ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: agent_team}}, safe.sure(cb, function (team) {
+								ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: agent_name}}, safe.sure(cb, function (proj) {
+									console.log("team ", team);
+									console.log("project after save ", proj);
+									var tmpProj = team.projects;
+									console.log("tmpProj before push ", tmpProj);
+									tmpProj.push({_idp: proj._id});
+									console.log("tmpProj after push ", tmpProj);
+									ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: agent_team, projects: tmpProj}, safe.sure(cb, function () {}));
+								}));
+							}));
+						}
+					}else{
 					var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
 					var _ret = {return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}};
 					// set value to prevent errors from newrelic:api:getBrowserTimingHeader
@@ -401,7 +425,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 					'})()\n'+
 					'</script>\n';
 					res.json(_ret);
-				}));
+				}}));
 			},
 			agent_settings:function () {
 				// seems to be hook to alter agent settings
