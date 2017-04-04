@@ -352,8 +352,8 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 				var agent_team, query;
 
 				if (body.app_name[0][24] == '-'){
-					agent_team = body.app_name[0].split('-', 2)[0];
-					agent_name = body.app_name[0].split('-', 2)[1];
+					agent_team=	body.app_name[0].substr(0, 24)
+					agent_name= body.app_name[0].substr(25, body.app_name[0].length-1);
 					body.app_name[0] = agent_name;
 				};
 
@@ -363,20 +363,16 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 
 				// check that project exist
 				ctx.api.assets.getProject(ctx.locals.systoken, {filter:query}, safe.sure(cb, function (project) {
-					console.log("project",project);
 					if (!project) {
 						if (!agent_team){
 						  throw new Error( "Project \"" + agent_name + "\" not found" );
 						}else{
-							console.log("===", agent_team, "===", agent_name, "===", body.app_name[0]);
 							ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: agent_team}}, safe.sure(cb, function (team) {
-								ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: agent_name}}, safe.sure(cb, function (proj) {
-									console.log("team ", team);
-									console.log("project after save ", proj);
-									var tmpProj = team.projects;
-									console.log("tmpProj before push ", tmpProj);
+									var tmpProj=team.projects;
+									ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: agent_name}}, safe.sure(cb, function (proj) {
+									if (!tmpProj)
+											tmpProj = [];
 									tmpProj.push({_idp: proj._id});
-									console.log("tmpProj after push ", tmpProj);
 									ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: agent_team, projects: tmpProj}, safe.sure(cb, function () {}));
 								}));
 							}));
