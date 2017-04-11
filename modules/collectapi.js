@@ -348,18 +348,9 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 			connect:function () {
 				// on connect we should link agent with its project id when available
 				var body = nrParseBody(req)[0];
-	//			var agent_name;
-				ctx.api.assets.ensureProjectId(ctx.locals.systoken, body.app_name[0], safe.sure(cb, function(project){
-					console.log("post(/agent_listener/invoke_raw_method - project", project);
-//				var agent_team, query;
-	//			var query = prefixify({_id:agent_name});
-	//			if (!query._id)
-	//				query.name = agent_name;
-				// check that project exist
-	//			ctx.api.assets.getProject(ctx.locals.systoken, {filter:query}, safe.sure(cb, function (project) {
-	//				if (!project) {
-	//				  throw new Error( "Project \"" + agent_name + "\" not found" );
-	//				}else{
+				ctx.api.assets.ensureProjectId(ctx.locals.systoken, body.app_name[0], safe.sure(cb, function(idp){
+					var project={};
+					project._id = idp;
 					var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
 					var _ret = {return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}};
 					// set value to prevent errors from newrelic:api:getBrowserTimingHeader
@@ -669,10 +660,10 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 	});
 });
 ctx.router.get("/ajax/:project", function (req, res, next) {
-//console.log("get(/ajax/:project");
+ ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = req.query;
 	safe.run(function (cb) {
-		data._idp = new mongo.ObjectID(req.params.project);
+		data._idp = new mongo.ObjectID(idp);
 		data._dtr = new Date();
 		data._dt = data._dtr;
 
@@ -706,7 +697,6 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 		data._s_url = data.url;
 		delete data.url;
 		delete data.r;
-
 		// initially we trying to link to closest page
 		safe.parallel({
 			before: function (cb) {
@@ -753,12 +743,13 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
+ }));
 });
 ctx.router.get("/browser/:project",function (req, res, next) {
-console.log("/browser/:project");
+ ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = req.query;
 	safe.run(function (cb) {
-		data._idp= req.params.project;
+		data._idp= idp;
 		data._dtr = new Date();
 		data._dtc = data._dt;
 		data._dt = data._dtr;
@@ -798,7 +789,6 @@ console.log("/browser/:project");
 		data._s_route = data.r;
 		delete data.r;
 		delete data.p;
-console.log(data);
 		ctx.api.validate.check("page", data, safe.sure(cb, function(){
 			pages.insert(data, safe.sure(cb, function (docs) {
 				// once after inserting page we need to link
@@ -874,24 +864,18 @@ console.log(data);
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
+ }));
 });
 // dsn is like http://auth1:auth2@{host}/collect/sentry/{projectid}
 ctx.router.post( "/sentry/api/store", function( req, res, next ) {
-
-	console.log("===================");
-	console.log("post( /sentry/api/store, ");
-	console.log("===================");
-
-
 	safe.run(function(cb) {
 		var zip_buffer = new Buffer( req.body.toString(), 'base64' );
-//console.log(" /sentry/api/store, zip_buffer", zip_buffer.toString());
-		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
+//		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
 		zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
-//console.log("_buffer_getsentry_data", _buffer_getsentry_data);
-			var ge = JSON.parse( _buffer_getsentry_data.toString() );
+		 var ge = JSON.parse( _buffer_getsentry_data.toString() );
+		 ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, function(idp){
 			var te = {
-				_idp:new mongo.ObjectID(ge.project),
+				_idp:new mongo.ObjectID(idp),
 				_dt: new Date(ge.timestamp),
 				_s_reporter: "raven",
 				_s_server: ge.server_name,
@@ -917,7 +901,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 					});
 				});
 				te.stacktrace.frames = te.stacktrace.frames.reverse();
-			}
+			};
 			ctx.api.validate.check("error",te, safe.sure(cb, function () {
 				safe.parallel([
 					function(cb) {
@@ -940,6 +924,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 					}
 				],cb);
 			}));
+		 }));
 		}));
 	}, function( error ){
 		if (error) {
@@ -953,11 +938,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 	});
 });
 ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
-
-	console.log("===================");
-	console.log(" /sentry/api/:project/:action, req.params", req.params);
-	console.log("===================");
-
+ ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = {};
 	safe.run(function (cb) {
 		data = JSON.parse(req.query.sentry_data);
@@ -968,7 +949,7 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 
 		var _dtp = data._dtp || data._dtInit;
 		if (data.project) delete data.project;
-		data._idp = req.params.project;
+		data._idp = idp;
 		data._dtr = new Date();
 		data._dtc = data._dt;
 		data._dt = data._dtr;
@@ -1022,7 +1003,6 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 		if (data.stacktrace.frames.length > 1) {
 			data.stacktrace.frames.reverse();
 		}
-
 		pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 			if (page) {
 				data._idpv = page._id;
@@ -1058,6 +1038,7 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
+ }));
 });
 
 }));}),cb(null, {

@@ -62,35 +62,49 @@ module.exports.init = function (ctx, cb) {
 */
 api:{
 
-ensureProjectId: function (t, bodyAppName, cb){
-	if (bodyAppName[24] == '-'){
-		var at = bodyAppName.substr(0, 24)
-		var an = bodyAppName.substr(25, bodyAppName.length-1);
-		if (!an)
-			throw new Error( "The project name cannot be empty!" );
-		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
-			if (!project) {
-					ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
-						if (!team) {
-							throw new Error( "_id Team \"" + at + "\" not found" );
-						}else{
-							var tmpProj=team.projects;
-							ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
-								if (!tmpProj)
-									tmpProj = [];
-								tmpProj.push({_idp: proj._id});
-								ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
-								cb(null, proj);
-							}));
-						};
-				}));
-			}else{
-				ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {cb(null, project);}));
-			};
-		}));
-	}else{
-		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: bodyAppName}}, safe.sure(cb, function (project) {cb(null, project);}));
-	};
+/**
+* @param {String} token Auth token
+* @param {String} projNameOrID project name or a compound name of the project ({team ID}-{project name}) or project ID
+* @return {String} _id - project id
+*/
+ensureProjectId: function (t, projNameOrID, cb){
+	var tmpQuery = {_id: projNameOrID};
+	if (!(_.isEmpty(queryfix(tmpQuery))))
+	 	tmpQuery = queryfix(tmpQuery);
+	projects.find(tmpQuery).toArray(safe.sure(cb, function (p1) {
+		if (p1.length == 0) {
+			if (projNameOrID[24] == '-'){
+	  		var at = projNameOrID.substr(0, 24)
+	  		var an = projNameOrID.substr(25, projNameOrID.length-1);
+		 		if (!an)
+			 		throw new Error( "The project name cannot be empty!" );
+		 		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
+			 		if (!project) {
+						ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
+					 		if (!team) {
+					 			throw new Error( "_id Team \"" + at + "\" not found" );
+							}else{
+								var tmpProj=team.projects;
+								ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
+							 		if (!tmpProj)
+							 			tmpProj = [];
+							 		tmpProj.push({_idp: proj._id});
+							 		ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
+							 		cb(null, proj._id);
+								}));
+							};
+				 		}));
+			 		}else{
+				 		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {cb(null, project._id);}));
+			 		};
+		 		}));
+	 		}else{
+	  		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: projNameOrID}}, safe.sure(cb, function (project) {cb(null, project._id);}));
+	 		};
+		}else{
+			cb(null, projNameOrID);
+		};
+ }));
 },
 
 /**
