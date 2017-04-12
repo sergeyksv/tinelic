@@ -2,6 +2,7 @@
 var _ = require("lodash");
 var safe = require("safe");
 var mongo = require("mongodb");
+var projIdCache = {};
 
 module.exports.deps = ['mongo','obac'];
 
@@ -68,6 +69,21 @@ api:{
 * @return {String} _id - project id
 */
 ensureProjectId: function (t, projNameOrID, cb){
+ const cacheSize = 10, lifeTime = 60*1000;
+ var cacheUpd = function(p2, p3, p4){
+	 if (!(p2 in projIdCache) && (Object.keys(projIdCache).length >= cacheSize)){
+//		 for (var key in projIdCache){if ((new Date()).valueOf()-projIdCache[key].age >= lifeTime){delete projIdCache[key]; break};};
+		 if (Object.keys(projIdCache).length >= cacheSize){
+			 var tmpAge = (new Date()).valueOf(); var tmpKey = '';
+			 for (var key in projIdCache){
+				 if (projIdCache[key].age<tmpAge){tmpAge=projIdCache[key].age; tmpKey=key};
+		 	 };
+			 delete projIdCache[tmpKey];
+		 }
+	 };
+	 projIdCache[p2] = {_id: p3, count: p4, age: (new Date()).valueOf()};
+ };
+ if (!(projNameOrID in projIdCache)){
 	var tmpQuery = {_id: projNameOrID};
 	if (!(_.isEmpty(queryfix(tmpQuery))))
 	 	tmpQuery = queryfix(tmpQuery);
@@ -90,21 +106,34 @@ ensureProjectId: function (t, projNameOrID, cb){
 							 			tmpProj = [];
 							 		tmpProj.push({_idp: proj._id});
 							 		ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
+									cacheUpd(projNameOrID, proj._id, 1);
 							 		cb(null, proj._id);
 								}));
 							};
 				 		}));
 			 		}else{
-				 		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {cb(null, project._id);}));
+				 		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
+							cacheUpd(projNameOrID, project._id, 1);
+							cb(null, project._id);
+						}));
 			 		};
 		 		}));
 	 		}else{
-	  		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: projNameOrID}}, safe.sure(cb, function (project) {cb(null, project._id);}));
+	  		ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: projNameOrID}}, safe.sure(cb, function (project) {
+					cacheUpd(projNameOrID, project._id, 1);
+					cb(null, project._id);
+				}));
 	 		};
 		}else{
+			cacheUpd(projNameOrID, projNameOrID, 1);
 			cb(null, projNameOrID);
 		};
- }));
+  }));
+ }else{
+	 cacheUpd(projNameOrID, projIdCache[projNameOrID]._id, projIdCache[projNameOrID].count+1);
+	 cb(null, projIdCache[projNameOrID]._id);
+ };
+// console.log("projIdCache", projIdCache, "count of items in cache", Object.keys(projIdCache).length);
 },
 
 /**
