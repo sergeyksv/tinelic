@@ -70,9 +70,8 @@ api:{
 */
 ensureProjectId: function (t, projNameOrID, cb){
 	safe.run(function (cb) {
- 		if (projNameOrID in projIdCache){
-			return cb(projIdCache[projNameOrID]);
- 		}else{
+ 			if (projNameOrID in projIdCache)
+				return cb(null, projIdCache[projNameOrID]);
 			var tmpQuery = {_id: projNameOrID};
 			if (!(_.isEmpty(queryfix(tmpQuery))))
 	 			tmpQuery = queryfix(tmpQuery);
@@ -82,12 +81,12 @@ ensureProjectId: function (t, projNameOrID, cb){
 	  				var at = projNameOrID.substr(0, 24)
 	  				var an = projNameOrID.substr(25, projNameOrID.length-1);
 		 				if (!an)
-			 				throw new Error( "The project name cannot be empty!" );
+			 				return cb(new Error( "The project name cannot be empty!" ));
 		 				ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
 			 				if (!project) {
 								ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
 					 				if (!team) {
-					 					throw new Error( "_id Team \"" + at + "\" not found" );
+					 					return cb(new Error( "_id Team \"" + at + "\" not found" ));
 									}else{
 										var tmpProj=team.projects;
 										ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
@@ -95,27 +94,30 @@ ensureProjectId: function (t, projNameOrID, cb){
 							 					tmpProj = [];
 							 				tmpProj.push({_idp: proj._id});
 							 				ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
-							 				cb(proj._id);
+							 				cb(null, proj._id);
 										}));
 									};
 				 				}));
 			 				}else{
 				 				ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
-									cb(project._id);
+									cb(null, project._id);
 								}));
 			 				};
 		 				}));
 	 				}else{
 	  				ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: projNameOrID}}, safe.sure(cb, function (project) {
-							cb(project._id);
+							cb(null, project._id);
 						}));
 	 				};
 				}else{
-					cb(projNameOrID);
+					cb(null, projNameOrID);
 				};
   		}));
- 		};
-	}, function (res){projIdCache[projNameOrID] = res; cb(null, res);});
+	},
+	safe.sure(cb, function (res){
+		projIdCache[projNameOrID] = res;
+		cb(null, res);
+	}));
 },
 
 /**
