@@ -69,9 +69,9 @@ api:{
 * @return {String} _id - project id
 */
 ensureProjectId: function (t, projNameOrID, cb){
+	if (projNameOrID in projIdCache)
+		return safe.back(cb, null, projIdCache[projNameOrID]);
 	safe.run(function (cb) {
- 			if (projNameOrID in projIdCache)
-				return cb(null, projIdCache[projNameOrID]);
 			var tmpQuery = {_id: projNameOrID};
 			if (!(_.isEmpty(queryfix(tmpQuery))))
 	 			tmpQuery = queryfix(tmpQuery);
