@@ -72,17 +72,17 @@ ensureProjectId: function (t, projNameOrID, cb){
 	if (projNameOrID in projIdCache)
 		return safe.back(cb, null, projIdCache[projNameOrID]);
 	safe.run(function (cb) {
-		if (projNameOrID[24] == '-'){
+		if (_.size(projNameOrID) > 24 && projNameOrID[24] == '-'){
 			var at = projNameOrID.substr(0, 24)
 			var an = projNameOrID.substr(25, projNameOrID.length-1);
 			if (!an)
 				return cb(new Error( "The project name cannot be empty!" ));
-			ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
-				if (!project) {
-					ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
-						if (!team) {
-							return cb(new Error( "_id Team \"" + at + "\" not found" ));
-						}else{
+			ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
+				if (!team) {
+					return cb(new Error( "_id Team \"" + at + "\" not found" ));
+				}else{
+					ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
+						if (!project) {
 							var tmpProj=team.projects;
 							ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
 								if (!tmpProj)
@@ -91,10 +91,10 @@ ensureProjectId: function (t, projNameOrID, cb){
 								ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
 								cb(null, proj._id);
 							}));
+						}else{
+							cb(null, project._id);
 						};
 					}));
-				}else{
-					cb(null, project._id);
 				};
 			}));
 		}else{
