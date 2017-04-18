@@ -662,80 +662,80 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 ctx.router.get("/ajax/:project", function (req, res, next) {
 	var data = req.query;
 	safe.run(function (cb) {
-	 ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
-		data._idp = new mongo.ObjectID(idp);
-		data._dtr = new Date();
-		data._dt = data._dtr;
+		ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
+			data._idp = new mongo.ObjectID(idp);
+			data._dtr = new Date();
+			data._dt = data._dtr;
 
-		var ip = req.headers['x-forwarded-for'] ||
-			req.connection.remoteAddress ||
-			req.socket.remoteAddress ||
-			req.connection.socket.remoteAddress;
+			var ip = req.headers['x-forwarded-for'] ||
+				req.connection.remoteAddress ||
+				req.socket.remoteAddress ||
+				req.connection.socket.remoteAddress;
 
-		data = prefixify(data,{strict:1});
+			data = prefixify(data,{strict:1});
 
-		// add few data consistance checks
-		if (data._i_tt > 1000 * 60 * 10)
-			return cb(new Error("Ajax total time is too big > 10 min"));
+			// add few data consistance checks
+			if (data._i_tt > 1000 * 60 * 10)
+				return cb(new Error("Ajax total time is too big > 10 min"));
 
-		if (Math.abs(data._i_tt - data._i_pt - data._i_nt)>1000)
-			return cb(new Error("ajax total time do not match components"));
+			if (Math.abs(data._i_tt - data._i_pt - data._i_nt)>1000)
+				return cb(new Error("ajax total time do not match components"));
 
-		var md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))));
-		data.shash = md5sum.digest('hex');
-		md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(data._dtp.toString());
-		data.chash = md5sum.digest('hex');
-		data._s_name = data.r;
-		data._s_url = data.url;
-		delete data.url;
-		delete data.r;
-		// initially we trying to link to closest page
-		safe.parallel({
-			before: function (cb) {
-				pages.findOne({
-					chash: data.chash,
-					_dtc: {$lte: data._dtc}
-				}, {sort:{_dtc: -1}},cb);
-			},
-			after: function (cb) {
-				pages.findOne({
-					chash: data.chash,
-					_dtc: {$gte: data._dtc}
-				}, {sort:{_dtc: 1}},cb);
-			}
-		}, safe.sure(cb, function (res) {
-			// by default previous is fine
-			var page = res.before || null;
-			// but if anything in front that wittin page load time need to choose it
-			if (res.after && data._dtc.valueOf() >= (res.after._dtc.valueOf()-res.after._i_tt))
-				page = res.after;
+			var md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))));
+			data.shash = md5sum.digest('hex');
+			md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(data._dtp.toString());
+			data.chash = md5sum.digest('hex');
+			data._s_name = data.r;
+			data._s_url = data.url;
+			delete data.url;
+			delete data.r;
+			// initially we trying to link to closest page
+			safe.parallel({
+				before: function (cb) {
+					pages.findOne({
+						chash: data.chash,
+						_dtc: {$lte: data._dtc}
+					}, {sort:{_dtc: -1}},cb);
+				},
+				after: function (cb) {
+					pages.findOne({
+						chash: data.chash,
+						_dtc: {$gte: data._dtc}
+					}, {sort:{_dtc: 1}},cb);
+				}
+			}, safe.sure(cb, function (res) {
+				// by default previous is fine
+				var page = res.before || null;
+				// but if anything in front that wittin page load time need to choose it
+				if (res.after && data._dtc.valueOf() >= (res.after._dtc.valueOf()-res.after._i_tt))
+					page = res.after;
 
-			if (page) {
-				data._idpv = page._id;
-				if (page._s_route) data._s_route = page._s_route;
-				if (page._s_uri) data._s_uri = page._s_uri;
-			}
-			ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
-				safe.parallel([
-					function (cb) {
-						ajax.insert(data, cb);
-					},
-					function (cb) {
-						if (!page) return cb();
-						pages.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb);
-					}
-				],cb);
+				if (page) {
+					data._idpv = page._id;
+					if (page._s_route) data._s_route = page._s_route;
+					if (page._s_uri) data._s_uri = page._s_uri;
+				}
+				ctx.api.validate.check("ajax", data, safe.sure(cb, function(){
+					safe.parallel([
+						function (cb) {
+							ajax.insert(data, cb);
+						},
+						function (cb) {
+							if (!page) return cb();
+							pages.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb);
+						}
+					],cb);
+				}));
 			}));
-	 }));
-	}));
+		}));
 	}, function (err) {
 		if (err) {
 			console.log("BAD ajax: " + JSON.stringify(data));
@@ -748,116 +748,116 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 ctx.router.get("/browser/:project",function (req, res, next) {
 	var data = req.query;
 	safe.run(function (cb) {
-   ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
-		data._idp= idp;
-		data._dtr = new Date();
-		data._dtc = data._dt;
-		data._dt = data._dtr;
-		data.agent = useragent.parse(req.headers['user-agent']).toJSON();
-		var ip = req.headers['x-forwarded-for'] ||
-			 req.connection.remoteAddress ||
-			 req.socket.remoteAddress ||
-			 req.connection.socket.remoteAddress;
+		ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
+			data._idp= idp;
+			data._dtr = new Date();
+			data._dtc = data._dt;
+			data._dt = data._dtr;
+			data.agent = useragent.parse(req.headers['user-agent']).toJSON();
+			var ip = req.headers['x-forwarded-for'] ||
+				req.connection.remoteAddress ||
+				req.socket.remoteAddress ||
+				req.connection.socket.remoteAddress;
 
-		var geo = geoip.lookup(ip);
-		if (geo)
-			data.geo = JSON.parse(JSON.stringify(geo));
+			var geo = geoip.lookup(ip);
+			if (geo)
+				data.geo = JSON.parse(JSON.stringify(geo));
 
-		data = prefixify(data,{strict:1});
+			data = prefixify(data,{strict:1});
 
-		// add few data consistance checks
-		if (data._i_tt > 1000 * 60 * 10)
-			return cb(new Error("Page total time is too big > 10 min"));
+			// add few data consistance checks
+			if (data._i_tt > 1000 * 60 * 10)
+				return cb(new Error("Page total time is too big > 10 min"));
 
-		if (Math.abs(data._i_tt - data._i_nt - data._i_lt - data._i_dt)>1000)
-			return cb(new Error("Page total time do not match components"));
+			if (Math.abs(data._i_tt - data._i_nt - data._i_lt - data._i_dt)>1000)
+				return cb(new Error("Page total time do not match components"));
 
-		var md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))));
-		data.shash = md5sum.digest('hex');
-		md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(data._dtp.toString());
-		data.chash = md5sum.digest('hex');
-		data._i_err = 0;
-		data._s_uri = data.p;
-		data._s_route = data.r;
-		delete data.r;
-		delete data.p;
-		ctx.api.validate.check("page", data, safe.sure(cb, function(){
-			pages.insert(data, safe.sure(cb, function (docs) {
-				// once after inserting page we need to link
-				// this page events that probably cread earlier
-				var _id = docs[0]._id;
-				safe.parallel([
-					function(cb) {
-						var n = 0;
-						ctx.api.assets.getProjectPageRules(ctx.locals.systoken,{_id: data._idp},safe.sure(cb,function(pageRules){
-							safe.forEach(pageRules,function(pageRule,cb){
-								var condition = JSON.parse(pageRule._s_condition);
-								condition._id = _id;
-								pages.findOne(condition,{_id:1},safe.sure(cb,function(matched){
-									if (matched) {
-										_.each(pageRule.actions,function(action){
-											if (data[action._s_field] && action._s_type == 'replacer') {
-												data[action._s_field] = data[action._s_field].replace(new RegExp(action._s_matcher),action._s_replacer);
-											}
-										});
-										n++;
-									}
-									cb();
+			var md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(""+parseInt((data._dtp.valueOf()/(1000*60*60))));
+			data.shash = md5sum.digest('hex');
+			md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(data._dtp.toString());
+			data.chash = md5sum.digest('hex');
+			data._i_err = 0;
+			data._s_uri = data.p;
+			data._s_route = data.r;
+			delete data.r;
+			delete data.p;
+			ctx.api.validate.check("page", data, safe.sure(cb, function(){
+				pages.insert(data, safe.sure(cb, function (docs) {
+					// once after inserting page we need to link
+					// this page events that probably cread earlier
+					var _id = docs[0]._id;
+					safe.parallel([
+						function(cb) {
+							var n = 0;
+							ctx.api.assets.getProjectPageRules(ctx.locals.systoken,{_id: data._idp},safe.sure(cb,function(pageRules){
+								safe.forEach(pageRules,function(pageRule,cb){
+									var condition = JSON.parse(pageRule._s_condition);
+									condition._id = _id;
+									pages.findOne(condition,{_id:1},safe.sure(cb,function(matched){
+										if (matched) {
+											_.each(pageRule.actions,function(action){
+												if (data[action._s_field] && action._s_type == 'replacer') {
+													data[action._s_field] = data[action._s_field].replace(new RegExp(action._s_matcher),action._s_replacer);
+												}
+											});
+											n++;
+										}
+										cb();
+									}));
+								},safe.sure(cb,function(){
+									if (n)
+										pages.update({_id:_id},{$set:data},{},cb);
+									else
+										cb();
 								}));
-							},safe.sure(cb,function(){
-								if (n)
-									pages.update({_id:_id},{$set:data},{},cb);
-								else
-									cb();
 							}));
-						}));
-					},
-					function(cb) {
-						events.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
-							$set: {
-								_idpv: _id,
-								request: {
-									_s_route: data._s_route,
-									_s_uri: data._s_uri
+						},
+						function(cb) {
+							events.update({chash: data.chash, _dt:{$gte:(Date.now()-data._i_tt*2),$lte:data._dt}}, {
+								$set: {
+									_idpv: _id,
+									request: {
+										_s_route: data._s_route,
+										_s_uri: data._s_uri
+									}
 								}
-							}
-						}, {multi: true}, safe.sure(cb, function (updates) {
-							if (updates)
-								pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
-							else
-								cb();
-						}));
-					},
-					function(cb) {
-						// need to apdate all ajax request that might happened befor us
-						ajax.update({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt*1.2),$lte:data._dtc}}, {
-							$set: {
-								_idpv: _id,
-								_s_route: data._s_route,
-								_s_uri: data._s_uri}
-						}, {multi: true}, safe.sure(cb, function() {
-							ajax.find({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt),$lte:data._dtc},
-							 	_i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
-
-								if (count > 0)
-									pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+							}, {multi: true}, safe.sure(cb, function (updates) {
+								if (updates)
+									pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
 								else
 									cb();
 							}));
-						}));
-					}
-				], cb);
+						},
+						function(cb) {
+							// need to apdate all ajax request that might happened befor us
+							ajax.update({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt*1.2),$lte:data._dtc}}, {
+								$set: {
+									_idpv: _id,
+									_s_route: data._s_route,
+									_s_uri: data._s_uri}
+							}, {multi: true}, safe.sure(cb, function() {
+								ajax.find({chash: data.chash, _dtc:{$gte:(data._dtc.valueOf()-data._i_tt),$lte:data._dtc},
+								_i_code: {$ne: 200}}).count(safe.sure(cb, function(count) {
+
+									if (count > 0)
+										pages.update({_id: _id}, {$inc: {_i_err: count}}, cb);
+									else
+										cb();
+								}));
+							}));
+						}
+					], cb);
+				}));
 			}));
 		}));
- 	 }));
 	}, function (err) {
 		if (err) {
 			newrelic.noticeError(err);
@@ -872,59 +872,59 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 		var zip_buffer = new Buffer( req.body.toString(), 'base64' );
 //		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
 		zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
-		 var ge = JSON.parse( _buffer_getsentry_data.toString() );
-		 ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, function(idp){
-			var te = {
-				_idp:new mongo.ObjectID(idp),
-				_dt: new Date(ge.timestamp),
-				_s_reporter: "raven",
-				_s_server: ge.server_name,
-				_s_logger: ge.platform,
-				_s_message: ge.message,
-				_s_culprit: ge.culprit || 'undefined',
-				exception: {
-					_s_type: ge.exception[0].type,
-					_s_value: ge.exception[0].value
-				},
-				stacktrace: { frames: [] }
-			};
-			if (ge.exception[0].stacktrace) {
-				_.each(ge.exception[0].stacktrace.frames, function (frame) {
-					te.stacktrace.frames.push({
-						_s_file: frame.filename || "",
-						_i_line: frame.lineno || 0,
-						_i_col: 0,
-						_s_func: frame.function || "",
-						pre_context : frame.pre_context || [],
-						_s_context : frame.context_line || "",
-						post_context : frame.post_context || []
-					});
-				});
-				te.stacktrace.frames = te.stacktrace.frames.reverse();
-			};
-			ctx.api.validate.check("error",te, safe.sure(cb, function () {
-				safe.parallel([
-					function(cb) {
-						var md5sum = crypto.createHash('md5');
-						md5sum.update(te.exception._s_type);
-						md5sum.update(te._s_message + te.stacktrace.frames.length);
-						te.ehash = md5sum.digest('hex');
-						action_errors.find({_idp:te._idp, ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
-							if (edtl.length)
-								te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
-							else
-								te._dtf = new Date();
-
-							action_errors.insert(te, cb);
-						}));
+			var ge = JSON.parse( _buffer_getsentry_data.toString() );
+			ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, function(idp){
+				var te = {
+					_idp:new mongo.ObjectID(idp),
+					_dt: new Date(ge.timestamp),
+					_s_reporter: "raven",
+					_s_server: ge.server_name,
+					_s_logger: ge.platform,
+					_s_message: ge.message,
+					_s_culprit: ge.culprit || 'undefined',
+					exception: {
+						_s_type: ge.exception[0].type,
+						_s_value: ge.exception[0].value
 					},
-					function(cb) {
-						var q = {_idp:te._idp,_dt: {$gte: te._dt}};
-						actions.update(q,{$inc: {_i_err: 1}},{multi: false},cb);
-					}
-				],cb);
+					stacktrace: { frames: [] }
+				};
+				if (ge.exception[0].stacktrace) {
+					_.each(ge.exception[0].stacktrace.frames, function (frame) {
+						te.stacktrace.frames.push({
+							_s_file: frame.filename || "",
+							_i_line: frame.lineno || 0,
+							_i_col: 0,
+							_s_func: frame.function || "",
+							pre_context : frame.pre_context || [],
+							_s_context : frame.context_line || "",
+							post_context : frame.post_context || []
+						});
+					});
+					te.stacktrace.frames = te.stacktrace.frames.reverse();
+				};
+				ctx.api.validate.check("error",te, safe.sure(cb, function () {
+					safe.parallel([
+						function(cb) {
+							var md5sum = crypto.createHash('md5');
+							md5sum.update(te.exception._s_type);
+							md5sum.update(te._s_message + te.stacktrace.frames.length);
+							te.ehash = md5sum.digest('hex');
+							action_errors.find({_idp:te._idp, ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+								if (edtl.length)
+									te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
+								else
+									te._dtf = new Date();
+
+								action_errors.insert(te, cb);
+							}));
+						},
+						function(cb) {
+							var q = {_idp:te._idp,_dt: {$gte: te._dt}};
+							actions.update(q,{$inc: {_i_err: 1}},{multi: false},cb);
+						}
+					],cb);
+				}));
 			}));
-		 }));
 		}));
 	}, function( error ){
 		if (error) {
@@ -940,98 +940,97 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 	var data = {};
 	safe.run(function (cb) {
-	 ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
-		data = JSON.parse(req.query.sentry_data);
-		var ip = req.headers['x-forwarded-for'] ||
-			 req.connection.remoteAddress ||
-			 req.socket.remoteAddress ||
-			 req.connection.socket.remoteAddress;
+		ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
+			data = JSON.parse(req.query.sentry_data);
+			var ip = req.headers['x-forwarded-for'] ||
+				req.connection.remoteAddress ||
+				req.socket.remoteAddress ||
+				req.connection.socket.remoteAddress;
 
-		var _dtp = data._dtp || data._dtInit;
-		if (data.project) delete data.project;
-		data._idp = idp;
-		data._dtr = new Date();
-		data._dtc = data._dt;
-		data._dt = data._dtr;
-		data._dtp = _dtp;
-		if (data._dtInit) delete data._dtInit;
-		data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
-		data = prefixify(data,{strict:1});
-		var md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))));
-		data.shash = md5sum.digest('hex');
-		md5sum = crypto.createHash('md5');
-		md5sum.update(ip);
-		md5sum.update(req.headers.host);
-		md5sum.update(req.headers['user-agent']);
-		md5sum.update(data._dtp.toString());
-		data.chash = md5sum.digest('hex');
-		// when error happens try to link it with current page
-		// which is latest page from same client (chash)
-		// which is registered not later than current event
-		data._s_culprit = data.culprit || 'undefined'; delete data.culprit;
-		data._s_message = data.message; delete data.message;
-		delete data.event_id;
-		data._s_logger = data.logger; delete data.logger;
-		data._s_server = "rum";
-		data._s_reporter = "raven";
+			var _dtp = data._dtp || data._dtInit;
+			if (data.project) delete data.project;
+			data._idp = idp;
+			data._dtr = new Date();
+			data._dtc = data._dt;
+			data._dt = data._dtr;
+			data._dtp = _dtp;
+			if (data._dtInit) delete data._dtInit;
+			data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
+			data = prefixify(data,{strict:1});
+			var md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))));
+			data.shash = md5sum.digest('hex');
+			md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(data._dtp.toString());
+			data.chash = md5sum.digest('hex');
+			// when error happens try to link it with current page
+			// which is latest page from same client (chash)
+			// which is registered not later than current event
+			data._s_culprit = data.culprit || 'undefined'; delete data.culprit;
+			data._s_message = data.message; delete data.message;
+			delete data.event_id;
+			data._s_logger = data.logger; delete data.logger;
+			data._s_server = "rum";
+			data._s_reporter = "raven";
 
-		data.exception = data.exception || {};
-		data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
-		data.exception._s_value = data.exception.value || data._s_message; delete data.exception.value;
-		if (data.stacktrace) {
-			_.forEach(data.stacktrace.frames, function(r) {
-				r._s_file = r.filename; delete r.filename;
-				r._i_line = r.lineno || 0; delete r.lineno;
-				r._i_col = r.colno || 0; delete r.colno;
-				r._s_func = r.function || 'undefined'; delete r.function;
-				r.pre_context = [];
-				r.post_context = [];
-				r._s_context = r.context_line || ""; delete r.context_line;
-				delete r.in_app;
-			});
-		} else
-			data.stacktrace = {frames:[]};
-		delete data.platform;
-		if (data.request && data.request.url) {
-			data.request._s_url=data.request.url;
-			delete data.request.url;
-		}
-		if (data.stacktrace.frames.length > 1) {
-			data.stacktrace.frames.reverse();
-		}
-		pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
-			if (page) {
-				data._idpv = page._id;
-				if (page._s_route) data.request._s_route = page._s_route;
-				if (page._s_uri) data.request._s_uri = page._s_uri;
+			data.exception = data.exception || {};
+			data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
+			data.exception._s_value = data.exception.value || data._s_message; delete data.exception.value;
+			if (data.stacktrace) {
+				_.forEach(data.stacktrace.frames, function(r) {
+					r._s_file = r.filename; delete r.filename;
+					r._i_line = r.lineno || 0; delete r.lineno;
+					r._i_col = r.colno || 0; delete r.colno;
+					r._s_func = r.function || 'undefined'; delete r.function;
+					r.pre_context = [];
+					r.post_context = [];
+					r._s_context = r.context_line || ""; delete r.context_line;
+					delete r.in_app;
+				});
+			} else
+				data.stacktrace = {frames:[]};
+			delete data.platform;
+			if (data.request && data.request.url) {
+				data.request._s_url=data.request.url;
+				delete data.request.url;
 			}
-			ctx.api.validate.check("error",data, safe.sure(cb, function () {
-				md5sum = crypto.createHash('md5');
-				md5sum.update(data.exception._s_type);
-				md5sum.update(data._s_message + data.stacktrace.frames.length);
-				data.ehash = md5sum.digest('hex');
-				//find().sort().limit(1).toArray
-				events.find({_idp:data._idp, ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
-					if (edtl.length)
-						data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
-					else
-						data._dtf = new Date();
+			if (data.stacktrace.frames.length > 1) {
+				data.stacktrace.frames.reverse();
+			}
+			pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
+				if (page) {
+					data._idpv = page._id;
+					if (page._s_route) data.request._s_route = page._s_route;
+					if (page._s_uri) data.request._s_uri = page._s_uri;
+				}
+				ctx.api.validate.check("error",data, safe.sure(cb, function () {
+					md5sum = crypto.createHash('md5');
+					md5sum.update(data.exception._s_type);
+					md5sum.update(data._s_message + data.stacktrace.frames.length);
+					data.ehash = md5sum.digest('hex');
+					//find().sort().limit(1).toArray
+					events.find({_idp:data._idp, ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+						if (edtl.length)
+							data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
+						else
+							data._dtf = new Date();
 
 						events.insert(data, safe.sure(cb, function(res){
 							ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
-								events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){
-								}));
+								events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
 							});
 							cb(null);
 						}));
+					}));
 				}));
 			}));
 		}));
-	 }));
 	}, function (err) {
 		if (err) {
 			newrelic.noticeError(err);

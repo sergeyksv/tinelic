@@ -68,11 +68,11 @@ api:{
 * @param {String} projNameOrID project name or a compound name of the project ({team ID}-{project name}) or project ID
 * @return {String} _id - project id
 */
-ensureProjectId: function (t, projNameOrID, cb){
+ensureProjectId:function (t, projNameOrID, cb) {
 	if (projNameOrID in projIdCache)
 		return safe.back(cb, null, projIdCache[projNameOrID]);
 	safe.run(function (cb) {
-		if (_.size(projNameOrID) > 24 && projNameOrID[24] == '-'){
+		if (_.size(projNameOrID) > 24 && projNameOrID[24] == '-') {
 			var at = projNameOrID.substr(0, 24)
 			var an = projNameOrID.substr(25, projNameOrID.length-1);
 			if (!an)
@@ -80,32 +80,31 @@ ensureProjectId: function (t, projNameOrID, cb){
 			ctx.api.assets.getTeam(ctx.locals.systoken, {filter:{_id: at}}, safe.sure(cb, function (team) {
 				if (!team) {
 					return cb(new Error( "_id Team \"" + at + "\" not found" ));
-				}else{
+				} else {
 					ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
 						if (!project) {
-							var tmpProj=team.projects;
+							var tmpProj = team.projects;
 							ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
-								var tmpProj=team.projects || [];
+								var tmpProj = team.projects || [];
 								tmpProj.push({_idp: proj._id});
 								ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
 								cb(null, proj._id);
 							}));
-						}else{
+						} else
 							cb(null, project._id);
-						};
 					}));
 				};
 			}));
-		}else{
+		} else {
 			var tmpQuery = queryfix({_id: projNameOrID});
-	    if (_.isEmpty(tmpQuery))
-	        tmpQuery = {name: projNameOrID};
+			if (_.isEmpty(tmpQuery))
+				tmpQuery = {name: projNameOrID};
 			ctx.api.assets.getProject(ctx.locals.systoken, {filter:tmpQuery}, safe.sure(cb, function (project) {
- 				cb(null, project._id);
+				cb(null, project._id);
 			}));
 		};
 	},
-	safe.sure(cb, function (res){
+	safe.sure(cb, function (res) {
 		projIdCache[projNameOrID] = res;
 		cb(null, res);
 	}));
