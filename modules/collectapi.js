@@ -660,9 +660,9 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 	});
 });
 ctx.router.get("/ajax/:project", function (req, res, next) {
- ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = req.query;
 	safe.run(function (cb) {
+	 ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 		data._idp = new mongo.ObjectID(idp);
 		data._dtr = new Date();
 		data._dt = data._dtr;
@@ -734,7 +734,8 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 					}
 				],cb);
 			}));
-		}));
+	 }));
+	}));
 	}, function (err) {
 		if (err) {
 			console.log("BAD ajax: " + JSON.stringify(data));
@@ -743,12 +744,11 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
- }));
 });
 ctx.router.get("/browser/:project",function (req, res, next) {
- ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = req.query;
 	safe.run(function (cb) {
+   ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 		data._idp= idp;
 		data._dtr = new Date();
 		data._dtc = data._dt;
@@ -857,6 +857,7 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 				], cb);
 			}));
 		}));
+ 	 }));
 	}, function (err) {
 		if (err) {
 			newrelic.noticeError(err);
@@ -864,7 +865,6 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
- }));
 });
 // dsn is like http://auth1:auth2@{host}/collect/sentry/{projectid}
 ctx.router.post( "/sentry/api/store", function( req, res, next ) {
@@ -938,9 +938,9 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 	});
 });
 ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
- ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 	var data = {};
 	safe.run(function (cb) {
+	 ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
 		data = JSON.parse(req.query.sentry_data);
 		var ip = req.headers['x-forwarded-for'] ||
 			 req.connection.remoteAddress ||
@@ -1031,6 +1031,7 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 				}));
 			}));
 		}));
+	 }));
 	}, function (err) {
 		if (err) {
 			newrelic.noticeError(err);
@@ -1038,7 +1039,6 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
 	});
- }));
 });
 
 }));}),cb(null, {

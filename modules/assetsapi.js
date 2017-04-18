@@ -85,8 +85,7 @@ ensureProjectId: function (t, projNameOrID, cb){
 						if (!project) {
 							var tmpProj=team.projects;
 							ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
-								if (!tmpProj)
-									tmpProj = [];
+								var tmpProj=team.projects || [];
 								tmpProj.push({_idp: proj._id});
 								ctx.api.assets.saveTeamProjects(ctx.locals.systoken, {_id: at, projects: tmpProj}, safe.sure(cb, function () {}));
 								cb(null, proj._id);
@@ -98,12 +97,9 @@ ensureProjectId: function (t, projNameOrID, cb){
 				};
 			}));
 		}else{
-			var tmpQuery = {_id: projNameOrID};
-			if (!(_.isEmpty(queryfix(tmpQuery)))){
-				tmpQuery = queryfix(tmpQuery);
-			}else{
-				tmpQuery = {name: projNameOrID};
-			}
+			var tmpQuery = queryfix({_id: projNameOrID});
+	    if (_.isEmpty(tmpQuery))
+	        tmpQuery = {name: projNameOrID};
 			ctx.api.assets.getProject(ctx.locals.systoken, {filter:tmpQuery}, safe.sure(cb, function (project) {
  				cb(null, project._id);
 			}));
