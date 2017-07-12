@@ -1,0 +1,16 @@
+<div class="panel panel-success" id="{_t_view.cid}">
+	<div class="panel-heading">
+		<a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a>
+		{@view name="views/project/top-pages-stats" locals-depends="statGraph"/}
+		<span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
+	</div>
+	<div class="panel-body">
+		{#topPages.data}
+			<div class="progress" style="margin: 2px 0 0 0;">
+				<div class="progress-bar-success" role="progressbar" style="width: {value.progress}%;">
+					{_id} <span class="text-success numRight">{@formatnumber val=value.tta type="tm"/}</span>
+				</div>
+			</div>
+		{/topPages.data}
+	</div>
+</div>

@@ -1,0 +1,15 @@
+<div class="panel panel-info" id="{_t_view.cid}">
+	<div class="panel-heading"><a href='{_t_prefix}/project/{project.slug}/ajax/rpm'>Top ajax</a>
+		{@view name="views/project/top-ajax-stats" locals-depends="statGraph"/}
+		<span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
+	</div>
+	<div class="panel-body">
+		{#topAjax.data}
+			<div class="progress" style="margin: 2px 0 0 0;">
+				<div class="progress-bar-info" role="progressbar" style="width: {value.progress}%;">
+					{_id} <span class="text-info numRight">{@formatnumber val=value.tta type="tm"/}</span>
+				</div>
+			</div>
+		{/topAjax.data}
+	</div>
+</div>

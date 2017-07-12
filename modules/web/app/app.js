@@ -15,6 +15,9 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 		return chunk.write(output);
 	};
 	dust.helpers.formatnumber = function(chunk, context, bodies, params) {
+		if (!params.val) {
+			return;
+		}
 		var output="";
 		if (params.type == "rpm") {
 			if ((params.val/10000)>1.0){

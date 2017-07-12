@@ -1,0 +1,5 @@
+<span class="h6" style="margin-left: 5px;" id="{_t_view.cid}">
+{#statGraph}
+{@formatnumber val=ram type="rpm"/} / {@formatnumber val=errorajax type="erate"/} / {@formatnumber val=etuajax type="tm"/}
+{/statGraph}
+</span>
