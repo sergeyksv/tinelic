@@ -45,7 +45,7 @@ var ValidationError = module.exports.ValidationError = function (invalid) {
 };
 
 module.exports.createApp = function (cfg, cb) {
-	var app = express();
+  var app = express();
 	app.use(function (req, res, next) {
 		req.setMaxListeners(20);
 		next();

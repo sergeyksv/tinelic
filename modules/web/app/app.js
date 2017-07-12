@@ -135,6 +135,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				});
 				// routes goes first
 				router.get("/", main.index);
+				router.get("/group-info/:name", main.group_info);
 				router.get("/project/:slug", main.project);
 				router.get("/users", main.users);
 				router.get("/project/:slug/ajax/:stats", main.ajax);
@@ -177,7 +178,6 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 
 			if (!cb)
 				cb = this.clientHardError;
-
 			$.blockUI.defaults.message = "<h4>Loading ...</h4>";
 			$.blockUI.defaults.overlayCSS = {
 				backgroundColor: '#FFF',
@@ -242,7 +242,6 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 		},
 		clientRender:function (res, route, cb) {
 			var self = this;
-
 			// tickmark for data ready time
 			this._pageLoad.data = new Date();
 

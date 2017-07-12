@@ -1,0 +1,345 @@
+{>"views/base_page"/}
+{<main}
+{#teams}
+
+<legend>
+<div class="col-md-20">
+
+		<font size = "4" face="Times New Roman">{name}
+		{@gt key=t_metrics.server.proc value=0}
+			( {t_metrics.server.proc} x {@math key=t_metrics.server.mem method="round"/} Mb )
+		{/gt}:&nbsp&nbsp
+		<span style="white-space: nowrap;">
+		<span class="text-danger">{@gt key=t_metrics.errAck.dtlActions value=0}<b>{t_metrics.errAck.dtlActions}</b>{:else}0{/gt} ( {t_metrics.errAck.actions} )</span> / <span class="text-success">{@gt key=t_metrics.errAck.dtlPages value=0}<b>{t_metrics.errAck.dtlPages}</b>{:else}0{/gt} ( {t_metrics.errAck.pages} )</span>
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.apdex.server type="apdex"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.apdex.client type="apdex"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.apdex.ajax type="apdex"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.r type="rpm"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.r type="rpm"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.r type="rpm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp; <span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.etu type="tm"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.etu type="tm"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.etu type="tm"/}</span>
+		{/gt}
+		</span>
+		&nbsp;&nbsp;&mdash;&nbsp;&nbsp;	<span style="white-space: nowrap;">
+		{@gt key=t_metrics.server.r value=0}
+			<span class="text-danger">{@formatnumber val=t_metrics.server.e type="erate"/}</span>
+		{/gt}
+		{@gt key=t_metrics.client.r value=0} {@gt key=t_metrics.server.r value=0} / {/gt}
+			<span class="text-success">{@formatnumber val=t_metrics.client.e type="erate"/}
+			</span> / <span class="text-info">{@formatnumber val=t_metrics.ajax.e type="erate"/}</span>
+		{/gt}
+		</font>
+</div>
+</legend>
+
+{/teams}
+<table class="tablesorter table table-hover" id="trbreak">
+		<thead>
+			<tr>
+				<th><p align="center">Project name</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=name&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"}{@eq key="{sortByF}" value="name"}display: none{/eq}{/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=name&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"}{@eq key="{sortByF}" value="name"}display: none{/eq}{/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""}display: none{/eq};{@ne key="{sortByF}" value="name"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">errAck</p> <p align="center">dtlActions(actions)</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=dtlActions&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="dtlActions"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=dtlActions&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="dtlActions"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="dtlActions"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">errAck</p> <p align="center">dtlPages(pages)</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=dtlPages&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="dtlPages"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif"></a>
+						<a href="?sort=desc&by=dtlPages&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="dtlPages"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="dtlPages"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Apdex</p> <p align="center">server</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ApdexServer&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ApdexServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ApdexServer&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ApdexServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="ApdexServer"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Apdex</p> <p align="center">client</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ApdexClient&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ApdexClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ApdexClient&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ApdexClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="ApdexClient"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Apdex</p> <p align="center">ajax</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ApdexAjax&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ApdexAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ApdexAjax&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ApdexAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="ApdexAjax"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Throughput</p> <p align="center">server</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ThroughputServer&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ThroughputServer"}display: none{/eq} {/eq}" 
+							src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ThroughputServer&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ThroughputServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="ThroughputServer"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Throughput</p> <p align="center">client</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ThroughputClient&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ThroughputClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ThroughputClient&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ThroughputClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="ThroughputClient"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Throughput</p> <p align="center">ajax</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=ThroughputAjax&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="ThroughputAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=ThroughputAjax&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="ThroughputAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none{/eq};{@ne key="{sortByF}" value="ThroughputAjax"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Time</p> <p align="center">server</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=TimeServer&page={currentPage}" title="ascending">
+						<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="TimeServer"}display: none{/eq} {/eq}" 
+							src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=TimeServer&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="TimeServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="TimeServer"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Time</p> <p align="center">client</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=TimeClient&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="TimeClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=TimeClient&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="TimeClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="TimeClient"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">Time</p> <p align="center">ajax</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=TimeAjax&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="TimeAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=TimeAjax&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="TimeAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="TimeAjax"}display: none{/ne}" 
+							src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">erate</p> <p align="center">server</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=erateServer&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="erateServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=erateServer&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="erateServer"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="erateServer"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">erate</p> <p align="center">client</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=erateClient&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="erateClient"}display: none{/eq} {/eq}" 
+							src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=erateClient&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="erateClient"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="erateClient"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+				<th><p align="center">erate</p> <p align="center">ajax</p>
+					<p style="white-space: nowrap;" align="center">
+						<a href="?sort=asc&by=erateAjax&page={currentPage}" title="ascending">
+							<img style="{@eq key="{sortType}" value="asc"} {@eq key="{sortByF}" value="erateAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/asc.gif">
+						</a>
+						<a href="?sort=desc&by=erateAjax&page={currentPage}" title="descending">
+							<img style="{@eq key="{sortType}" value="desc"} {@eq key="{sortByF}" value="erateAjax"}display: none{/eq} {/eq}" 
+								src="/web/css/blueStyleBreakDownTable/desc.gif">
+						</a>
+						<a href="?sort=&by=&page={currentPage}" title="non sort">
+							<img style="{@eq key="{sortType}" value=""} display: none {/eq};{@ne key="{sortByF}" value="erateAjax"}display: none{/ne}" 
+								src="/web/css/blueStyleBreakDownTable/bg.gif">
+						</a>
+					</p>
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+{#teams.projects}	
+{@gte key=$idx value="{leftlistBegin}"} {@lte key=$idx value="{leftlistEnd}"}
+ 			<tr align="center">
+<!--				style="
+				{@select key=$idx}
+					{@lt key=$idx value="{leftlistBegin}"}display: none{/lt}
+					{@gt key=$idx value="{leftlistEnd}"}display: none{/gt}
+				{/select}"
+-->
+			
+				<td>{_t_proj.name}</td>
+				<td>{_t_proj.errAck.dtlActions} ({_t_proj.errAck.actions})</td>
+				<td>{_t_proj.errAck.dtlPages} ({_t_proj.errAck.pages})</td>
+				<td>{@formatnumber val=_t_proj.apdex.server type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.apdex.client type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.apdex.ajax type="apdex"/}</td>
+				<td>{@formatnumber val=_t_proj.server.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.client.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.r type="rpm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.client.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.etu type="tm"/}</td>
+				<td>{@formatnumber val=_t_proj.server.e type="erate"/}</td>
+				<td>{@formatnumber val=_t_proj.client.e type="erate"/}</td>
+				<td>{@formatnumber val=_t_proj.ajax.e type="erate"/}</td>
+			</tr>
+{/lte}{/gte}
+{/teams.projects}
+		</tbody>
+</table>
+
+<div id="paging">
+	<ul class="pagination">
+		{#paging}
+			{@eq key="{index}" value="1"}
+				<li class="{?selected}disabled{/selected}">{^selected}<a href="?sort={sortType}&by={sortByF}&page={@math key="{currentPage}" method="subtract" operand="1"/}" class="more">{/selected}<span>Prev</span>{^selected}</a>{/selected}</li>
+			{/eq}
+			<li class="findActive {?selected}active{/selected}"><a href="?sort={sortType}&by={sortByF}&page={index}" class="more">{index}</a></li>
+			{@eq key="{index}" value="{pageCount}"}
+				<li class="{?selected}disabled{/selected}">{^selected}<a href="?sort={sortType}&by={sortByF}&page={@math key="{currentPage}" method="add" operand="1"/}" class="more">{/selected}<span>Next</span>{^selected}</a>{/selected}</li>
+			{/eq}
+		{/paging}
+	</ul>
+</div>
+
+{/main}

@@ -14,7 +14,6 @@ module.exports.deps = ['assets','users','collect','stats'];
 module.exports.init = function (ctx, cb) {
 	var self_id = null;
 	var cfg = ctx.cfg;
-
 	var reqctx = requirejs.config({
 		baseUrl: __dirname+"/app",
 		paths:{
