@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 {#_t_env_production}
-<script src="{_t_prefix}/js/build/jquery-1.11.3.js"></script>
+<script src="{_t_prefix}/js/build/jquery.js"></script>
 <script src="{_t_prefix}/js/build/tinelic.js?rev={_t_rev}"></script>
 {:else}
 <script src="{_t_prefix}/app/rum.js"></script>
-<script src="{_t_prefix}/js/jquery-1.11.3.js"></script>
+<script src="{_t_prefix}/js/jquery.js"></script>
 <script src="{_t_prefix}/js/raven.js"></script>
 {/_t_env_production}
 <meta charset="utf-8">
