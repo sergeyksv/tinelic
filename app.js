@@ -37,9 +37,11 @@ _.merge(cfg, {
 
 console.time("Live !");
 var cb = function (err) {
-	console.log(err);
+	console.trace(err);
+
 	if (err.originalError)
-		console.log(err.originalError);
+		console.trace(err.originalError);
+
 	process.exit(0);
 };
 

@@ -65,7 +65,7 @@ module.exports = function(grunt) {
 			tinelic: {
 				files: {
 					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.js','./modules/web/app/rum.js'],
-					'./modules/web/public/js/build/jquery-1.11.3.js':'./modules/web/public/js/jquery-1.11.3.js'
+					'./modules/web/public/js/build/jquery.js':'./modules/web/public/js/jquery.js'
 					},
 				options: {
 					preserveComments: false,
