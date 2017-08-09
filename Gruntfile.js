@@ -28,6 +28,13 @@ module.exports = function(grunt) {
 							"app"
 						]
 					}],
+					packages: [
+						{
+							name: 'moment',
+							location: '../moment',
+							main: 'moment'
+						}
+					],
 					paths: {
 						"tson": "../../tinyback/tson",
 						"prefixify": "../../tinyback/prefixify",
@@ -42,7 +49,6 @@ module.exports = function(grunt) {
 						"text": "../../../node_modules/requirejs-text/text",
 						"safe": "../public/js/safe",
 						"bootstrap": "../public/js/bootstrap",
-						"moment": "../public/js/moment",
 						"backctx": "empty:",
 						"highcharts": "empty:",
 						"jquery": "empty:",

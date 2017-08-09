@@ -50,6 +50,13 @@
 <script>
 	var reqctx = requirejs.config({
 		baseUrl: "{_t_prefix}/app",
+		packages: [
+			, {
+				name: 'moment',
+				location: '../js/moment',
+				main: 'moment'
+			}
+		],
 		paths:{
 			"tson":"../tinyback/tson",
 			"prefixify":"../tinyback/prefixify",
@@ -62,7 +69,6 @@
 			"dust-helpers":"../js/dust-helpers",
 			"safe":"../js/safe",
 			"highcharts":location.protocol+"//code.highcharts.com/highcharts",
-			"moment":"../js/moment",
 			"dustc":"../tinybone/dustc",
 			"text":"../js/text",
 			"jquery-cookie": "../js/jquery-cookie",

@@ -2,7 +2,6 @@
 /*global emit, Q, AG, AA, CAT, QUANT, NAME, ALL */
 "use strict";
 var _ = require("lodash");
-var async = require("async");
 var safe = require("safe");
 var mongo = require("mongodb");
 var moment = require("moment");

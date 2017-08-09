@@ -1,7 +1,7 @@
 /**
  * Created by ivan on 5/14/15.
  */
-define(['tinybone/base','bootstrap/modal', 'lodash','moment/moment', 'dustc!views/modals/dtpick.dust','bootstrap/datetimepicker'],function (tb,modal,_,moment) {
+define(['tinybone/base','bootstrap/modal', 'lodash','moment', 'dustc!views/modals/dtpick.dust','bootstrap/datetimepicker'],function (tb,modal,_,moment) {
     var view = tb.View;
     var View = view.extend({
         id:"views/modals/dtpick",
