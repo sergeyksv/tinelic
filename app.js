@@ -32,7 +32,7 @@ _.merge(cfg, {
 		{name:"collect",require:"./modules/collectapi.js"},
 		{name:"stats",require:"./modules/statsapi.js"},
 		{name:"web",require:"./modules/web"}
-	],
+	]
 });
 
 console.time("Live !");

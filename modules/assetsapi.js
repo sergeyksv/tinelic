@@ -36,7 +36,7 @@ module.exports.init = function (ctx, cb) {
 		apdexConfig:{type:"object", required:false, properties:{
 			_i_serverT:{type:"integer",required:true},
 			_i_ajaxT:{type:"integer",required:true},
-			_i_pagesT:{type:"integer",required:true},
+			_i_pagesT:{type:"integer",required:true}
 		}}
 	}}});
 
@@ -73,7 +73,7 @@ ensureProjectId:function (t, projNameOrID, cb) {
 		return safe.back(cb, null, projIdCache[projNameOrID]);
 	safe.run(function (cb) {
 		if (_.size(projNameOrID) > 24 && projNameOrID[24] == '-') {
-			var at = projNameOrID.substr(0, 24)
+			var at = projNameOrID.substr(0, 24);
 			var an = projNameOrID.substr(25, projNameOrID.length-1);
 			if (!an)
 				return cb(new Error( "The project name cannot be empty!" ));
@@ -83,7 +83,6 @@ ensureProjectId:function (t, projNameOrID, cb) {
 				} else {
 					ctx.api.assets.getProject(ctx.locals.systoken, {filter:{name: an}}, safe.sure(cb, function (project) {
 						if (!project) {
-							var tmpProj = team.projects;
 							ctx.api.assets.saveProject(ctx.locals.systoken, {project: {name: an}}, safe.sure(cb, function (proj) {
 								var tmpProj = team.projects || [];
 								tmpProj.push({_idp: proj._id});
@@ -93,7 +92,7 @@ ensureProjectId:function (t, projNameOrID, cb) {
 						} else
 							cb(null, project._id);
 					}));
-				};
+				}
 			}));
 		} else {
 			var tmpQuery = queryfix({_id: projNameOrID});
@@ -102,7 +101,7 @@ ensureProjectId:function (t, projNameOrID, cb) {
 			ctx.api.assets.getProject(ctx.locals.systoken, {filter:tmpQuery}, safe.sure(cb, function (project) {
 				cb(null, project._id);
 			}));
-		};
+		}
 	},
 	safe.sure(cb, function (res) {
 		projIdCache[projNameOrID] = res;

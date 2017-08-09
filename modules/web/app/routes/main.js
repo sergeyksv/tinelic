@@ -407,7 +407,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						},
 						next: function (cb) {
 							api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
-						},
+						}
 					}:{};
 
 					var params1 = {_t_age:"10m",filter:{
@@ -469,7 +469,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 		},
 		database:function (req, res, cb) {
 			var st = req.params.stats
-			var str = req.query._str || req.cookies.str || '1d';
 			var quant = res.locals.quant;
 
 			var dtstart = res.locals.dtstart;
@@ -590,7 +589,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						},
 						next: function (cb) {
 							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
-						},
+						}
 					}:{};
 
 					var params1 = {_t_age:"10m",filter:{

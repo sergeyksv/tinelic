@@ -4,7 +4,6 @@ var _ = require("lodash");
 var safe = require("safe");
 var mongo = require("mongodb");
 var crypto = require('crypto');
-var moment = require("moment");
 var useragent = require("useragent");
 var geoip = require('geoip-lite');
 var request = require('request');
@@ -18,7 +17,6 @@ module.exports.deps = ['mongo','prefixify','validate','assets','cache'];
 
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
-	var queryfix = ctx.api.prefixify.queryfix;
     ctx.api.validate.register("error", {$set:{properties:{
         _dt:{type:"date",required:true},
         _idp:{type:"mongoId",required:true},
@@ -901,7 +899,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 						});
 					});
 					te.stacktrace.frames = te.stacktrace.frames.reverse();
-				};
+				}
 				ctx.api.validate.check("error",te, safe.sure(cb, function () {
 					safe.parallel([
 						function(cb) {

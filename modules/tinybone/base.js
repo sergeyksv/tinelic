@@ -549,7 +549,7 @@ define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jq
 					// in debug mode undefine templat so it will be reloaded each time
 					if (debug)
 						require.undef(tplName);
-					self.md5 = md5(text.replace(/id=['\"]_t_view_\d+['\"]/,""));
+					self.md5 = md5(text.replace(/id=['"]_t_view_\d+['"]/,""));
 					safe.back(cb, null, text);
 				}));
 			}));
@@ -761,11 +761,11 @@ define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jq
 
 	Application.extend = extend;
 
-	getQueryStringKey = function(key) {
+	/*var getQueryStringKey = function(key) {
 		return getQueryStringAsObject()[key];
-	};
+	};*/
 
-	getQueryStringAsObject = function(q) {
+	var getQueryStringAsObject = function(q) {
 		var b, cv, e, k, ma, sk, v, r = {},
 			d = function(v) {
 				return decodeURIComponent(v).replace(/\+/g, " ");

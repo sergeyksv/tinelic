@@ -52,7 +52,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							Ajax.r=Ajax.r/period;
 							Apdex.ajax=Apdex.ajax/period;
 						}
-						var trans = 0;
 						if (r.result.actions.length) {
 							period = r.result.actions.length;
 							_.forEach(r.result.actions, function (v) {

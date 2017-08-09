@@ -1,8 +1,6 @@
 define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment"], function (require,api,safe,_,feed,moment) {
 	return function (req, res, cb) {
-		var quant = res.locals.quant,
-			dta,
-			dtp;
+		var quant = res.locals.quant;
 		safe.parallel({
 			view:function (cb) {
 				require(["views/project/project"], function (view) {

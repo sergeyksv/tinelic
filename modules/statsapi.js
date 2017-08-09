@@ -147,7 +147,7 @@ getMetricTotals: function(t, p, cb) {
 	checkAccess(t, query, safe.sure(cb, function () {
 		metrics.aggregate([
 			{$match: query},
-			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"}}},
+			{$group: {_id: "$_s_pid",  mem1: {$sum: "$_f_val"}, c1: {$sum: "$_i_cnt"}}}
 		], {allowDiskUse: true},
 		safe.sure(cb, function(res) {
 				var memtt = 0;

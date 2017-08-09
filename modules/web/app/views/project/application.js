@@ -42,7 +42,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 					}
 					cb();
 				});
-			},
+			}
 		], safe.sure(self.app.errHandler, function() {
 			self.refresh(self.app.errHandler);
 		}));

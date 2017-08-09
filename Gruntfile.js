@@ -1,6 +1,5 @@
 /*jslint node: true */
 'use strict';
-var path = require('path');
 var requirejs = require('requirejs');
 requirejs.define.amd.dust = true;
 
@@ -54,7 +53,7 @@ module.exports = function(grunt) {
 						"jquery": "empty:",
 						"jquery-cookie": "../public/js/jquery-cookie",
 						"jquery.blockUI": "../public/js/jquery.blockUI",
-						"jquery.tablesorter.combined": "../public/js/jquery.tablesorter.combined",
+						"jquery.tablesorter.combined": "../public/js/jquery.tablesorter.combined"
 					},
 					done: function(done, output) {
 						console.log(output);
