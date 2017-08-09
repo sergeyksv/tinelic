@@ -10,7 +10,6 @@ var webdriver = require('selenium-webdriver');
 var SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;
 var _ = require('lodash');
 var mutils = require('mongo-utils');
-var async = require('safe');
 var fs = require('fs');
 var os = require("os");
 var argv = require('yargs').argv;
@@ -209,7 +208,7 @@ module.exports.setupContext = function () {
 			});
 		});
 	};
-	async.parallel([
+	safe.parallel([
 		function(cb) {
 			tutils.getBrowser(safe.sure(cb, function (browser_) {
 				self.browser = browser_;

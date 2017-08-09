@@ -1,0 +1,41 @@
+{
+    "env": {
+        "node": true,
+        "mocha": true,
+        "amd": true,
+        "es6": true,
+        "shared-node-browser": true
+    },
+    "parserOptions": {
+        "ecmaVersion": 2017
+    },
+    "globals": {
+        "requirejs": true
+    },
+    "extends": ["eslint:recommended"],
+    "rules": {
+        "no-console": [0],
+        "comma-dangle": [2, "never"],
+        "quotes": [0, "double"],
+        "no-unused-vars": [1, {"vars": "all", "args": "none"}],
+        "no-mixed-spaces-and-tabs": [2],
+        "no-undef": [2],
+        "semi": [1, "always"],
+        "no-constant-condition": 2,
+        "no-dupe-args": 2,
+        "no-dupe-keys": 2,
+        "no-empty": 1,
+        "no-extra-boolean-cast": 1,
+        "no-extra-semi": 1,
+        "no-func-assign": 2,
+        "no-inner-declarations": 1,
+        "no-invalid-regexp": 2,
+        "no-obj-calls": 2,
+        "no-regex-spaces": 2,
+        "no-sparse-arrays": 1,
+        "no-unexpected-multiline": 1,
+        "no-unreachable": 1,
+        "use-isnan": 1,
+        "valid-typeof": 1
+    }
+}

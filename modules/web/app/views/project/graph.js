@@ -1,4 +1,4 @@
-define(['tinybone/base','lodash','moment/moment',"tinybone/backadapter", 'safe','highcharts',
+define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highcharts',
 	'dustc!views/project/graph.dust'],function (tb,_,moment,api, safe) {
 	var view = tb.View;
 	var View = view.extend({

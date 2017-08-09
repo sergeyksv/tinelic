@@ -1,4 +1,4 @@
-define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (require,api,safe,_,feed,moment) {
+define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment"], function (require,api,safe,_,feed,moment) {
 	return function (req, res, cb) {
 		var quant = 5;
 		safe.parallel({

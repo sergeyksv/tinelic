@@ -1,7 +1,7 @@
 /*jshint -W033 */
 /*eslint semi:0, "curly": 0,"eqeqeq": 0 */
 /*global requirejs*/
-define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment/moment"], function (require,api,safe,_,feed,moment) {
+define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment"], function (require,api,safe,_,feed,moment) {
 	return {
 		index:function (req, res, cb) {
 			require(["routes/index"],function (route) {

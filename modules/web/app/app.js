@@ -1,5 +1,5 @@
 define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.core",
-	"moment/moment",
+	"moment",
 	"lodash",
 	"tson",
 	"tinybone/backadapter",
