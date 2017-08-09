@@ -2,6 +2,9 @@
   "name": "tinelic",
   "version": "0.0.1",
   "private": true,
+  "engines" : {
+    "node" : "^6.11.0"
+  },
   "dependencies": {
     "amdefine": "~0.1.0",
     "blueimp-md5": "~1.1.0",
@@ -25,7 +28,7 @@
     "request": "~2.51.0",
     "requirejs": "^2.3.4",
     "requirejs-text": "^2.0.12",
-    "safe": "~0.3.3",
+    "safe": "~0.3.9",
     "serve-static": "~1.12.4",
     "tablesorter": "~2.21.5",
     "useragent": "~2.1.3",
