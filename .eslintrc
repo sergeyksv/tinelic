@@ -12,11 +12,7 @@
     "globals": {
         "requirejs": true
     },
-    "plugins": ["jsdoc","mongodb","node","html","json","no-inferred-method-name"],
-    "extends": ["eslint:recommended", "plugin:node/recommended"],
-    "settings": {
-        "html/html-extensions": [".html", ".mustache"]
-    },
+    "extends": ["eslint:recommended"],
     "rules": {
         "no-console": [0],
         "comma-dangle": [2, "never"],
@@ -40,10 +36,6 @@
         "no-unexpected-multiline": 1,
         "no-unreachable": 1,
         "use-isnan": 1,
-        "valid-typeof": 1,
-        "no-process-exit": [0],
-        "node/no-unpublished-require": [0],
-        "node/no-extraneous-require": [0],
-        "node/no-unsupported-features": ["error", {"version": 8}]
+        "valid-typeof": 1
     }
 }
