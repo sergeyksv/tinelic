@@ -1,8 +1,6 @@
 var requirejs = require('requirejs');
 var _ = require('lodash');
 var safe = require('safe');
-var dust = require('dustjs-linkedin');
-var fs = require('fs');
 var path = require('path');
 var static = require('serve-static');
 var lessMiddleware = require('less-middleware');
@@ -27,7 +25,7 @@ module.exports.init = function (ctx, cb) {
 			'dustc': path.resolve(__dirname,'../tinybone/dustc'),
 			'text': path.resolve(__dirname,'../../node_modules/requirejs-text/text'),
 			"md5":"../public/js/md5",
-			'jquery.tablesorter.combined': path.resolve(__dirname,'../../node_modules/tablesorter/dist/js/jquery.tablesorter.combined'),
+			'jquery.tablesorter.combined': path.resolve(__dirname,'../../node_modules/tablesorter/dist/js/jquery.tablesorter.combined')
 		},
 		config:{
 			"text":{
@@ -140,7 +138,6 @@ module.exports.init = function (ctx, cb) {
 			function (cb) {
 				ctx.api.users.getUser(ctx.locals.systoken,{filter:{login:"admin"}}, safe.sure(cb, function (admin) {
 					if (admin) {
-						_idamin = admin._id;
 						return cb();
 					}
 
@@ -172,7 +169,7 @@ module.exports.init = function (ctx, cb) {
 				getFeed:function (token, p, cb) {
 					if (ctx.locals.newrelic)
 						ctx.locals.newrelic.setTransactionName("/webapi/"+(token=="public"?"public":"token")+"/feed/"+p.feed);
-					feed = p.feed.split(".");
+					var feed = p.feed.split(".");
 					reqctx(["feed/"+feed[0]], function (m) {
 						m[feed[1]](token,p.params,cb);
 					},cb);
