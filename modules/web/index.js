@@ -161,7 +161,7 @@ module.exports.init = function (ctx, cb) {
 			// Set up Raven
 			ctx.locals.ravenjs = new raven.Client('http://blah:blah@localhost/collect/sentry/'+self_id);
 			setTimeout(function () {
-				ctx.locals.ravenjs.captureError(new Error("Tinelic Sentry startup!"));
+				ctx.locals.ravenjs.captureException(new Error("Tinelic Sentry startup!"));
 			}, 1000);
 			require("newrelic").noticeError(new Error("Tinelic NewRelic startup!"));
 

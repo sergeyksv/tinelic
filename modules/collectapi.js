@@ -266,7 +266,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 		// capture NewRelic errors with GetSentry, cool to be doublec backed up
 		if (err) {
 			if (ctx.locals && ctx.locals.ravenjs)
-				ctx.locals.ravenjs.captureError(err);
+				ctx.locals.ravenjs.captureException(err);
 			else
 				console.log(err);
 			return true;
@@ -506,7 +506,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 
 					safe.run(function (cb) {
 						if (!_.size(action_stats))
-						 	return cb();
+							return cb();
 
 						safe.each(_.values(action_stats), function(v,cb) {
 							ctx.api.validate.check("action-stats",v, function (err) {
@@ -558,7 +558,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 				var body = nrParseBody(req);
 				var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
 
-				safe.each(body[body.length - 1], function (ne) {
+				_.each(body[body.length - 1], function (ne) {
 					var trnName = nrParseTransactionName(ne[1]);
 					var te = {
 						_idp:run._idp,
@@ -585,9 +585,9 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 						nrParseStackTrace_dotnet( ne[4].stack_trace, te );
 					}
 					ctx.api.validate.check("error",te, safe.sure(function () {
-							console.log(JSON.stringify(te), ne[4].stack_trace);
-							nrNonFatal.apply(this,arguments);
-						}, function () {
+						console.log(JSON.stringify(te), ne[4].stack_trace);
+						nrNonFatal.apply(this,arguments);
+					}, function () {
 						safe.parallel([
 							function(cb) {
 								// save actual error

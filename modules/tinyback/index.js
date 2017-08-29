@@ -121,10 +121,10 @@ module.exports.restapi = function () {
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
-				var params = (req.method == 'POST')?req.body:req.query;
+				/*var params = (req.method == 'POST')?req.body:req.query;
 
 				if (req.query._t_son=='in' || req.query._t_son=='both')
-					params = ctx.api.tson.decode(params);
+					params = ctx.api.tson.decode(params);*/
 
 				ctx.api[req.params.module][req.params.target](req.params.token, (req.method == 'POST')?req.body:req.query, safe.sure(next, function (result) {
 
@@ -213,11 +213,11 @@ module.exports.mongodb = function () {
 						);
 						dbc.open(safe.sure(cb, function (db) {
 							dbcache[name]=db;
-			  if(!cfg.auth)
-				return cb(null,db);
-			  db.authenticate(cfg.auth.user,cfg.auth.pwd,cfg.auth.options,safe.sure(cb,function(){
-				cb(null,db);
-			  }))
+							if(!cfg.auth)
+								return cb(null,db);
+							db.authenticate(cfg.auth.user,cfg.auth.pwd,cfg.auth.options,safe.sure(cb,function(){
+								cb(null,db);
+							}));
 						}));
 					},
 					ensureIndex:function (col, index, options, cb) {
@@ -279,7 +279,7 @@ module.exports.obac = function () {
 					},
 					getPermissions:function (t, p, cb) {
 						var result = {};
-						safe.forEachOf(p.rules, function (rule, cb) {
+						safe.forEachOf(p.rules, function (rule, key, cb) {
 							var acl = _.filter(_acl, function (a) {
 								return a.r.test(rule.action);
 							});
@@ -383,7 +383,7 @@ module.exports.mongocache = function () {
 	var safeKey = function (key) {
 		var sKey = key.toString();
 		if (sKey.length>512) {
-			md5sum = crypto.createHash('md5');
+			var md5sum = crypto.createHash('md5');
 			md5sum.update(sKey);
 			sKey = md5sum.digest('hex');
 		}
