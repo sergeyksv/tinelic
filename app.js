@@ -37,10 +37,10 @@ _.merge(cfg, {
 
 console.time("Live !");
 var cb = function (err) {
-	console.trace(err);
+	console.log(err);
 
 	if (err.originalError)
-		console.trace(err.originalError);
+		console.log(err.originalError);
 
 	process.exit(0);
 };
@@ -53,19 +53,21 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 				_.each(module, function (func, name) {
 					if (!_.isFunction(func)) return;
 					// wrap function
-					module[name] = function () {
-						var cb = arguments[arguments.length-1];
+					module[name] = function (...args) {
+						var cb = args[args.length-1];
+
 						if (_.isFunction(cb)) {
-							var args = Array.from(arguments);
 							// redefined callback to one wrapped by new relic
-							args[args.length-1] = newrelic.createTracer("api/api/"+ns+"/"+name, function (err) {
+
+							args[args.length - 1] = newrelic.createTracer(`api/api/${ns}/${name}`, function (err) {
 								if (err)
 									newrelic.noticeError(err);
-								cb.apply(this, arguments);
+								cb.call(this, ...arguments);
 							});
-							func.apply(this,args);
+
+							func.call(this, ...args);
 						} else {
-							return func.apply(this,arguments);
+							return func.call(this, ...args);
 						}
 					};
 				});
@@ -83,7 +85,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 					var httpsServer = https.createServer(options, app.express);
 
 					httpsServer.listen(cfg.config.server.ssl_port);
-				} catch (e) {}
+				} catch (e) {/**/}
 			}
 
 			var httpServer = http.createServer(app.express);

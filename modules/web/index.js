@@ -163,7 +163,7 @@ module.exports.init = function (ctx, cb) {
 			setTimeout(function () {
 				ctx.locals.ravenjs.captureError(new Error("Tinelic Sentry startup!"));
 			}, 1000);
-			require("newrelic").noticeError( new Error("Tinelic NewRelic startup!"));
+			require("newrelic").noticeError(new Error("Tinelic NewRelic startup!"));
 
 			cb(null,{api:{
 				getFeed:function (token, p, cb) {

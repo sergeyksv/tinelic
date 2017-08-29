@@ -1,8 +1,6 @@
 define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jquery-cookie'], function(requirejs, module, safe, _, dust, md5) {
 	var array = [];
-	var push = array.push;
 	var slice = array.slice;
-	var splice = array.splice;
 	var config = (module.config && module.config()) || {};
 	var debug = config.debug || false;
 	var viewTpls = {};
@@ -275,7 +273,7 @@ define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jq
 		this.states = {};
 		options || (options = {});
 		_.extend(this, _.pick(options, viewOptions));
-	}
+	};
 
 	// Cached regex to split keys for `delegate`.
 	var delegateEventSplitter = /^(\S+)\s*(.*)$/;
@@ -862,7 +860,7 @@ define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jq
 		// ':id?' => ([^\/]*),
 		// ':id([0-9]+)' => ([0-9]+)+,
 		// ':id([0-9]+)?' => ([0-9]+)*
-		url = url.replace(/:(\w+)(?:\(([^\)]+)\))?(\?)?/g, function(all, name, rex, atLeastOne) {
+		url = url.replace(/:(\w+)(?:\(([^)]+)\))?(\?)?/g, function(all, name, rex, atLeastOne) {
 			keys.push(name);
 			if (!rex) {
 				rex = '[^\\/]' + (atLeastOne === '?' ? '*' : '+');
@@ -999,7 +997,6 @@ define(['require', 'module', 'safe', 'lodash', 'dust.core', 'md5', 'jquery', 'jq
 			// collect client simulated req and res and all other part
 			var prefix = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '') + this.prefix;
 			var uri = url.replace(prefix, "").replace(/\?.*$/, "");
-			var match = null;
 			var req = {
 				query: getQueryStringAsObject(href.replace(/.*\?|.*/,"")),
 				cookies: $.cookie(),
