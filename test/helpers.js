@@ -2,6 +2,7 @@ var webdriver = require('selenium-webdriver')
 var By = webdriver.By;
 var Key = webdriver.Key;
 var assert = require("assert");
+var moment = require("moment");
 var _ = require("lodash");
 var fs = require('fs');
 

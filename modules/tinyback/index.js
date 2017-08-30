@@ -121,14 +121,15 @@ module.exports.restapi = function () {
 				if (!ctx.api[req.params.module][req.params.target])
 					throw new Error("No function available");
 
-				/*var params = (req.method == 'POST')?req.body:req.query;
+				var params = req.method == 'POST'?req.body:req.query;
+				if (params._t_jsonq)
+					params = JSON.parse(params._t_jsonq);
 
-				if (req.query._t_son=='in' || req.query._t_son=='both')
-					params = ctx.api.tson.decode(params);*/
+				if (params._t_son=='in' || params._t_son=='both')
+					params = ctx.api.tson.decode(params);
 
-				ctx.api[req.params.module][req.params.target](req.params.token, (req.method == 'POST')?req.body:req.query, safe.sure(next, function (result) {
-
-					if (req.query._t_son=='out' || req.query._t_son=='both')
+				ctx.api[req.params.module][req.params.target](req.params.token, params, safe.sure(next, function (result) {
+					if (params._t_son=='out' || params._t_son=='both')
 						result = ctx.api.tson.encode(result);
 
 					var maxAge = 0;
