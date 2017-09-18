@@ -522,10 +522,7 @@ getActionErrorInfo:function (t, p, cb) {
 					$facet: {
 						_id: [{
 							$group: {
-								_id: {
-									$cond: {if: ALL, then: "$_idp", else: "$ehash"
-									}
-								},
+								_id: ALL ? "$_idp" : "$ehash",
 								c: {$sum: 1}
 							}
 						}, {
@@ -570,7 +567,7 @@ getActionErrorInfo:function (t, p, cb) {
 				var tmpReporter = tmpData[0].reporter;
 				var tmpServer = tmpData[0].server;
 				var tmpLang = tmpData[0].lang;
-				var res = {route: [],server: [],reporter: [],lang: [],count: _.get(tmp_id, "c", 0)};
+				var res = {route: [],server: [],reporter: [],lang: [],count:tmp_id.c};
 				_.each(tmpRoute, function(v, k) {
 					if (v._id != null) {
 						res.route.push({k: v._id, v: v.c});
@@ -847,13 +844,7 @@ getPageErrorInfo:function (t, p, cb) {
 						$facet: {
 							_id: [{
 								$group: {
-									_id: {
-										$cond: {
-											if: ALL,
-											then: "$_idp",
-											else: "$ehash"
-										}
-									},
+									_id: ALL ? "$_idp" : "$ehash",
 									c: {$sum: 1}
 								}
 							}, {
