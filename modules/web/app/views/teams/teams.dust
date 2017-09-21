@@ -19,7 +19,7 @@
 
 				<ul class="dropdown-menu" role="menu">
 					<li role="presentation"><a role="menuitem" tabindex="-1" class="doEditTeam" href="#" data-id="{_id}">Edit</a></li>
-					<li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#">Create project</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" class="doNewProject" href="#" data-id="{_id}">Create project</a></li>
 					<li role="presentation"><a role="menuitem" tabindex="-1" id="delete" href="#" data-delete="{_id}">Delete</a></li>
 				</ul>
 			</div>
