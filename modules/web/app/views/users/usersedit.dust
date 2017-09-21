@@ -29,11 +29,11 @@
               </div>
               <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" class="form-control" id="userpass" placeholder="Password" {?_id}value="{_id}"{:else}{/_id}>
+                <input type="password" class="form-control" id="userpass" placeholder="Password">
             </div>
             <div class="form-group">
                <label for="rpassword">Repeat password</label>
-               <input type="password" class="form-control" id="userrpass" placeholder="Repeat password" {?_id}value="{_id}"{:else}{/_id}>
+               <input type="password" class="form-control" id="userrpass" placeholder="Repeat password">
             </div>
             <div class="form-group">
               <label for="name"> Id </label>
