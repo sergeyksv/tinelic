@@ -176,7 +176,7 @@ getCurrentUser: function (t,cb) {
 */
 saveUser: function (t,p,cb) {
 	p = prefixify(p);
-	if ((p.pass.length)&&(p.pass)) {
+	if (p.pass)&&(p.pass.length) {
 		p.pass = crypto.createHash('md5').update(p.pass).digest('hex');
 	}
 	else {
