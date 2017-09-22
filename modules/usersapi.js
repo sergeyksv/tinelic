@@ -180,7 +180,7 @@ saveUser: function (t,p,cb) {
 		p.pass = crypto.createHash('md5').update(p.pass).digest('hex');
 	}
 	else {
-			delete p.pass
+		delete p.pass
 		}
 	ctx.api.obac.getPermission(t,{action:p._id?'user_edit':'user_new',_id:p._id,throw:1}, safe.sure(cb, function () {
 		ctx.api.validate.check("user", p, safe.sure(cb, function (u) {
