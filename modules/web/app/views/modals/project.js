@@ -21,7 +21,9 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 					var teamnames = [];
 					_.each(teams, function(team){
 						teamnames.push({name:team.name});
+						if (team._id == self.data._id || self.data._id == undefined) {
 						tags.append('<option data-teamid="'+team._id+'" selected="selected" value="'+team.name+'">'+team.name+'</option>');
+						}
 					});
 					var tnames = new Bloodhound({
 						local: teamnames,

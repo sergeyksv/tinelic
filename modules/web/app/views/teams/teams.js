@@ -92,9 +92,11 @@ define(['require','tinybone/base',"tinybone/backadapter","safe",'lodash','dustc!
             'click .doNewProject': function(e) {
                 e.preventDefault();
                 var self = this;
+				var $this = $(e.currentTarget);
+                var id = $this.data('id');
                 require(["views/modals/project"],function (Modal) {
                     var modal = new Modal({app:self.app});
-                    modal.data = {};
+                    modal.data = {_id: id};
                     modal.render(safe.sure(self.app.errHandler, function (text) {
                         var $modal = $(text);
                         self.$el.prepend($modal);
