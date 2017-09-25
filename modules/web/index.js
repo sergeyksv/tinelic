@@ -2,7 +2,8 @@ var requirejs = require('requirejs');
 var _ = require('lodash');
 var safe = require('safe');
 var path = require('path');
-var static = require('serve-static');
+var express = require('express');
+var static = express.static;
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
