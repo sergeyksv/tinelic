@@ -18,8 +18,27 @@
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
 				</ul>
 		</div>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info" data-toggle="dropdown">
+				_s_type
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-type="statement" class="do-type" href="#">statement</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-type="Expressjs" class="do-type" href="#">Expressjs</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-type="api"       class="do-type" href="#">api</a></li>
+				</ul>
+		</div>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info" data-toggle="dropdown">
+				_s_cat
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="Datastore"      class="do-cat" href="#">Datastore</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="WebTransaction" class="do-cat" href="#">WebTransaction</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="Custom"         class="do-cat" href="#">Custom</a></li>
+				</ul>
+		</div>
 	</legend>
-
 <div class="row">
 	<div class="col-sm-4">
 		{@view name="views/database/database_leftlist_pagination"/}
