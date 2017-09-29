@@ -486,7 +486,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
-									'data._s_cat':req.cookies.bzd,
+									'data._s_cat':req.cookies.s_cat||'Datastore',
 									'data._s_type':req.cookies.s_type
 								}
 							}, cb)
@@ -504,7 +504,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								_t_age: quant + "m", quant: quant, filter: {
 									_idp: project._id,
 									_dt: {$gt: dtstart, $lte: dtend},
-									'data._s_cat':req.cookies.bzd,
+									'data._s_cat':req.cookies.s_cat||'Datastore',
 									'data._s_type':req.cookies.s_type,
 									'data._s_name': req.query.selected
 								}}, cb)

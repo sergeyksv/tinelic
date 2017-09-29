@@ -13,9 +13,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
 			'click .do-cat': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				$.cookie('bzd', $this.data('cat'),{expires: 5,path: '/'});
+				$.cookie('s_cat', $this.data('cat'),{expires: 5,path: '/'});
 				this.app.router.reload();
-				console.log("дата база база база ",$this.data("cat"));
 				return false;
 			},
 			'click .do-type': function (e) {
