@@ -13,15 +13,8 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
 			'click .do-cat': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				$.cookie('s_cat', $this.data('cat'),{expires: 5,path: '/'});
-				this.app.router.reload();
-				return false;
-			},
-			'click .do-type': function (e) {
-				var self = this;
-				$this = $(e.currentTarget);
-				$.cookie('s_type', $this.data('type'),{expires: 5,path: '/'});
-				this.app.router.reload();
+				var h = window.location.pathname.split('/',6)
+				this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+h[5]+'?cat='+$this.data('cat'));
 				return false;
 			},
         },
