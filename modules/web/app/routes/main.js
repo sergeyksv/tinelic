@@ -472,7 +472,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			var quant = res.locals.quant;
 			var dtstart = res.locals.dtstart;
 			var dtend = res.locals.dtend;
-			var cat = req.query.cat||'Datastore'
+			var cat = req.query.cat||'Datastore';
 			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
 				safe.parallel({
 						view: function (cb) {
