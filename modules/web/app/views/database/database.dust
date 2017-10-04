@@ -19,13 +19,17 @@
 				</ul>
 		</div>
 		<div class="pull-right dropdown">
-				<span class="btn btn-xs btn-info" data-toggle="dropdown">
-				cat/type
+				<span class="btn btn-xs btn-info 1" data-toggle="dropdown">
+				{@select key="{cat}"}
+					{@eq value="Datastore"}Datastore/statements{/eq}
+					{@eq value="WebTransaction"}WebTransaction/ExpressJS{/eq}
+					{@eq value="Custom"}Custom/api{/eq}
+				{/select}
 				<span class="caret"></span></span><br><br>
 				<ul class="dropdown-menu" role="menu">
-					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="Datastore"      class="do-cat" href="#">Datastore/statement</a></li>
-					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="WebTransaction" class="do-cat" href="#">WebTransaction/Expressjs</a></li>
-					<li role="presentation"><a role="menuitem" tabindex="-1" data-cat="Custom"         class="do-cat" href="#">Custom/api</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Datastore"      class="do-cat" href="#">Datastore/statement</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="WebTransaction" class="do-cat" href="#">WebTransaction/Expressjs</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Custom"         class="do-cat" href="#">Custom/api</a></li>
 				</ul>
 		</div>
 	</legend>

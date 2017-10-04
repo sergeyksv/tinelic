@@ -560,7 +560,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							r.value.cnt = r.value.c;
 							r.value.tta = r.value.tt/r.value.c;
 						})
-						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, fr: filter, query:req.query.selected,project:project,stat:stat}})
+						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, cat:cat, fr: filter, query:req.query.selected,project:project,stat:stat}})
 					})
 				)
 			}))

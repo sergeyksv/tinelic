@@ -13,7 +13,7 @@
 				</span>
 				<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
 					<div style="text-align:left; padding-left:20px">
-						<a href="./{st}?selected={_id}" style="color: black;" class="
+						<a href="./{st}?cat={cat}&selected={_id}" style="color: black;" class="
 						{@eq key="{_id}" value="{query}"} leftlist{/eq}">{_id}</a>
 					</div>
 				</div>
