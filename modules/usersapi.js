@@ -30,7 +30,7 @@ module.exports.init = function (ctx, cb) {
 		lastname:{type:"string",required:true,"maxLength": 64},
 		role:{required:true, enum: [ "admin", "user"]},
 		login:{type:"string",required:true,"maxLength": 32},
-		pass:{type:"string",required:true,"maxLength": 32}
+		pass:{type:"string",required:false,"maxLength": 32}
 	}}});
 
 	ctx.api.mongo.getDb({}, safe.sure(cb, function (db) {
@@ -176,13 +176,16 @@ getCurrentUser: function (t,cb) {
 */
 saveUser: function (t,p,cb) {
 	p = prefixify(p);
-	if (p.pass) {
+	if (p.pass&&p.pass.length) {
 		p.pass = crypto.createHash('md5').update(p.pass).digest('hex');
+	}
+	else {
+		delete p.pass
 	}
 	ctx.api.obac.getPermission(t,{action:p._id?'user_edit':'user_new',_id:p._id,throw:1}, safe.sure(cb, function () {
 		ctx.api.validate.check("user", p, safe.sure(cb, function (u) {
 			if (p._id)
-				usr.users.update({_id: p._id},p,cb);
+				usr.users.update({_id: p._id},{ $set: p},cb);
 			else
 				usr.users.insert(p,safe.sure(cb, function (res) {
 					cb(null, res[0]);
