@@ -727,7 +727,8 @@ ctx.router.get("/ajax/:project", function (req, res, next) {
 							ajax.insert(data, cb);
 						},
 						function (cb) {
-							if (!page) return cb();
+							if (!page)
+								return cb();
 							pages.update({_id:page._id}, {$inc:{_i_err: (data._i_code == 200)?0:1}}, cb);
 						}
 					],cb);

@@ -71,26 +71,8 @@ module.exports = function(grunt) {
 				files: {
 					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.js','./modules/web/app/rum.js'],
 					'./modules/web/public/js/build/jquery.js':'./modules/web/public/js/jquery.js'
-					},
+				},
 				options: {
-					preserveComments: false,
-					beautify: {
-						ascii_only: true,
-						quote_keys: true
-					},
-					compress: {
-						hoist_funs: true,
-						join_vars: true,
-						loops: true,
-						conditionals: true,
-						if_return: true,
-						unused: true,
-						comparisons: true
-					},
-					report: "min",
-					mangle: {
-						except: [ "undefined" ]
-					}
 				}
 			}
 		},

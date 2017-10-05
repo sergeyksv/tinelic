@@ -499,18 +499,22 @@ getPageError:function (t, p, cb) {
 *		reporter: string[],count:integer}}>}
 */
 getActionErrorInfo:function (t, p, cb) {
-	var query = queryfix(p.filter);var ALL = query.ehash?0:1;
+	var query = queryfix(p.filter);
+	var ALL = !query.ehash;
+
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
 		if (!query._id)
 			// overwise we assume that called knows what to do
 			return cb();
 		// then we need to fetch it and grap required info (projec and ehash)
-		serverErrors.findOne({_id:query._id}, safe.sure(cb, function (err) {
+		serverErrors.findOne({_id: query._id}, safe.sure(cb, function (err) {
 			if (!err)
-				cb(new CustomError("No event found", "Not Found"));
+				return cb(new CustomError("No event found", "Not Found"));
+
 			query.ehash = err.ehash;
 			delete query._id;
+
 			cb();
 		}));
 	},safe.sure(cb, function () {
@@ -821,7 +825,9 @@ getPageTimings:function (t, p, cb) {
 *		sessions: number, view: number, count: number}}>}
 */
 getPageErrorInfo:function (t, p, cb) {
-	var query = queryfix(p.filter);var ALL = query.ehash?0:1;
+	var query = queryfix(p.filter);
+	var ALL = !query.ehash;
+
 	safe.run(function (cb) {
 		// to identify error type we can provide id of existing error
 		if (!query._id)
@@ -830,7 +836,7 @@ getPageErrorInfo:function (t, p, cb) {
 		// then we need to fetch it and grap required info (project and ehash)
 		events.findOne({_id:query._id}, safe.sure(cb, function (event) {
 			if (!event)
-				cb(new CustomError("No event found", "Not Found"));
+				return cb(new CustomError("No event found", "Not Found"));
 			query.ehash = event.ehash;
 			delete query._id;
 			cb();
@@ -955,7 +961,7 @@ getPageErrorStats:function (t, p, cb) {
 		// then we need to fetch it and grap required info (projec and ehash)
 		events.findOne({_id:query._id}, safe.sure(cb, function (event) {
 			if (!event)
-				cb(new CustomError("No event found", "Not Found"));
+				return cb(new CustomError("No event found", "Not Found"));
 			query.ehash = event.ehash;
 			delete query._id;
 			cb();
@@ -1034,7 +1040,7 @@ getPageErrorTimings:function(t, p, cb) {
 		// then we need to fetch it and grap required info (projec and ehash)
 		events.findOne({_id:query._id}, safe.sure(cb, function (event) {
 			if (!event)
-				cb(new CustomError("No event found", "Not Found"));
+				return cb(new CustomError("No event found", "Not Found"));
 			query._idp = event._idp;
 			query.ehash = event.ehash;
 			delete query._id;
