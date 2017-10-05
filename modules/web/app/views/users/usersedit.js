@@ -24,15 +24,16 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
                 var warn = self.$('#warn');
                 var modal = self.$el;
 
+
                 if (role == "Role is not checked") {
                     warn.html('Role is not checked');
                 }
                 else {
-                    if (pass.length < 3 || lname.length < 3 || fname.length < 3 || login.length < 3) {
+                    if ((!id.length && pass.length < 3) || lname.length < 3 || fname.length < 3 || login.length < 3) {
                         warn.html('Name or password or login is to short');
                     }
                     else {
-                        if ((pass != rpass) || (!pass)) {
+                        if (!!pass.length && ((pass != rpass) || (!pass))) {
                             warn.html('Password does not match');
                         }
                         else {
