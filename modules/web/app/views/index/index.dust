@@ -2,7 +2,7 @@
 {<main}
 {#teams}
 <div class="list-group">
-<div class="list-group-item row disabled" aria-expanded="true{@first}true{:else}false{/first}">
+<div class="list-group-item row disabled" aria-expanded="{@first}true{:else}false{/first}">
 	{#t_metrics}
 	<div data-field="name" class="col-md-3 col-xs-12" data-toggle="collapse" href="#team_{_id}">
 		<a style="cursor:pointer">

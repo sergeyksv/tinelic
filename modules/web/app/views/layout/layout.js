@@ -3,7 +3,10 @@ define(['tinybone/base','dustc!views/layout/layout.dust','dustc!views/base_page.
 	var View = view.extend({
 		id:"views/layout/layout",
 		events:{
-			"click a":function (e) {
+			"click a[href]:not([target])":function (e) {
+				if (e.shiftKey || e.ctrlKey || e.isDefaultPrevented())
+					return;
+
 				e.preventDefault();
 				var href = $(e.currentTarget).attr("href");
 				if (href && href.length && href != "#")
