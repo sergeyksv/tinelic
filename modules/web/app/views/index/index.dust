@@ -2,17 +2,15 @@
 {<main}
 {#teams}
 <div class="list-group">
-<div class="list-group-item row disabled" aria-expanded="{@first}true{:else}false{/first}">
+<div class="list-group-item row list-group-item-info" aria-expanded="{@first}true{:else}false{/first}">
 	{#t_metrics}
-	<div data-field="name" class="col-md-3 col-xs-12" data-toggle="collapse" href="#team_{_id}">
-		<a style="cursor:pointer">
+	<a data-field="name" class="col-md-3 col-xs-12" data-toggle="collapse" href="#team_{_id}">
 		<strong>{name}
 		{@gt key=server.proc value=0}
 			<span> ( {server.proc} x {@math key=server.mem method="round"/} Mb )</span>
 		{/gt}</strong>
-		</a>
-	</div>
-	<div class="col-md-8 col-md-offset-0 col-xs-offset-1 col-xs-11" data-toggle="collapse" href="#team_{_id}">
+	</a>
+	<a class="col-md-8 col-md-offset-0 col-xs-offset-1 col-xs-11" data-toggle="collapse" href="#team_{_id}">
 		<span style="white-space: nowrap;">
 		<span class="text-danger">{@gt key=errAck.dtlActions value=0}<b>{errAck.dtlActions}</b>{:else}0{/gt} ( {errAck.actions} )</span> / <span class="text-success">{@gt key=errAck.dtlPages value=0}<b>{errAck.dtlPages}</b>{:else}0{/gt} ( {errAck.pages} )</span>
 		</span>
@@ -51,7 +49,7 @@
 			<span class="text-success">{@formatnumber val=client.e type="erate"/}
 			</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
-	</div>
+	</a>
 		<a href='{_t_prefix}/group-info/{name}'>
 		<span class="glyphicon glyphicon-align-justify" style="float: right"></span>
 		</a>

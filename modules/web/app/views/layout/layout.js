@@ -9,8 +9,10 @@ define(['tinybone/base','dustc!views/layout/layout.dust','dustc!views/base_page.
 
 				e.preventDefault();
 				var href = $(e.currentTarget).attr("href");
-				if (href && href.length && href != "#")
+				if (href && href.length && href !== "#") {
+					$(e.currentTarget).blur();
 					this.app.router.navigateTo($(e.currentTarget).attr("href"), this.app.errHandler);
+				}
 			}
 		}
 	});
