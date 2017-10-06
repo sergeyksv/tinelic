@@ -6,7 +6,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
             'click .do-stats': function(e) {
                 var self = this;
                 $this = $(e.currentTarget);
-                var cat_s = $.cookie('s_cat')||'Datastore';
+                var cat_s = $(".btn-ct").data("ct");
                 var h = window.location.pathname.split('/',5)
                 this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort')+'?cat='+cat_s);
                 return false;
@@ -14,7 +14,6 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
 			'click .do-cat': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				$.cookie('s_cat', $this.data('ct'),{expires: 5,path: '/'});
 				var h = window.location.pathname.split('/',6)
 				this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+h[5]+'?cat='+$this.data('ct'));
 				return false;
