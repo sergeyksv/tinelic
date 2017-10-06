@@ -238,6 +238,8 @@ module.exports.block = function(){
 							b.findElement(By.css("#navbar .doGoHome")).click();
 
 							helpers.waitPageReload.call(self,pid).then(function(pid) {
+								helpers.waitElementVisible.call(self,By.partialLinkText("NewTeam"));
+								b.findElement(By.partialLinkText("NewTeam")).click();
 								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
 								b.findElement(By.linkText("NewProject")).click();
 								helpers.waitPageReload.call(self,pid).then(function() {

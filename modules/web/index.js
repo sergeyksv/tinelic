@@ -50,22 +50,40 @@ module.exports.init = function (ctx, cb) {
 	};
 
 	// server stubs
-    requirejs.define.amd.dust = true;
+	requirejs.define.amd.dust = true;
 	requirejs.define("jquery", true);
 	requirejs.define("jquery-cookie", true);
 	requirejs.define("jquery.blockUI", true);
 	requirejs.define("bootstrap/dropdown", true);
-    requirejs.define("bootstrap/datetimepicker", true);
+	requirejs.define("bootstrap/datetimepicker", true);
 	requirejs.define("bootstrap/modal", true);
 	requirejs.define("bootstrap/tagsinput", true);
 	requirejs.define("bootstrap/typeahead", true);
-    requirejs.define("bootstrap/collapse", true);
-    requirejs.define("bootstrap/transition", true);
+	requirejs.define("bootstrap/collapse", true);
+	requirejs.define("bootstrap/transition", true);
 	requirejs.define("highcharts",true);
 	requirejs.define("jquery.tablesorter.combined",true);
 	requirejs.define("backctx",ctx);
 
-	ctx.router.use("/css",lessMiddleware(__dirname + '/style',{dest:__dirname+"/public/css"}));
+	ctx.router.use("/css", lessMiddleware(__dirname + '/style', {
+		dest: __dirname + "/public/css",
+		render: {
+			compress: true,
+			yuicompress: true,
+			optimization: 2,
+			ieCompat: false,
+			cleancss: true,
+			plugins: [
+				new (require('less-plugin-clean-css'))({
+					advanced: true
+				}),
+				new (require('less-plugin-autoprefix'))({
+					browsers: ["last 2 versions", "> 1%", "Firefox ESR", "ie > 9", "Safari > 8"]
+				})
+			]
+		}
+
+	}));
 	ctx.router.use(static(__dirname+"/public",{maxAge:600000}));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
 		ctx.api.cache.get("web_wires",req.params.id, safe.sure(next, function (wire) {
