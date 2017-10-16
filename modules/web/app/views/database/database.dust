@@ -18,8 +18,21 @@
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="sar" class="do-stats" href="#">Slowest average response time</a></li>
 				</ul>
 		</div>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info btn-ct" data-ct="{cat}" data-toggle="dropdown">
+				{@select key="{cat}"}
+					{@eq value="Datastore"}Datastore/statements{/eq}
+					{@eq value="WebTransaction"}WebTransaction/ExpressJS{/eq}
+					{@eq value="Custom"}Custom/api{/eq}
+				{/select}
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Datastore"      class="do-cat" href="#">Datastore/statement</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="WebTransaction" class="do-cat" href="#">WebTransaction/Expressjs</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Custom"         class="do-cat" href="#">Custom/api</a></li>
+				</ul>
+		</div>
 	</legend>
-
 <div class="row">
 	<div class="col-sm-4">
 		{@view name="views/database/database_leftlist_pagination"/}
