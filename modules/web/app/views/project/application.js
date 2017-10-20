@@ -20,32 +20,64 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = self.data.params;
-		safe.parallel([
-			function (cb) {
-				api("stats.getActionStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						var newData = processingData(data);
-						_.extend(self.data.topTransactions, newData);
+		if (_.isArray(params)===true) {
+			safe.eachOfSeries(params, function (current_params, cb) {
+				safe.parallel([
+					function (cb) {
+						api("stats.getActionStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, current_params), function(err, data) {
+							if (err) {
+								console.error(err);
+							} else {
+								var newData = processingData(data);
+								_.extend(self.data.topTransactions, newData);
+							}
+							cb();
+						});
+					},
+					function (cb) {
+						api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, current_params), function(err, data) {
+							if (err) {
+								console.error(err);
+							} else {
+								var newData = processingTotalData(data);
+								_.extend(self.data.topTransactions, newData);
+							}
+							cb();
+						});
 					}
-					cb();
-				});
-			},
-			function (cb) {
-				api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						var newData = processingTotalData(data);
-						_.extend(self.data.topTransactions, newData);
-					}
-					cb();
-				});
-			}
-		], safe.sure(self.app.errHandler, function() {
-			self.refresh(self.app.errHandler);
-		}));
+				], safe.sure(self.app.errHandler, function() {
+					self.refresh(self.app.errHandler);
+				}));
+				cb(null, current_params);
+			});
+		} else {
+			safe.parallel([
+				function (cb) {
+					api("stats.getActionStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							var newData = processingData(data);
+							_.extend(self.data.topTransactions, newData);
+						}
+						cb();
+					});
+				},
+				function (cb) {
+					api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							var newData = processingTotalData(data);
+							_.extend(self.data.topTransactions, newData);
+						}
+						cb();
+					});
+				}
+			], safe.sure(self.app.errHandler, function() {
+				self.refresh(self.app.errHandler);
+			}));
+		}
 	}
 	function processingData(apiData) {
 		var progress = 0;

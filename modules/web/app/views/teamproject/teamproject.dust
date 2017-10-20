@@ -1,0 +1,33 @@
+		{>"views/base_page"/}
+		{<main}
+		<div id="{_t_view.cid}" class="project-page">
+			<div class='row'>
+				<legend class='col-md-12'><a href="{_t_prefix}/teamproject/{team.name}">{team.name}</a>
+					<span class="text-info h5" data-id="{team._id}">
+				 	{@view name="views/project/metrics"/}  ( {team._id} )
+					</span>
+				</legend>
+			</div>
+			<div class='row'>
+				<div class="col-md-4  col-xs-12">
+					{@view name="views/project/graph"/}
+				</div>
+				{#stats}
+				<div class="col-md-8 col-xs-12">
+					<div class='row'>
+						<div class="col-md-6">
+							{@view name="views/project/browser"/}
+							{@view name="views/project/server-err"/}
+							{@view name="views/project/top-pages"/}
+						</div>
+						<div class="col-md-6">
+							{@view name="views/project/application"/}
+							{@view name="views/project/top-ajax"/}
+							{@view name="views/project/database"/}
+						</div>
+					</div>
+				</div>
+				{/stats}
+			</div>
+		</div>
+		{/main}

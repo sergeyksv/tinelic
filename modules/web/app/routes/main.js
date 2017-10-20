@@ -13,6 +13,11 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				route(req,res,cb);
 			},cb)
 		},
+		teamproject:function (req, res, cb) {
+			require(["routes/teamproject"],function (route) {
+				route(req,res,cb);
+			},cb)
+		},
 		users:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {

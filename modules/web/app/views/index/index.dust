@@ -50,6 +50,7 @@
 			</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
 	</a>
+		<a href='{_t_prefix}/teamproject/{name}'>{name}</a>
 		<a href='{_t_prefix}/group-info/{name}'>
 		<span class="glyphicon glyphicon-align-justify" style="float: right"></span>
 		</a>

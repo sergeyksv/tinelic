@@ -137,6 +137,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				router.get("/", main.index);
 				router.get("/group-info/:name", main.group_info);
 				router.get("/project/:slug", main.project);
+				router.get("/teamproject/:teams", main.teamproject);
 				router.get("/users", main.users);
 				router.get("/project/:slug/ajax/:stats", main.ajax);
 				router.get("/project/:slug/application/:stats", main.application);

@@ -1,6 +1,7 @@
 define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 	'dustc!views/project/database.dust'],function (tb,_,moment,api) {
 	var view = tb.View;
+	var safe = require("safe");
 	var View = view.extend({
 		id:"views/project/database",
 		events: {
@@ -20,16 +21,31 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = self.data.params;
-		api("stats.getActionSegmentStats", $.cookie('token'), _.merge({filter: {'data._s_cat': 'Datastore'}}, params), function(err, data) {
-			if (err) {
-				console.error(err);
-			} else {
-				var newData = processingData(data);
-				_.extend(self.data.database, newData);
-				self.refresh(self.app.errHandler);
-			}
-		});
-	}
+		if (_.isArray(params)===true) {
+			safe.eachOfSeries(params, function (current_params, cb) {
+				api("stats.getActionSegmentStats", $.cookie('token'),  _.merge({filter: {'data._s_cat': 'Datastore'}}, current_params), function(err, data) {
+					if (err) {
+						console.error(err);
+					} else {
+						var newData = processingData(data);
+						_.extend(self.data.database, newData);
+						self.refresh(self.app.errHandler);
+					}
+				});
+				cb(null, current_params);
+			});
+		} else {
+			api("stats.getActionSegmentStats", $.cookie('token'),  _.merge({filter: {'data._s_cat': 'Datastore'}}, params), function(err, data) {
+				if (err) {
+					console.error(err);
+				} else {
+					var newData = processingData(data);
+					_.extend(self.data.database, newData);
+					self.refresh(self.app.errHandler);
+				}
+			});
+		}
+	 }
 	function processingData(apiData) {
 		var progress = 0;
 		var data = [];

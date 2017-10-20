@@ -1,6 +1,7 @@
 define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highcharts',
 	'dustc!views/project/graph.dust'],function (tb,_,moment,api, safe) {
 	var view = tb.View;
+	var safe = require("safe");
 	var View = view.extend({
 		id:"views/project/graph",
 		events: {
@@ -20,51 +21,102 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = self.data.params;
-		safe.parallel([
-			function (cb) {
-				api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						_.extend(self.data.actions, data);
+		if (_.isArray(params)===true) {
+			safe.eachOfSeries(params, function (current_params, cb) {
+				safe.parallel([
+					function (cb) {
+						api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, current_params), function(err, data) {
+							if (err) {
+								console.error(err);
+							} else {
+								_.extend(self.data.actions, data);
+							}
+							cb();
+						});
+					},
+					function (cb) {
+						api("stats.getPageTimings", $.cookie('token'), current_params, function(err, data) {
+							if (err) {
+								console.error(err);
+							} else {
+								_.extend(self.data.views, data);
+							}
+							cb();
+						});
+					},
+					function (cb) {
+						api("stats.getAjaxTimings", $.cookie('token'), current_params, function(err, data) {
+							if (err) {
+								console.error(err);
+							} else {
+								_.extend(self.data.ajax, data);
+							}
+							cb();
+						});
 					}
-					cb();
-				});
-			},
-			function (cb) {
-				api("stats.getPageTimings", $.cookie('token'), params, function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						_.extend(self.data.views, data);
-					}
-					cb();
-				});
-			},
-			function (cb) {
-				api("stats.getAjaxTimings", $.cookie('token'), params, function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						_.extend(self.data.ajax, data);
-					}
-					cb();
-				});
-			}
-		], safe.sure(self.app.errHandler, function() {
-			self.data.statGraph = processingStat({
-				actions: self.data.actions,
-				views: self.data.views,
-				ajax: self.data.ajax
+				], safe.sure(self.app.errHandler, function() {
+					self.data.statGraph = processingStat({
+						actions: self.data.actions,
+						views: self.data.views,
+						ajax: self.data.ajax
+					});
+					self.parent.trigger("pageStats", self.data.statGraph);
+					self.data.graphOn = {
+						server: _.get(self, 'data.actions') ? 1 : 0,
+						browser: _.get(self, 'data.views') ? 1 : 0,
+						ajax: _.get(self, 'data.ajax') ? 1 : 0
+					};
+					self.refresh(self.app.errHandler);
+				}));
+				cb(null, current_params);
 			});
-			self.parent.trigger("pageStats", self.data.statGraph);
-			self.data.graphOn = {
-				server: _.get(self, 'data.actions') ? 1 : 0,
-				browser: _.get(self, 'data.views') ? 1 : 0,
-				ajax: _.get(self, 'data.ajax') ? 1 : 0
-			};
-			self.refresh(self.app.errHandler);
-		}));
+		} else {
+			safe.parallel([
+				function (cb) {
+					api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							_.extend(self.data.actions, data);
+						}
+						cb();
+					});
+				},
+				function (cb) {
+					api("stats.getPageTimings", $.cookie('token'), params, function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							_.extend(self.data.views, data);
+						}
+						cb();
+					});
+				},
+				function (cb) {
+					api("stats.getAjaxTimings", $.cookie('token'), params, function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							_.extend(self.data.ajax, data);
+						}
+						cb();
+					});
+				}
+			], safe.sure(self.app.errHandler, function() {
+				self.data.statGraph = processingStat({
+					actions: self.data.actions,
+					views: self.data.views,
+					ajax: self.data.ajax
+				});
+				self.parent.trigger("pageStats", self.data.statGraph);
+				self.data.graphOn = {
+					server: _.get(self, 'data.actions') ? 1 : 0,
+					browser: _.get(self, 'data.views') ? 1 : 0,
+					ajax: _.get(self, 'data.ajax') ? 1 : 0
+				};
+				self.refresh(self.app.errHandler);
+			}));
+		}
 	}
 	function processingStat(apiData) {
 		var vale, valtt, valr, valapd;
