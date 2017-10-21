@@ -1,7 +1,6 @@
 define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 	'dustc!views/project/top-pages.dust'],function (tb,_,moment,api) {
 	var view = tb.View;
-	var safe = require("safe");
 	var View = view.extend({
 		id:"views/project/top-pages",
 		events: {
@@ -21,30 +20,15 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = self.data.params;
-		if (_.isArray(params)===true) {
-			safe.eachOfSeries(params, function (current_params, cb) {
-				api("stats.getPageStats", $.cookie('token'), current_params, function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						var newData = processingData(data);
-						_.extend(self.data.topPages, newData);
-						self.refresh(self.app.errHandler);
-					}
-				});
-				cb(null, current_params);
-			});
-		} else {
-			api("stats.getPageStats", $.cookie('token'), params, function(err, data) {
-				if (err) {
-					console.error(err);
-				} else {
-					var newData = processingData(data);
-					_.extend(self.data.topPages, newData);
-					self.refresh(self.app.errHandler);
-				}
-			});
-		}
+		api("stats.getPageStats", $.cookie('token'), params, function(err, data) {
+			if (err) {
+				console.error(err);
+			} else {
+				var newData = processingData(data);
+				_.extend(self.data.topPages, newData);
+				self.refresh(self.app.errHandler);
+			}
+		});
 	}
 	function processingData(apiData) {
 		var progress = 0;
