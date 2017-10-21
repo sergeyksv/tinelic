@@ -21,6 +21,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = _.get(self, 'data.params');
+
 		api("stats.getPageErrorStats", $.cookie('token'), {
 			quant: params.quant,
 			filter: {

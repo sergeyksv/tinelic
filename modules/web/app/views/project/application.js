@@ -30,22 +30,22 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 						_.extend(self.data.topTransactions, newData);
 					}
 					cb();
-					});
-				},
-				function (cb) {
-					api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
-						if (err) {
-							console.error(err);
-						} else {
-							var newData = processingTotalData(data);
-							_.extend(self.data.topTransactions, newData);
-						}
-						cb();
-					});
-				}
-			], safe.sure(self.app.errHandler, function() {
-				self.refresh(self.app.errHandler);
-			}));
+				});
+			},
+			function (cb) {
+				api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
+					if (err) {
+						console.error(err);
+					} else {
+						var newData = processingTotalData(data);
+						_.extend(self.data.topTransactions, newData);
+					}
+					cb();
+				});
+			}
+		], safe.sure(self.app.errHandler, function() {
+			self.refresh(self.app.errHandler);
+		}));
 	}
 	function processingData(apiData) {
 		var progress = 0;
