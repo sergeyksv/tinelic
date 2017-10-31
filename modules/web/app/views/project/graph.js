@@ -58,13 +58,13 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 				ajax: self.data.ajax
 			});
 			self.parent.trigger("pageStats", self.data.statGraph);
-				self.data.graphOn = {
-					server: _.get(self, 'data.actions') ? 1 : 0,
-					browser: _.get(self, 'data.views') ? 1 : 0,
-					ajax: _.get(self, 'data.ajax') ? 1 : 0
-				};
-				self.refresh(self.app.errHandler);
-			}));
+			self.data.graphOn = {
+				server: _.get(self, 'data.actions') ? 1 : 0,
+				browser: _.get(self, 'data.views') ? 1 : 0,
+				ajax: _.get(self, 'data.ajax') ? 1 : 0
+			};
+			self.refresh(self.app.errHandler);
+		}));
 	}
 	function processingStat(apiData) {
 		var vale, valtt, valr, valapd;
