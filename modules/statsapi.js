@@ -162,108 +162,99 @@ getMetricTotals: function(t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,tt:number}}>}
 */
 getActionTimings: function(t, p, cb) {
-	var self = this;
 	var query = queryfix(p.filter);
 	if (query._idp.$in) {
-		self.getActionTimings2(t, p, cb)
-	} else {
-		self.getActionTimings1(t, p, cb)
-	}
-},
-
-getActionTimings1: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_serverT;
-			var Q = parseInt(p.quant) || 1;
-			var AG = ApdexT;
-			var AA = ApdexT * 4;
-			var _dt0 = new Date(0);
-			actions.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: {
-							$trunc: {
-								$divide: [{
-									$subtract: ["$_dt", _dt0]
-								}, {
-									$multiply: [Q, 60000]
-								}]
-							}
-						},
-						c: {$sum: 1},
-						r: {
-							$sum: {
-								$divide: [1, Q]
-							}
-						},
-						e: {
-							$sum: {
-								$divide: [{
-									$cond: {if: "$_i_err", then: 1, else: 0
-									}
-								}, Q]
-							}
-						},
-						tt: {$sum: "$_i_tt"},
-						ag: {
-							$sum: {
-								$cond: {if: "$_i_err", then: 0, else: {
-										$cond: {if: {$lte: ["$_i_tt", AG]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {if: "$_i_err", then: 0, else: {
-					$cond: {if: {$and: [{$gt: ["$_i_tt", AG]}, {$lte: ["$_i_tt", AA]}]}, then: 1, else: 0
-										}
-									}
-								}
-							}
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexActionTimings = [];
+				_.each(apdex, function (z) {
+					apdexActionTimings.push(z._i_serverT);
+				});
+				var Q = parseInt(p.quant) || 1;
+				var _dt0 = new Date(0);
+				actions.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexActionTimings,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
+					},
+					{
+						$addFields: {
+							"AC": {$multiply: [ "$apdexConfig", 4] },
+						}
+					},
+					{
+						$group: {
+							_id: {
+								$trunc: {
+									$divide: [{
+										$subtract: ["$_dt", _dt0]
+									}, {
+										$multiply: [Q, 60000]
 									}]
-								}, "$c"]
+								}
 							},
-							tta: {
-								$divide: ["$tt", "$c"]
+							c: {$sum: 1},
+							r: {
+								$sum: {
+									$divide: [1, Q]
+								}
+							},
+							e: {
+								$sum: {
+									$divide: [{
+										$cond: {if: "$_i_err", then: 1, else: 0
+										}
+									}, Q]
+								}
+							},
+							tt: {$sum: "$_i_tt"},
+							ag: {
+								$sum: {
+									$cond: {if: "$_i_err", then: 0, else: {
+											$cond: {if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {if: "$_i_err", then: 0, else: {
+						$cond: {if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]}, {$lte: ["$_i_tt", "$AC"]}]}, then: 1, else: 0
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			],{allowDiskUse: true},cb);
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								},
+								tta: {
+									$divide: ["$tt", "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+				],{allowDiskUse: true},cb);
+			}));
 		}));
-	}));
-},
-
-getActionTimings2: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_s_cat:query._s_cat, _idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else	{
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -340,37 +331,10 @@ getActionTimings2: function(t, p, cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				],{allowDiskUse: true}, function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				],{allowDiskUse: true},cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project  ;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
@@ -382,87 +346,74 @@ getActionTimings2: function(t, p, cb) {
 * @return {Array<{_id:{string},value:{apdex:number,c:number,tt:number}}>}
 *	Data grouped by action name
 */
-getActionStats: function(t, p, cb) {
-	var self = this;
+getActionStats: function(t, p , cb) {
 	var query = queryfix(p.filter);
-
 	if (query._idp.$in) {
-		self.getActionStats2(t, p, cb)
-	} else {
-		self.getActionStats1(t, p, cb)
-	}
-},
-
-getActionStats1: function(t, p , cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_serverT;
-			actions.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: "$_s_name",
-						c: {$sum: 1},
-						tt: {$sum: "$_i_tt"},
-						ag: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$lte: ["$_i_tt", ApdexT]}, then: 1, else: 0
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexActionStats = [];
+				_.each(apdex, function (z) {
+					apdexActionStats.push(z._i_serverT);
+				});
+				actions.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexActionStats,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+						}
+					},
+					{
+						$group: {
+							_id: "$_s_name",
+							c: {$sum: 1},
+							tt: {$sum: "$_i_tt"},
+							ag: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
 										}
 									}
 								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$and: [{$gt: ["$_i_tt", ApdexT]},{$lte: ["$_i_tt", {$multiply: [ApdexT, 4]}]}]},
-											then: 1, else: 0
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]},{$lte: ["$_i_tt", {$multiply: ["$apdexConfig", 4]}]}]},
+												then: 1, else: 0
+											}
 										}
 									}
 								}
 							}
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c", tt: "$tt",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
-									}]
-								}, "$c"]
+					},
+					{
+						$project: {
+							value: {
+								c: "$c", tt: "$tt",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			],{allowDiskUse: true},cb);
+					},
+					{$sort: {_id: 1}}
+				],{allowDiskUse: true},cb);
+			}));
 		}));
-	}));
-},
-
-getActionStats2: function(t, p , cb) {
-	var query = queryfix(p.filter);
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else {
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -516,37 +467,10 @@ getActionStats2: function(t, p , cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				],{allowDiskUse: true},function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				],{allowDiskUse: true},cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project  ;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
@@ -559,94 +483,82 @@ getActionStats2: function(t, p , cb) {
 *	Data grouped by ajax route
 */
 getAjaxStats: function(t, p, cb) {
-	var self = this;
 	var query = queryfix(p.filter);
 	if (query._idp.$in) {
-		self.getAjaxStats2(t, p, cb)
-	} else {
-		self.getAjaxStats1(t, p, cb)
-	}
-},
-
-getAjaxStats1: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_ajaxT;
-			ajax.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: "$_s_name",
-						c: {$sum: 1},
-						tt: {$sum: "$_i_tt"},
-						e: {
-							$sum: {
-								$multiply: [1.0, {
-									$cond: {
-										if: {$ne: ["$_i_code", 200]}, then: 1, else: 0
-									}
-								}]
-							}
-						},
-						ag: {
-							$sum: {
-								$cond: {
-									if: {$ne: ["$_i_code", 200]}, then: 0, else: {
-										$cond: {
-											if: {$lte: ["$_i_tt", ApdexT]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {
-									if: {$ne: ["$_i_code", 200]}, then: 0, else: {
-										$cond: {
-											if: {$and: [{$gt: ["$_i_tt", ApdexT]}, {$lte: ["$_i_tt", {$multiply: [ApdexT, 4]}]}]},
-											then: 1, else: 0
-										}
-									}
-								}
-							}
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexAjaxStats = [];
+				_.each(apdex, function (z) {
+					apdexAjaxStats.push(z._i_ajaxT);
+				});
+				ajax.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexAjaxStats,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c", tt: "$tt", e: "$e",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
+					},
+					{
+						$group: {
+							_id: "$_s_name",
+							c: {$sum: 1},
+							tt: {$sum: "$_i_tt"},
+							e: {
+								$sum: {
+									$multiply: [1.0, {
+										$cond: {
+											if: {$ne: ["$_i_code", 200]}, then: 1, else: 0
+										}
 									}]
-								}, "$c"]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: {$ne: ["$_i_code", 200]}, then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: {$ne: ["$_i_code", 200]}, then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]}, {$lte: ["$_i_tt", {$multiply: ["$apdexConfig", 4]}]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			],{allowDiskUse: true},cb);
+					},
+					{
+						$project: {
+							value: {
+								c: "$c", tt: "$tt", e: "$e",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+				],{allowDiskUse: true},cb);
+			}));
 		}));
-	}));
-},
-
-getAjaxStats2: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else {
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -709,37 +621,10 @@ getAjaxStats2: function(t, p, cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				],{allowDiskUse: true},function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				],{allowDiskUse: true},cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
@@ -752,94 +637,82 @@ getAjaxStats2: function(t, p, cb) {
 *	Data grouped by page route
 */
 getPageStats: function(t, p, cb) {
-	var self = this;
 	var query = queryfix(p.filter);
 	if (query._idp.$in) {
-		self.getPageStats2(t, p, cb)
-	} else {
-		self.getPageStats1(t, p, cb)
-	}
-},
-
-getPageStats1: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_pagesT;
-			pages.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: "$_s_route",
-						c: {$sum: 1},
-						tt: {$sum: "$_i_tt"},
-						e: {
-							$sum: {
-								$multiply: [1.0, {
-									$cond: {
-										if: "$_i_err", then: 1, else: 0
-									}
-								}]
-							}
-						},
-						ag: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$lte: ["$_i_tt", ApdexT]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$and: [{$gt: ["$_i_tt", ApdexT]}, {$lte: ["$_i_tt", {$multiply: [ApdexT, 4]}]}]},
-											then: 1, else: 0
-										}
-									}
-								}
-							}
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexPageStats = [];
+				_.each(apdex, function (z) {
+					apdexPageStats.push(z._i_pagesT);
+				});
+				pages.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexPageStats,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
+					},
+					{
+						$group: {
+							_id: "$_s_route",
+							c: {$sum: 1},
+							tt: {$sum: "$_i_tt"},
+							e: {
+								$sum: {
+									$multiply: [1.0, {
+										$cond: {
+											if: "$_i_err", then: 1, else: 0
+										}
 									}]
-								}, "$c"]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]}, {$lte: ["$_i_tt", {$multiply: ["$apdexConfig", 4]}]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			],{allowDiskUse: true}, cb);
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+				],{allowDiskUse: true}, cb);
+			}));
 		}));
-	}));
-},
-
-getPageStats2: function(t, p, cb) {
-	var query = queryfix(p.filter);
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else {
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -902,37 +775,10 @@ getPageStats2: function(t, p, cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				],{allowDiskUse: true}, function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				],{allowDiskUse: true}, cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
@@ -1085,122 +931,107 @@ getActionError:function (t, p, cb) {
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
 getAjaxTimings:function(t, p, cb) {
-	var self = this;
 	var query = queryfix(p.filter);
+	query = (p._idurl) ? _.extend(query, {
+		_s_name: p._idurl
+	}) : query;
 	if (query._idp.$in) {
-		self.getAjaxTimings2(t, p, cb)
-	} else {
-		self.getAjaxTimings1(t, p, cb)
-	}
-},
-
-getAjaxTimings1:function(t, p, cb) {
-	var query = queryfix(p.filter);
-	query = (p._idurl) ? _.extend(query, {
-		_s_name: p._idurl
-	}) : query;
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_ajaxT;
-			var Q = parseInt(p.quant) || 1;
-			var _dt0 = new Date(0);
-			ajax.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: {
-							$trunc: {
-								$divide: [{
-									$subtract: ["$_dt", _dt0]
-								}, {
-									$multiply: [Q, 60000]
-								}]
-							}
-						},
-						c: {$sum: 1},
-						r: {
-							$sum: {
-								$divide: [1, Q]
-							}
-						},
-						tt: {$sum: "$_i_tt"},
-						pt: {$sum: "$_i_pt"},
-						code: {$first: "$_i_code"},
-						e: {
-							$sum: {
-								$divide: [{
-									$multiply: [1.0, {
-										$cond: {
-											if: {$ne: ["$_i_code", 200]}, then: 1, else: 0
-										}
-									}]
-								}, Q]
-							}
-						},
-						ag: {
-							$sum: {
-								$cond: {
-									if: {$ne: ["$_i_code", 200]}, then: 0, else: {
-										$cond: {
-											if: {$lte: ["$_i_tt", ApdexT]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {
-									if: {$ne: ["$_i_code", 200]}, then: 0, else: {
-										$cond: {
-											if: {$and: [{$gt: ["$_i_tt", ApdexT]}, {$lte: ["$_i_tt", {$multiply: [ApdexT, 4]}]}]},
-											then: 1, else: 0
-										}
-									}
-								}
-							}
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexAjaxTimings = [];
+				_.each(apdex, function (z) {
+					apdexAjaxTimings.push(z._i_ajaxT);
+				});
+				var Q = parseInt(p.quant) || 1;
+				var _dt0 = new Date(0);
+				ajax.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexAjaxTimings,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c",r: "$r",tt: "$tt",pt: "$pt",code: "$code",e: "$e",ag: "$ag",aa: "$aa",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
+					},
+					{
+						$group: {
+							_id: {
+								$trunc: {
+									$divide: [{
+										$subtract: ["$_dt", _dt0]
+									}, {
+										$multiply: [Q, 60000]
 									}]
-								}, "$c"]
+								}
 							},
-							tta: {
-								$divide: ["$tt", "$c"]
+							c: {$sum: 1},
+							r: {
+								$sum: {
+									$divide: [1, Q]
+								}
+							},
+							tt: {$sum: "$_i_tt"},
+							pt: {$sum: "$_i_pt"},
+							code: {$first: "$_i_code"},
+							e: {
+								$sum: {
+									$divide: [{
+										$multiply: [1.0, {
+											$cond: {
+												if: {$ne: ["$_i_code", 200]}, then: 1, else: 0
+											}
+										}]
+									}, Q]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: {$ne: ["$_i_code", 200]}, then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: {$ne: ["$_i_code", 200]}, then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]}, {$lte: ["$_i_tt", {$multiply: ["$apdexConfig", 4]}]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			], {allowDiskUse: true}, cb);
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",r: "$r",tt: "$tt",pt: "$pt",code: "$code",e: "$e",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								},
+								tta: {
+									$divide: ["$tt", "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+				], {allowDiskUse: true}, cb);
+			}));
 		}));
-	}));
-},
-
-getAjaxTimings2:function(t, p, cb) {
-	var query = queryfix(p.filter);
-	query = (p._idurl) ? _.extend(query, {
-		_s_name: p._idurl
-	}) : query;
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else {
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -1285,37 +1116,10 @@ getAjaxTimings2:function(t, p, cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				], {allowDiskUse: true},function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				], {allowDiskUse: true}, cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project  ;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
@@ -1325,120 +1129,103 @@ getAjaxTimings2:function(t, p, cb) {
 * @param {String} filter._idp Project id
 * @return {Array<{_id:{module:StatsApi~TimeSlot},value:{apdex:number,tta:number,c:number,r:number,e:number,tt:number}}>}
 */
-getPageTimings: function(t, p, cb) {
-	var self = this;
+getPageTimings:function (t, p, cb) {
 	var query = queryfix(p.filter);
 	if (query._idp.$in) {
-		self.getPageTimings2(t, p, cb)
-	} else {
-		self.getPageTimings1(t, p, cb)
-	}
-},
-
-getPageTimings1:function (t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
-			var ApdexT = apdex._i_pagesT;
-			var Q = parseInt(p.quant) || 1;
-
-//						var Q = p.quant || 1;
-//						console.log(Q);
-
-			var _dt0 = new Date(0);
-			pages.aggregate([{
-					$match: query
-				},
-				{
-					$group: {
-						_id: {
-							$trunc: {
-								$divide: [{
-									$subtract: ["$_dt", _dt0]
-								}, {
-									$multiply: [Q, 60000]
-								}]
-							}
-						},
-						c: {$sum: 1},
-						r: {
-							$sum: {
-								$divide: [1, Q]
-							}
-						},
-						tt: {$sum: "$_i_tt"},
-						e: {
-							$sum: {
-								$divide: [{
-									$cond: {
-										if: "$_i_err",
-										then: 1,
-										else: 0
-									}
-								}, Q]
-							}
-						},
-						ag: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$lte: ["$_i_tt", ApdexT]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {
-									if: "$_i_err", then: 0, else: {
-										$cond: {
-											if: {$and: [{$gt: ["$_i_tt", ApdexT]}, {$lte: ["$_i_tt", {$multiply: [ApdexT, 4]}]}]},
-											then: 1, else: 0
-										}
-									}
-								}
-							}
+		checkAccess(t, query, safe.sure(cb, function() {
+			ctx.api.assets.getProjectsApdexConfig(t, {
+				_id: query._idp
+			}, safe.sure(cb, function(apdex) {
+				var apdexPageTimings = [];
+				_.each(apdex, function (z) {
+					apdexPageTimings.push(z._i_pagesT);
+				});
+				var Q = parseInt(p.quant) || 1;
+				var _dt0 = new Date(0);
+				pages.aggregate([{
+						$match: query
+					},
+					{
+						$addFields: {
+							"apdexConfig": {$arrayElemAt:[apdexPageTimings,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
 						}
-					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c",r: "$r",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
+					},
+					{
+						$group: {
+							_id: {
+								$trunc: {
+									$divide: [{
+										$subtract: ["$_dt", _dt0]
+									}, {
+										$multiply: [Q, 60000]
 									}]
-								}, "$c"]
+								}
 							},
-							tta: {
-								$divide: ["$tt", "$c"]
+							c: {$sum: 1},
+							r: {
+								$sum: {
+									$divide: [1, Q]
+								}
+							},
+							tt: {$sum: "$_i_tt"},
+							e: {
+								$sum: {
+									$divide: [{
+										$cond: {
+											if: "$_i_err",
+											then: 1,
+											else: 0
+										}
+									}, Q]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$apdexConfig"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$apdexConfig"]}, {$lte: ["$_i_tt", {$multiply: ["$apdexConfig", 4]}]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
 							}
 						}
-					}
-				},
-				{$sort: {_id: 1}}
-			], {allowDiskUse: true}, cb);
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",r: "$r",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								},
+								tta: {
+									$divide: ["$tt", "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+				], {allowDiskUse: true}, cb);
+			}));
 		}));
-	}));
-
-},
-
-getPageTimings2:function (t, p, cb) {
-	var query = queryfix(p.filter);
-	var r =[] ;
-	var i;
-	var count_project = query._idp.$in.length;
-	for (i = 0; i < query._idp.$in.length; ++i) {
-		r.push(  {_idp:query._idp.$in[i], _dt:query._dt} );
-	}
-	var qx = [];
-	safe.eachSeries(r, function(query, cb) {
+	} else {
 		checkAccess(t, query, safe.sure(cb, function() {
 			ctx.api.assets.getProjectApdexConfig(t, {
 				_id: query._idp
@@ -1525,37 +1312,10 @@ getPageTimings2:function (t, p, cb) {
 						}
 					},
 					{$sort: {_id: 1}}
-				], {allowDiskUse: true}, function(err,res){
-					_.forEach(res, function(z) {
-						qx.push(z);
-					});
-					cb(err);
-				});
+				], {allowDiskUse: true}, cb);
 			}));
 		}));
-	},function(err, res){
-		var obj = {};
-		 _.each(qx, function(qw) {
-			if(obj[qw._id]){
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = (obj[qw._id][key] + qw.value[key])/count_project;
-				})
-			} else {
-				obj[qw._id]=qw.value
-				_.forEach(obj[qw._id], function(n, key) {
-					obj[qw._id][key] = obj[qw._id][key]/count_project  ;
-				})
-			}
-		});
-		var mas = [];
-			_.forEach(obj, function(n,key) {
-				var obj2 ={};
-				{obj2["_id"]=key,
-				obj2["value"]=n};
-				mas.push(obj2);
-			});
-		cb(err, mas);
-	});
+	}
 },
 
 /**
