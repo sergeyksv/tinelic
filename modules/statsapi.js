@@ -166,8 +166,8 @@ getActionTimings: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexActionTimings = [];
@@ -267,8 +267,8 @@ getActionStats: function(t, p , cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexActionStats = [];
@@ -347,8 +347,8 @@ getAjaxStats: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexAjaxStats = [];
@@ -436,8 +436,8 @@ getPageStats: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexPageStats = [];
@@ -668,8 +668,8 @@ getAjaxTimings:function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexAjaxTimings = [];
@@ -777,8 +777,8 @@ getPageTimings:function (t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectsApdexConfig(t, {
+	checkAccessApdex(t, query, safe.sure(cb, function() {
+		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: query._idp
 		}, safe.sure(cb, function(apdex) {
 			var apdexPageTimings = [];
@@ -1480,6 +1480,14 @@ getMetricTimings:function(t,p,cb) {
 function checkAccess(token, query, cb ) {
 	ctx.api.obac.getPermissions(token, {rules:[{_id:query._idp, action:'project_view'}]}, safe.sure(cb, function (res) {
 		if (!res.project_view[query._idp])
+			return cb(new CustomError('Current user is unknown',"Unauthorized"));
+		cb();
+	}));
+}
+
+function checkAccessApdex(token, query, cb ) {
+	ctx.api.obac.getPermissions(token, {rules:[{_id:query._idp.$in, action:'project_view'}]}, safe.sure(cb, function (res) {
+		if (!res.project_view[query._idp.$in])
 			return cb(new CustomError('Current user is unknown',"Unauthorized"));
 		cb();
 	}));

@@ -393,30 +393,9 @@ ackProjectState: function(t, data, cb) {
 * @param {Object} Apdex config
 */
 getProjectApdexConfig: function(t, p, cb) {
-	p =  prefixify(p);
-	ctx.api.obac.getPermission(t,{action:'project_view',_id:p._id,throw:1}, safe.sure(cb, function () {
-		projects.findOne(p, safe.sure(cb,function(data) {
-			if (data && data.apdexConfig)
-				cb(null,data.apdexConfig);
-			else
-				cb(null, {
-					_i_serverT: 200,
-					_i_pagesT: 7000,
-					_i_ajaxT: 500
-				});
-		}));
-	}));
-},
-
-
-/**
-* @param {String} token Auth token
-* @param {String} _id.$in Projects id
-* @param {Object} Apdex config
-*/
-getProjectsApdexConfig: function(t, p, cb) {
 	var	mas = [];
 	safe.eachSeries(p._id.$in, function(current_p, cb) {
+		current_p =  prefixify(current_p);
 		ctx.api.obac.getPermission(t,{action:'project_view',_id:current_p,throw:1}, safe.sure(cb, function () {
 			projects.findOne(current_p, safe.sure(cb,function(data) {
 				if (data && data.apdexConfig) {
@@ -435,8 +414,8 @@ getProjectsApdexConfig: function(t, p, cb) {
 					});
 				};
 			}));
-	}));
-},	safe.sure(cb, function() {
+		}));
+	}, safe.sure(cb, function() {
 		cb(null, mas)
 	}));
 },
