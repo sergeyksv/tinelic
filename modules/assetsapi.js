@@ -393,30 +393,18 @@ ackProjectState: function(t, data, cb) {
 * @param {Object} Apdex config
 */
 getProjectApdexConfig: function(t, p, cb) {
-	var	mas = [];
-	safe.eachSeries(p._id.$in, function(current_p, cb) {
-		current_p =  prefixify(current_p);
-		ctx.api.obac.getPermission(t,{action:'project_view',_id:current_p,throw:1}, safe.sure(cb, function () {
-			projects.findOne(current_p, safe.sure(cb,function(data) {
-				if (data && data.apdexConfig) {
-					mas.push(data.apdexConfig);
-					cb(null,data.apdexConfig)
-				} else {
-					mas.push({
-						_i_serverT: 200,
-						_i_pagesT: 7000,
-						_i_ajaxT: 500
-					})
-					cb(null, {
-						_i_serverT: 200,
-						_i_pagesT: 7000,
-						_i_ajaxT: 500
-					});
-				};
-			}));
+	p =  prefixify(p);
+	ctx.api.obac.getPermission(t,{action:'project_view',_id:p._id,throw:1}, safe.sure(cb, function () {
+		projects.findOne(p, safe.sure(cb,function(data) {
+			if (data && data.apdexConfig)
+				cb(null,data.apdexConfig);
+			else
+				cb(null, {
+					_i_serverT: 200,
+					_i_pagesT: 7000,
+					_i_ajaxT: 500
+				});
 		}));
-	}, safe.sure(cb, function() {
-		cb(null, mas)
 	}));
 },
 

@@ -166,10 +166,8 @@ getActionTimings: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexActionTimings = [];
 			_.each(apdex, function (z) {
 				apdexActionTimings.push({AA:z._i_serverT,AC:z._i_serverT*4});
@@ -267,10 +265,8 @@ getActionStats: function(t, p , cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexActionStats = [];
 			_.each(apdex, function (z) {
 				apdexActionStats.push({AA:z._i_serverT, AC:z._i_serverT*4});
@@ -347,10 +343,8 @@ getAjaxStats: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexAjaxStats = [];
 			_.each(apdex, function (z) {
 				apdexAjaxStats.push({AA:z._i_ajaxT, AC:z._i_ajaxT*4});
@@ -436,10 +430,8 @@ getPageStats: function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexPageStats = [];
 			_.each(apdex, function (z) {
 				apdexPageStats.push({AA:z._i_pagesT, AC:z._i_pagesT*4});
@@ -668,10 +660,8 @@ getAjaxTimings:function(t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexAjaxTimings = [];
 			_.each(apdex, function (z) {
 				apdexAjaxTimings.push({AA:z._i_ajaxT, AC:z._i_ajaxT*4});
@@ -777,10 +767,8 @@ getPageTimings:function (t, p, cb) {
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
 	}
-	checkAccessApdex(t, query, safe.sure(cb, function() {
-		ctx.api.assets.getProjectApdexConfig(t, {
-			_id: query._idp
-		}, safe.sure(cb, function(apdex) {
+	checkAccess(t, query, safe.sure(cb, function() {
+		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
 			var apdexPageTimings = [];
 			_.each(apdex, function (z) {
 				apdexPageTimings.push({AA:z._i_pagesT, AC:z._i_pagesT*4});
@@ -1477,6 +1465,20 @@ getMetricTimings:function(t,p,cb) {
 
 }});
 
+function accumulateProjectApdexConfig(t, query, cb)  {
+	var mas =[];
+	safe.eachSeries(query._idp.$in, function(current_query, cb) {
+		ctx.api.assets.getProjectApdexConfig(t, {
+			_id: current_query
+		}, safe.sure(cb, function(apdex) {
+			mas.push(apdex);
+			cb(null, apdex);
+		}));
+	}, safe.sure(cb, function() {
+		cb(null, mas);
+		}));
+}
+
 function checkAccess(token, query, cb ) {
 	ctx.api.obac.getPermissions(token, {rules:[{_id:query._idp, action:'project_view'}]}, safe.sure(cb, function (res) {
 		if (!res.project_view[query._idp])
@@ -1485,13 +1487,6 @@ function checkAccess(token, query, cb ) {
 	}));
 }
 
-function checkAccessApdex(token, query, cb ) {
-	ctx.api.obac.getPermissions(token, {rules:[{_id:query._idp.$in, action:'project_view'}]}, safe.sure(cb, function (res) {
-		if (!res.project_view[query._idp.$in])
-			return cb(new CustomError('Current user is unknown',"Unauthorized"));
-		cb();
-	}));
-}
 
 }));
 }));
