@@ -165,89 +165,95 @@ getActionTimings: function(t, p, cb) {
 	var query = queryfix(p.filter);
 	if (!query._idp.$in) {
 		query._idp={$in:[query._idp]}
-	}
-	checkAccess(t, query, safe.sure(cb, function() {
-		accumulateProjectApdexConfig(t, query,  safe.sure(cb, function(apdex) {
-			var apdexActionTimings = [];
-			_.each(apdex, function (z) {
-				apdexActionTimings.push({AA:z._i_serverT,AC:z._i_serverT*4});
-			});
-			var Q = parseInt(p.quant) || 1;
-			var _dt0 = new Date(0);
-			actions.aggregate([{
-					$match: query
-				},
-				{
-					$addFields: {
-						"ApdexT": {$arrayElemAt:[apdexActionTimings,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+}
+	var mas =[];
+	safe.eachSeries(query._idp.$in, function(current_query, cb) {
+		ctx.api.assets.getProjectApdexConfig(t, {
+			_id: current_query
+		}, function (err, apdex) {
+			if (err) {
+				cb(new CustomError("Access denied to "+ current_query, "Unauthorized"))
+			} else {
+				mas.push({AA:apdex._i_serverT,AC:apdex._i_serverT*4});
+				cb(err);
+			}
+		});
+	}, safe.sure(cb, function() {
+		var Q = parseInt(p.quant) || 1;
+		var _dt0 = new Date(0);
+		actions.aggregate([{
+				$match: query
+			},
+			{
+				$addFields: {
+					"ApdexT": {$arrayElemAt:[mas,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+				}
+			},
+			{
+				$group: {
+					_id: {
+						$trunc: {
+							$divide: [{
+								$subtract: ["$_dt", _dt0]
+							}, {
+								$multiply: [Q, 60000]
+							}]
+						}
+					},
+					c: {$sum: 1},
+					r: {
+						$sum: {
+							$divide: [1, Q]
+						}
+					},
+					e: {
+						$sum: {
+							$divide: [{
+								$cond: {if: "$_i_err", then: 1, else: 0
+								}
+							}, Q]
+						}
+					},
+					tt: {$sum: "$_i_tt"},
+					ag: {
+						$sum: {
+							$cond: {if: "$_i_err", then: 0, else: {
+									$cond: {if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
+									}
+								}
+							}
+						}
+					},
+					aa: {
+						$sum: {
+							$cond: {if: "$_i_err", then: 0, else: {
+				$cond: {if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]}, {$lte: ["$_i_tt", "$ApdexT.AC"]}]}, then: 1, else: 0
+									}
+								}
+							}
+						}
 					}
-				},
-				{
-					$group: {
-						_id: {
-							$trunc: {
-								$divide: [{
-									$subtract: ["$_dt", _dt0]
-								}, {
-									$multiply: [Q, 60000]
+				}
+			},
+			{
+				$project: {
+					value: {
+						c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
+						apdex: {
+							$divide: [{
+								$add: ["$ag", {
+									$divide: ["$aa", 2]
 								}]
-							}
+							}, "$c"]
 						},
-						c: {$sum: 1},
-						r: {
-							$sum: {
-								$divide: [1, Q]
-							}
-						},
-						e: {
-							$sum: {
-								$divide: [{
-									$cond: {if: "$_i_err", then: 1, else: 0
-									}
-								}, Q]
-							}
-						},
-						tt: {$sum: "$_i_tt"},
-						ag: {
-							$sum: {
-								$cond: {if: "$_i_err", then: 0, else: {
-										$cond: {if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
-										}
-									}
-								}
-							}
-						},
-						aa: {
-							$sum: {
-								$cond: {if: "$_i_err", then: 0, else: {
-					$cond: {if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]}, {$lte: ["$_i_tt", "$ApdexT.AC"]}]}, then: 1, else: 0
-										}
-									}
-								}
-							}
+						tta: {
+							$divide: ["$tt", "$c"]
 						}
 					}
-				},
-				{
-					$project: {
-						value: {
-							c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
-							apdex: {
-								$divide: [{
-									$add: ["$ag", {
-										$divide: ["$aa", 2]
-									}]
-								}, "$c"]
-							},
-							tta: {
-								$divide: ["$tt", "$c"]
-							}
-						}
-					}
-				},
-				{$sort: {_id: 1}}
-			],{allowDiskUse: true},cb);
-		}));
+				}
+			},
+			{$sort: {_id: 1}}
+		],{allowDiskUse: true},cb);
 	}));
 },
 
