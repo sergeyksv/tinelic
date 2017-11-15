@@ -408,7 +408,6 @@ getProjectApdexConfig: function(t, p, cb) {
 	}));
 },
 
-
 /**
 * @param {String} token Auth token
 * @param {String} _id Project id
