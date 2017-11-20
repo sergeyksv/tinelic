@@ -137,7 +137,6 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				router.get("/", main.index);
 				router.get("/group-info/:name", main.group_info);
 				router.get("/project/:slug", main.project);
-				router.get("/teamproject/:teams", main.teamproject);
 				router.get("/users", main.users);
 				router.get("/project/:slug/ajax/:stats", main.ajax);
 				router.get("/project/:slug/application/:stats", main.application);
@@ -150,6 +149,17 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				router.get("/project/:slug/settings", main.settings);
 				router.get("/project/:slug/metrics", main.metrics);
 				router.get("/teams", main.teams);
+				router.get("/team/:teams", main.project);
+				router.get("/team/:teams/ajax/:stats", main.ajax);
+				router.get("/team/:teams/application/:stats", main.application);
+				router.get("/team/:teams/pages/:stats", main.pages);
+				router.get("/team/:teams/errors/:sort", main.errors);
+				router.get("/team/:teams/errors/:sort/:id", main.errors);
+				router.get("/team/:teams/database/:stats", main.database);
+				router.get("/team/:teams/server_errors/:sort", main.server_errors);
+				router.get("/team/:teams/server_errors/:sort/:id", main.server_errors);
+				router.get("/team/:teams/settings", main.settings);
+				router.get("/team/:teams/metrics", main.metrics);
 
 				// error handler after that
 				router.use(function (err, req, res, cb) {

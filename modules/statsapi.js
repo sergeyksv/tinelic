@@ -167,12 +167,14 @@ getActionTimings: function(t, p, cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_serverT,AC:apdex._i_serverT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -184,7 +186,7 @@ getActionTimings: function(t, p, cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{
@@ -270,12 +272,14 @@ getActionStats: function(t, p , cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_serverT,AC:apdex._i_serverT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -285,7 +289,7 @@ getActionStats: function(t, p , cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{
@@ -352,12 +356,14 @@ getAjaxStats: function(t, p, cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_ajaxT,AC:apdex._i_ajaxT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -367,7 +373,7 @@ getAjaxStats: function(t, p, cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{
@@ -443,12 +449,14 @@ getPageStats: function(t, p, cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_pagesT,AC:apdex._i_pagesT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -458,7 +466,7 @@ getPageStats: function(t, p, cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{
@@ -677,12 +685,14 @@ getAjaxTimings:function(t, p, cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_ajaxT,AC:apdex._i_ajaxT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -694,7 +704,7 @@ getAjaxTimings:function(t, p, cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{
@@ -788,12 +798,14 @@ getPageTimings:function (t, p, cb) {
 		query._idp={$in:[query._idp]}
 	}
 	var _arrApdex = [];
+	var _arrProjectIds = [];
 	safe.eachSeries(query._idp.$in, function(current_query, cb) {
 		ctx.api.assets.getProjectApdexConfig(t, {
 			_id: current_query
 		}, function (err, apdex) {
 			if (!err) {
 				_arrApdex.push({AA:apdex._i_pagesT,AC:apdex._i_pagesT*4});
+				_arrProjectIds.push(current_query);
 			}
 			cb();
 		});
@@ -805,7 +817,7 @@ getPageTimings:function (t, p, cb) {
 			},
 			{
 				$addFields: {
-					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[query._idp.$in,"$_idp"]}]},
+					"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
 				}
 			},
 			{

@@ -13,11 +13,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				route(req,res,cb);
 			},cb)
 		},
-		teamproject:function (req, res, cb) {
-			require(["routes/teamproject"],function (route) {
-				route(req,res,cb);
-			},cb)
-		},
 		users:function (req, res, cb) {
 			safe.parallel({
 				view: function (cb) {
@@ -100,8 +95,28 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
+			var project, projIds;
+			safe.series([
+				function (cb) {
+					if (req.route.path == "/team/:teams/ajax/:stats") {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (team) {
+							var tim = _.pluck(team.projects,'_idp');
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							cb(null)
+						}));
+					}
+				},
+			],
+			function (err, r) {
 				safe.parallel({
 						view: function (cb) {
 							requirejs(["views/ajax/ajax"], function (view) {
@@ -110,22 +125,22 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						},
 						rpm: function (cb) {
 							api("stats.getAjaxStats",res.locals.token,{_t_age:quant+"m",filter:{
-								_idp:project._id,
+								_idp: projIds,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 							}}, cb);
 						},
 						breakdown: function (cb) {
 							api("stats.getAjaxBreakdown", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
+									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
 									_s_name: req.query.selected
-								}}, cb)
+								}}, cb);
 						},
 						graphs: function (cb) {
 							api("stats.getAjaxTimings", res.locals.token, {
 								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
+									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
 									_s_name: req.query.selected
 								}}, cb)
@@ -188,8 +203,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
 					)
-				}
-			))
+				});
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats;
