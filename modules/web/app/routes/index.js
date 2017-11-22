@@ -72,7 +72,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							Server.proc = r.result.metrics.proc;
 							Server.mem = r.result.metrics.mem;
 						}
-						_.extend(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax, errAck: errAck});
+						_.assign(r, {apdex: Apdex, server: Server, client: Client, ajax: Ajax, errAck: errAck});
 					});
 					cb(null, r);
 				}));

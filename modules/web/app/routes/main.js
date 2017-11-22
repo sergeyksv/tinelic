@@ -416,7 +416,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 					}}
 					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
 
-					plan = _.extend(plan, {
+					plan = _.assign(plan, {
 						view: function (cb) {
 							requirejs(["views/client-errors/err"], function (view) {
 								safe.back(cb, null, view)
@@ -429,7 +429,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							api("stats.getPageErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getPageErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
+							api("stats.getPageErrorTimings", res.locals.token,_.assign({quant:quant},params2), cb)
 						},
 						obac: function (cb) {
 							api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:project._id}]}, cb);
@@ -460,7 +460,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							else
 								return r.stats[f]*-1;
 						});
-						res.renderX({view:r.view,data:_.extend(r,{title:"Errors",
+						res.renderX({view:r.view,data:_.assign(r,{title:"Errors",
 							st: st, project: project, lastAck: lastAck,
 							id:req.params.id})})
 					}))
@@ -598,7 +598,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 					}}
 					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
 
-					plan = _.extend(plan, {
+					plan = _.assign(plan, {
 						view: function (cb) {
 							requirejs(["views/server-errors/server-err"], function (view) {
 								safe.back(cb, null, view)
@@ -611,7 +611,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							api("stats.getActionErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getActionErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
+							api("stats.getActionErrorTimings", res.locals.token,_.assign({quant:quant},params2), cb)
 						},
 						obac: function (cb) {
 							api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:project._id}]}, cb);
@@ -635,7 +635,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							else
 								return r.stats.c*-1;
 						});
-						res.renderX({view:r.view,data:_.extend(r,
+						res.renderX({view:r.view,data:_.assign(r,
 							{title:"Server-errors", st: st, project:project,
 							lastAck: lastAck, id:req.params.id})})
 					}))

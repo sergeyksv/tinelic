@@ -36,7 +36,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 				console.error(err);
 			} else {
 				var newData = processingData(data);
-				_.extend(self.data.errors, newData);
+				_.assign(self.data.errors, newData);
 				self.refresh(self.app.errHandler);
 			}
 		});

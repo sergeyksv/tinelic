@@ -46,9 +46,9 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				topTransactions: [],
 				database: []
 			};
-			r.data = _.extend(dataTemplate, r.data);
-			views = _.extend(views, r.data);
-			res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: {}, fr:filter})});
+			r.data = _.assign(dataTemplate, r.data);
+			views = _.assign(views, r.data);
+			res.renderX({view:r.view,data:_.assign(r.data,{quant:quant,title:"Project "+r.data.project.name, stats: views, graphOn: {}, fr:filter})});
 		}));
 	};
 });
