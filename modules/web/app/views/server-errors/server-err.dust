@@ -1,6 +1,8 @@
 {>"views/base_page"/}
 {<main}
 	<legend>
+		{?team}<a href="{_t_prefix}/team/{team.name}">{team.name}</a>
+		{:else}<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>{/team}
 		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
 		<span class="text-info h5" data-id="{project._id}"> {info.count} total</span>
 		<div class="btn-group pull-right" role="group">

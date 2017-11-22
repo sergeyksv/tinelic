@@ -95,12 +95,13 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 		ajax:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			var project, projIds;
+			var project, projIds, team;
 			safe.series([
 				function (cb) {
-					if (req.route.path == "/team/:teams/ajax/:stats") {
-						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (team) {
-							var tim = _.pluck(team.projects,'_idp');
+					 if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
 								projIds = {$in:tim};
@@ -115,292 +116,336 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						}));
 					}
 				},
-			],
-			function (err, r) {
-				safe.parallel({
-						view: function (cb) {
-							requirejs(["views/ajax/ajax"], function (view) {
-								safe.back(cb, null, view)
-							},cb)
-						},
-						rpm: function (cb) {
-							api("stats.getAjaxStats",res.locals.token,{_t_age:quant+"m",filter:{
-								_idp: projIds,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}}, cb);
-						},
-						breakdown: function (cb) {
-							api("stats.getAjaxBreakdown", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
+				function (cb) {
+					safe.parallel({
+							view: function (cb) {
+								requirejs(["views/ajax/ajax"], function (view) {
+									safe.back(cb, null, view)
+								},cb)
+							},
+							rpm: function (cb) {
+								api("stats.getAjaxStats",res.locals.token,{_t_age:quant+"m",filter:{
 									_idp: projIds,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_name: req.query.selected
-								}}, cb);
-						},
-						graphs: function (cb) {
-							api("stats.getAjaxTimings", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: projIds,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_name: req.query.selected
-								}}, cb)
-						}
-					}, safe.sure(cb, function(r){
-						var stat = {};
-						stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
-						_.forEach(r.graphs, function(r) {
-							r = r.value;
-							stat.apdex+=r.apdex;
-							stat.r+=r.r;
-							stat.tta+=r.tta;
-							stat.e+=r.e;
-						})
-						var c = r.graphs.length;
-						stat.apdex=stat.apdex/c;
-						stat.r=stat.r/c;
-						stat.tta=stat.tta/c/1000;
-						stat.epm=stat.e/c;
-						stat.e=stat.epm/stat.r;
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								}},	cb)
+							},
+							breakdown: function (cb) {
+								api("stats.getAjaxBreakdown", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_name: req.query.selected
+									}}, cb);
+							},
+							graphs: function (cb) {
+								api("stats.getAjaxTimings", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_name: req.query.selected
+									}}, cb)
+							}
+						}, safe.sure(cb, function(r) {
+							var stat = {};
+							stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
+							_.forEach(r.graphs, function(r) {
+								r = r.value;
+								stat.apdex+=r.apdex;
+								stat.r+=r.r;
+								stat.tta+=r.tta;
+								stat.e+=r.e;
+							})
+							var c = r.graphs.length;
+							stat.apdex=stat.apdex/c;
+							stat.r=stat.r/c;
+							stat.tta=stat.tta/c/1000;
+							stat.epm=stat.e/c;
+							stat.e=stat.epm/stat.r;
 
-						// sorting "mtc", "sar" etc
-						r.rpm =_.sortBy(r.rpm, function(v){
-							if (st == "rpm")
-								return -1*v.value.c;
-							if (st == "mtc")
-								return -1* (v.value.tt);
-							if (st == "sar")
-								return -1* v.value.tt/v.value.c;
-							if (st == "wa")
-								return 1* v.value.apdex;
-						});
-						var sum=0;
-						_.each(r.rpm, function(r){
-							if (st == "rpm")
-								sum+=r.value.c;
-							if (st == "mtc")
-								sum += r.value.tt;
-							if (st == "sar")
-								sum += r.value.tt/r.value.c;
-							if (st == "wa")
-								sum += r.value.apdex;
-						});
-						var percent = sum/100;
-						_.each(r.rpm, function (r) {
-							if (st == "rpm")
-								r.value.bar = Math.round(r.value.c/percent);
-							if (st == "mtc")
-								r.value.bar = Math.round(r.value.tt/percent);
-							if (st == "sar")
-								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
-							if (st == "wa")
-								r.value.bar = r.value.apdex*100;
-							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = (r.value.tt/r.value.c/1000);
-						});
-						_.each(r.breakdown, function (r) {
-							r.value.tta = r.value.tt/r.value.c;
-						})
-						res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
+							// sorting "mtc", "sar" etc
+							r.rpm =_.sortBy(r.rpm, function(v){
+								if (st == "rpm")
+									return -1*v.value.c;
+								if (st == "mtc")
+									return -1* (v.value.tt);
+								if (st == "sar")
+									return -1* v.value.tt/v.value.c;
+								if (st == "wa")
+									return 1* v.value.apdex;
+							});
+							var sum=0;
+							_.each(r.rpm, function(r){
+								if (st == "rpm")
+									sum+=r.value.c;
+								if (st == "mtc")
+									sum += r.value.tt;
+								if (st == "sar")
+									sum += r.value.tt/r.value.c;
+								if (st == "wa")
+									sum += r.value.apdex;
+							});
+							var percent = sum/100;
+							_.each(r.rpm, function (r) {
+								if (st == "rpm")
+									r.value.bar = Math.round(r.value.c/percent);
+								if (st == "mtc")
+									r.value.bar = Math.round(r.value.tt/percent);
+								if (st == "sar")
+									r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+								if (st == "wa")
+									r.value.bar = r.value.apdex*100;
+								r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+								r.value.tta = (r.value.tt/r.value.c/1000);
+							});
+							_.each(r.breakdown, function (r) {
+								r.value.tta = r.value.tt/r.value.c;
+							})
+							res.renderX({view:r.view,data:{rpm:r.rpm,breakdown:r.breakdown,graphs:r.graphs, project:project, team:team, st: st, title:"Ajax", stat:stat, query:req.query.selected}})
 						})
 					)
-				});
+				}
+			],cb)
 		},
 		application:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				safe.parallel({
-						view: function (cb) {
-							requirejs(["views/application/application"], function (view) {
-								safe.back(cb, null, view)
-							},cb)
-						},
-						data: function (cb) {
-							api("stats.getActionStats", res.locals.token, {
-								_t_age: quant + "m", filter: {
-									_idp: project._id,
-									_s_cat:"WebTransaction",
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}
-							}, cb)
-						},
-						breakdown: function (cb) {
-							if (!req.query.selected)
-								return safe.back(cb,null,[]);
-							api("stats.getActionBreakdown", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
+			var project, projIds, team;
+			safe.series([
+				function (cb) {
+					 if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							cb(null)
+						}));
+					}
+				},
+				function (cb) {
+					safe.parallel({
+							view: function (cb) {
+								requirejs(["views/application/application"], function (view) {
+									safe.back(cb, null, view)
+								},cb)
+							},
+							data: function (cb) {
+								api("stats.getActionStats", res.locals.token, {
+									_t_age: quant + "m", filter: {
+										_idp: projIds,
+										_s_cat:"WebTransaction",
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+									}
+								}, cb)
+							},
+							breakdown: function (cb) {
+								if (!req.query.selected)
+									return safe.back(cb,null,[]);
+								api("stats.getActionBreakdown", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_name: req.query.selected
+									}}, cb)
+							},
+							graphs: function (cb) {
+								var filter = {
+									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_name: req.query.selected
-								}}, cb)
-						},
-						graphs: function (cb) {
-							var filter = {
-								_idp: project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-								_s_cat:"WebTransaction"
+									_s_cat:"WebTransaction"
+								}
+								if (req.query.selected)
+									filter._s_name = req.query.selected;
+								api("stats.getActionTimings", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: filter}, cb)
 							}
-							if (req.query.selected)
-								filter._s_name = req.query.selected;
-							api("stats.getActionTimings", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: filter}, cb)
-						}
-					}, safe.sure(cb, function(r){
-						var stat = {};
-						stat.apdex=0; stat.rpm=0; stat.tta=0;
-						_.forEach(r.graphs, function(r) {
-							r = r.value;
-							stat.apdex+=r.apdex;
-							stat.rpm+=r.r;
-							stat.tta+=r.tta;
+						}, safe.sure(cb, function(r){
+							var stat = {};
+							stat.apdex=0; stat.rpm=0; stat.tta=0;
+							_.forEach(r.graphs, function(r) {
+								r = r.value;
+								stat.apdex+=r.apdex;
+								stat.rpm+=r.r;
+								stat.tta+=r.tta;
+							})
+							var c = r.graphs.length;
+							stat.apdex=stat.apdex/c;
+							stat.tta=stat.tta/c/1000;
+							stat.rpm=stat.rpm/c;
+
+							// sorting "mtc", "sar" etc
+							r.data =_.sortBy(r.data, function(v){
+								if (st == "rpm")
+									return -1*v.value.c;
+								if (st == "mtc")
+									return -1* (v.value.tt);
+								if (st == "sar")
+									return -1* v.value.tt/v.value.c;
+								if (st == "wa")
+									return 1* v.value.apdex;
+							});
+							var sum=0;
+							_.each(r.data, function(r){
+								if (st == "rpm")
+									sum+=r.value.c;
+								if (st == "mtc")
+									sum += r.value.tt;
+								if (st == "sar")
+									sum += r.value.tt/r.value.c;
+								if (st == "wa") {
+									sum += r.value.apdex;
+								}
+							});
+							var percent = sum/100;
+							_.each(r.data, function (r) {
+								if (st == "rpm")
+									r.value.bar = Math.round(r.value.c/percent);
+								if (st == "mtc")
+									r.value.bar = Math.round((r.value.tt)/percent);
+								if (st == "sar")
+									r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+								if (st == "wa")
+									r.value.bar = r.value.apdex * 100;
+								r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+								r.value.tta = r.value.tt/r.value.c/1000;
+							});
+
+							_.each(r.breakdown, function (r) {
+								r.value.cnt = r.value.c;
+								r.value.tta = r.value.tt/r.value.c;
+								r.value.owna = r.value.ot/r.value.c;
+							})
+
+							res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project, team:team, stat:stat}})
 						})
-						var c = r.graphs.length;
-						stat.apdex=stat.apdex/c;
-						stat.tta=stat.tta/c/1000;
-						stat.rpm=stat.rpm/c;
-
-						// sorting "mtc", "sar" etc
-						r.data =_.sortBy(r.data, function(v){
-							if (st == "rpm")
-								return -1*v.value.c;
-							if (st == "mtc")
-								return -1* (v.value.tt);
-							if (st == "sar")
-								return -1* v.value.tt/v.value.c;
-							if (st == "wa")
-								return 1* v.value.apdex;
-						});
-						var sum=0;
-						_.each(r.data, function(r){
-							if (st == "rpm")
-								sum+=r.value.c;
-							if (st == "mtc")
-								sum += r.value.tt;
-							if (st == "sar")
-								sum += r.value.tt/r.value.c;
-							if (st == "wa") {
-								sum += r.value.apdex;
-							}
-						});
-						var percent = sum/100;
-						_.each(r.data, function (r) {
-							if (st == "rpm")
-								r.value.bar = Math.round(r.value.c/percent);
-							if (st == "mtc")
-								r.value.bar = Math.round((r.value.tt)/percent);
-							if (st == "sar")
-								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
-							if (st == "wa")
-								r.value.bar = r.value.apdex * 100;
-							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = r.value.tt/r.value.c/1000;
-						});
-
-						_.each(r.breakdown, function (r) {
-							r.value.cnt = r.value.c;
-							r.value.tta = r.value.tt/r.value.c;
-							r.value.owna = r.value.ot/r.value.c;
-						})
-
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project,stat:stat}})
-					})
-				)
-			}))
+					)
+				}
+			], cb)
 		},
 		pages:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				safe.parallel({
-						view: function (cb) {
-							requirejs(["views/pages/pages"], function (view) {
-								safe.back(cb, null, view)
-							},cb)
-						},
-						data: function (cb) {
-							api("stats.getPageStats", res.locals.token, {
-								_t_age: quant + "m", filter: {
-									_idp: project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}
-							}, cb)
-						},
-						breakdown: function (cb) {
-							api("stats.getPageBreakdown", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_route: req.query.selected
-								}}, cb)
-						},
-						graphs: function (cb) {
-							api("stats.getPageTimings", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_route: req.query.selected
-								}}, cb)
-						}
-					}, safe.sure(cb, function(r){
-						var stat = {};
-						stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
-						_.forEach(r.graphs, function(r) {
-							r = r.value;
-							stat.apdex+=r.apdex;
-							stat.r+=r.r;
-							stat.tta+=r.tta;
-							stat.e+=r.e;
-						})
-						var c = r.graphs.length;
-						stat.apdex=stat.apdex/c;
-						stat.tta=stat.tta/c/1000;
-						stat.r=stat.r/c;
-						stat.epm=stat.e/c;
-						stat.erate=stat.epm/stat.r;
-
-						// sorting "mtc", "sar" etc
-						r.data =_.sortBy(r.data, function(v){
-							if (st == "rpm")
-								return -1*v.value.c;
-							if (st == "mtc")
-								return -1*v.value.tt;
-							if (st == "sar")
-								return -1*v.value.tt/v.value.c;
-							if (st == "wa")
-								return 1*v.value.apdex;
-						});
-						var sum=0;
-						_.each(r.data, function(r){
-							if (st == "rpm")
-								sum+=r.value.c;
-							if (st == "mtc")
-								sum += r.value.tt;
-							if (st == "sar")
-								sum += r.value.tt/r.value.c;
-							if (st == "wa") {
-								sum += r.value.apdex;
+			var project, projIds, team;
+			safe.series([
+				function (cb) {
+					 if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							cb(null)
+						}));
+					}
+				},
+				function (cb) {
+					safe.parallel({
+							view: function (cb) {
+								requirejs(["views/pages/pages"], function (view) {
+									safe.back(cb, null, view)
+								},cb)
+							},
+							data: function (cb) {
+								api("stats.getPageStats", res.locals.token, {
+									_t_age: quant + "m", filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+									}
+								}, cb)
+							},
+							breakdown: function (cb) {
+								api("stats.getPageBreakdown", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_route: req.query.selected
+									}}, cb)
+							},
+							graphs: function (cb) {
+								api("stats.getPageTimings", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_route: req.query.selected
+									}}, cb)
 							}
-						});
-						var percent = sum/100;
-						_.each(r.data, function (r) {
-							if (st == "rpm")
-								r.value.bar = Math.round(r.value.c/percent);
-							if (st == "mtc")
-								r.value.bar = Math.round((r.value.tt)/percent);
-							if (st == "sar")
-								r.value.bar = Math.round(r.value.tt/r.value.c/percent);
-							if (st == "wa")
-								r.value.bar = r.value.apdex * 100;
-							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = r.value.tt/r.value.c/1000;
-						});
-						_.each(r.breakdown, function (r) {
-							r.value.tta = r.value.tt/r.value.c;
+						}, safe.sure(cb, function(r){
+							var stat = {};
+							stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
+							_.forEach(r.graphs, function(r) {
+								r = r.value;
+								stat.apdex+=r.apdex;
+								stat.r+=r.r;
+								stat.tta+=r.tta;
+								stat.e+=r.e;
+							})
+							var c = r.graphs.length;
+							stat.apdex=stat.apdex/c;
+							stat.tta=stat.tta/c/1000;
+							stat.r=stat.r/c;
+							stat.epm=stat.e/c;
+							stat.erate=stat.epm/stat.r;
+
+							// sorting "mtc", "sar" etc
+							r.data =_.sortBy(r.data, function(v){
+								if (st == "rpm")
+									return -1*v.value.c;
+								if (st == "mtc")
+									return -1*v.value.tt;
+								if (st == "sar")
+									return -1*v.value.tt/v.value.c;
+								if (st == "wa")
+									return 1*v.value.apdex;
+							});
+							var sum=0;
+							_.each(r.data, function(r){
+								if (st == "rpm")
+									sum+=r.value.c;
+								if (st == "mtc")
+									sum += r.value.tt;
+								if (st == "sar")
+									sum += r.value.tt/r.value.c;
+								if (st == "wa") {
+									sum += r.value.apdex;
+								}
+							});
+							var percent = sum/100;
+							_.each(r.data, function (r) {
+								if (st == "rpm")
+									r.value.bar = Math.round(r.value.c/percent);
+								if (st == "mtc")
+									r.value.bar = Math.round((r.value.tt)/percent);
+								if (st == "sar")
+									r.value.bar = Math.round(r.value.tt/r.value.c/percent);
+								if (st == "wa")
+									r.value.bar = r.value.apdex * 100;
+								r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+								r.value.tta = r.value.tt/r.value.c/1000;
+							});
+							_.each(r.breakdown, function (r) {
+								r.value.tta = r.value.tt/r.value.c;
+							})
+							res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, query:req.query.selected,project:project, team:team, stat:stat}})
 						})
-						res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Pages", st: st, query:req.query.selected,project:project,stat:stat}})
-					})
-				)
-			}))
+					)
+				}
+			],cb)
 		},
 		errors:function (req, res, cb) {
 			// we want to server on folder style url
@@ -409,82 +454,105 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			var st = req.params.sort,
 				quant = res.locals.quant,
 				dtp;
+			var project, projIds, team;
+				 safe.series([function (cb) {
+					 if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								dtp = (project._dtPagesErrAck || res.locals.dtstart).valueOf();
+								res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
+								res.locals.dtcliack = dtp;
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							dtp = (project._dtPagesErrAck || res.locals.dtstart).valueOf();
+							res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
+							res.locals.dtcliack = dtp;
+							cb(null)
+						}));
+					}
+				},
+				function (cb) {
+					safe.run(function (cb) {
+						if (req.params.id)
+							api("stats.getPageError", res.locals.token, {_t_age:"30d", filter:{_id:req.params.id}}, cb)
+						else
+							cb()
+					}, safe.sure(cb, function (error) {
+						var plan = error?{
+							prev: function (cb) {
+								api("stats.getPageError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:projIds,ehash:error.ehash},sort:{_id:-1}}, cb);
+							},
+							next: function (cb) {
+								api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:projIds,ehash:error.ehash},sort:{_id:1}}, cb);
+							}
+						}:{};
 
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dtp = (project._dtPagesErrAck || res.locals.dtstart).valueOf();
-				res.locals.dtstart = (dtp < res.locals.dtstart)?dtp:res.locals.dtstart;
-				res.locals.dtcliack = dtp;
-				safe.run(function (cb) {
-					if (req.params.id)
-						api("stats.getPageError", res.locals.token, {_t_age:"30d", filter:{_id:req.params.id}}, cb)
-					else
-						cb()
-				}, safe.sure(cb, function (error) {
-					var plan = error?{
-						prev: function (cb) {
-							api("stats.getPageError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:-1}}, cb);
-						},
-						next: function (cb) {
-							api("stats.getPageError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
-						}
-					}:{};
+						var params1 = {_t_age:"10m",filter:{
+							_idp:projIds,
+							_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+						}}
+						var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
 
-					var params1 = {_t_age:"10m",filter:{
-						_idp:project._id,
-						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-					}}
-					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
+						plan = _.extend(plan, {
+							view: function (cb) {
+								requirejs(["views/client-errors/err"], function (view) {
+									safe.back(cb, null, view)
+								},cb)
+							},
+							data: function (cb) {
+								api("stats.getPageErrorStats",res.locals.token,params1, cb);
+							},
+							info: function (cb) {
+								api("stats.getPageErrorInfo",res.locals.token,params2, cb)
+							},
+							rpm: function (cb){
+								api("stats.getPageErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
+							},
+							obac: function (cb) {
+								api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:projIds}]}, cb);
+							}
+						})
+						safe.parallel( plan, safe.sure(cb, function(r){
+							r.event = {event:error?error:false,info:r.info};
+							var lastAck = moment(dtp).fromNow()
+							var f = null;
+							if (st == "terr" ||st === undefined || st == 'mr')
+								f = 'count';
+							else if (st == "perr")
+								f = 'pages';
+							else if (st == "serr")
+								f = 'session';
 
-					plan = _.extend(plan, {
-						view: function (cb) {
-							requirejs(["views/client-errors/err"], function (view) {
-								safe.back(cb, null, view)
-							},cb)
-						},
-						data: function (cb) {
-							api("stats.getPageErrorStats",res.locals.token,params1, cb);
-						},
-						info: function (cb) {
-							api("stats.getPageErrorInfo",res.locals.token,params2, cb)
-						},
-						rpm: function (cb){
-							api("stats.getPageErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
-						},
-						obac: function (cb) {
-							api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:project._id}]}, cb);
-						}
-					})
-					safe.parallel( plan, safe.sure(cb, function(r){
-						r.event = {event:error?error:false,info:r.info};
-						var lastAck = moment(dtp).fromNow()
-						var f = null;
-						if (st == "terr" ||st === undefined || st == 'mr')
-							f = 'count';
-						else if (st == "perr")
-							f = 'pages';
-						else if (st == "serr")
-							f = 'session';
-
-						var sum = 0.0;
-						_.forEach(r.data, function(r) {
-							sum += r.stats[f];
-						});
-						var percent = sum/100;
-						_.forEach(r.data, function(r) {
-							r.bar = r.stats[f]/percent;
-						});
-						r.data = _.sortBy(r.data, function(r) {
-							if (st == "mr")
-								return r.error._dtf*-1;
-							else
-								return r.stats[f]*-1;
-						});
-						res.renderX({view:r.view,data:_.extend(r,{title:"Errors",
-							st: st, project: project, lastAck: lastAck,
-							id:req.params.id})})
+							var sum = 0.0;
+							_.forEach(r.data, function(r) {
+								sum += r.stats[f];
+							});
+							var percent = sum/100;
+							_.forEach(r.data, function(r) {
+								r.bar = r.stats[f]/percent;
+							});
+							r.data = _.sortBy(r.data, function(r) {
+								if (st == "mr")
+									return r.error._dtf*-1;
+								else
+									return r.stats[f]*-1;
+							});
+							res.renderX({view:r.view,data:_.extend(r,{title:"Errors",
+								st: st, project: project, team:team, lastAck: lastAck,
+								id:req.params.id})})
+						}))
 					}))
-				}))
-			}))
+				},
+			], cb)
 		},
 		database:function (req, res, cb) {
 			var st = req.params.stats
@@ -492,97 +560,119 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			var dtstart = res.locals.dtstart;
 			var dtend = res.locals.dtend;
 			var cat = req.query.cat||'Datastore';
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				safe.parallel({
-						view: function (cb) {
-							requirejs(["views/database/database"], function (view) {
-								safe.back(cb, null, view)
-							},cb)
-						},
-						data: function (cb) {
-							api("stats.getActionSegmentStats", res.locals.token, {
-								_t_age: quant + "m",
-								quant: quant,
-								filter: {
-									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend},
-									'data._s_cat':cat
-								}
-							}, cb)
-						},
-						breakdown: function (cb) {
-							api("stats.getActionSegmentBreakdown", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend},
-									'data._s_name': req.query.selected
-								}}, cb)
-						},
-						graphs: function (cb) {
-							api("stats.getActionSegmentTimings", res.locals.token, {
-								_t_age: quant + "m", quant: quant, filter: {
-									_idp: project._id,
-									_dt: {$gt: dtstart, $lte: dtend},
-									'data._s_cat':cat,
-									'data._s_name': req.query.selected
-								}}, cb)
-						}
-					}, safe.sure(cb, function(r){
-						var filter = {
-							_t_age: quant + "m", quant: quant,
-							filter: {
-								_idp: project._id,
-								_dt: {$gt: dtstart, $lte: dtend}
+			var project, projIds, team;
+			safe.series([
+				function (cb) {
+					 if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							cb(null)
+						}));
+					}
+				},
+				function (cb) {
+					safe.parallel({
+							view: function (cb) {
+								requirejs(["views/database/database"], function (view) {
+									safe.back(cb, null, view)
+								},cb)
+							},
+							data: function (cb) {
+								api("stats.getActionSegmentStats", res.locals.token, {
+									_t_age: quant + "m",
+									quant: quant,
+									filter: {
+										_idp: projIds,
+										_dt: {$gt: dtstart, $lte: dtend},
+										'data._s_cat':cat
+									}
+								}, cb)
+							},
+							breakdown: function (cb) {
+								api("stats.getActionSegmentBreakdown", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: dtstart, $lte: dtend},
+										'data._s_name': req.query.selected
+									}}, cb)
+							},
+							graphs: function (cb) {
+								api("stats.getActionSegmentTimings", res.locals.token, {
+									_t_age: quant + "m", quant: quant, filter: {
+										_idp: projIds,
+										_dt: {$gt: dtstart, $lte: dtend},
+										'data._s_cat':cat,
+										'data._s_name': req.query.selected
+									}}, cb)
 							}
-						}
-						var stat = {};
-						stat.tta=0; stat.r=0;
-						_.forEach(r.graphs, function(r) {
-							r = r.value;
-							stat.r+=r.r;
-							stat.tta+=r.tta;
-						})
-						var c = r.graphs.length;
-						stat.tta=stat.tta/c/1000;
-						stat.r=stat.r/c;
+						}, safe.sure(cb, function(r){
+							var filter = {
+								_t_age: quant + "m", quant: quant,
+								filter: {
+									_idp: projIds,
+									_dt: {$gt: dtstart, $lte: dtend}
+								}
+							}
+							var stat = {};
+							stat.tta=0; stat.r=0;
+							_.forEach(r.graphs, function(r) {
+								r = r.value;
+								stat.r+=r.r;
+								stat.tta+=r.tta;
+							})
+							var c = r.graphs.length;
+							stat.tta=stat.tta/c/1000;
+							stat.r=stat.r/c;
 
-						// sorting "req" , "mtc" etc
-						 var sum = 0;
-						 _.forEach(r.data, function(r) {
-							if (st == "req")
-								sum += r.value.c;
-							if (st == 'mtc')
-								sum += r.value.tt;
-							if (st == 'sar')
-								sum += r.value.tt/r.value.c;
-						 });
-						 var procent = sum/100;
-						 _.forEach(r.data, function(r) {
-							if (st == 'req')
-								r.value.bar = r.value.c/procent;
-							if (st == 'mtc')
-								r.value.bar = r.value.tt/procent;
-							if (st == 'sar')
-								r.value.bar = r.value.tt/r.value.c/procent;
-							r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
-							r.value.tta = r.value.tt/r.value.c/1000;
-						 });
-						 r.data = _.sortBy(r.data, function(r) {
-							if (st == 'req')
-								return r.value.c*-1;
-							if (st == 'mtc')
-								return (r.value.tt)*-1;
-							if (st == 'sar')
-								return r.value.tt/r.value.c*-1;
-						});
-						_.each(r.breakdown, function (r) {
-							r.value.cnt = r.value.c;
-							r.value.tta = r.value.tt/r.value.c;
+							// sorting "req" , "mtc" etc
+							 var sum = 0;
+							 _.forEach(r.data, function(r) {
+								if (st == "req")
+									sum += r.value.c;
+								if (st == 'mtc')
+									sum += r.value.tt;
+								if (st == 'sar')
+									sum += r.value.tt/r.value.c;
+							 });
+							 var procent = sum/100;
+							 _.forEach(r.data, function(r) {
+								if (st == 'req')
+									r.value.bar = r.value.c/procent;
+								if (st == 'mtc')
+									r.value.bar = r.value.tt/procent;
+								if (st == 'sar')
+									r.value.bar = r.value.tt/r.value.c/procent;
+								r.value.r = r.value.c/((res.locals.dtend - res.locals.dtstart)/(1000*60))
+								r.value.tta = r.value.tt/r.value.c/1000;
+							 });
+							 r.data = _.sortBy(r.data, function(r) {
+								if (st == 'req')
+									return r.value.c*-1;
+								if (st == 'mtc')
+									return (r.value.tt)*-1;
+								if (st == 'sar')
+									return r.value.tt/r.value.c*-1;
+							});
+							_.each(r.breakdown, function (r) {
+								r.value.cnt = r.value.c;
+								r.value.tta = r.value.tt/r.value.c;
+							})
+							res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, team:team, cat:cat, fr: filter, query:req.query.selected,project:project,stat:stat}})
 						})
-						res.renderX({view:r.view,route:req.route.path,data:{data: r.data, breakdown:r.breakdown,graphs:r.graphs, title:"Database/Statements", st: st, cat:cat, fr: filter, query:req.query.selected,project:project,stat:stat}})
-					})
-				)
-			}))
+					)
+				}
+			],cb)
 		},
 		server_errors: function(req,res,cb) {
 			// we want to server on folder style url
@@ -591,11 +681,33 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			var quant = res.locals.quant,
 				dta,
 				st = req.params.sort;
-
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				dta = (project._dtActionsErrAck || res.locals.dtstart).valueOf();
-				res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
-				res.locals.dtseack = dta;
+			var project, projIds, team;
+			safe.series([function (cb) {
+				 if (req.params.teams) {
+					api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+						var tim = _.pluck(_team.projects,'_idp');
+						team = _team;
+						api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = {$in:tim};
+							dta = (project._dtActionsErrAck || res.locals.dtstart).valueOf();
+							res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
+							res.locals.dtseack = dta;
+							cb(null)
+						}));
+					}));
+				} else {
+					api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+						project = _project;
+						projIds = project._id;
+						dta = (project._dtActionsErrAck || res.locals.dtstart).valueOf();
+						res.locals.dtstart = (dta < res.locals.dtstart)?dta:res.locals.dtstart;
+						res.locals.dtseack = dta;
+						cb(null)
+					}));
+				}
+			},
+			function (cb) {
 				safe.run(function (cb) {
 					if (req.params.id)
 						api("stats.getActionError", res.locals.token, {_t_age:"30d", filter:{_id:req.params.id}}, cb)
@@ -604,36 +716,36 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				}, safe.sure(cb, function (error) {
 					var plan = error?{
 						prev: function (cb) {
-							api("stats.getActionError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:-1}}, cb);
+							api("stats.getActionError",res.locals.token,{_t_age:"10d",filter:{_id:{$lt:error._id},_idp:projIds,ehash:error.ehash},sort:{_id:-1}}, cb);
 						},
 						next: function (cb) {
-							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:project._id,ehash:error.ehash},sort:{_id:1}}, cb);
+							api("stats.getActionError",res.locals.token,{_t_age:"10m",filter:{_id:{$gt:error._id},_idp:projIds,ehash:error.ehash},sort:{_id:1}}, cb);
 						}
 					}:{};
 
 					var params1 = {_t_age:"10m",filter:{
-						_idp:project._id,
+						_idp:projIds,
 						_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 					}}
 					var params2 = error?_.merge({filter:{ehash:error.ehash}},params1):params1;
 
-					plan = _.extend(plan, {
+					plan = _.assign(plan, {
 						view: function (cb) {
 							requirejs(["views/server-errors/server-err"], function (view) {
 								safe.back(cb, null, view)
 							},cb)
 						},
 						data: function (cb) {
-							api("stats.getActionErrorStats",res.locals.token,params1, cb);
+							api("stats.getActionErrorStats",res.locals.token,params1, cb)
 						},
 						info: function (cb) {
 							api("stats.getActionErrorInfo",res.locals.token,params2, cb)
 						},
 						rpm: function (cb){
-							api("stats.getActionErrorTimings", res.locals.token,_.extend({quant:quant},params2), cb)
+							api("stats.getActionErrorTimings", res.locals.token,_.assign({quant:quant},params2), cb)
 						},
 						obac: function (cb) {
-							api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:project._id}]}, cb);
+							api("obac.getPermissions", res.locals.token, {_t_age:"10m",rules:[{action:"project_edit",_id:projIds}]}, cb);
 						}
 					})
 					safe.parallel( plan, safe.sure(cb, function(r){
@@ -654,12 +766,13 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							else
 								return r.stats.c*-1;
 						});
-						res.renderX({view:r.view,data:_.extend(r,
-							{title:"Server-errors", st: st, project:project,
+						res.renderX({view:r.view,data:_.assign(r,
+							{title:"Server-errors", st: st, team:team, project:project,
 							lastAck: lastAck, id:req.params.id})})
 					}))
-				}));
-			}))
+				}))
+			},
+			],cb)
 		},
 		settings: function(req,res,cb) {
 			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {

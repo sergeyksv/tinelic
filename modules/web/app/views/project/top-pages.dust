@@ -1,6 +1,9 @@
 <div class="panel panel-success" id="{_t_view.cid}">
 	<div class="panel-heading">
-		<a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a>
+		{?team}
+		<a class="text-success" href='{_t_prefix}/team/{team.name}/pages/rpm'>Top pages</a>
+		{:else}
+		<a class="text-success" href='{_t_prefix}/project/{project.slug}/pages/rpm'>Top pages</a>{/team}
 		{@view name="views/project/top-pages-stats" locals-depends="statGraph"/}
 		<span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
 	</div>
