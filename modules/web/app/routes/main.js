@@ -796,25 +796,46 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 		},
 		metrics: function(req,res,cb) {
 			var quant = res.locals.quant;
-			api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (project) {
-				safe.parallel({
-					view: function (cb) {
-						requirejs(["views/metrics/metrics"], function (view) {
-							safe.back(cb, null, view)
-						},cb)},
-					memory: function(cb) {
-						api('stats.getMetricTimings',res.locals.token,{quant:quant,
-							filter:{
-								_s_type: "Memory/Physical",
-								_idp:project._id,
-								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-							}
-						},cb)}
-				},safe.sure(cb, function(r){
-					res.renderX({view:r.view,data:{title:"Metrics", project:project, mem: r.memory}})
-				}))
-
-			}))
+			var project, projIds, team;
+			safe.series([
+				function (cb) {
+					if (req.params.teams) {
+						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
+							var tim = _.pluck(_team.projects,'_idp');
+							team = _team;
+							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
+								project = _project;
+								projIds = {$in:tim};
+								cb(null)
+							}));
+						}));
+					} else {
+						api("assets.getProject",res.locals.token, {_t_age:"30d",filter:{slug:req.params.slug}}, safe.sure( cb, function (_project) {
+							project = _project;
+							projIds = project._id;
+							cb(null)
+						}));
+					}
+				},
+				function (cb) {
+					safe.parallel({
+						view: function (cb) {
+							requirejs(["views/metrics/metrics"], function (view) {
+								safe.back(cb, null, view)
+							},cb)},
+						memory: function(cb) {
+							api('stats.getMetricTimings',res.locals.token,{quant:quant,
+								filter:{
+									_s_type: "Memory/Physical",
+									_idp:projIds,
+									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
+								}
+							},cb)}
+					},safe.sure(cb, function(r){
+						res.renderX({view:r.view,data:{title:"Metrics", project:project, team:team, mem: r.memory}})
+					}))
+				}
+			], cb)
 		},
 		group_info:function (req, res, cb) {
 			require(["routes/group-info"],function (route) {

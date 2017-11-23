@@ -6,8 +6,6 @@
 		<legend class='col-md-12'><a href="{_t_prefix}/team/{team.name}/settings">{team.name}</a>
 			<span class="text-info h5" data-id="{team._id}">
 			{@view name="views/project/metrics"/}  ( {team._id} )
-			</span>
-			{@view name="views/project/ack"/}
 		</legend>
 		{:else}
 		<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
