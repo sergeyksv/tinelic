@@ -547,7 +547,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									return r.stats[f]*-1;
 							});
 							res.renderX({view:r.view,data:_.extend(r,{title:"Errors",
-								st: st, project: project, team:team, lastAck: lastAck,
+								st: st, project: project, team:team, lastAck: lastAck, projIds:projIds,
 								id:req.params.id})})
 						}))
 					}))
@@ -767,7 +767,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								return r.stats.c*-1;
 						});
 						res.renderX({view:r.view,data:_.assign(r,
-							{title:"Server-errors", st: st, team:team, project:project,
+							{title:"Server-errors", st: st, team:team, project:project, projIds:projIds,
 							lastAck: lastAck, id:req.params.id})})
 					}))
 				}))

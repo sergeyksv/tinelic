@@ -11,9 +11,14 @@
 		<ul class="list-unstyled h6">
 		{#serverErrors.data}
 				<li style="overflow: hidden; text-overflow: ellipsis;">
-						<a class="text-default" href='{_t_prefix}/project/{project.slug}/server_errors/terr/{stats._id}' >
-						<span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
-						<span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>
+				{?team}
+				<a class="text-default" href='{_t_prefix}/team/{team.name}/server_errors/terr/{stats._id}' >
+				<span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
+				<span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>
+				{:else}
+				<a class="text-default" href='{_t_prefix}/project/{project.slug}/server_errors/terr/{stats._id}' >
+				<span class="badge text-danger">{stats.c}</span>&nbsp;-&nbsp;
+				<span style="color: {@gt value=error._dtf key=dtseack}black{:else}red{/gt};">{error._s_message}</span>{/team}
 				</li>
 		{/serverErrors.data}
 		</ul>
