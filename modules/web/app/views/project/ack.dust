@@ -1,6 +1,11 @@
 <div class="btn-group pull-right" id="{_t_view.cid}">
 	{?obac.project_edit[project._id]}
-	<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
+		<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
+		<span class="text-info h5" data-id="{project._id}"></span>
+		<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
 	{/obac.project_edit[project._id]}
-	<a href="{_t_prefix}/project/{project.slug}/settings" class="btn btn-default btn-xs">Settings</a>
+	{?obac.project_edit[params.filter._idp.$in]}
+		<div id="acknowledge" class="btn btn-danger btn-xs">Ack</div>
+		<span class="text-info h5" data-id="{params.filter._idp.$in}"></span>
+	{/obac.project_edit[params.filter._idp.$in]}
 </div>

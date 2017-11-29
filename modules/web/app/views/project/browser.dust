@@ -1,6 +1,9 @@
 <div class="panel panel-success" id="{_t_view.cid}" style="padding-bottom:20px">
 	<div class="panel-heading">
-		<a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a>
+		{?team}
+		<a class="text-success" href="{_t_prefix}/team/{team.name}/errors/terr">Browser errors</a>
+		{:else}
+		<a class="text-success" href="{_t_prefix}/project/{project.slug}/errors/terr">Browser errors</a>{/team}
 		<span class="text-success h6" style="margin-left: 5px;">&nbsp{#errors.total}{.} total /{/errors.total} {#errors.page}{.} page /{/errors.page} {#errors.session}{.} session{/errors.session}</span>
 		<span class="glyphicon glyphicon-refresh getApiData pull-right" aria-hidden="true"></span>
 	</div>
@@ -8,10 +11,16 @@
 		<ul class="list-unstyled h6">
 		{#errors.data}
 			<li style="overflow: hidden; text-overflow: ellipsis;">
-				<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/{error._id}'>
+				{?team}
+				<a class="text-default" href='{_t_prefix}/team/{team.name}/errors/perr/{error._id}'>
 					<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
 					<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
 				</a><br>
+				{:else}
+				<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/{error._id}'>
+					<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
+					<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
+				</a><br>{/team}
 			</li>
 		{/errors.data}
 		</ul>

@@ -1,12 +1,18 @@
 {>"views/base_page"/}
 {<main}
 	<legend>
-		<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>
-		<span class="text-info h5" data-id="{project._id}"> {info.count} total</span>
+		{?team}<a href="{_t_prefix}/team/{team.name}">{team.name}</a>
+		{:else}<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>{/team}
+		<span class="text-info h5"> {info.count} total</span>
 		<div class="btn-group pull-right" role="group">
 			{?obac.project_edit[project._id]}
+			<span class="text-info h5" data-id="{project._id}"</span>
 			<div class="btn btn-xs btn-danger do-ack" role="button">Acknowledge ( <span class="h6">{lastAck}</span> )</div>
 			{/obac.project_edit[project._id]}
+			{?obac.project_edit[team]}
+			<span class="text-info h5" data-id="{projIds.$in}"</span>
+			<div class="btn btn-xs btn-danger do-ack" role="button">Acknowledge</div>
+			{/obac.project_edit[team]}
 			<div class="btn-group" role="group">
 				<div class="btn btn-xs btn-info dropdown-toggle" data-toggle="dropdown" role="button">
 					{@select key="{st}"}

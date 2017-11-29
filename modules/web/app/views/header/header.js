@@ -4,6 +4,7 @@ define(["require",'tinybone/base',"tinybone/backadapter",'safe','dustc!views/hea
 		id:"views/header/header",
 		events: {
             'click #doCustomRange': function(e) {
+				e.preventDefault();
                 var self = this;
                 require(['views/modals/dtpick'],function(Modal){
                     var modal = new Modal({app:self.app});
@@ -19,6 +20,7 @@ define(["require",'tinybone/base',"tinybone/backadapter",'safe','dustc!views/hea
                         self.app.router.reload();
                     });
                 },this.app.errHandler);
+				return false;
             },
 			'click .doRange':function (e) {
 				e.preventDefault();

@@ -2,7 +2,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close do-close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <button type="button" class="close do-close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title">Custom range</h4>
                 <p class="bg-danger" id="warn"></p>
             </div>
@@ -34,8 +34,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default do-close">Close</button>
-                <button type="button" class="btn btn-primary do-save">Save changes</button>
+                <button type="button" class="btn btn-default do-close" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary do-save" data-dismiss="modal">Save changes</button>
             </div>
         </div>
     </div>

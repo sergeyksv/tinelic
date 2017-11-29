@@ -2,12 +2,21 @@
 {<main}
 <div id="{_t_view.cid}" class="project-page">
 	<div class='row'>
-		<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
-			<span class="text-info h5" data-id="{project._id}">
-				{@view name="views/project/metrics"/} ( {project._id} )
+		{?team}
+		<legend class='col-md-12'><a href="{_t_prefix}/team/{team.name}/settings">{team.name}</a>
+			<span class="text-info h5" data-id="{team._id}">
+			{@view name="views/project/metrics"/}  ( {team._id} )
 			</span>
 			{@view name="views/project/ack"/}
 		</legend>
+		{:else}
+		<legend class='col-md-12'><a href="{_t_prefix}/project/{project.slug}/settings">{project.name}</a>
+			<span class="text-info h5" data-id="{project._id}">
+				{@view name="views/project/metrics"/} ( {project._id} )
+				</span>
+				{@view name="views/project/ack"/}
+			</legend>
+		{/team}
 	</div>
 	<div class='row'>
 		<div class="col-md-4  col-xs-12">

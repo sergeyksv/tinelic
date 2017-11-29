@@ -4,7 +4,7 @@
 <div class="list-group">
 <div class="list-group-item row list-group-item-info" aria-expanded="{@first}true{:else}false{/first}">
 	{#t_metrics}
-	<a data-field="name" class="col-md-3 col-xs-12" data-toggle="collapse" href="#team_{_id}">
+	<a data-field="name" class="col-md-2 col-xs-12" data-toggle="collapse" href="#team_{_id}">
 		<strong>{name}
 		{@gt key=server.proc value=0}
 			<span> ( {server.proc} x {@math key=server.mem method="round"/} Mb )</span>
@@ -50,6 +50,7 @@
 			</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
 	</a>
+		<a href='{_t_prefix}/team/{name}'><small>{name} all servers data </small></a>
 		<a href='{_t_prefix}/group-info/{name}'>
 		<span class="glyphicon glyphicon-align-justify" style="float: right"></span>
 		</a>

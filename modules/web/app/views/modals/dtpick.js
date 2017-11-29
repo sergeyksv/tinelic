@@ -6,7 +6,6 @@ define(['tinybone/base','bootstrap/modal', 'lodash','moment', 'dustc!views/modal
     var View = view.extend({
         id:"views/modals/dtpick",
         postRender:function () {
-            var self = this;
             var str = $.cookie('str');
             var $from = self.$('#from');
             var $to = self.$('#to');
