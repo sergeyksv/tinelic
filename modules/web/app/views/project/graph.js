@@ -26,7 +26,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 					if (err) {
 						console.error(err);
 					} else {
-						_.extend(self.data.actions, data);
+						_.assign(self.data.actions, data);
 					}
 					cb();
 				});
@@ -36,7 +36,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 					if (err) {
 						console.error(err);
 					} else {
-						_.extend(self.data.views, data);
+						_.assign(self.data.views, data);
 					}
 					cb();
 				});
@@ -46,7 +46,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 					if (err) {
 						console.error(err);
 					} else {
-						_.extend(self.data.ajax, data);
+						_.assign(self.data.ajax, data);
 					}
 					cb();
 				});
@@ -85,7 +85,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 			valr=valr/period;
 			vale=vale/period/valr;
 			valapd=valapd/period;
-			_.extend(result, {rsm: valr, ttserver: valtt, apdserver: valapd, erroraction: vale});
+			_.assign(result, {rsm: valr, ttserver: valtt, apdserver: valapd, erroraction: vale});
 		}
 
 		// views
@@ -104,7 +104,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 			valr=valr/period;
 			vale=vale/period/valr;
 			valapd=valapd/period;
-			_.extend(result, {rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd});
+			_.assign(result, {rpm: valr, errorpage: vale, etupage: valtt, apdclient: valapd});
 		}
 		// ajax
 		if (_.get(apiData, 'ajax')) {
@@ -122,7 +122,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 			valr=valr/period;
 			vale=vale/period/valr;
 			valapd=valapd/period;
-			_.extend(result, {ram: valr, errorajax: vale, etuajax: valtt, apdajax: valapd});
+			_.assign(result, {ram: valr, errorajax: vale, etuajax: valtt, apdajax: valapd});
 		}
 		return result;
 	}

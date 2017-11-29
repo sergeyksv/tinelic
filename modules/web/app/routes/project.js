@@ -14,7 +14,7 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						var tim = _.pluck(team.projects,'_idp');
 						api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (project) {
 							var dt = res.locals.dtstart;
-							var dtp = (project._dtPagesErrAck || dt).valueOf()
+							var dtp = (project._dtPagesErrAck || dt).valueOf();
 							var dta = (project._dtActionsErrAck || dt).valueOf();
 							var params = {
 								quant:quant,
@@ -50,7 +50,7 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						return cb(null, {project:project, params: params});
 					}));
 				}
-			},
+			}
 		}, safe.sure(cb, function (r) {
 			var filter = {
 				_t_age: quant + "m", quant: quant,
@@ -70,10 +70,10 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				topTransactions: [],
 				database: []
 			};
-			r.data = _.extend(dataTemplate, r.data);
-			views = _.extend(views, r.data);
+			r.data = _.assign(dataTemplate, r.data);
+			views = _.assign(views, r.data);
 			headline = r.data.team?"Team "+r.data.team.name:"Project "+r.data.project.name;
-			res.renderX({view:r.view,data:_.extend(r.data,{quant:quant,title:headline, stats: views, graphOn: {}, fr:filter})});
+			res.renderX({ view: r.view, data: _.assign(r.data,{quant:quant,title:headline, stats: views, graphOn: {}, fr:filter})});
 		}));
 	};
 });

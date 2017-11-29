@@ -678,7 +678,7 @@ getActionError:function (t, p, cb) {
 */
 getAjaxTimings:function(t, p, cb) {
 	var query = queryfix(p.filter);
-	query = (p._idurl) ? _.extend(query, {
+	query = (p._idurl) ? _.assign(query, {
 		_s_name: p._idurl
 	}) : query;
 	if (!query._idp.$in) {

@@ -63,7 +63,7 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 			api("assets.getProjects", token, {_t_age:"30d"}, safe.sure(cb, function (projects) {
 				safe.forEach(projects, function (projectN, cb) {
 					projectN = prefixify.data(projectN);
-					var params = {quant:1,filter:_.extend({_idp:projectN._id},params1.filter)};
+					var params = {quant:1,filter:_.assign({_idp:projectN._id},params1.filter)};
 					safe.parallel({
 						errAck: function(cb) {
 							var dt = params.filter._dt.$gt;

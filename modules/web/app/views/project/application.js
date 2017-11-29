@@ -27,7 +27,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 						console.error(err);
 					} else {
 						var newData = processingData(data);
-						_.extend(self.data.topTransactions, newData);
+						_.assign(self.data.topTransactions, newData);
 					}
 					cb();
 				});
@@ -38,7 +38,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 						console.error(err);
 					} else {
 						var newData = processingTotalData(data);
-						_.extend(self.data.topTransactions, newData);
+						_.assign(self.data.topTransactions, newData);
 					}
 					cb();
 				});

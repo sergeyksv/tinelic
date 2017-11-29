@@ -89,7 +89,7 @@ module.exports.getBrowser = function(cb) {
 		}
 
 		if (browser === "phantomjs") {
-			var phantom = childProcess.spawn(require("phantomjs").path, ["--webdriver=127.0.0.1:9134"/*,"--remote-debugger-port=9000"*/]);
+			var phantom = childProcess.spawn(require("phantomjs-prebuilt").path, ["--webdriver=127.0.0.1:9134"/*,"--remote-debugger-port=9000"*/]);
 			var error = null;
 			phantom.stdout.on('data', function (data) {
 				var line = data.toString();
