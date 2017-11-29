@@ -112,6 +112,8 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 						res.locals.dtend = str.to;
 						res.locals.dtstart = str.from;
 						res.locals.header = {range:'Custom'};
+						range = res.locals.dtend - res.locals.dtstart;
+						res.locals.quant = Math.max(Math.round(range/60000/144),1);
 					}
 					catch(err) {
 						var match = str.match(/(\d+)(.)/);
