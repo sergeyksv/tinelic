@@ -9,13 +9,7 @@ define(['safe','tinybone/base', 'lodash',  "tinybone/backadapter",  'dustc!views
 				var id = self.$("span[data-id]").data('id');
 				id = id.split(',');
 				safe.eachSeries(id, function(current_id, cb) {
-					api('assets.ackProjectState', $.cookie('token'),{type: ['_dtPagesErrAck', '_dtActionsErrAck'],_id:current_id}, function(err, data) {
-						if (err) {
-							alert(err)
-						} else {
-							cb(err);
-						}
-					});
+					api('assets.ackProjectState', $.cookie('token'),{type: ['_dtPagesErrAck', '_dtActionsErrAck'],_id:current_id}, cb);
 				}, function (err) {
 					if (err){
 						console.error(err);
