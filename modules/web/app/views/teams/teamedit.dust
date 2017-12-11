@@ -17,8 +17,8 @@
             </div>
         </form>
       <div class="modal-footer">
-        <button type="button" class="btn btn-default do-cancel" data-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary do-save">Save</button>
+        <button type="button" class="btn btn-default do-close" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary do-save" data-dismiss="modal">Save</button>
       </div>
     </div>
   </div>
