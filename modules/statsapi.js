@@ -623,6 +623,9 @@ getActionErrorInfo:function (t, p, cb) {
 				}
 			], {allowDiskUse: true},
 			safe.sure(cb, function(tmpData) {
+				if (!tmpData[0]._id.length) {
+					return cb(null, {route: [],server: [],reporter: [],lang: [],count:0})
+				}
 				var tmp_id = tmpData[0]._id[0];
 				var tmpRoute = tmpData[0].route;
 				var tmpReporter = tmpData[0].reporter;
@@ -980,6 +983,9 @@ getPageErrorInfo:function (t, p, cb) {
 					}
 				], {allowDiskUse: true},
 				safe.sure(cb, function(tmpData) {
+					if (!tmpData[0]._id.length) {
+						return cb(null, {route: [], os: [], browser: [], count:0, sessions:0, views:0})
+					}
 					var tmp_id = tmpData[0]._id[0];
 					var tmpRoute = tmpData[0].route;
 					var tmpBrowser = tmpData[0].browser;
@@ -1211,6 +1217,8 @@ getActionErrorTimings:function(t, p, cb) {
 					}
 				], {allowDiskUse: true}, cb);
 			}));
+		} else {
+			cb(null, '');
 		}
 	}));
 },

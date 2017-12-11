@@ -30,6 +30,17 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/p
 			var views = this.data.graphs;
             if (this.data.query) {
 				var trbreak = self.$('#trbreak');
+					$.tablesorter.addParser({
+						id : 'longPercent',
+						is : function( str ) {
+							return /\d+\s\w+\s\/\s\d+\s/%( str );
+						},
+						format : function( str ) {
+							var e = str.split('/');
+							return $.tablesorter.formatFloat((str != "/") ?(e[1]):("/"));
+						},
+						type : 'numeric'
+					});
 				trbreak.tablesorter({sortList: [[2,1]],
 					headers: {
 						2:{
