@@ -75,7 +75,7 @@ module.exports.init = function (ctx, cb) {
 			cleancss: true,
 			plugins: [
 				new (require('less-plugin-clean-css'))({
-					advanced: true
+					advanced: false
 				}),
 				new (require('less-plugin-autoprefix'))({
 					browsers: ["last 2 versions", "> 1%", "Firefox ESR", "ie > 9", "Safari > 8"]
