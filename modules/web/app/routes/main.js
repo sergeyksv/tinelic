@@ -209,6 +209,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 		application:function (req, res, cb) {
 			var st = req.params.stats;
 			var quant = res.locals.quant;
+			var cat = req.query.cat||"WebTransaction";
 			var project, projIds, team;
 			safe.series([
 				function (cb) {
@@ -241,7 +242,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								api("stats.getActionStats", res.locals.token, {
 									_t_age: quant + "m", filter: {
 										_idp: projIds,
-										_s_cat:"WebTransaction",
+										_s_cat: cat,
 										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}
 								}, cb)
@@ -260,7 +261,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								var filter = {
 									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_cat:"WebTransaction"
+									_s_cat: cat
 								}
 								if (req.query.selected)
 									filter._s_name = req.query.selected;
@@ -324,7 +325,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								r.value.owna = r.value.ot/r.value.c;
 							})
 
-							res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, query:req.query.selected,project:project, team:team, stat:stat}})
+							res.renderX({view:r.view,data:{data:r.data,breakdown:r.breakdown,graphs:r.graphs, title:"Application", st: st, cat:cat, query:req.query.selected,project:project, team:team, stat:stat}})
 						})
 					)
 				}

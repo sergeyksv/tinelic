@@ -21,8 +21,19 @@
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
 				</ul>
 		</div>
+		<div class="pull-right dropdown">
+				<span class="btn btn-xs btn-info btn-ct" data-ct="{cat}" data-toggle="dropdown">
+				{@select key="{cat}"}
+					{@eq value="WebTransaction"}WebTransaction{/eq}
+					{@eq value="OtherTransaction"}OtherTransaction{/eq}
+				{/select}
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="WebTransaction" class="do-cat" href="#">WebTransaction</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="OtherTransaction" class="do-cat" href="#">OtherTransaction</a></li>
+				</ul>
+		</div>
 	</legend>
-
 <div class="row">
 	<div class="col-sm-4">
 		{@view name="views/application/application_leftlist_pagination"/}
