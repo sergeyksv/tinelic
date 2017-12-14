@@ -257,6 +257,158 @@ getActionTimings: function(t, p, cb) {
 	}));
 },
 
+
+
+
+getActionMixStats: function(t, p , cb) {
+	var query = queryfix(p.filter);
+	if (!query._idp.$in) {
+		query._idp={$in:[query._idp]}
+	}
+	var _arrApdex = [];
+	var _arrProjectIds = [];
+	safe.eachSeries(query._idp.$in, function(current_query, cb) {
+		ctx.api.assets.getProjectApdexConfig(t, {
+			_id: current_query
+		}, function (err, apdex) {
+			if (!err) {
+				_arrApdex.push({AA:apdex._i_serverT,AC:apdex._i_serverT*4});
+				_arrProjectIds.push(current_query);
+			}
+			cb();
+		});
+	}, safe.sure(cb, function() {
+		var Q = parseInt(p.quant) || 1;
+		var _dt0 = new Date(0);
+		actions.aggregate([{
+			$match: query
+		},
+		{
+			$addFields: {
+				"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
+			}
+		},
+		{
+		$facet: {
+			stats:[
+				{
+					$group: {
+						_id: "$_s_name",
+						c: {$sum: 1},
+						tt: {$sum: "$_i_tt"},
+						ag: {
+							$sum: {
+								$cond: {
+									if: "$_i_err", then: 0, else: {
+										$cond: {
+											if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
+										}
+									}
+								}
+							}
+						},
+						aa: {
+							$sum: {
+								$cond: {
+									if: "$_i_err", then: 0, else: {
+										$cond: {
+											if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]},{$lte: ["$_i_tt", "$Apdex.AC"]}]},
+											then: 1, else: 0
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					$project: {
+						value: {
+							c: "$c", tt: "$tt",
+							apdex: {
+								$divide: [{
+									$add: ["$ag", {
+										$divide: ["$aa", 2]
+									}]
+								}, "$c"]
+							}
+						}
+					}
+				},
+				{$sort: {_id: 1}}
+				],
+			timings:[
+				{
+					$group: {
+						_id: {
+							$trunc: {
+								$divide: [{
+									$subtract: ["$_dt", _dt0]
+								}, {
+									$multiply: [Q, 60000]
+								}]
+							}
+						},
+						c: {$sum: 1},
+						r: {
+							$sum: {
+								$divide: [1, Q]
+							}
+						},
+						e: {
+							$sum: {
+								$divide: [{
+									$cond: {if: "$_i_err", then: 1, else: 0
+									}
+								}, Q]
+							}
+						},
+						tt: {$sum: "$_i_tt"},
+						ag: {
+							$sum: {
+								$cond: {if: "$_i_err", then: 0, else: {
+										$cond: {if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
+										}
+									}
+								}
+							}
+						},
+						aa: {
+							$sum: {
+								$cond: {if: "$_i_err", then: 0, else: {
+					$cond: {if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]}, {$lte: ["$_i_tt", "$ApdexT.AC"]}]}, then: 1, else: 0
+										}
+									}
+								}
+							}
+						}
+					}
+				},
+				{
+					$project: {
+						value: {
+							c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",
+							apdex: {
+								$divide: [{
+									$add: ["$ag", {
+										$divide: ["$aa", 2]
+									}]
+								}, "$c"]
+							},
+							tta: {
+								$divide: ["$tt", "$c"]
+							}
+						}
+					}
+				},
+				{$sort: {_id: 1}}
+			]},
+		}
+		],{allowDiskUse: true},function (err,res) {
+			cb(err, res[0])
+		});
+	}));
+},
 /**
 * Agregate actions stats grouped by name
 *

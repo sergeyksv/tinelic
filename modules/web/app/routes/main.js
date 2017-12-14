@@ -238,15 +238,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									safe.back(cb, null, view)
 								},cb)
 							},
-							data: function (cb) {
-								api("stats.getActionStats", res.locals.token, {
-									_t_age: quant + "m", filter: {
-										_idp: projIds,
-										_s_cat: cat,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-									}
-								}, cb)
-							},
 							breakdown: function (cb) {
 								if (!req.query.selected)
 									return safe.back(cb,null,[]);
@@ -257,18 +248,19 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 										_s_name: req.query.selected
 									}}, cb)
 							},
-							graphs: function (cb) {
+							dataAndGraphs: function (cb) {
 								var filter = {
 									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_cat: cat
+									_s_cat: cat,
+									_s_name: req.query.selected
 								}
-								if (req.query.selected)
-									filter._s_name = req.query.selected;
-								api("stats.getActionTimings", res.locals.token, {
+								api("stats.getActionMixStats", res.locals.token, {
 									_t_age: quant + "m", quant: quant, filter: filter}, cb)
 							}
 						}, safe.sure(cb, function(r){
+							r.data = r.dataAndGraphs.stats;
+							r.graphs = r.dataAndGraphs.timings;
 							var stat = {};
 							stat.apdex=0; stat.rpm=0; stat.tta=0;
 							_.forEach(r.graphs, function(r) {
