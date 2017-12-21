@@ -9,6 +9,29 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 			self.on("pageStats", function(data) {
 				refView(self.views, "statGraph");
 			});
+			var cb_arr = [];
+			this.getMixStats = function(params, cb) {
+				cb_arr.push(cb);
+				if (cb_arr.length==2) {
+				api("stats.getActionMixStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
+					if (err) {
+						console.error(err);
+					} else {
+						cb_arr[0](null, data);
+						cb_arr[1](null, data)
+					}
+				});
+				} else if (cb_arr.length>2) {
+					var i = cb_arr.length
+					api("stats.getActionMixStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
+						if (err) {
+							console.error(err);
+						} else {
+							cb_arr[(i-1)](null, data);
+						}
+					});
+				}
+			}
 		}
 	});
 	function refView(views, event) {
