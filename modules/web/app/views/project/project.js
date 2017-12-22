@@ -12,22 +12,14 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 			var cb_arr = [];
 			this.getMixStats = function(params, cb) {
 				cb_arr.push(cb);
-				if (cb_arr.length==2) {
-				api("stats.getActionMixStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						cb_arr[0](null, data);
-						cb_arr[1](null, data)
-					}
-				});
-				} else if (cb_arr.length>2) {
-					var i = cb_arr.length
+				if (cb_arr.length>1) {
 					api("stats.getActionMixStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
-						if (err) {
-							console.error(err);
+						if (cb_arr.length==2) {
+							_.forEach(cb_arr, function(current_cb) {
+								current_cb(err,data)
+							})
 						} else {
-							cb_arr[(i-1)](null, data);
+							cb_arr[(cb_arr.length - 1)](err, data);
 						}
 					});
 				}
