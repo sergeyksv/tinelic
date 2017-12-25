@@ -123,12 +123,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									safe.back(cb, null, view)
 								},cb)
 							},
-							rpm: function (cb) {
-								api("stats.getAjaxStats",res.locals.token,{_t_age:quant+"m",filter:{
-									_idp: projIds,
-									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
-								}},	cb)
-							},
 							breakdown: function (cb) {
 								api("stats.getAjaxBreakdown", res.locals.token, {
 									_t_age: quant + "m", quant: quant, filter: {
@@ -137,8 +131,8 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 										_s_name: req.query.selected
 									}}, cb);
 							},
-							graphs: function (cb) {
-								api("stats.getAjaxTimings", res.locals.token, {
+							rpmAndGraphs: function (cb) {
+								api("stats.getAjaxMixStats", res.locals.token, {
 									_t_age: quant + "m", quant: quant, filter: {
 										_idp: projIds,
 										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
@@ -146,6 +140,8 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									}}, cb)
 							}
 						}, safe.sure(cb, function(r) {
+							r.rpm = r.rpmAndGraphs.stats;
+							r.graphs = r.rpmAndGraphs.timings;
 							var stat = {};
 							stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
 							_.forEach(r.graphs, function(r) {

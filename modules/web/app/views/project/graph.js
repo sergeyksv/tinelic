@@ -42,11 +42,11 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 				});
 			},
 			function (cb) {
-				api("stats.getAjaxTimings", $.cookie('token'), params, function(err, data) {
+				self.parent.getAjaxMixStats(params, function (err, data){
 					if (err) {
 						console.error(err);
 					} else {
-						_.assign(self.data.ajax, data);
+						_.assign(self.data.ajax, data.timings);
 					}
 					cb();
 				});

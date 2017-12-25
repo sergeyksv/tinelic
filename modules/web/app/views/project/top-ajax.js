@@ -20,11 +20,11 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		var self = this;
 		self.$('.getApiData').addClass('spinning');
 		var params = self.data.params;
-		api("stats.getAjaxStats", $.cookie('token'), params, function(err, data) {
+		self.parent.getAjaxMixStats(params, function (err, data){
 			if (err) {
 				console.error(err);
 			} else {
-				var newData = processingData(data);
+				var newData = processingData(data.stats);
 				_.assign(self.data.topAjax, newData);
 				self.refresh(self.app.errHandler);
 			}
