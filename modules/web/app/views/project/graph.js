@@ -22,7 +22,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 		var params = self.data.params;
 		safe.parallel([
 			function (cb) {
-				self.parent.getMixStats(params, function (err, data){
+				self.parent.getActionMixStats(params, function (err, data){
 					if (err) {
 						console.error(err);
 					} else {
@@ -32,11 +32,11 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter", 'safe','highch
 				});
 			},
 			function (cb) {
-				api("stats.getPageTimings", $.cookie('token'), params, function(err, data) {
+				self.parent.getPageMixStats(params, function (err, data){
 					if (err) {
 						console.error(err);
 					} else {
-						_.assign(self.data.views, data);
+						_.assign(self.data.views, data.timings);
 					}
 					cb();
 				});

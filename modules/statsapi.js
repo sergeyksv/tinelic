@@ -853,6 +853,173 @@ getPageStats: function(t, p, cb) {
 	}));
 },
 
+
+getPageMixStats:function (t, p, cb) {
+	var query = queryfix(p.filter);
+	if (!query._idp.$in) {
+		query._idp={$in:[query._idp]}
+	}
+	var _arrApdex = [];
+	var _arrProjectIds = [];
+	safe.eachSeries(query._idp.$in, function(current_query, cb) {
+		ctx.api.assets.getProjectApdexConfig(t, {
+			_id: current_query
+		}, function (err, apdex) {
+			if (!err) {
+				_arrApdex.push({AA:apdex._i_pagesT,AC:apdex._i_pagesT*4});
+				_arrProjectIds.push(current_query);
+			}
+			cb();
+		});
+	}, safe.sure(cb, function() {
+		var Q = parseInt(p.quant) || 1;
+		var _dt0 = new Date(0);
+		pages.aggregate([{
+			$match: query
+		},
+		{
+			$addFields: {
+				"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},
+			}
+		},
+		{
+			$facet: {
+				stats:[
+					{
+						$group: {
+							_id: "$_s_route",
+							c: {$sum: 1},
+							tt: {$sum: "$_i_tt"},
+							e: {
+								$sum: {
+									$multiply: [1.0, {
+										$cond: {
+											if: "$_i_err", then: 1, else: 0
+										}
+									}]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]}, {$lte: ["$_i_tt", "$ApdexT.AC"]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+					],
+				timings:[
+					{
+						$group: {
+							_id: {
+								$trunc: {
+									$divide: [{
+										$subtract: ["$_dt", _dt0]
+									}, {
+										$multiply: [Q, 60000]
+									}]
+								}
+							},
+							c: {$sum: 1},
+							r: {
+								$sum: {
+									$divide: [1, Q]
+								}
+							},
+							tt: {$sum: "$_i_tt"},
+							e: {
+								$sum: {
+									$divide: [{
+										$cond: {
+											if: "$_i_err",
+											then: 1,
+											else: 0
+										}
+									}, Q]
+								}
+							},
+							ag: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$lte: ["$_i_tt", "$ApdexT.AA"]}, then: 1, else: 0
+											}
+										}
+									}
+								}
+							},
+							aa: {
+								$sum: {
+									$cond: {
+										if: "$_i_err", then: 0, else: {
+											$cond: {
+												if: {$and: [{$gt: ["$_i_tt", "$ApdexT.AA"]}, {$lte: ["$_i_tt", "$ApdexT.AC"]}]},
+												then: 1, else: 0
+											}
+										}
+									}
+								}
+							}
+						}
+					},
+					{
+						$project: {
+							value: {
+								c: "$c",r: "$r",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",
+								apdex: {
+									$divide: [{
+										$add: ["$ag", {
+											$divide: ["$aa", 2]
+										}]
+									}, "$c"]
+								},
+								tta: {
+									$divide: ["$tt", "$c"]
+								}
+							}
+						}
+					},
+					{$sort: {_id: 1}}
+			]},
+		}
+		],{allowDiskUse: true},function (err,res) {
+			cb(err, res[0])
+		});
+	}));
+},
 /**
 * @param {String} token Auth token
 * @param {Object} filter Filter for page errors

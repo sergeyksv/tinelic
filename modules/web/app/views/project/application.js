@@ -21,7 +21,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 		var self = this;
 		var params = self.data.params
 		self.$('.getApiData').addClass('spinning');
-		self.parent.getMixStats(params, function (err, data){
+		self.parent.getActionMixStats(params, function (err, data){
 			if (err) {
 				console.error(err);
 			} else {
