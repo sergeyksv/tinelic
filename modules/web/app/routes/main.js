@@ -572,27 +572,8 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									safe.back(cb, null, view)
 								},cb)
 							},
-							data: function (cb) {
-								api("stats.getActionSegmentStats", res.locals.token, {
-									_t_age: quant + "m",
-									quant: quant,
-									filter: {
-										_idp: projIds,
-										_dt: {$gt: dtstart, $lte: dtend},
-										'data._s_cat':cat
-									}
-								}, cb)
-							},
-							breakdown: function (cb) {
-								api("stats.getActionSegmentBreakdown", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: {
-										_idp: projIds,
-										_dt: {$gt: dtstart, $lte: dtend},
-										'data._s_name': req.query.selected
-									}}, cb)
-							},
-							graphs: function (cb) {
-								api("stats.getActionSegmentTimings", res.locals.token, {
+							data_breakdown_graphs:function (cb) {
+								api("stats.getActionSegmentMix", res.locals.token, {
 									_t_age: quant + "m", quant: quant, filter: {
 										_idp: projIds,
 										_dt: {$gt: dtstart, $lte: dtend},
@@ -608,6 +589,9 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									_dt: {$gt: dtstart, $lte: dtend}
 								}
 							}
+							r.data = r.data_breakdown_graphs.stats;
+							r.graphs = r.data_breakdown_graphs.timings;
+							r.breakdown = r.data_breakdown_graphs.breakdown;
 							var stat = {};
 							stat.tta=0; stat.r=0;
 							_.forEach(r.graphs, function(r) {
