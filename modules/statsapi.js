@@ -2,7 +2,6 @@
 var _ = require("lodash");
 var safe = require("safe");
 var CustomError = require('tinyback').CustomError;
-
 module.exports.deps = ['mongo','prefixify','validate'];
 
 module.exports.init = function (ctx, cb) {
@@ -1791,47 +1790,6 @@ getActionBreakdown: function(t,p, cb) {
 	}));
 },
 
-/**
-* Agregate action segement stats by ame (ehash)
-*
-* @param {String} token Auth token
-* @param {Object} filter Filter for actions
-* @param {String} filter._idp Project id
-* @param {String} filter.data._s_cat Segment category
-* @return {Array<{_id:{string},value:{c:number, tt: number}}>}
-*/
-getActionSegmentStats: function(t,p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function () {
-		var CAT = query['data._s_cat'];
-		as.aggregate([
-			{
-				$match: query
-			},
-			{
-				$unwind: "$data"
-			}, {
-				$match: {
-					"data._s_cat": CAT
-				}
-			}, {
-				$group: {
-					_id: "$data._s_name",
-					tt:  {$sum :"$data._i_tt"},
-					c: {$sum:"$data._i_cnt"}
-				}
-			}, {
-				$project: {
-					value: {
-						tt: "$tt",c: "$c"
-					}
-				}
-			}, {
-				$sort: {_id: 1}
-			}
-		],{allowDiskUse: true}, cb);
-	}));
-},
 
 /**
 * @param {String} token Auth token
@@ -1871,108 +1829,6 @@ getAjaxBreakdown: function(t,p,cb){
 			var r1=_.filter(r,"_id");
 			cb(null,r1);
 		}));
-	}));
-},
-
-getActionSegmentMix: function (t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function () {
-		var Q = parseInt(p.quant) || 1;
-		var _dt0 = new Date(0);
-		var CAT = query['data._s_cat'];
-		var NAME = p.filter["data._s_name"];
-		as.aggregate([
-			{
-				$match: query
-			},
-			{
-				$unwind: "$data"
-			},
-			{
-				$facet: {
-					stats:[
-						{$match: {"data._s_cat": CAT}},
-						{$group: {_id: "$data._s_name",
-									tt:  {$sum :"$data._i_tt"},
-									c: {$sum:"$data._i_cnt"}
-								}
-						},
-						{$project: {value: {tt: "$tt",c: "$c"}}},
-						{$sort: {_id: 1}}
-					],
-					timings:[
-						{$match: {"data._s_cat": CAT}},
-						{$group: {_id: {$trunc: {$divide: [{$subtract: ["$_dt", _dt0]}, {$multiply: [Q, 60000]}]}},
-												c: {$sum: "$data._i_cnt"},
-												r: {$sum: {$divide: ["$data._i_cnt", Q]}},
-												tt: {$sum: "$data._i_tt"}
-											}
-						},
-						{$project: {value: {c: "$c", r: "$r", tt: "$tt", tta: {$divide: ["$tt", "$c"]}}}},
-						{$sort: {_id: 1}}
-					],
-					breakdown:[
-						{$match: query},
-						{$unwind: "$data"},
-						{$match: {"data._s_name": NAME}},
-						{$group: {_id: "$_s_name", c: {$sum: "$data._i_cnt"}, tt: {$sum: "$data._i_tt"}}},
-						{$project: {value: {c: "$c", tt: "$tt"}}},
-						{$sort: {_id: 1}}
-					]},
-			}
-		],{allowDiskUse: true},function (err,res) {
-			cb(err, res[0])
-		});
-	}));
-},
-/**
-* @param {String} token Auth token
-* @param {Integer} quant Amount of minutes in time slot
-* @param {Object} filter Filter for actions
-* @param {String} filter._idp Project id
-* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, r: number, tt: number, tta: number}}>}
-*/
-getActionSegmentTimings:function (t, p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function () {
-		var Q = parseInt(p.quant) || 1;
-		var _dt0 = new Date(0);
-		var CAT = query['data._s_cat'];
-		as.aggregate([
-			{$match: query},
-			{$unwind: "$data"},
-			{$match: {"data._s_cat": CAT}},
-			{$group: {_id: {$trunc: {$divide: [{$subtract: ["$_dt", _dt0]}, {$multiply: [Q, 60000]}]}},
-									c: {$sum: "$data._i_cnt"},
-									r: {$sum: {$divide: ["$data._i_cnt", Q]}},
-									tt: {$sum: "$data._i_tt"}
-								}
-			},
-			{$project: {value: {c: "$c", r: "$r", tt: "$tt", tta: {$divide: ["$tt", "$c"]}}}},
-			{$sort: {_id: 1}}
-		],{allowDiskUse: true}, cb);
-	}));
-},
-
-/**
-* @param {String} token Auth token
-* @param {Object} filter Filter for actions
-* @param {String} filter._idp Project id
-* @param {String} filter._s_name Ajax name
-* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
-*/
-getActionSegmentBreakdown: function(t,p, cb) {
-	var query = queryfix(p.filter);
-	checkAccess(t, query, safe.sure(cb, function () {
-		var NAME = p.filter["data._s_name"];
-		as.aggregate([
-			{$match: query},
-			{$unwind: "$data"},
-			{$match: {"data._s_name": NAME}},
-			{$group: {_id: "$_s_name", c: {$sum: "$data._i_cnt"}, tt: {$sum: "$data._i_tt"}}},
-			{$project: {value: {c: "$c", tt: "$tt"}}},
-			{$sort: {_id: 1}}
-		],{allowDiskUse: true},cb);
 	}));
 },
 
@@ -2020,6 +1876,52 @@ getMetricTimings:function(t,p,cb) {
 			}
 		], {allowDiskUse: true}, cb);
 	}));
+},
+
+getActionSegmentMix:getActionSegmentMix,
+
+/**
+* Agregate action segement stats by ame (ehash)
+*
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter.data._s_cat Segment category
+* @return {Array<{_id:{string},value:{c:number, tt: number}}>}
+*/
+getActionSegmentStats: function(t,p, cb) {
+	p.facet = ['stats'];
+	getActionSegmentMix(t, p, function (err, res) {
+		cb (null, res.stats)
+	});
+},
+
+/**
+* @param {String} token Auth token
+* @param {Integer} quant Amount of minutes in time slot
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @return {Array<{_id:{module:StatsApi~TimeSlot},value:{c: number, r: number, tt: number, tta: number}}>}
+*/
+getActionSegmentTimings:function (t, p, cb) {
+	p.facet = ['timings'];
+	getActionSegmentMix(t, p, function (err, res) {
+		cb (null, res.timings)
+	});
+},
+
+/**
+* @param {String} token Auth token
+* @param {Object} filter Filter for actions
+* @param {String} filter._idp Project id
+* @param {String} filter._s_name Ajax name
+* @return {Array<{_id:{string},value:{c:number,tt: number}}>}
+*/
+getActionSegmentBreakdown: function(t,p, cb) {
+	p.facet = ['breakdown'];
+	getActionSegmentMix(t, p, function (err, res) {
+		cb (null, res.breakdown)
+	});
 }
 
 }});
@@ -2033,6 +1935,64 @@ function checkAccess(token, query, cb ) {
 	}));
 }
 
+function getActionSegmentMix(t, p, cb) {
+	var query = queryfix(p.filter);
+	checkAccess(t, query, safe.sure(cb, function () {
+		var Q = parseInt(p.quant) || 1;
+		var _dt0 = new Date(0);
+		var CAT = query['data._s_cat'];
+		var NAME = p.filter["data._s_name"];
+		var facet_obj = {};
+		var store_facet = {
+			'stats':[
+				{$match: {"data._s_cat": CAT}},
+				{$group: {_id: "$data._s_name",
+							tt:  {$sum :"$data._i_tt"},
+							c: {$sum:"$data._i_cnt"}
+						}
+				},
+				{$project: {value: {tt: "$tt",c: "$c"}}},
+				{$sort: {_id: 1}}
+			],
+			'timings':[
+				{$match: {"data._s_cat": CAT}},
+				{$group: {_id: {$trunc: {$divide: [{$subtract: ["$_dt", _dt0]}, {$multiply: [Q, 60000]}]}},
+										c: {$sum: "$data._i_cnt"},
+										r: {$sum: {$divide: ["$data._i_cnt", Q]}},
+										tt: {$sum: "$data._i_tt"}
+									}
+				},
+				{$project: {value: {c: "$c", r: "$r", tt: "$tt", tta: {$divide: ["$tt", "$c"]}}}},
+				{$sort: {_id: 1}}
+			],
+			'breakdown':[
+				{$match: {"data._s_name": NAME}},
+				{$group: {_id: "$_s_name", c: {$sum: "$data._i_cnt"}, tt: {$sum: "$data._i_tt"}}},
+				{$project: {value: {c: "$c", tt: "$tt"}}},
+				{$sort: {_id: 1}}
+			]
+		}
+		p.facet.forEach(function(z){
+			facet_obj[z] = store_facet[z];
+		})
+		if (!p.facet || !p.facet.length) {
+			facet_obj = store_facet;
+		}
+		as.aggregate([
+			{
+				$match: query
+			},
+			{
+				$unwind: "$data"
+			},
+			{
+				$facet: facet_obj
+			}
+		],{allowDiskUse: true},function (err,res) {
+			cb(err, res[0])
+		});
+	}));
+}
 
 }));
 }));

@@ -572,14 +572,26 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									safe.back(cb, null, view)
 								},cb)
 							},
-							data_breakdown_graphs:function (cb) {
+							getActionSegmentMix:function (cb) {
 								api("stats.getActionSegmentMix", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: {
+									_t_age: quant + "m", quant: quant, facet:['stats','timings'], filter: {
 										_idp: projIds,
 										_dt: {$gt: dtstart, $lte: dtend},
-										'data._s_cat':cat,
-										'data._s_name': req.query.selected
+										'data._s_cat':cat
 									}}, cb)
+							},
+							getActionSegmentBreakdownMix:function (cb) {
+								if (req.query.selected){
+									api("stats.getActionSegmentMix", res.locals.token, {
+										_t_age: quant + "m", facet:['timings','breakdown'], quant: quant, filter: {
+											_idp: projIds,
+											_dt: {$gt: dtstart, $lte: dtend},
+											'data._s_cat':cat,
+											'data._s_name': req.query.selected
+										}}, cb)
+								} else {
+									cb(null, []);
+								}
 							}
 						}, safe.sure(cb, function(r){
 							var filter = {
@@ -589,9 +601,9 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									_dt: {$gt: dtstart, $lte: dtend}
 								}
 							}
-							r.data = r.data_breakdown_graphs.stats;
-							r.graphs = r.data_breakdown_graphs.timings;
-							r.breakdown = r.data_breakdown_graphs.breakdown;
+							r.data = r.getActionSegmentMix.stats;
+							r.graphs = r.getActionSegmentBreakdownMix.timings||r.getActionSegmentMix.timings;
+							r.breakdown = r.getActionSegmentBreakdownMix.breakdown;
 							var stat = {};
 							stat.tta=0; stat.r=0;
 							_.forEach(r.graphs, function(r) {
