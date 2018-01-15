@@ -123,25 +123,27 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 									safe.back(cb, null, view)
 								},cb)
 							},
-							breakdown: function (cb) {
-								api("stats.getAjaxBreakdown", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: {
+							getAjaxMixBreakdown: function (cb) {
+								if (!req.query.selected)
+									return safe.back(cb,null,[]);
+								api("stats.getAjaxMixStats", res.locals.token, {
+									_t_age: quant + "m", quant: quant, facet:{timings:true, breakdown:true}, filter: {
 										_idp: projIds,
 										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
 										_s_name: req.query.selected
 									}}, cb);
 							},
-							rpmAndGraphs: function (cb) {
+							getAjaxMixStats: function (cb) {
 								api("stats.getAjaxMixStats", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: {
+									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: {
 										_idp: projIds,
 										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-										_s_name: req.query.selected
 									}}, cb)
 							}
 						}, safe.sure(cb, function(r) {
-							r.rpm = r.rpmAndGraphs.stats;
-							r.graphs = r.rpmAndGraphs.timings;
+							r.rpm = r.getAjaxMixStats.stats;
+							r.graphs = r.getAjaxMixBreakdown.timings||r.getAjaxMixStats.timings;
+							r.breakdown = r.getAjaxMixBreakdown.breakdown;
 							var stat = {};
 							stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
 							_.forEach(r.graphs, function(r) {
@@ -244,19 +246,28 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 										_s_name: req.query.selected
 									}}, cb)
 							},
-							dataAndGraphs: function (cb) {
+							getActionMixTimings: function (cb) {
+								if (!req.query.selected)
+									return safe.back(cb,null,[]);
+								api("stats.getActionMixStats", res.locals.token, {
+									_t_age: quant + "m", quant: quant, facet:{timings:true}, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_s_name: req.query.selected
+									}}, cb)
+							},
+							getActionMixStats: function (cb) {
 								var filter = {
 									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
 									_s_cat: cat,
-									_s_name: req.query.selected
 								}
 								api("stats.getActionMixStats", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: filter}, cb)
+									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: filter}, cb)
 							}
 						}, safe.sure(cb, function(r){
-							r.data = r.dataAndGraphs.stats;
-							r.graphs = r.dataAndGraphs.timings;
+							r.data = r.getActionMixStats.stats;
+							r.graphs = r.getActionMixTimings.timings||r.getActionMixStats.timings;
 							var stat = {};
 							stat.apdex=0; stat.rpm=0; stat.tta=0;
 							_.forEach(r.graphs, function(r) {
@@ -351,6 +362,8 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								},cb)
 							},
 							breakdown: function (cb) {
+								if (!req.query.selected)
+									return safe.back(cb,null,[]);
 								api("stats.getPageBreakdown", res.locals.token, {
 									_t_age: quant + "m", quant: quant, filter: {
 										_idp: projIds,
@@ -358,17 +371,26 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 										_s_route: req.query.selected
 									}}, cb)
 							},
-							dataAndGraphs: function (cb) {
+							getPageMixTimings: function (cb) {
+								if (!req.query.selected)
+									return safe.back(cb,null,[]);
 								api("stats.getPageMixStats", res.locals.token, {
-									_t_age: quant + "m", quant: quant, filter: {
+									_t_age: quant + "m", quant: quant, facet:{timings:true}, filter: {
 										_idp: projIds,
 										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
 										_s_route: req.query.selected
 									}}, cb)
+							},
+							getPageMixStats: function (cb) {
+								api("stats.getPageMixStats", res.locals.token, {
+									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: {
+										_idp: projIds,
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+									}}, cb)
 							}
 						}, safe.sure(cb, function(r){
-							r.data = r.dataAndGraphs.stats;
-							r.graphs = r.dataAndGraphs.timings;
+							r.data = r.getPageMixStats.stats;
+							r.graphs = r.getPageMixTimings.timings||r.getPageMixStats.timings;
 							var stat = {};
 							stat.apdex=0; stat.r=0; stat.tta=0; stat.e=0;
 							_.forEach(r.graphs, function(r) {
@@ -574,7 +596,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							},
 							getActionSegmentMix:function (cb) {
 								api("stats.getActionSegmentMix", res.locals.token, {
-									_t_age: quant + "m", quant: quant, facet:['stats','timings'], filter: {
+									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: {
 										_idp: projIds,
 										_dt: {$gt: dtstart, $lte: dtend},
 										'data._s_cat':cat
@@ -583,7 +605,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							getActionSegmentBreakdownMix:function (cb) {
 								if (req.query.selected){
 									api("stats.getActionSegmentMix", res.locals.token, {
-										_t_age: quant + "m", facet:['timings','breakdown'], quant: quant, filter: {
+										_t_age: quant + "m", facet:{timings:true,breakdown:true}, quant: quant, filter: {
 											_idp: projIds,
 											_dt: {$gt: dtstart, $lte: dtend},
 											'data._s_cat':cat,

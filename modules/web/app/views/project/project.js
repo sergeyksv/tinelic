@@ -22,6 +22,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 			}
 			var cb_ajax_arr = [];
 			this.getAjaxMixStats = function(params, cb) {
+				params.facet = {stats:true,timings:true};
 				cb_ajax_arr.push(cb);
 				if (cb_ajax_arr.length!==1) return;
 				api("stats.getAjaxMixStats", $.cookie('token'), params, function(err, data) {
