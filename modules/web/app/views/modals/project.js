@@ -52,15 +52,12 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 			"click .do-close":function (e) {
 				e.preventDefault();
 				this.remove();
-			},
-			"click .do-save":"doSave",
-			"submit form":"doSave"
 		},
 		remove: function () {
 			self.$('.modal').modal('hide');
 			return view.prototype.remove.call(this);
 		},
-		doSave:function (e) {
+		"click .do-save":function (e) {
 			var self = this;
 			var checkTeam = self.$('select').val();
 			if (checkTeam) {
@@ -94,6 +91,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 						api.invalidate();
 						self.remove();
 						self.trigger("saved");
+						window.location.reload()
 					}));
 				}
 				else
@@ -101,7 +99,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 			}
 			else
 				self.$('#warn').html('Team is not checked');
-		}
+		}}
 	});
 	View.id = "views/modals/project";
 	return View;

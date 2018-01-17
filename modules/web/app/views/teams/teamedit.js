@@ -33,6 +33,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
 					else {
                         self.trigger('saved');
                         self.remove();
+						window.location.reload()
 					}
                 });
                 return false;

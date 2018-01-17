@@ -14,38 +14,22 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 				_.set(self, 'data.flags.topTransactions', true);
 				getApiData.call(this);
 			}
+
 		}
 	});
 	function getApiData() {
 		var self = this;
+		var params = self.data.params
 		self.$('.getApiData').addClass('spinning');
-		var params = self.data.params;
-		safe.parallel([
-			function (cb) {
-				api("stats.getActionStats", $.cookie('token'), _.merge({filter:{_s_cat:"WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						var newData = processingData(data);
-						_.assign(self.data.topTransactions, newData);
-					}
-					cb();
-				});
-			},
-			function (cb) {
-				api("stats.getActionTimings", $.cookie('token'), _.merge({filter: {_s_cat: "WebTransaction"}}, params), function(err, data) {
-					if (err) {
-						console.error(err);
-					} else {
-						var newData = processingTotalData(data);
-						_.assign(self.data.topTransactions, newData);
-					}
-					cb();
-				});
+		self.parent.getActionMixStats(params, function (err, data){
+			if (err) {
+				console.error(err);
+			} else {
+				var newData = processingData(data.stats);
+				_.assign(self.data.topTransactions, newData);
+				self.refresh(self.app.errHandler);
 			}
-		], safe.sure(self.app.errHandler, function() {
-			self.refresh(self.app.errHandler);
-		}));
+		});
 	}
 	function processingData(apiData) {
 		var progress = 0;
@@ -62,24 +46,6 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 			});
 		}
 		return {data: data};
-	}
-	function processingTotalData(apiData) {
-		var vale, valtt, valr, valapd;
-		vale = valtt = valr = valapd = 0;
-		var period = 0;
-		period = apiData.length;
-		_.forEach(apiData, function (v) {
-			v = v.value;
-			vale += v.e;
-			valr += v.r;
-			valtt += v.tta;
-			valapd += v.apdex;
-		});
-		valtt=valtt/period/1000;
-		valr=valr/period;
-		vale=vale/period/valr;
-		valapd=valapd/period;
-		return {total: {rsm: valr, ttserver: valtt, apdserver: valapd, erroraction: vale}};
 	}
 	View.id = "views/project/application";
 	return View;
