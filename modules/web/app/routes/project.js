@@ -18,6 +18,7 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							var dta = (project._dtActionsErrAck || dt).valueOf();
 							var params = {
 								quant:quant,
+								_t_age:"10m",
 								filter:{
 									_idp:{$in:tim},
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
@@ -38,6 +39,7 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 						var dta = (project._dtActionsErrAck || dt).valueOf();
 						var params = {
 							quant:quant,
+							_t_age:"10m",
 							filter:{
 								_idp:project._id,
 								_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
