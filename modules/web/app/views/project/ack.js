@@ -31,7 +31,6 @@ define(['safe','tinybone/base', 'lodash',  "tinybone/backadapter",  'dustc!views
 	function getApiData() {
 		var self = this;
 		var params = _.get(self, 'data.params');
-		console.log('ppppppppppp',params);
 		var data_obac;
 		data_obac=(params.filter._idp.$in)?params.filter._idp.$in:params.filter._idp;
 		api("obac.getPermissions", $.cookie('token'), {_t_age: params._t_age,rules:[{action:"project_edit",_id:data_obac}]}, function(err, data) {

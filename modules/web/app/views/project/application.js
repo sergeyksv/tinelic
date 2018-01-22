@@ -5,6 +5,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 		id:"views/project/application",
 		events: {
 			'click .getApiData': function(e) {
+				api.invalidate();
 				getApiData.call(this);
 			}
 		},
@@ -28,7 +29,6 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 				var newData = processingData(data.stats);
 				_.assign(self.data.topTransactions, newData);
 				self.refresh(self.app.errHandler);
-				params._t_age = 0;
 			}
 		});
 	}

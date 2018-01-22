@@ -5,6 +5,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		id:"views/project/top-ajax",
 		events: {
 			'click .getApiData': function(e) {
+				api.invalidate();
 				getApiData.call(this);
 			}
 		},
@@ -27,7 +28,6 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 				var newData = processingData(data.stats);
 				_.assign(self.data.topAjax, newData);
 				self.refresh(self.app.errHandler);
-				params._t_age = 0;
 			}
 		});
 	}
