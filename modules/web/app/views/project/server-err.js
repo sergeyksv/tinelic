@@ -22,6 +22,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		var params = self.data.params;
 		api("stats.getActionErrorStats",$.cookie('token'), {
 			quant: params.quant,
+			_t_age:"10m",
 			filter: {
 				_idp: params.filter._idp,
 				_dt: {

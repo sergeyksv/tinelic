@@ -24,6 +24,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 
 		api("stats.getPageErrorStats", $.cookie('token'), {
 			quant: params.quant,
+			_t_age:"10m",
 			filter: {
 				_idp: params.filter._idp,
 				_dt: {
