@@ -24,7 +24,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 
 		api("stats.getPageErrorStats", $.cookie('token'), {
 			quant: params.quant,
-			_t_age:"10m",
+			_t_age:params._t_age,
 			filter: {
 				_idp: params.filter._idp,
 				_dt: {
@@ -39,6 +39,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 				var newData = processingData(data);
 				_.assign(self.data.errors, newData);
 				self.refresh(self.app.errHandler);
+				params._t_age = 0;
 			}
 		});
 	}

@@ -27,6 +27,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 				var newData = processingData(data);
 				_.assign(self.data.database, newData);
 				self.refresh(self.app.errHandler);
+				params._t_age = 0;
 			}
 		});
 	}

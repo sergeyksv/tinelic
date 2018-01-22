@@ -28,6 +28,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 				var newData = processingData(data.stats);
 				_.assign(self.data.topTransactions, newData);
 				self.refresh(self.app.errHandler);
+				params._t_age = 0;
 			}
 		});
 	}
