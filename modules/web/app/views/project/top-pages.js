@@ -5,6 +5,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		id:"views/project/top-pages",
 		events: {
 			'click .getApiData': function(e) {
+				api.invalidate();
 				getApiData.call(this);
 			}
 		},

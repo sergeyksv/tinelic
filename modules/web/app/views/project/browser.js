@@ -5,6 +5,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 		id:"views/project/browser",
 		events: {
 			'click .getApiData': function(e) {
+				api.invalidate();
 				getApiData.call(this);
 			}
 		},
@@ -24,6 +25,7 @@ define(['tinybone/base','lodash','moment',"tinybone/backadapter",'highcharts',
 
 		api("stats.getPageErrorStats", $.cookie('token'), {
 			quant: params.quant,
+			_t_age:params._t_age,
 			filter: {
 				_idp: params.filter._idp,
 				_dt: {
