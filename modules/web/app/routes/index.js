@@ -11,7 +11,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				var tolerance = 5 * 60 * 1000;
 				var dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
 				var dtstart = res.locals.dtend - 20*60*1000;
-				api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant,filter:{
+				api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant, fv:req.query.fv, filter:{
 					_dt: {$gt: dtstart,$lte:dtend}
 				}}}, safe.sure(cb, function (r) {
 					r.forEach(function (r){
@@ -78,7 +78,18 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				}));
 			},
 			teams: function (cb) {
-				api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
+				api("users.getCurrentUser", res.locals.token, {}, safe.sure( cb, function (usr) {
+					if (!usr.favorites||!usr.favorites.length) {
+						api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
+					} else {
+						if (req.query.fv=="ALL") {
+							api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
+						}
+						else {
+							api("assets.getTeams", res.locals.token, {_t_age:quant+"m", filter:{_id:{ $in:usr.favorites}}}, cb);
+						}
+					}
+				}));
 			}
 		}, safe.sure(cb, function (r) {
 			_.forEach(r.teams, function(team) {
@@ -120,7 +131,6 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				}
 				team.t_metrics = tmetrics;
 			});
-
 			res.renderX({
 				view:r.view,
 				data:{
