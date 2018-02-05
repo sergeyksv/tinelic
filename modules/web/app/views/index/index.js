@@ -6,7 +6,7 @@ define(['tinybone/base','safe','tinybone/backadapter','dustc!views/index/index.d
 			'click .do-addfv': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				api("users.saveFavorites", $.cookie('token'),{favorite:$this.data('addfv'), update:$this.data('kt')}, function(err) {
+				api("users.saveFavorites", $.cookie('token'),{_idfavorite:$this.data('addfv'), update:$this.data('kt')}, function(err) {
 					if (err)
 						console.error(err);
 				});
@@ -28,6 +28,9 @@ define(['tinybone/base','safe','tinybone/backadapter','dustc!views/index/index.d
 			if ($teams.length<10) {
 				this.$(".list-group-item.row").click();
 			}
+			$('.no-collapsable').on('click', function (e) {
+				e.stopPropagation();
+			});
         }
 	})
 	View.id = "views/index/index";

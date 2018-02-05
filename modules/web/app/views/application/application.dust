@@ -21,6 +21,7 @@
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-sort="wa" class="do-stats" href="#">Worst apdex</a></li>
 				</ul>
 		</div>
+		<span class="pull-right dropdown" >&nbsp</span>
 		<div class="pull-right dropdown">
 				<span class="btn btn-xs btn-info btn-ct" data-ct="{cat}" data-toggle="dropdown">
 				{@select key="{cat}"}

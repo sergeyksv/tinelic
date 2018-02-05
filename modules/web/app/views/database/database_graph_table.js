@@ -18,7 +18,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/d
 					locals.datapreRender[i]={};
                     locals.datapreRender[i]._id = r._id;
                     locals.datapreRender[i].count = r.value.cnt
-					locals.datapreRender[i].proc = ((r.value.tta/sumtta)*100)
+					locals.datapreRender[i].proc = (r.value.tta/sumtta)
                     locals.datapreRender[i].tta = r.value.tta/1000
 					i++;
 				})

@@ -200,9 +200,9 @@ saveFavorites: function (t,p,cb) {
 		p = prefixify(p);
 		if (p._id) {
 			if (p.update=="0")
-				usr.users.update({_id: p._id}, {$addToSet: {"favorites":p.favorite}}, cb);
+				usr.users.update({_id: p._id}, {$addToSet: {"favorites":{_idf:p._idfavorite}}}, cb);
 			else
-				usr.users.update({_id: p._id}, {$pullAll: {"favorites":[p.favorite]}}, cb);
+				usr.users.update({_id: p._id}, {$pull: {"favorites":{_idf: p._idfavorite}}}, cb);
 		} else {
 			return cb(new CustomError('Current user is unknown',"Unauthorized"));
 		}

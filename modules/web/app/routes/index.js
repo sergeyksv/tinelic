@@ -80,18 +80,31 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			teams: function (cb) {
 				api("users.getCurrentUser", res.locals.token, {}, safe.sure( cb, function (usr) {
 					if (!usr.favorites||!usr.favorites.length) {
-						api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
+						api("assets.getTeams", res.locals.token, {_t_age:quant+"m"},safe.sure( cb, function (_teams) {
+							var _fv = "ALL";
+							cb(null, _teams, _fv);
+						}));
 					} else {
 						if (req.query.fv=="ALL") {
-							api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, cb);
+							api("assets.getTeams", res.locals.token, {_t_age:quant+"m"}, safe.sure( cb, function (_teams) {
+								var _fv = "ALL";
+								cb(null, _teams, _fv);
+							}));
 						}
 						else {
-							api("assets.getTeams", res.locals.token, {_t_age:quant+"m", filter:{_id:{ $in:usr.favorites}}}, cb);
+							var idf = _.map(usr.favorites, "_idf")
+							api("assets.getTeams", res.locals.token, {_t_age:quant+"m", filter:{_id: { $in:idf}}}, safe.sure( cb, function (_teams) {
+								var _fv = "FAV";
+								cb(null, _teams, _fv);
+							}));
+
 						}
 					}
 				}));
 			}
 		}, safe.sure(cb, function (r) {
+			var _fv = r.teams[1];
+			r.teams = r.teams[0];
 			_.forEach(r.teams, function(team) {
 				var projects = {};
 				_.forEach(r.data, function(proj) {
@@ -135,7 +148,8 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				view:r.view,
 				data:{
 					title:"Tinelic - Home",
-					teams: r.teams
+					teams: r.teams,
+					_fv: _fv
 				}});
 		}));
 	};
