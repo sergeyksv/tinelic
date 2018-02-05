@@ -1,16 +1,28 @@
 {>"views/base_page"/}
 {<main}
+<div class="dropdown">
+		<span class="btn btn-xs btn-primary btn-fv" data-fv="{_fv}"  data-toggle="dropdown"><span class="glyphicon glyphicon-star"></span>
+		{@select key="{_fv}"}
+			{@eq value="FAV"}Show favorite teams{/eq}
+			{@eq value="ALL"}Show all teams{/eq}
+		{/select}
+		<span class="caret"></span></span><br><br>
+		<ul class="dropdown-menu" role="menu " style="float: right">
+			<li role="presentation"><a role="menuitem" tabindex="-1" data-fv="FAV" class="do-fv" href="#">Show favorite teams</a></li>
+			<li role="presentation"><a role="menuitem" tabindex="-1" data-fv="ALL" class="do-fv" href="#">Show all teams</a></li>
+		</ul>
+</div>
 {#teams}
 <div class="list-group">
-<div class="list-group-item row list-group-item-info" aria-expanded="{@first}true{:else}false{/first}">
+<div class="list-group-item row list-group-item-info" data-toggle="collapse" href="#team_{_id}" aria-expanded="{@first}true{:else}false{/first}">
 	{#t_metrics}
-	<a data-field="name" class="col-md-2 col-xs-12" data-toggle="collapse" href="#team_{_id}">
+	<a data-field="name" class="col-md-2 col-xs-12" style="cursor:pointer" >
 		<strong>{name}
 		{@gt key=server.proc value=0}
 			<span> ( {server.proc} x {@math key=server.mem method="round"/} Mb )</span>
 		{/gt}</strong>
 	</a>
-	<a class="col-md-8 col-md-offset-0 col-xs-offset-1 col-xs-11" data-toggle="collapse" href="#team_{_id}">
+	<a class="col-md-8 col-md-offset-0 col-xs-offset-1 col-xs-11" >
 		<span style="white-space: nowrap;">
 		<span class="text-danger">{@gt key=errAck.dtlActions value=0}<b>{errAck.dtlActions}</b>{:else}0{/gt} ( {errAck.actions} )</span> / <span class="text-success">{@gt key=errAck.dtlPages value=0}<b>{errAck.dtlPages}</b>{:else}0{/gt} ( {errAck.pages} )</span>
 		</span>
@@ -50,10 +62,22 @@
 			</span> / <span class="text-info">{@formatnumber val=ajax.e type="erate"/}</span>
 		{/gt}
 	</a>
-		<a href='{_t_prefix}/team/{name}'><small>{name} all servers data </small></a>
-		<a href='{_t_prefix}/group-info/{name}'>
-		<span class="glyphicon glyphicon-align-justify" style="float: right"></span>
+		<a class="no-collapsable" href='{_t_prefix}/group-info/{name}'>
+		<span class="glyphicon glyphicon-align-justify" ></span>
 		</a>
+		<a class="no-collapsable" href='{_t_prefix}/team/{name}'><small>{name} all servers  </small></a>
+		<span class="pull-right dropdown">
+				<span class="btn btn-xs btn-primary btn-addfv"  style="float: right"  data-toggle="dropdown"><span class="glyphicon glyphicon-star"></span>
+				{@select key="{addfv}"}
+					{@eq value="Add {name} to favorites"}Add {name} to favorites{/eq}
+					{@eq value="Remove {name} from favorites"}Remove {name} from favorites{/eq}
+				{/select}
+				<span class="caret"></span></span><br><br>
+				<ul class="dropdown-menu" role="menu">
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-addfv="{_id}" data-kt=0 class="do-addfv" href="#">Add {name} to favorites</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-addfv="{_id}" data-kt=1 class="do-addfv" href="#">Remove {name} from favorites</a></li>
+				</ul>
+		</span>
 	{/t_metrics}
 </div>
 <div id="team_{_id}" class='collapse' data-toggle='false'>

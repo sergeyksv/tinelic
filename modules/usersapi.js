@@ -67,7 +67,7 @@ api:{
 * @return {Boolean} result Allow or disallow
 */
 getPermission:function (t, p, cb) {
-	this.getCurrentUser(t, safe.sure(cb, function (u) {
+	this.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		// admin can do everything
 		if (u.role == "admin")
 			return cb(null, true);
@@ -89,7 +89,7 @@ getPermission:function (t, p, cb) {
 * @return {String[]} All granted project ids
 */
 getGrantedUserIds:function (t, p, cb) {
-	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+	ctx.api.users.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		var relmap = {user_edit:"team_edit",user_view:"team_view"};
 		if (u.role!="admin") {
 			ctx.api.obac.getGrantedIds(t,{action:relmap[p.action]}, safe.sure(cb, function (teamids) {
@@ -154,7 +154,7 @@ getUsers: function (t,p,cb) {
 * @param {String} token Auth token
 * @return {User} result Currently authenticated user
 */
-getCurrentUser: function (t,cb) {
+getCurrentUser: function (t, p, cb) {
 	if (t==ctx.locals.systoken)
 		return safe.back(cb, null, {role:"admin"});
 
@@ -194,6 +194,20 @@ saveUser: function (t,p,cb) {
 	}));
 },
 
+saveFavorites: function (t,p,cb) {
+	this.getCurrentUser(t, {}, safe.sure(cb, function(user){
+		p._id=user._id;
+		p = prefixify(p);
+		if (p._id) {
+			if (p.update=="0")
+				usr.users.update({_id: p._id}, {$addToSet: {"favorites":{_idf:p._idfavorite}}}, cb);
+			else
+				usr.users.update({_id: p._id}, {$pull: {"favorites":{_idf: p._idfavorite}}}, cb);
+		} else {
+			return cb(new CustomError('Current user is unknown',"Unauthorized"));
+		}
+	}));
+},
 /**
 * @param {String} token Auth token
 * @param {String} _id User id

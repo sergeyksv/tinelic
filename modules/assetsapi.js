@@ -116,7 +116,7 @@ ensureProjectId:function (t, projNameOrID, cb) {
 * @return {Boolean} result Allow or disallow
 */
 getTeamPermission:function (t, p, cb) {
-	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+	ctx.api.users.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		if (p.action == "team_view")
 			tm.teams.findOne({'users._idu':u._id,_id:p._id}, safe.sure(cb, function (user) {
 				cb(null,!!user);
@@ -137,7 +137,7 @@ getTeamPermission:function (t, p, cb) {
 * @return {Boolean} result Allow or disallow
 */
 getProjectPermission:function (t, p, cb) {
-	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+	ctx.api.users.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		if (p.action == "project_view")
 			tm.teams.findOne(queryfix({'users._idu':u._id,"projects._idp":p._id}), safe.sure(cb, function (user) {
 				cb(null,!!user);
@@ -161,7 +161,7 @@ getProjectPermission:function (t, p, cb) {
 * @return {String[]} All granted teams ids
 */
 getGrantedTeamIds:function (t, p, cb) {
-	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+	ctx.api.users.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		var filter = {};
 		if (u.role!="admin") {
 			if (p.action == "team_edit")
@@ -182,7 +182,7 @@ getGrantedTeamIds:function (t, p, cb) {
 * @return {String[]} All granted project ids
 */
 getGrantedProjectIds:function (t, p, cb) {
-	ctx.api.users.getCurrentUser(t, safe.sure(cb, function (u) {
+	ctx.api.users.getCurrentUser(t, {}, safe.sure(cb, function (u) {
 		var relmap = {project_edit:"team_edit",project_view:"team_view"};
 		if (u.role!="admin") {
 			ctx.api.obac.getGrantedIds(t,{action:relmap[p.action]}, safe.sure(cb, function (teamids) {
