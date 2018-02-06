@@ -109,6 +109,7 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
+							helpers.waitElementVisible.call(self,By.id("logout"), 10000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
@@ -152,6 +153,7 @@ module.exports.block = function(){
 						b.findElement(By.css(".do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function () {
+							helpers.waitElementVisible.call(self,By.id("logout"), 10000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
@@ -238,8 +240,6 @@ module.exports.block = function(){
 							b.findElement(By.css("#navbar .doGoHome")).click();
 
 							helpers.waitPageReload.call(self,pid).then(function(pid) {
-								helpers.waitElementVisible.call(self,By.partialLinkText("NewTeam"));
-								b.findElement(By.partialLinkText("NewTeam")).click();
 								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
 								b.findElement(By.linkText("NewProject")).click();
 								helpers.waitPageReload.call(self,pid).then(function() {
