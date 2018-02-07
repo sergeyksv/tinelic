@@ -33,7 +33,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
 					else {
                         self.trigger('saved');
                         self.remove();
-						window.location.reload()
+						window.location.reload();
 					}
                 });
                 return false;
@@ -42,7 +42,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/te
         remove: function () {
 			this.$el.modal('hide');
 			return view.prototype.remove.call(this);
-		},
+		}
 	});
 	View.id = "views/teams/teamedit";
 	return View;

@@ -7,17 +7,17 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/ap
               var self = this;
               $this = $(e.currentTarget);
               var cat_s = $(".btn-ct").data("ct");
-              var h = window.location.pathname.split('/',5)
+              var h = window.location.pathname.split('/',5);
               this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+$this.data('sort')+'?cat='+cat_s);
               return false;
           },
 		  'click .do-cat': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				var h = window.location.pathname.split('/',6)
+				var h = window.location.pathname.split('/',6);
 				this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+'/'+h[5]+'?cat='+$this.data('ct'));
 				return false;
-			},
+			}
         },
         preRender: function () {
             var locals = this.locals;
@@ -27,7 +27,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/ap
             view.prototype.postRender.call(this);
 			var self = this;
         }
-    })
+    });
     View.id = "views/application/application";
     return View;
-})
+});

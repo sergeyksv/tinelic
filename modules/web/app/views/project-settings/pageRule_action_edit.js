@@ -17,14 +17,14 @@ define(['tinybone/base','dustc!views/project-settings/pageRule_action_edit.dust'
 				self.$('#_s_matcher').closest('.form-group').removeClass('has-error').find("span").text("");
 			} catch (e) {
 				self.$('#_s_matcher').closest('.form-group').addClass('has-error').find("span").text(e.toString());
-				return false;;
+				return false;
 			}
 			d._s_field = this.$("#_s_field").val();
 			d._s_matcher = this.$("#_s_matcher").val();
 			d._s_replacer = this.$("#_s_replacer").val();
 			return true;
 		}
-    })
+    });
     View.id = "views/project-settings/pageRule_action_edit";
     return View;
-})
+});

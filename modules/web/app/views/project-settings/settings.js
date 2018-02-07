@@ -11,9 +11,9 @@ define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!
                         if (err)
                             self.app.errHandler(err);
                         else
-                            self.app.router.navigateTo('/web/')
-                    })
-                }))
+                            self.app.router.navigateTo('/web/');
+                    });
+                }));
 
             },
             "click .doEditRule":function(e){
@@ -31,11 +31,11 @@ define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!
                         $anchor.after($p);
 						$current.hide();
                         p.bindDom($p);
-                    }))
+                    }));
                     p.on('cancel',function () {
 						$current.show();
 						p.remove();
-					})
+					});
                     p.on('save',function(){
                         api("assets.savePageRule", $.cookie("token"),{_id:self.data.project._id, rule:p.data}, function(err){
                             if (err) {
@@ -45,10 +45,10 @@ define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!
                                 p.remove();
                                 self.app.router.reload();
                             }
-                        })
+                        });
 
-                    })
-                },this.app.errHandler)
+                    });
+                },this.app.errHandler);
             },
             "click .doEditProjectName":function(e) {
                 var self = this;
@@ -149,11 +149,11 @@ define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!
                             self.app.router.reload();
                         }
 
-                    })
+                    });
                 });
             }
         }
-    })
+    });
     View.id = "views/project-settings/settings";
     return View;
-})
+});

@@ -7,7 +7,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/se
                 var self = this;
                 var router = self.app.router;
                 $this = $(e.currentTarget);
-                var h = window.location.pathname.split('/',5)
+                var h = window.location.pathname.split('/',5);
                 router.navigateTo('/'+h[1]+'/'+h[2]+'/'+h[3]+"/"+h[4]+"/"+$this.data('sort')+'/');
                 return false;
 
@@ -15,10 +15,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/se
             'click .do-ack': function(e) {
                 var self = this;
                 var router = self.app.router;
-                var id = self.$("span[data-id]").data('id')
+                var id = self.$("span[data-id]").data('id');
 				id = id.split(',');
 				safe.eachSeries(id, function(current_id, cb) {
-	                api('assets.ackProjectState', $.cookie('token'),{type:'_dtActionsErrAck',_id:current_id}, cb)
+	                api('assets.ackProjectState', $.cookie('token'),{type:'_dtActionsErrAck',_id:current_id}, cb);
 				}, function (err) {
 					if (err){
 						console.error(err);
@@ -26,10 +26,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/se
 						api.invalidate();
 						router.reload();
 					}
-				})
+				});
             }
         }
-    })
+    });
     View.id = "views/server-errors/server-err";
     return View;
-})
+});

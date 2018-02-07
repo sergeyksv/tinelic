@@ -8,15 +8,15 @@ define(['tinybone/base','dustc!views/project-settings/stroke_edit.dust'],functio
         events:{
             "click .doSaveStroke":function(e) {
                 var self = this;
-                var data = {filter:self.data}
+                var data = {filter:self.data};
                 data.filter[self.$('input').prop('name')] = self.$('input').val();
-                this.trigger('save',data)
+                this.trigger('save',data);
             },
             "click .doCancel": function(e) {
                 this.trigger('cancel');
             }
         }
-    })
+    });
     View.id = "views/project-settings/stroke_edit";
     return View;
-})
+});

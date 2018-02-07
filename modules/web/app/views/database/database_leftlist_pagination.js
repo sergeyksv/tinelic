@@ -46,7 +46,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/da
             view.prototype.postRender.call(this);
 			var self = this;
         }
-    })
+    });
     View.id = "views/database/database_leftlist_pagination";
     return View;
-})
+});

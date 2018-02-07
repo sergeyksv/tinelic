@@ -9,6 +9,7 @@ var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
 var newrelic = require("newrelic");
+var { Buffer } = require("safe-buffer");
 
 var buf = new Buffer(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
@@ -17,20 +18,20 @@ module.exports.deps = ['mongo','prefixify','validate','assets','cache'];
 
 module.exports.init = function (ctx, cb) {
 	var prefixify = ctx.api.prefixify.datafix;
-    ctx.api.validate.register("error", {$set:{properties:{
-        _dt:{type:"date",required:true},
-        _idp:{type:"mongoId",required:true},
-        _id:{type:"mongoId"},
-        _s_reporter:{type:"string",required:true,"maxLength": 64},
-        _s_server:{type:"string",required:true,"maxLength": 256},
-        _s_logger:{type:"string",required:true,"maxLength": 64},
-        _s_message:{type:"string",required:true,"maxLength": 4096},
-        _s_culprit:{type:"string",required:true,"maxLength": 1024},
-        exception:{type:"object",required:true, properties: {
+	ctx.api.validate.register("error", {$set:{properties:{
+		_dt:{type:"date",required:true},
+		_idp:{type:"mongoId",required:true},
+		_id:{type:"mongoId"},
+		_s_reporter:{type:"string",required:true,"maxLength": 64},
+		_s_server:{type:"string",required:true,"maxLength": 256},
+		_s_logger:{type:"string",required:true,"maxLength": 64},
+		_s_message:{type:"string",required:true,"maxLength": 4096},
+		_s_culprit:{type:"string",required:true,"maxLength": 1024},
+		exception:{type:"object",required:true, properties: {
 			_s_type:{type:"string", required:true,"maxLength": 64},
 			_s_value:{type:"string", required:true,"maxLength": 4096}
 		}},
-        action:{type:"object",properties: {
+		action:{type:"object",properties: {
 			_s_type:{type:"string", required:true,"maxLength": 64},
 			_s_cat:{type:"string", required:true,"maxLength": 1024},
 			_s_name:{type:"string", required:true,"maxLength": 1024}
@@ -52,15 +53,15 @@ module.exports.init = function (ctx, cb) {
 				}
 			}}
 		}},
-		 //client side related data
-        _dtc:{type:"date"},
-        _dtp:{type:"date"},
-        _dtr:{type:"date"},
-        agent:{type:"object"},
-        chash:{type:"string","maxLength": 256},
-        shash:{type:"string","maxLength": 256},
-        _idpv:{type:"mongoId"},
-        request:{type:"object",properties: {
+		//client side related data
+		_dtc:{type:"date"},
+		_dtp:{type:"date"},
+		_dtr:{type:"date"},
+		agent:{type:"object"},
+		chash:{type:"string","maxLength": 256},
+		shash:{type:"string","maxLength": 256},
+		_idpv:{type:"mongoId"},
+		request:{type:"object",properties: {
 			_s_route:{type:"string","maxLength": 1024},
 			_s_uri:{type:"string", "maxLength": 4096},
 			_s_url:{type:"string", "maxLength": 4096},
@@ -69,14 +70,14 @@ module.exports.init = function (ctx, cb) {
 			}}
 		}},
 		geo:{type:"object"},
-        user:{type:"object", patternProperties:{
+		user:{type:"object", patternProperties:{
 				".*":{type:"string","maxLength": 1024}
 		}},
-        extra:{type:"object", patternProperties:{
+		extra:{type:"object", patternProperties:{
 			".*":[{type:"string","maxLength": 1024},
 				{type:"ineteger"}]
 		}}
-    }}});
+	}}});
 	ctx.api.validate.register("action-stats", {$set:{properties:{
 		_idp: {type:"mongoId",required:true},
 		_s_name: {type:"string",required:true,"maxLength": 4096},
@@ -1110,10 +1111,10 @@ getTraceLineContext:function (t, p, cb) {
 				return cb(null, context);
 			}));
 		}, function (err, block) {
-            if (err) {
-                // hide error within context line
-                block = {pre_context:[],post_context:[],_s_context:err.toString()};
-            }
+			if (err) {
+				// hide error within context line
+				block = {pre_context:[],post_context:[],_s_context:err.toString()};
+			}
 			ctx.api.cache.set("collect_client_context",p._s_file+"_"+p._i_line+"_"+p._i_col,{err:null, block:block},safe.sure(cb, function () {
 				return cb(null, block);
 			}));

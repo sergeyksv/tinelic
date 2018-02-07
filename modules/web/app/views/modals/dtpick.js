@@ -49,7 +49,7 @@ define(['tinybone/base','bootstrap/modal', 'lodash','moment', 'dustc!views/modal
                 this.remove();
             }
         }
-    })
+    });
     View.id = "views/modals/dtpick";
     return View;
-})
+});

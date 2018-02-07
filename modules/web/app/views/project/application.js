@@ -20,7 +20,7 @@ define(['tinybone/base','lodash','moment','safe',"tinybone/backadapter",'highcha
 	});
 	function getApiData() {
 		var self = this;
-		var params = self.data.params
+		var params = self.data.params;
 		self.$('.getApiData').addClass('spinning');
 		self.parent.getActionMixStats(params, function (err, data){
 			if (err) {

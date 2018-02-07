@@ -137,7 +137,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								api("stats.getAjaxMixStats", res.locals.token, {
 									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: {
 										_idp: projIds,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}}, cb)
 							}
 						}, safe.sure(cb, function(r) {
@@ -260,7 +260,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								var filter = {
 									_idp: projIds,
 									_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
-									_s_cat: cat,
+									_s_cat: cat
 								}
 								api("stats.getActionMixStats", res.locals.token, {
 									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: filter}, cb)
@@ -385,7 +385,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 								api("stats.getPageMixStats", res.locals.token, {
 									_t_age: quant + "m", quant: quant, facet:{stats:true, timings:true}, filter: {
 										_idp: projIds,
-										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend},
+										_dt: {$gt: res.locals.dtstart,$lte:res.locals.dtend}
 									}}, cb)
 							}
 						}, safe.sure(cb, function(r){

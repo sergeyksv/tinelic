@@ -16,11 +16,11 @@ define(['tinybone/base','safe','tinybone/backadapter','dustc!views/index/index.d
 			'click .do-fv': function (e) {
 				var self = this;
 				$this = $(e.currentTarget);
-				var h = window.location.pathname.split('/',3)
+				var h = window.location.pathname.split('/',3);
 				this.app.router.navigateTo('/'+h[1]+'/'+h[2]+'?fv='+$this.data('fv'));
 				self.app.router.reload();
 				return false;
-			},
+			}
 		},
 		postRender:function () {
 			var $teams = this.$(".list-group-item");
@@ -32,7 +32,7 @@ define(['tinybone/base','safe','tinybone/backadapter','dustc!views/index/index.d
 				e.stopPropagation();
 			});
         }
-	})
+	});
 	View.id = "views/index/index";
   return View;
-})
+});

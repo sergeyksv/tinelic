@@ -13,15 +13,15 @@ define(['tinybone/base','safe','tinybone/backadapter','lodash','highcharts','dus
                 var percfortta = null;
                 _.forEach(data, function(r) {
 					sumtta += r.value.tta;
-                })
+                });
                 _.forEach(data, function(r) {
 					locals.datapreRender[i]={};
                     locals.datapreRender[i]._id = r._id;
-                    locals.datapreRender[i].count = r.value.c
-					locals.datapreRender[i].proc = (r.value.tta/sumtta)
-                    locals.datapreRender[i].tta = r.value.tta/1000
+                    locals.datapreRender[i].count = r.value.c;
+					locals.datapreRender[i].proc = (r.value.tta/sumtta);
+                    locals.datapreRender[i].tta = r.value.tta/1000;
 					i++;
-				})
+				});
 			}
         },
 		postRender:function () {
@@ -50,7 +50,7 @@ define(['tinybone/base','safe','tinybone/backadapter','lodash','highcharts','dus
 				});
 			}
 		}
-	})
+	});
 	View.id = "views/ajax/ajax_graph_table";
 	return View;
-})
+});
