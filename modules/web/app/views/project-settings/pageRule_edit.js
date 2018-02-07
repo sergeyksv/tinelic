@@ -19,8 +19,8 @@ define(['require','tinybone/base','safe','lodash','dustc!views/project-settings/
                         $inc.before($a);
                         a.bindDom($a);
                         self.attachSubView(a);
-                    }))
-                },this.app.errHandler)
+                    }));
+                },this.app.errHandler);
             },
             'click .doCancel': function(e) {
 				this.trigger('cancel');
@@ -48,4 +48,4 @@ define(['require','tinybone/base','safe','lodash','dustc!views/project-settings/
     });
     View.id = "views/project-settings/pageRule_edit";
     return View;
-})
+});

@@ -319,7 +319,7 @@ saveTeam: function (t,p,cb) {
 removeTeam: function(t,p,cb) {
 	p =  prefixify(p);
 	ctx.api.obac.getPermission(t,{action:'team_edit',_id:p._id,throw:1}, safe.sure(cb, function () {
-    	tm.teams.remove({_id: p._id}, cb);
+		tm.teams.remove({_id: p._id}, cb);
 	}));
 },
 

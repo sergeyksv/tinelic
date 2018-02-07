@@ -42,7 +42,7 @@ define(['tinybone/base','dustc!views/client-errors/err_list.dust'],function (tb)
 					locals.paging.push({index:i,selected:i==locals.currentPage});
 			}
 		}
-	})
+	});
 	View.id = "views/client-errors/err_list";
 	return View;
-})
+});

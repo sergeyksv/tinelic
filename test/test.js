@@ -24,7 +24,6 @@ When error occurs, screenshot is available in test's dir (active)
 Predefined data stored in file `dataentry.json`
 Frequently called functions should be defined in helpers
 */
-var argv = require('yargs').argv;
 var tutils = require('./utils');
 
 describe("Let the test begins!",function () {

@@ -44,7 +44,7 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 						project0 = project0.reverse();
 
 					this.data.teams.projects = project0;
-				};
+				}
 				if (!locals.pageCount) {
 						// set default data
 						locals.pageCount = Math.ceil(this.data.teams.projects.length/10);
@@ -56,7 +56,7 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 				locals.paging = [];
 				for (i=1; i<=locals.pageCount; i++) {
 						locals.paging.push({index:i,selected:i==locals.currentPage});
-				};
+				}
 		},
 		postRender:function () {
 // zebra
@@ -68,4 +68,4 @@ define(['tinybone/base', 'lodash','tinybone/backadapter', 'safe','dustc!views/gr
 	});
 	View.id = "views/group-info/group-info";
   return View;
-})
+});

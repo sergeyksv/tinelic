@@ -91,7 +91,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 						api.invalidate();
 						self.remove();
 						self.trigger("saved");
-						window.location.reload()
+						window.location.reload();
 					}));
 				}
 				else

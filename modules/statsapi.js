@@ -165,7 +165,7 @@ getActionMixStats:getActionMixStats,
 getActionTimings: function(t, p, cb) {
 	p.facet = {timings:true};
 	getActionMixStats(t, p, function (err, res) {
-		cb (null, res.timings)
+		cb (null, res.timings);
 	});
 },
 /**
@@ -180,7 +180,7 @@ getActionTimings: function(t, p, cb) {
 getActionStats: function(t, p , cb) {
 	p.facet = {stats:true};
 	getActionMixStats(t, p, function (err, res) {
-		cb (null, res.stats)
+		cb (null, res.stats);
 	});
 },
 
@@ -198,7 +198,7 @@ getAjaxMixStats:getAjaxMixStats,
 getAjaxStats: function(t, p, cb) {
 	p.facet = {stats:true};
 	getAjaxMixStats(t, p, function (err, res) {
-		cb (null, res.stats)
+		cb (null, res.stats);
 	});
 },
 
@@ -216,7 +216,7 @@ getPageMixStats:getPageMixStats,
 getPageStats: function(t, p, cb) {
 	p.facet = {stats:true};
 	getPageMixStats(t, p, function (err, res) {
-		cb (null, res.stats)
+		cb (null, res.stats);
 	});
 },
 
@@ -296,7 +296,7 @@ getActionErrorInfo:function (t, p, cb) {
 			], {allowDiskUse: true},
 			safe.sure(cb, function(tmpData) {
 				if (!tmpData[0]._id.length) {
-					return cb(null, {route: [],server: [],reporter: [],lang: [],count:0})
+					return cb(null, {route: [],server: [],reporter: [],lang: [],count:0});
 				}
 				var tmp_id = tmpData[0]._id[0];
 				var tmpRoute = tmpData[0].route;
@@ -354,7 +354,7 @@ getActionError:function (t, p, cb) {
 getAjaxTimings:function(t, p, cb) {
 	p.facet = {timings:true};
 	getAjaxMixStats(t, p, function (err, res) {
-		cb (null, res.timings)
+		cb (null, res.timings);
 	});
 },
 
@@ -368,7 +368,7 @@ getAjaxTimings:function(t, p, cb) {
 getPageTimings:function (t, p, cb) {
 	p.facet = {timings:true};
 	getPageMixStats(t, p, function (err, res) {
-		cb (null, res.timings)
+		cb (null, res.timings);
 	});
 },
 
@@ -431,7 +431,7 @@ getPageErrorInfo:function (t, p, cb) {
 			], {allowDiskUse: true},
 			safe.sure(cb, function(tmpData) {
 				if (!tmpData[0]._id.length) {
-					return cb(null, {route: [], os: [], browser: [], count:0, sessions:0, views:0})
+					return cb(null, {route: [], os: [], browser: [], count:0, sessions:0, views:0});
 				}
 				var tmp_id = tmpData[0]._id[0];
 				var tmpRoute = tmpData[0].route;
@@ -704,7 +704,7 @@ getPageBreakdown: function(t,p,cb){
 getAjaxBreakdown: function(t,p,cb) {
 	p.facet = {breakdown:true};
 	getAjaxMixStats(t, p, function (err, res) {
-		cb (null, res.breakdown)
+		cb (null, res.breakdown);
 	});
 },
 
@@ -743,7 +743,7 @@ getActionSegmentMix:getActionSegmentMix,
 getActionSegmentStats: function(t,p, cb) {
 	p.facet = {stats:true};
 	getActionSegmentMix(t, p, function (err, res) {
-		cb (null, res.stats)
+		cb (null, res.stats);
 	});
 },
 
@@ -757,7 +757,7 @@ getActionSegmentStats: function(t,p, cb) {
 getActionSegmentTimings:function (t, p, cb) {
 	p.facet = {timings:true};
 	getActionSegmentMix(t, p, function (err, res) {
-		cb (null, res.timings)
+		cb (null, res.timings);
 	});
 },
 
@@ -771,7 +771,7 @@ getActionSegmentTimings:function (t, p, cb) {
 getActionSegmentBreakdown: function(t,p, cb) {
 	p.facet = {breakdown:true};
 	getActionSegmentMix(t, p, function (err, res) {
-		cb (null, res.breakdown)
+		cb (null, res.breakdown);
 	});
 }
 
@@ -822,7 +822,7 @@ function getActionSegmentMix(t, p, cb) {
 				{$project: {value: {c: "$c", tt: "$tt"}}},
 				{$sort: {_id: 1}}
 			]
-		}
+		};
 		_.forEach(p.facet, function(n,key){
 			facet_obj[key] = store_facet[key];
 		});
@@ -834,7 +834,7 @@ function getActionSegmentMix(t, p, cb) {
 			{$unwind: "$data"},
 			{$facet: facet_obj}
 		],{allowDiskUse: true},function (err,res) {
-			cb(err, res[0])
+			cb(err, res[0]);
 		});
 	}));
 }
@@ -842,7 +842,7 @@ function getActionSegmentMix(t, p, cb) {
 function getActionMixStats(t, p , cb) {
 	var query = queryfix(p.filter);
 	if (!query._idp.$in) {
-		query._idp={$in:[query._idp]}
+		query._idp={$in:[query._idp]};
 	}
 	var _arrApdex = [];
 	var _arrProjectIds = [];
@@ -884,7 +884,7 @@ function getActionMixStats(t, p , cb) {
 				{$project: {value: {c: "$c",r: "$r",e: "$e",tt: "$tt",ag: "$ag",aa: "$aa",apdex: {$divide: [{$add: ["$ag", {$divide: ["$aa", 2]}]}, "$c"]},	tta: {$divide: ["$tt", "$c"]}}}},
 				{$sort: {_id: 1}}
 			]
-		}
+		};
 		_.forEach(p.facet, function(n,key){
 			facet_obj[key] = store_facet[key];
 		});
@@ -893,10 +893,10 @@ function getActionMixStats(t, p , cb) {
 		}
 		actions.aggregate([
 			{$match: query},
-			{$addFields: {"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},}},
+			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{$facet: facet_obj}
 		],{allowDiskUse: true},function (err,res) {
-			cb(err, res[0])
+			cb(err, res[0]);
 		});
 	}));
 }
@@ -904,7 +904,7 @@ function getActionMixStats(t, p , cb) {
 function getPageMixStats(t, p, cb) {
 	var query = queryfix(p.filter);
 	if (!query._idp.$in) {
-		query._idp={$in:[query._idp]}
+		query._idp={$in:[query._idp]};
 	}
 	var _arrApdex = [];
 	var _arrProjectIds = [];
@@ -946,7 +946,7 @@ function getPageMixStats(t, p, cb) {
 				{$project: {value: {c: "$c",r: "$r",tt: "$tt",e: "$e",ag: "$ag",aa: "$aa",apdex: {$divide: [{$add: ["$ag", {$divide: ["$aa", 2]}]}, "$c"]},	tta: {$divide: ["$tt", "$c"]}}}},
 				{$sort: {_id: 1}}
 			]
-		}
+		};
 		_.forEach(p.facet, function (n, key) {
 			facet_obj[key]=store_facet[key];
 		});
@@ -954,11 +954,11 @@ function getPageMixStats(t, p, cb) {
 			facet_obj = store_facet;
 		}
 		pages.aggregate([
-			{$match: query},
-			{$addFields: {"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},}},
-			{$facet: facet_obj}
-		],{allowDiskUse: true},function (err,res) {
-			cb(err, res[0])
+			{ $match: query },
+			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
+			{ $facet: facet_obj }
+		], { allowDiskUse: true }, function (err, res) {
+			cb(err, res[0]);
 		});
 	}));
 }
@@ -969,7 +969,7 @@ function getAjaxMixStats(t,p,cb) {
 		_s_name: p._idurl
 	}) : query;
 	if (!query._idp.$in) {
-		query._idp={$in:[query._idp]}
+		query._idp={$in:[query._idp]};
 	}
 	var _arrApdex = [];
 	var _arrProjectIds = [];
@@ -1026,10 +1026,10 @@ function getAjaxMixStats(t,p,cb) {
 		}
 		ajax.aggregate([
 			{$match: query},
-			{$addFields: {"ApdexT": {$arrayElemAt:[_arrApdex,{$indexOfArray:[_arrProjectIds,"$_idp"]}]},}},
+			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{$facet: facet_obj}
 		],{allowDiskUse: true},function (err,res) {
-			cb(err, res[0])
+			cb(err, res[0]);
 		});
 	}));
 }

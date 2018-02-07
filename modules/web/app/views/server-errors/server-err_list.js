@@ -42,7 +42,7 @@ define(['tinybone/base','dustc!views/server-errors/server-err_list.dust'],functi
 					locals.paging.push({index:i,selected:i==locals.currentPage});
 			}
 		}
-	})
+	});
 	View.id = "views/server-errors/server-err_list";
 	return View;
-})
+});

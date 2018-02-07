@@ -16,9 +16,9 @@
     "dustjs-helpers": "^1.7.4",
     "dustjs-linkedin": "^2.7.5",
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
-    "express": "^4.16.1",
+    "express": "^4.16.2",
     "geoip-lite": "^1.2.1",
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "less-middleware": "~2.2.x",
     "less-plugin-autoprefix": "^1.5.1",
     "less-plugin-clean-css": "^1.5.1",
@@ -31,26 +31,31 @@
     "raven": "^0.12.3",
     "request": "^2.83.0",
     "requirejs": "^2.3.5",
-    "requirejs-text": "^2.0.12",
+    "requirejs-text": "^2.0.15",
     "safe": "^0.4.5",
-    "tablesorter": "^2.29.3",
-    "useragent": "^2.2.1",
-    "yargs": "~10.0.3"
+    "safe-buffer": "^5.1.1",
+    "tablesorter": "^2.29.5",
+    "useragent": "^2.3.0",
+    "yargs": "~11.0.0"
   },
   "devDependencies": {
-    "eslint": "^4.15.0",
+    "eslint": "^4.17.0",
+    "eslint-plugin-json": "^1.2.0",
+    "eslint-plugin-no-inferred-method-name": "^1.0.2",
+    "eslint-plugin-node": "^6.0.0",
     "grunt": "~0.4.5",
     "grunt-contrib-requirejs": "~1.0.0",
     "grunt-contrib-uglify": "~3.3.0",
+    "grunt-eslint": "^20.1.0",
     "grunt-git-describe": "~2.4.3",
-    "grunt-nodemon": "~0.4.0",
+    "grunt-nodemon": "~0.4.2",
+    "load-grunt-tasks": "^3.5.2",
     "mocha": "^3.5.0",
     "phantomjs-prebuilt": "^2.1.16"
   },
   "optionalDependencies": {
-    "mongo-utils": "~0.4.5",
     "selenium-webdriver": "^2.53.0",
-    "chromedriver": "^2.34.1"
+    "chromedriver": "^2.35.0"
   },
   "scripts": {
     "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test",

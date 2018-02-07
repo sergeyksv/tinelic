@@ -24,7 +24,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter","safe", 'dustc!views/cl
 						api.invalidate();
 						router.reload();
 					}
-				})
+				});
 			}
 		}
 	});

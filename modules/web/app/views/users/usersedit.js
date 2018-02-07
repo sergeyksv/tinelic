@@ -57,7 +57,7 @@ define(['tinybone/base','tinybone/backadapter','bootstrap/modal','dustc!views/us
         remove: function () {
 			this.$el.modal('hide');
 			return view.prototype.remove.call(this);
-		},
+		}
 	});
 	View.id = "views/users/usersedit";
 	return View;

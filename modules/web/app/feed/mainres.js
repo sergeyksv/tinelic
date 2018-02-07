@@ -65,12 +65,12 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 					api("users.getCurrentUser", token, {}, safe.sure( cb, function (usr) {
 						if (!usr.favorites||!usr.favorites.length) {
 							api("assets.getProjects", token, {_t_age:"10m"}, safe.sure(cb, function (projects) {
-								cb(null, projects)
+								cb(null, projects);
 							}));
 						}  else {
 							if (params1.fv=="ALL") {
 								api("assets.getProjects", token, {_t_age:"10m"}, safe.sure(cb, function (projects) {
-									cb(null, projects)
+									cb(null, projects);
 								}));
 							}
 							else {
@@ -80,13 +80,13 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 									var allpr =_.flattenDeep(tpr);
 									var tim = _.pluck(allpr,'_idp');
 									api("assets.getProjects", token, {_t_age:"10m", filter:{_id:{ $in:tim}}}, safe.sure(cb, function (projects) {
-										cb(null, projects)
+										cb(null, projects);
 									}));
 								}));
 							}
 						}
 					}));
-				},
+				}
 			},	safe.sure(cb, function (r) {
 				var projects = r.teamspro;
 					safe.forEach(projects, function (projectN, cb) {

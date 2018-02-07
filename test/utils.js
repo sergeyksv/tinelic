@@ -9,7 +9,6 @@ var childProcess = require('child_process');
 var webdriver = require('selenium-webdriver');
 var SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;
 var _ = require('lodash');
-var mutils = require('mongo-utils');
 var fs = require('fs');
 var os = require("os");
 var argv = require('yargs').argv;
@@ -138,13 +137,13 @@ module.exports.getBrowser = function(cb) {
 };
 
 module.exports.makeDbSnapshot = function (snapname, cb) {
-	mutils.dumpDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
+	var str = `mongodump --host localhost --db tinelic_test --out ${__dirname}/snapshots/${snapname}/`;
+	childProcess.exec(str, cb);
 };
 
 module.exports.restoreDbSnapshot = function (snapname, cb) {
-	dropDb(safe.sure(cb,function(){
-		mutils.restoreDatabase("tcp://localhost:27017/tinelic_test",__dirname+"/snapshots/"+snapname,cb);
-	}));
+	var str = `mongorestore --host localhost --drop ${__dirname}/snapshots/${snapname}/`;
+	childProcess.exec(str, cb);
 };
 
 module.exports.noerror = function (f) {

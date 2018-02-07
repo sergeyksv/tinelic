@@ -12,7 +12,8 @@
     "globals": {
         "requirejs": true
     },
-    "extends": ["eslint:recommended"],
+    "extends": ["eslint:recommended", "plugin:node/recommended"],
+    "plugins": ["node","json","no-inferred-method-name"],
     "rules": {
         "no-console": [0],
         "comma-dangle": [2, "never"],
@@ -36,6 +37,10 @@
         "no-unexpected-multiline": 1,
         "no-unreachable": 1,
         "use-isnan": 1,
-        "valid-typeof": 1
+        "valid-typeof": 1,
+        "no-process-exit": [0],
+        "node/no-unpublished-require": [0],
+        "node/no-extraneous-require": [0],
+        "node/no-unsupported-features": ["error", {"version": 6}]
     }
 }

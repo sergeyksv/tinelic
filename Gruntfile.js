@@ -4,6 +4,7 @@ var requirejs = require('requirejs');
 requirejs.define.amd.dust = true;
 
 module.exports = function(grunt) {
+	require('load-grunt-tasks')(grunt);
 
 	grunt.event.once('git-describe', function(rev) {
 		grunt.option('buildrev', rev);
@@ -66,6 +67,22 @@ module.exports = function(grunt) {
 			"options": {},
 			"main": {}
 		},
+		eslint: {
+			options: {
+				configFile: ".eslintrc",
+				ignorePath: ".eslintignore",
+				fix: true
+			},
+			all: [
+				'./*.js',
+				'modules/**/*.js',
+				'!**/public/**/**',
+				'!./local-config.js',
+				'!modules/tinyback/**',
+				'!modules/tinybone/**',
+				"!modules/web/app/**"
+			]
+		},
 		uglify: {
 			tinelic: {
 				files: {
@@ -94,9 +111,9 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.registerTask('default', []);
+	grunt.registerTask('default', ['eslint']);
 
-	grunt.registerTask('build', ['git-describe', 'ensureLocalConfig', 'requirejs:compile','uglify']);
+	grunt.registerTask('build', ['git-describe', 'ensureLocalConfig', 'eslint', 'requirejs:compile', 'uglify']);
 
 	grunt.registerTask('server', ['build', 'nodemon']);
 

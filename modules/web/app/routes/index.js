@@ -92,7 +92,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 							}));
 						}
 						else {
-							var idf = _.map(usr.favorites, "_idf")
+							var idf = _.map(usr.favorites, "_idf");
 							api("assets.getTeams", res.locals.token, {_t_age:quant+"m", filter:{_id: { $in:idf}}}, safe.sure( cb, function (_teams) {
 								var _fv = "FAV";
 								cb(null, _teams, _fv);
