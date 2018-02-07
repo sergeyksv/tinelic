@@ -53,8 +53,8 @@
     "chromedriver": "^2.34.1"
   },
   "scripts": {
-    "test": "grunt build && mocha -bR spec test/test.js",
-    "test-chrome": "mocha -bR spec test/test.js --browser=chrome --testenv=test",
+    "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test",
+	"test": "grunt build && mocha -bR spec test/test.js --browser=chrome-headless --testenv=test",
     "test-check": "mocha -bR spec test/test.js --testenv=test"
   }
 }

@@ -13,6 +13,8 @@ var mutils = require('mongo-utils');
 var fs = require('fs');
 var os = require("os");
 var argv = require('yargs').argv;
+var chrome = require('selenium-webdriver/chrome');
+var opt = new chrome.Options();
 
 var childs = [];
 
@@ -88,6 +90,18 @@ module.exports.getBrowser = function(cb) {
 			cb(null, driver);
 		}
 
+		if (browser === "chrome-headless") {
+			driver = new webdriver.Builder().
+			forBrowser('chrome').
+				withCapabilities({
+						"browserName": "chrome",
+						 "chromeOptions": {
+						 	"args": ["--disable-gpu", "--no-sandbox", "--headless"]}
+				}).
+				build();
+			cb(null, driver);
+		}
+
 		if (browser === "phantomjs") {
 			var phantom = childProcess.spawn(require("phantomjs-prebuilt").path, ["--webdriver=127.0.0.1:9134"/*,"--remote-debugger-port=9000"*/]);
 			var error = null;
@@ -96,7 +110,7 @@ module.exports.getBrowser = function(cb) {
 				if (!driver) {
 					if (/GhostDriver - Main - running /.test(line)) {
 						driver = new webdriver.Builder().
-							usingServer("http://127.0.0.1:9134").
+							usingServer("http://127.0.0.1:9134")
 							withCapabilities({'browserName': 'chrome'}).
 							build();
 						cb(null, driver);
