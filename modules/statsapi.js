@@ -922,6 +922,7 @@ function getPageMixStats(t, p, cb) {
 		var Q = parseInt(p.quant) || 1;
 		var _dt0 = new Date(0);
 		var facet_obj = {};
+		var zzz;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_route",
@@ -958,7 +959,8 @@ function getPageMixStats(t, p, cb) {
 			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{ $facet: facet_obj }
 		], { allowDiskUse: true }, function (err, res) {
-			cb(err, res[0]);
+			zzz=res[0]||0;
+			cb(err, zzz);
 		});
 	}));
 }
