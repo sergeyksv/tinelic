@@ -90,7 +90,7 @@ module.exports.init = function (ctx, cb) {
 			if (wire) {
 				res.json(wire);
 			} else
-				res.send(404);
+				res.sendStatus(404);
 		}));
 	});
 	reqctx(['app'], function (App) {
