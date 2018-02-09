@@ -110,17 +110,27 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 
-						helpers.waitPageReload.call(self, pid).then(function (pid) {
-							helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
-							b.findElement(By.id("logout")).click();
-							helpers.waitPageReload.call(self, pid).then(function (pid) {
+						 helpers.waitPageReload.call(self, pid).then(function (pid) {
+						// 	helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
+						// 	b.findElement(By.id("logout")).click();
+						// 	helpers.waitPageReload.call(self, pid).then(function (pid) {
 								self.done();
-							});
-						});
+						// 	});
+						 });
 					});
 				});
 			});
+
+			it("Logauted", function (done) {
+				var self = this, b = self.browser;
+				self.trackError(done);
+					helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
+					b.findElement(By.id("logout")).click();
+					self.done();
+			});
 		});
+
+
 
 		describe("Create new project", function() {
 			it("Log-in as admin and open teams page", function (done) {
