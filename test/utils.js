@@ -7,15 +7,13 @@ var Server = require('mongodb').Server;
 var safe = require('safe');
 var childProcess = require('child_process');
 var webdriver = require('selenium-webdriver');
-var SeleniumServer = require('selenium-webdriver/remote').SeleniumServer;
 var _ = require('lodash');
 var fs = require('fs');
-var os = require("os");
+var { Buffer } = require('safe-buffer');
 var argv = require('yargs').argv;
-var chrome = require('selenium-webdriver/chrome');
-var opt = new chrome.Options();
-
 var childs = [];
+var driver;
+var browser = argv.browser || "phantomjs";
 
 process.on('SIGINT', STOP);
 process.on('SIGTERM', STOP);
@@ -26,6 +24,9 @@ function STOP (err) {
 		console.log(err.stack);
 
 	killChilds();
+
+	if (driver)
+		driver.quit();
 
 	process.exit(err ? 1 : 0);
 }
@@ -52,8 +53,6 @@ module.exports.shutdownContext = function () {
 
 module.exports.getApp = function (opts, cb) {
 	var fixture = opts.fixture || false;
-	var tag = "tinelic_test";
-	var dbs = new Db(tag, new Server('localhost', 27017),{w:1});
 	safe.run(function(cb) {
 		if (fixture=="empty")
 			dropDb(cb);
@@ -69,36 +68,30 @@ module.exports.getApp = function (opts, cb) {
 	}));
 };
 
-var browser = argv.browser || "phantomjs";
 module.exports.getBrowser = function(cb) {
 	safe.run(function (cb) {
-		var driver = null;
 		if (browser === "firefox") {
 			driver = new webdriver.Builder().
 				forBrowser('firefox').
 				build();
 
 			cb(null, driver);
+			return;
 		}
 
-		if (browser === "chrome") {
-			driver = new webdriver.Builder().
-				withCapabilities({'browserName': 'chrome'}).
-				build();
+		if (browser === "chrome" || browser === "chrome-headless") {
+			var chrome = require('selenium-webdriver/chrome');
+			var opt = new chrome.Options();
+			if (browser === "chrome-headless") {
+				opt.addArguments("--headless");
+			}
+			driver = new webdriver.Builder()
+				.forBrowser('chrome')
+				.setChromeOptions(opt)
+				.build();
 
 			cb(null, driver);
-		}
-
-		if (browser === "chrome-headless") {
-			driver = new webdriver.Builder().
-			forBrowser('chrome').
-				withCapabilities({
-						"browserName": "chrome",
-						 "chromeOptions": {
-						 	"args": ["--disable-gpu", "--no-sandbox", "--headless"]}
-				}).
-				build();
-			cb(null, driver);
+			return;
 		}
 
 		if (browser === "phantomjs") {
@@ -108,10 +101,11 @@ module.exports.getBrowser = function(cb) {
 				var line = data.toString();
 				if (!driver) {
 					if (/GhostDriver - Main - running /.test(line)) {
-						driver = new webdriver.Builder().
-							usingServer("http://127.0.0.1:9134")
-							withCapabilities({'browserName': 'chrome'}).
-							build();
+						driver = new webdriver.Builder()
+							.usingServer("http://127.0.0.1:9134")
+							.withCapabilities({'browserName': 'chrome'})
+							.build();
+
 						cb(null, driver);
 					} else if (/Error/.test(line))
 						cb(new Error("Browser can't be started"));
@@ -233,7 +227,7 @@ module.exports.setupContext = function () {
 		}
 	], function (err) {
 		if (err)
-			deferred.reject(err)
+			deferred.reject(err);
 		else
 			deferred.fulfill(true);
 	});
