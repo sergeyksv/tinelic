@@ -959,6 +959,7 @@ function getPageMixStats(t, p, cb) {
 			{ $facet: facet_obj }
 		], { allowDiskUse: true }, function (err, res) {
 			cb(null, res[0]);
+			console.log('res[0]---------->', res[0]);
 		});
 	}));
 }
