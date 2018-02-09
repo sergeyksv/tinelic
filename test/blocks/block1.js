@@ -83,6 +83,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
+					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
@@ -125,6 +126,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
+					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
@@ -168,6 +170,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
+					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
