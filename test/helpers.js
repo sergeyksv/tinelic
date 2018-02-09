@@ -59,7 +59,7 @@ module.exports.waitElementExist = function (selector, hint, timeout) {
 
 module.exports.waitElementVisible = function (selector, hint, timeout) {
 	var self = this;
-	hint = hint || '';	timeout = timeout || 15000;
+	hint = hint || '';	timeout = timeout || 100000;
 	self.browser.wait(function () {
 		return self.browser.isElementPresent(selector).then(function (isPresent) {
 			if (!isPresent) return false;
@@ -73,7 +73,7 @@ module.exports.waitElementVisible = function (selector, hint, timeout) {
 };
 
 module.exports.waitPageReload = function (old_id, timeout) {
-	timeout = timeout || 15000;
+	timeout = timeout || 150000;
 	var b = this.browser;
 	var new_id;
 	return b.wait(function() {
