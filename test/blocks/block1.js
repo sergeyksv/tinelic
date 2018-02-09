@@ -109,7 +109,7 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
-							helpers.waitElementVisible.call(self,By.id("logout"), 10000);
+							helpers.waitElementVisible.call(self,By.id("logout"), 50000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
@@ -153,7 +153,7 @@ module.exports.block = function(){
 						b.findElement(By.css(".do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function () {
-							helpers.waitElementVisible.call(self,By.id("logout"), 10000);
+							helpers.waitElementVisible.call(self,By.id("logout"), 50000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
