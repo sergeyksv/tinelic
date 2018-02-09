@@ -73,7 +73,7 @@ module.exports.waitElementVisible = function (selector, hint, timeout) {
 };
 
 module.exports.waitPageReload = function (old_id, timeout) {
-	timeout = timeout || 100000;
+	timeout = timeout || 15000;
 	var b = this.browser;
 	var new_id;
 	return b.wait(function() {
