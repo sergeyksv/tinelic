@@ -109,7 +109,6 @@ module.exports.getBrowser = function(cb) {
 				if (!driver) {
 					if (/GhostDriver - Main - running /.test(line)) {
 						driver = new webdriver.Builder().
-							usingServer("http://127.0.0.1:9134")
 							withCapabilities({'browserName': 'chrome'}).
 							build();
 						cb(null, driver);
