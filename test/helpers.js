@@ -51,7 +51,7 @@ module.exports.waitNoElement = function (element) {
 
 module.exports.waitElementExist = function (selector, hint, timeout) {
 	var self = this;
-	hint = hint || '';	timeout = timeout || 15000;
+	hint = hint || '';	timeout = timeout || 150000000;
 	self.browser.wait(function () {
 		return self.browser.isElementPresent(selector);
 	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
@@ -59,7 +59,7 @@ module.exports.waitElementExist = function (selector, hint, timeout) {
 
 module.exports.waitElementVisible = function (selector, hint, timeout) {
 	var self = this;
-	hint = hint || '';	timeout = timeout || 100000;
+	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
 		return self.browser.isElementPresent(selector).then(function (isPresent) {
 			if (!isPresent) return false;

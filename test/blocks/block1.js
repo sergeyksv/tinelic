@@ -109,10 +109,11 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
-							helpers.waitElementExist.call(self,By.id("logout"), 1000000);
+								helpers.waitPageReload.call(self, pid).then(function () {
 
 							b.findElement(By.id("logout")).click();
 							self.done();
+						});
 						});
 					});
 				});
@@ -155,9 +156,11 @@ module.exports.block = function(){
 						b.findElement(By.css(".do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function () {
-							helpers.waitElementExist.call(self,By.id("logout"), 1000000);
+							helpers.waitPageReload.call(self, pid).then(function () {
+
 							b.findElement(By.id("logout")).click();
 							self.done();
+							});
 						});
 					});
 				});
