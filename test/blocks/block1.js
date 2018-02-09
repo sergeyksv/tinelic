@@ -69,7 +69,7 @@ module.exports.block = function(){
 					b.findElement(By.id("signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
-						helpers.waitElementVisible.call(self,By.id("logout"), 50000);
+						helpers.waitElementVisible.call(self,By.id("logout"), 150000);
 						b.findElement(By.id("logout")).click();
 						self.done();
 					});
@@ -83,7 +83,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
+					helpers.waitElementVisible.call(self,By.id("pass"), 150000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
@@ -111,7 +111,7 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
-							helpers.waitElementVisible.call(self,By.id("logout"), 50000);
+							helpers.waitElementVisible.call(self,By.id("logout"), 150000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
@@ -126,7 +126,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
+					helpers.waitElementVisible.call(self,By.id("pass"), 150000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
@@ -156,7 +156,7 @@ module.exports.block = function(){
 						b.findElement(By.css(".do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function () {
-							helpers.waitElementVisible.call(self,By.id("logout"), 50000);
+							helpers.waitElementVisible.call(self,By.id("logout"), 150000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 						});
@@ -170,7 +170,7 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-					helpers.waitElementVisible.call(self,By.id("pass"), 50000);
+					helpers.waitElementVisible.call(self,By.id("pass"), 150000);
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
