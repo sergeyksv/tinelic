@@ -233,8 +233,9 @@ module.exports.block = function(){
 				self.trackError(done);
 
 				helpers.waitPageReload.call(self,null).then(function(pid){
+					helpers.waitElementVisible.call(self,By.id("logout"), 150000);
 					b.findElement(By.id("logout")).click();
-
+					helpers.waitElementVisible.call(self,By.id("pass"), 150000);
 					helpers.waitPageReload.call(self,pid).then(function(pid){
 						b.findElement(By.id("pass")).sendKeys("123456");
 						b.findElement(By.id("login")).sendKeys("obram");
