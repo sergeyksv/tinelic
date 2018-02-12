@@ -833,12 +833,9 @@ function getActionSegmentMix(t, p, cb) {
 			{$match: query},
 			{$unwind: "$data"},
 			{$facet: facet_obj}
-		],{allowDiskUse: true},function (err,res) {
-			if (!res)
-				cb(null, { timings: [] });
-			else
-				cb(null, res[0]);
-		});
+		],{allowDiskUse: true},safe.sure(cb,function (res) {
+			 cb(null, res?res[0]:{ timings: []});
+		}));
 	}));
 }
 
@@ -898,12 +895,9 @@ function getActionMixStats(t, p , cb) {
 			{$match: query},
 			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{$facet: facet_obj}
-		],{allowDiskUse: true},function (err,res) {
-			if (!res)
-				cb(null, { timings: [] });
-			else
-				cb(null, res[0]);
-		});
+		],{allowDiskUse: true},safe.sure(cb,function (res) {
+			 cb(null, res?res[0]:{ timings: []});
+		}));
 	}));
 }
 
@@ -963,12 +957,9 @@ function getPageMixStats(t, p, cb) {
 			{ $match: query },
 			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{ $facet: facet_obj }
-		], { allowDiskUse: true }, function (err, res) {
-			if (!res)
-				cb(null, { timings: [] });
-			else
-				cb(null, res[0]);
-		});
+		],{allowDiskUse: true},safe.sure(cb,function (res) {
+			 cb(null, res?res[0]:{ timings: []});
+		}));
 	}));
 }
 
@@ -1037,12 +1028,9 @@ function getAjaxMixStats(t,p,cb) {
 			{$match: query},
 			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
 			{$facet: facet_obj}
-		],{allowDiskUse: true},function (err,res) {
-			if (!res)
-				cb(null, { timings: [] });
-			else
-				cb(null, res[0]);
-		});
+		],{allowDiskUse: true},safe.sure(cb,function (res) {
+			 cb(null, res?res[0]:{ timings: []});
+		}));
 	}));
 }
 
