@@ -157,8 +157,8 @@ module.exports.block = function(){
 
 						helpers.waitPageReload.call(self, pid).then(function () {
 							helpers.waitPageReload.call(self, pid).then(function () {
-								helpers.waitElementExist.call(self,By.id("logout"), 1000000);
-								helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
+								// helpers.waitElementExist.call(self,By.id("logout"), 1000000);
+								// helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
 							b.findElement(By.id("logout")).click();
 							self.done();
 							});
