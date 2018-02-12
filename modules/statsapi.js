@@ -834,7 +834,10 @@ function getActionSegmentMix(t, p, cb) {
 			{$unwind: "$data"},
 			{$facet: facet_obj}
 		],{allowDiskUse: true},function (err,res) {
-			cb(null, res[0]);
+			if (!res)
+				cb(null, { timings: [] });
+			else
+				cb(null, res[0]);
 		});
 	}));
 }
