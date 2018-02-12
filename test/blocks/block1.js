@@ -117,6 +117,7 @@ module.exports.block = function(){
 					});
 				});
 			});
+
 		});
 		describe("Create new project", function() {
 			it("Log-in as admin and open teams page", function (done) {
@@ -124,7 +125,6 @@ module.exports.block = function(){
 				self.trackError(done);
 				b.get("http://localhost:8080/web/");
 				helpers.waitPageReload.call(self, null).then(function (pid) {
-
 					b.findElement(By.id("pass")).sendKeys("tinelic");
 					b.findElement(By.id("login")).sendKeys("admin");
 					b.findElement(By.id("signup")).click();
