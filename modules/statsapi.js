@@ -164,9 +164,9 @@ getActionMixStats:getActionMixStats,
 */
 getActionTimings: function(t, p, cb) {
 	p.facet = {timings:true};
-	getActionMixStats(t, p, function (err, res) {
+	getActionMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.timings);
-	});
+	}));
 },
 /**
 * Agregate actions stats grouped by name
@@ -179,9 +179,9 @@ getActionTimings: function(t, p, cb) {
 */
 getActionStats: function(t, p , cb) {
 	p.facet = {stats:true};
-	getActionMixStats(t, p, function (err, res) {
+	getActionMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.stats);
-	});
+	}));
 },
 
 getAjaxMixStats:getAjaxMixStats,
@@ -197,9 +197,9 @@ getAjaxMixStats:getAjaxMixStats,
 */
 getAjaxStats: function(t, p, cb) {
 	p.facet = {stats:true};
-	getAjaxMixStats(t, p, function (err, res) {
+	getAjaxMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.stats);
-	});
+	}));
 },
 
 getPageMixStats:getPageMixStats,
@@ -215,9 +215,9 @@ getPageMixStats:getPageMixStats,
 */
 getPageStats: function(t, p, cb) {
 	p.facet = {stats:true};
-	getPageMixStats(t, p, function (err, res) {
+	getPageMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.stats);
-	});
+	}));
 },
 
 
@@ -353,9 +353,9 @@ getActionError:function (t, p, cb) {
 */
 getAjaxTimings:function(t, p, cb) {
 	p.facet = {timings:true};
-	getAjaxMixStats(t, p, function (err, res) {
+	getAjaxMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.timings);
-	});
+	}));
 },
 
 /**
@@ -367,9 +367,9 @@ getAjaxTimings:function(t, p, cb) {
 */
 getPageTimings:function (t, p, cb) {
 	p.facet = {timings:true};
-	getPageMixStats(t, p, function (err, res) {
+	getPageMixStats(t, p, safe.sure(cb,function (res) {
 		cb (null, res.timings);
-	});
+	}));
 },
 
 /**
@@ -742,9 +742,9 @@ getActionSegmentMix:getActionSegmentMix,
 */
 getActionSegmentStats: function(t,p, cb) {
 	p.facet = {stats:true};
-	getActionSegmentMix(t, p, function (err, res) {
+	getActionSegmentMix(t, p, safe.sure(cb,function (res) {
 		cb (null, res.stats);
-	});
+	}));
 },
 
 /**
@@ -756,9 +756,9 @@ getActionSegmentStats: function(t,p, cb) {
 */
 getActionSegmentTimings:function (t, p, cb) {
 	p.facet = {timings:true};
-	getActionSegmentMix(t, p, function (err, res) {
+	getActionSegmentMix(t, p, safe.sure(cb,function (res) {
 		cb (null, res.timings);
-	});
+	}));
 },
 
 /**
@@ -770,9 +770,9 @@ getActionSegmentTimings:function (t, p, cb) {
 */
 getActionSegmentBreakdown: function(t,p, cb) {
 	p.facet = {breakdown:true};
-	getActionSegmentMix(t, p, function (err, res) {
+	getActionSegmentMix(t, p, safe.sure(cb,function (res) {
 		cb (null, res.breakdown);
-	});
+	}));
 }
 
 }});
