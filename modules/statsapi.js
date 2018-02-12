@@ -354,7 +354,7 @@ getActionError:function (t, p, cb) {
 getAjaxTimings:function(t, p, cb) {
 	p.facet = {timings:true};
 	getAjaxMixStats(t, p, safe.sure(cb,function (res) {
-		cb (null,  res?res.timings:{ timings: []});
+		cb (null, res.timings);
 	}));
 },
 
