@@ -109,11 +109,10 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
-								helpers.waitPageReload.call(self, pid).then(function () {
-
-							b.findElement(By.id("logout")).click();
-							self.done();
-						});
+							helpers.waitPageReload.call(self, pid).then(function () {
+								b.findElement(By.id("logout")).click();
+								self.done();
+							});
 						});
 					});
 				});
@@ -157,11 +156,8 @@ module.exports.block = function(){
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
 							helpers.waitPageReload.call(self, pid).then(function () {
-								// helpers.waitElementExist.call(self,By.id("logout"), 1000000);
-								// helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
-
-							b.findElement(By.id("logout")).click();
-							self.done();
+								b.findElement(By.id("logout")).click();
+								self.done();
 							});
 						});
 					});
