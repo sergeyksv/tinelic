@@ -155,10 +155,11 @@ module.exports.block = function(){
 						b.findElement(By.css("input#name")).sendKeys("NewProject");
 						b.findElement(By.css(".do-save")).click();
 
-						helpers.waitPageReload.call(self, pid).then(function () {
+						helpers.waitPageReload.call(self, pid).then(function (pid) {
 							helpers.waitPageReload.call(self, pid).then(function () {
 								// helpers.waitElementExist.call(self,By.id("logout"), 1000000);
 								// helpers.waitElementVisible.call(self,By.id("logout"), 1000000);
+
 							b.findElement(By.id("logout")).click();
 							self.done();
 							});
