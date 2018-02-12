@@ -861,6 +861,8 @@ function getActionMixStats(t, p , cb) {
 		var Q = parseInt(p.quant) || 1;
 		var _dt0 = new Date(0);
 		var facet_obj = {};
+		var addF;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_name",
@@ -893,7 +895,7 @@ function getActionMixStats(t, p , cb) {
 		}
 		actions.aggregate([
 			{$match: query},
-			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
+			{ $addFields: { "ApdexT": addF } },
 			{$facet: facet_obj}
 		],{allowDiskUse: true},safe.sure(cb,function (res) {
 			cb(null, res?res[0]:{ timings: []});
@@ -922,6 +924,8 @@ function getPageMixStats(t, p, cb) {
 		var Q = parseInt(p.quant) || 1;
 		var _dt0 = new Date(0);
 		var facet_obj = {};
+		var addF;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_route",
@@ -955,7 +959,7 @@ function getPageMixStats(t, p, cb) {
 		}
 		pages.aggregate([
 			{ $match: query },
-			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
+			{ $addFields: { "ApdexT": addF } },
 			{ $facet: facet_obj }
 		],{allowDiskUse: true},safe.sure(cb,function (res) {
 			cb(null, res?res[0]:{ timings: []});
@@ -987,6 +991,8 @@ function getAjaxMixStats(t,p,cb) {
 		var Q = parseInt(p.quant) || 1;
 		var _dt0 = new Date(0);
 		var facet_obj={};
+		var addF;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_name",
@@ -1026,7 +1032,7 @@ function getAjaxMixStats(t,p,cb) {
 		}
 		ajax.aggregate([
 			{$match: query},
-			{ $addFields: { "ApdexT": { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] } } },
+			{$addFields: { "ApdexT": addF } },
 			{$facet: facet_obj}
 		],{allowDiskUse: true},safe.sure(cb,function (res) {
 			cb(null, res?res[0]:{ timings: []});
