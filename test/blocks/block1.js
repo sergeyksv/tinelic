@@ -118,7 +118,6 @@ module.exports.block = function(){
 				});
 			});
 		});
-
 		describe("Create new project", function() {
 			it("Log-in as admin and open teams page", function (done) {
 				var self = this, b = self.browser;
