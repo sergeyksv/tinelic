@@ -862,7 +862,7 @@ function getActionMixStats(t, p , cb) {
 		var _dt0 = new Date(0);
 		var facet_obj = {};
 		var addF;
-		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:0;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_name",
@@ -925,7 +925,7 @@ function getPageMixStats(t, p, cb) {
 		var _dt0 = new Date(0);
 		var facet_obj = {};
 		var addF;
-		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:0;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_route",
@@ -992,7 +992,7 @@ function getAjaxMixStats(t,p,cb) {
 		var _dt0 = new Date(0);
 		var facet_obj={};
 		var addF;
-		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:undefined;
+		addF = _arrApdex.length?{ $arrayElemAt:  [_arrApdex, { $indexOfArray: [_arrProjectIds, "$_idp"] }] }:0;
 		var store_facet = {
 			stats:[
 				{$group: {_id: "$_s_name",
