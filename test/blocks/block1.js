@@ -69,6 +69,7 @@ module.exports.block = function(){
 					b.findElement(By.id("signup")).click();
 
 					helpers.waitPageReload.call(self, pid).then(function (pid) {
+						helpers.waitElementExist.call(self,By.id("logout"));
 						b.findElement(By.id("logout")).click();
 						self.done();
 					});
