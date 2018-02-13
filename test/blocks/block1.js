@@ -111,6 +111,7 @@ module.exports.block = function(){
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
 							helpers.waitPageReload.call(self, pid).then(function () {
+								helpers.waitElementVisible.call(self,By.id("logout"));
 								b.findElement(By.id("logout")).click();
 								self.done();
 							});
@@ -156,6 +157,7 @@ module.exports.block = function(){
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
 							helpers.waitPageReload.call(self, pid).then(function () {
+								helpers.waitElementVisible.call(self,By.id("logout"));
 								b.findElement(By.id("logout")).click();
 								self.done();
 							});
