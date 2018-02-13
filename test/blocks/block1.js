@@ -109,14 +109,16 @@ module.exports.block = function(){
 						b.findElement(By.className("do-save")).click();
 
 						helpers.waitPageReload.call(self, pid).then(function (pid) {
-							b.findElement(By.id("logout")).click();
-							self.done();
+							helpers.waitPageReload.call(self, pid).then(function () {
+								b.findElement(By.id("logout")).click();
+								self.done();
+							});
 						});
 					});
 				});
 			});
-		});
 
+		});
 		describe("Create new project", function() {
 			it("Log-in as admin and open teams page", function (done) {
 				var self = this, b = self.browser;
@@ -151,9 +153,11 @@ module.exports.block = function(){
 						b.findElement(By.css("input#name")).sendKeys("NewProject");
 						b.findElement(By.css(".do-save")).click();
 
-						helpers.waitPageReload.call(self, pid).then(function () {
-							b.findElement(By.id("logout")).click();
-							self.done();
+						helpers.waitPageReload.call(self, pid).then(function (pid) {
+							helpers.waitPageReload.call(self, pid).then(function () {
+								b.findElement(By.id("logout")).click();
+								self.done();
+							});
 						});
 					});
 				});
@@ -238,8 +242,6 @@ module.exports.block = function(){
 							b.findElement(By.css("#navbar .doGoHome")).click();
 
 							helpers.waitPageReload.call(self,pid).then(function(pid) {
-								helpers.waitElementVisible.call(self,By.partialLinkText("NewTeam"));
-								b.findElement(By.partialLinkText("NewTeam")).click();
 								helpers.waitElementVisible.call(self,By.linkText("NewProject"));
 								b.findElement(By.linkText("NewProject")).click();
 								helpers.waitPageReload.call(self,pid).then(function() {
