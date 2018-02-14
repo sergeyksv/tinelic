@@ -30,6 +30,12 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/d
 			var filter = this.data.fr;
 			var views = this.data.graphs;
             if (this.data.query) {
+				var h = window.location.pathname.split('/',4);
+				self.$('td:first-child').each(function(el) {
+					var value = $(this).html();
+					var next_cat = value.split('/',1)
+					$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"application/rpm?cat=WebTransaction&selected="+value+'">' + value + '</a>');
+				});
 				var trbreak = self.$('#trbreak');
 					$.tablesorter.addParser({
 						id : 'longPercent',
