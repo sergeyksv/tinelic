@@ -41,13 +41,10 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 				var h = window.location.pathname.split('/',4);
 				self.$('td:first-child').each(function(el) {
 					var value = $(this).html();
-					var next_cat = value.split('/',1)
-					if (next_cat == "MongoDB")
-						$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"database/req?cat=Datastore&selected="+value+'">' + value + '</a>');
-					else if (next_cat == "api")
-						$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"database/req?cat=Custom&selected="+value+'">' + value + '</a>');
-					else
-						$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"database/req?cat=WebTransaction&selected="+value+'">' + value + '</a>')
+					var first_el = value.split('/',1);
+					var obj = {"MongoDB":"Datastore","GET":"WebTransaction","POST":"WebTransaction","api":"Custom"}
+					var next_cat = obj[first_el]||"Custom";
+					$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"database/req?cat="+next_cat+'&selected='+value+'">' + value + '</a>');
 				});
 				var trbreak = self.$('#trbreak');
 					$.tablesorter.addParser({

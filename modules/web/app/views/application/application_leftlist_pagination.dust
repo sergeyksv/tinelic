@@ -23,7 +23,10 @@
 		{/value}
 	{/data}
 </div>
-
+{?query}
+{?team}<a href="{_t_prefix}/team/{team.name}/application/rpm">Default {team.name} application settings</a>
+{:else}<a href='{_t_prefix}/project/{project.slug}/application/rpm'>Default {project.name} application settings</a>{/team}
+{/query}
 <div id="paging">
 	<ul class="pagination">
 		{#paging}

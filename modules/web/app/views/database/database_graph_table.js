@@ -33,8 +33,9 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/d
 				var h = window.location.pathname.split('/',4);
 				self.$('td:first-child').each(function(el) {
 					var value = $(this).html();
-					var next_cat = value.split('/',1)
-					$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"application/rpm?cat=WebTransaction&selected="+value+'">' + value + '</a>');
+					var first_el = value.split(':',1)
+					var next_cat = (first_el=="scheduler")?"OtherTransaction":"WebTransaction";
+					$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"application/rpm?cat="+next_cat+'&selected='+value+'">' + value + '</a>')
 				});
 				var trbreak = self.$('#trbreak');
 					$.tablesorter.addParser({
