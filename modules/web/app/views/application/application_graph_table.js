@@ -41,7 +41,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
             if (this.data.query) {
 				var h = window.location.pathname.split('/',4);
 				_.forEach(this.data.breakdown, function(r) {
-					next_cat.push(r.last_s_cat);
+					next_cat.push(r._s_cat);
 				});
 				self.$('td:first-child').each(function(el) {
 					var value = $(this).html();

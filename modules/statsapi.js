@@ -667,8 +667,8 @@ getActionBreakdown: function(t,p, cb) {
 		as.aggregate([
 			{$match: query},
 			{$unwind: "$data"},
-			{$group: {_id: "$data._s_name",	c: {$sum: "$data._i_cnt"},tt: {$sum: "$data._i_tt"},ot: {$sum: "$data._i_own"}, last_s_cat:{ $last: "$data._s_cat" }}},
-			{$project: {value: {c: "$c",tt: "$tt",ot: "$ot"}, last_s_cat:"$last_s_cat"  }},
+			{$group: {_id: "$data._s_name",	c: {$sum: "$data._i_cnt"},tt: {$sum: "$data._i_tt"},ot: {$sum: "$data._i_own"}, _s_cat:{ $last: "$data._s_cat" }}},
+			{$project: {value: {c: "$c",tt: "$tt",ot: "$ot"}, _s_cat:"$_s_cat"}},
 			{$sort: {_id: 1}}
 		], {allowDiskUse: true}, cb);
 	}));
