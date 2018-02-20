@@ -26,12 +26,14 @@
 					{@eq value="Datastore"}Datastore/statements{/eq}
 					{@eq value="WebTransaction"}WebTransaction/ExpressJS{/eq}
 					{@eq value="Custom"}Custom/api{/eq}
+					{@eq value="Nodejs"}Nodejs{/eq}
 				{/select}
 				<span class="caret"></span></span><br><br>
 				<ul class="dropdown-menu" role="menu">
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Datastore"      class="do-cat" href="#">Datastore/statement</a></li>
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="WebTransaction" class="do-cat" href="#">WebTransaction/Expressjs</a></li>
 					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Custom"         class="do-cat" href="#">Custom/api</a></li>
+					<li role="presentation"><a role="menuitem" tabindex="-1" data-ct="Nodejs"         class="do-cat" href="#">Nodejs</a></li>
 				</ul>
 		</div>
 	</legend>

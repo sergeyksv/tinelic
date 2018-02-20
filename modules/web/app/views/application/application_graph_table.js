@@ -37,7 +37,16 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/a
 			var self = this;
 			var filter = this.data.fr;
 			var actions = this.data.graphs;
+			var next_cat = [];
             if (this.data.query) {
+				var h = window.location.pathname.split('/',4);
+				_.forEach(this.data.breakdown, function(r) {
+					next_cat.push(r._s_cat);
+				});
+				self.$('td:first-child').each(function(el) {
+					var value = $(this).html();
+					$(this).html('<a href=" /'+h[1]+'/'+h[2]+'/'+h[3]+'/'+"database/req?cat="+next_cat[el]+'&selected='+value+'">' + value + '</a>');
+				});
 				var trbreak = self.$('#trbreak');
 					$.tablesorter.addParser({
 						id : 'longPercent',
