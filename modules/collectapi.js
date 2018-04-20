@@ -988,10 +988,6 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 				md5sum.update(req.headers.host);
 				md5sum.update(req.headers['user-agent']);
 				md5sum.update(te._dtp.toString());
-				console.log(ip);
-				console.log(req.headers.host);
-				console.log(req.headers['user-agent']);
-				console.log(te._dtp.toString());
 				te.chash = md5sum.digest('hex');
 				if (ge.request && ge.request.url) {
 					te.request._s_url = ge.request.url;
@@ -1001,8 +997,6 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 				}
 				pages.findAndModify({chash:te.chash, _dt:{$lte:te._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
 					if (page) {
-						console.log(__line);
-						console.log(page);
 						te._idpv = page._id;
 						if (page._s_route) te.request._s_route = page._s_route;
 						if (page._s_uri) te.request._s_uri = page._s_uri;
