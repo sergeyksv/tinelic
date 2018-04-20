@@ -1030,7 +1030,7 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 		});
 	}, function( error ){
 		if (error)
-			newrelic.noticeError(err);
+			newrelic.noticeError(error);
 	});
 });
 
