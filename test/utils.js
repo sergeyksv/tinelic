@@ -84,6 +84,7 @@ module.exports.getBrowser = function(cb) {
 			var opt = new chrome.Options();
 			if (browser === "chrome-headless") {
 				opt.addArguments("--headless");
+				opt.addArguments("--no-sandbox");
 			}
 			driver = new webdriver.Builder()
 				.forBrowser('chrome')
