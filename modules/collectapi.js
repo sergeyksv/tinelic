@@ -937,6 +937,108 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 		}
 	});
 });
+ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
+	var data = {};
+	safe.run(function (cb) {
+		ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, function(idp){
+			data = JSON.parse(req.query.sentry_data);
+			var ip = req.headers['x-forwarded-for'] ||
+				req.connection.remoteAddress ||
+				req.socket.remoteAddress ||
+				req.connection.socket.remoteAddress;
+
+			var _dtp = data._dtp || data._dtInit;
+			if (data.project) delete data.project;
+			data._idp = idp;
+			data._dtr = new Date();
+			data._dtc = data._dt;
+			data._dt = data._dtr;
+			data._dtp = _dtp;
+			if (data._dtInit) delete data._dtInit;
+			data.agent = useragent.parse(req.headers['user-agent'],data.request.headers['User-Agent']).toJSON();
+			data = prefixify(data,{strict:1});
+			var md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(""+(parseInt(data._dtp.valueOf()/(1000*60*60))));
+			data.shash = md5sum.digest('hex');
+			md5sum = crypto.createHash('md5');
+			md5sum.update(ip);
+			md5sum.update(req.headers.host);
+			md5sum.update(req.headers['user-agent']);
+			md5sum.update(data._dtp.toString());
+			data.chash = md5sum.digest('hex');
+			// when error happens try to link it with current page
+			// which is latest page from same client (chash)
+			// which is registered not later than current event
+			data._s_culprit = data.culprit || 'undefined'; delete data.culprit;
+			data._s_message = data.message; delete data.message;
+			delete data.event_id;
+			data._s_logger = data.logger; delete data.logger;
+			data._s_server = "rum";
+			data._s_reporter = "raven";
+
+			data.exception = data.exception || {};
+			data.exception._s_type = data.exception.type || 'Error'; delete data.exception.type;
+			data.exception._s_value = data.exception.value || data._s_message; delete data.exception.value;
+			if (data.stacktrace) {
+				_.forEach(data.stacktrace.frames, function(r) {
+					r._s_file = r.filename; delete r.filename;
+					r._i_line = r.lineno || 0; delete r.lineno;
+					r._i_col = r.colno || 0; delete r.colno;
+					r._s_func = r.function || 'undefined'; delete r.function;
+					r.pre_context = [];
+					r.post_context = [];
+					r._s_context = r.context_line || ""; delete r.context_line;
+					delete r.in_app;
+				});
+			} else
+				data.stacktrace = {frames:[]};
+			delete data.platform;
+			if (data.request && data.request.url) {
+				data.request._s_url=data.request.url;
+				delete data.request.url;
+			}
+			if (data.stacktrace.frames.length > 1) {
+				data.stacktrace.frames.reverse();
+			}
+			pages.findAndModify({chash:data.chash, _dt:{$lte:data._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
+				if (page) {
+					data._idpv = page._id;
+					if (page._s_route) data.request._s_route = page._s_route;
+					if (page._s_uri) data.request._s_uri = page._s_uri;
+				}
+				ctx.api.validate.check("error",data, safe.sure(cb, function () {
+					md5sum = crypto.createHash('md5');
+					md5sum.update(data.exception._s_type);
+					md5sum.update(data._s_message + data.stacktrace.frames.length);
+					data.ehash = md5sum.digest('hex');
+					//find().sort().limit(1).toArray
+					events.find({_idp:data._idp, ehash: data.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+						if (edtl.length)
+							data._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
+						else
+							data._dtf = new Date();
+
+						events.insert(data, safe.sure(cb, function(res){
+							ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
+								events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+							});
+							cb(null);
+						}));
+					}));
+				}));
+			}));
+		}));
+	}, function (err) {
+		if (err) {
+			newrelic.noticeError(err);
+		}
+		res.set('Content-Type', 'image/gif');
+		res.send(buf);
+	});
+});
 ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 	safe.run(function(cb) {
 		var payload = "";
