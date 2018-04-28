@@ -54,8 +54,8 @@
     "phantomjs-prebuilt": "^2.1.16"
   },
   "optionalDependencies": {
-    "selenium-webdriver": "^2.53.0",
-    "chromedriver": "^2.35.0"
+    "chromedriver": "^2.38.2",
+    "selenium-webdriver": "^3.6.0"
   },
   "scripts": {
     "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test",

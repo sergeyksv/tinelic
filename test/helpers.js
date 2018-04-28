@@ -29,7 +29,7 @@ module.exports.waitModal = function (hint, selector, timeout) {
 	selector = selector || By.css('.modal');
 	hint = hint || '';	timeout = timeout || 15000;
 	return self.browser.wait(function () {
-		return self.browser.isElementPresent(selector)
+		return self.browser.findElements(selector).then(f => !!f.length);
 	},timeout).then(function() {
 		return self.browser.findElement(selector).then(function (modal) {
 			return self.browser.wait(function () {
@@ -38,14 +38,13 @@ module.exports.waitModal = function (hint, selector, timeout) {
 		});
 	}).then(function () {
 		return self.browser.sleep(500);
-	}).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
+	}).catch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
 }
 
 module.exports.waitNoElement = function (element) {
 	var self = this;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(element).then(function (isPresent)
-			{ return !isPresent; } );
+		return self.browser.findElements(element).then(f => !f.length);
 	});
 };
 
@@ -53,23 +52,23 @@ module.exports.waitElementExist = function (selector, hint, timeout) {
 	var self = this;
 	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(selector);
-	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
+		return self.browser.findElements(selector).then(f => !!f.length);
+	}, timeout).catch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } );
 };
 
 module.exports.waitElementVisible = function (selector, hint, timeout) {
 	var self = this;
 	hint = hint || '';	timeout = timeout || 15000;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(selector).then(function (isPresent) {
-			if (!isPresent) return false;
+		return self.browser.findElements(selector).then(function (f) {
+			if (!f.length) return false;
 			var e = self.browser.findElement(selector);
 			return e.isDisplayed().then(function (isDisplayed) {
 				if (!isDisplayed) return false;
 				return e.getCssValue("opacity").then(function (v) { return v==1; });
 			})
 		})
-	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
+	}, timeout).catch(function () { throw new Error(hint+" didn't complete, wait fail for "+selector) } )
 };
 
 module.exports.waitPageReload = function (old_id, timeout) {
@@ -87,8 +86,7 @@ module.exports.waitPageReload = function (old_id, timeout) {
 		});
 	},timeout).then(function () {
 		return b.wait(function () {
-			return b.isElementPresent(By.xpath("//div[@class='blockUI blockOverlay']")).then(function (isPresent)
-				{ return !isPresent; } );
+			return b.findElements(By.xpath("//div[@class='blockUI blockOverlay']")).then(f => !f.length);
 			},
 		timeout);
 	}).then(function () {
@@ -100,9 +98,8 @@ module.exports.waitUnblock = function (hint, timeout) {
 	hint = hint || '';	timeout = timeout || 15000;
 	var self = this;
 	self.browser.wait(function () {
-		return self.browser.isElementPresent(By.xpath("//div[@class='blockUI blockOverlay']")).then(function (isPresent)
-			{ return !isPresent; } );
-	}, timeout).thenCatch(function () { throw new Error(hint+" didn't complete") } )
+		return self.browser.findElements(By.xpath("//div[@class='blockUI blockOverlay']")).then(f => !f.length)
+	}, timeout).catch(function () { throw new Error(hint+" didn't complete") } )
 };
 
 module.exports.reportError = function (err) {
