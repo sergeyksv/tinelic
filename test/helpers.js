@@ -72,7 +72,7 @@ module.exports.waitElementVisible = function (selector, hint, timeout) {
 };
 
 module.exports.waitPageReload = function (old_id, timeout) {
-	timeout = timeout || 15000;
+	timeout = timeout || 60000;
 	var b = this.browser;
 	var new_id;
 	return b.wait(function() {
@@ -87,8 +87,7 @@ module.exports.waitPageReload = function (old_id, timeout) {
 	},timeout).then(function () {
 		return b.wait(function () {
 			return b.findElements(By.xpath("//div[@class='blockUI blockOverlay']")).then(f => !f.length);
-			},
-		timeout);
+		}, timeout);
 	}).then(function () {
 		return new_id;
 	});
