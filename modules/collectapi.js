@@ -1118,6 +1118,7 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 								ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
 									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
 								});
+								cb(null);
 							}));
 						}));
 					}));
@@ -1125,8 +1126,13 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 			}));
 		});
 	}, function( error ){
-		if (error)
+		if (error) {
 			newrelic.noticeError(error);
+			res.writeHead( 500, { 'x-sentry-error': error.toString() } );
+			res.status(500).end( error.toString() );
+		} else {
+			res.status(200).end( "ok" );
+		}
 	});
 });
 
