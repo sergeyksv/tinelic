@@ -1064,7 +1064,8 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 						_s_value: ge.exception.values[0].value
 					},
 					stacktrace: { frames: [] },
-					request: {}
+					request: {},
+					agent: useragent.parse(req.headers['user-agent']).toJSON()
 				};
 				if (ge.exception.values[0].stacktrace) {
 					_.each(ge.exception.values[0].stacktrace.frames, function (frame) {
@@ -1113,7 +1114,6 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 								te._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 							else
 								te._dtf = new Date();
-
 							events.insert(te, safe.sure(cb, function(res){
 								ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
 									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
