@@ -50,7 +50,7 @@ module.exports = function(grunt) {
 						"safe": "../public/js/safe",
 						"bootstrap": "../public/js/bootstrap",
 						"backctx": "empty:",
-						"highcharts": "empty:",
+						"highcharts": "../public/js/highcharts",
 						"jquery": "empty:",
 						"jquery-cookie": "../public/js/jquery-cookie",
 						"jquery.blockUI": "../public/js/jquery.blockUI",
