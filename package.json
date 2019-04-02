@@ -18,7 +18,7 @@
     "eonasdan-bootstrap-datetimepicker": "^4.17.47",
     "express": "^4.16.4",
     "geoip-lite": "^1.2.1",
-    "highcharts": "^7.1.0",
+    "highcharts": "^6.x.x",
     "jquery": "^3.3.1",
     "less-middleware": "~2.2.x",
     "less-plugin-autoprefix": "^1.5.1",
