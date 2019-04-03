@@ -24,7 +24,7 @@ define(['require','tinybone/base','lodash',"tinybone/backadapter",'safe','dustc!
                 var $current = id?$this.closest('form'):$();
                 require(["views/project-settings/pageRule_edit"],function(PageRule){
                     var p = new PageRule({app:self.app});
-                    p.data = _.find(self.data.project.pageRules, {_id:id}) || {};
+                    p.data = _.findWhere(self.data.project.pageRules, {_id:id}) || {};
                     p.locals = {idx:$anchor.data("index")};
                     p.render(safe.sure(self.app.errHandler,function(text){
                         var $p = $(text);

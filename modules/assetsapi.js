@@ -171,7 +171,7 @@ getGrantedTeamIds:function (t, p, cb) {
 
 		}
 		tm.teams.find(filter,{_id:1}).toArray(safe.sure(cb, function (teams) {
-			cb(null,_.map(teams, "_id"));
+			cb(null,_.pluck(teams, "_id"));
 		}));
 	}));
 },
@@ -199,7 +199,7 @@ getGrantedProjectIds:function (t, p, cb) {
 		} else {
 			// admin can see all
 			tm.projects.find({},{_id:1}).toArray(safe.sure(cb, function (projects) {
-				cb(null,_.map(projects, "_id"));
+				cb(null,_.pluck(projects, "_id"));
 			}));
 		}
 	}));
