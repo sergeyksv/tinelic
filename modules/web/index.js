@@ -69,16 +69,12 @@ module.exports.init = function (ctx, cb) {
 		dest: __dirname + "/public/css",
 		render: {
 			compress: true,
-			yuicompress: true,
-			optimization: 2,
-			ieCompat: false,
-			cleancss: true,
 			plugins: [
 				new (require('less-plugin-clean-css'))({
 					advanced: false
 				}),
 				new (require('less-plugin-autoprefix'))({
-					browsers: ["last 2 versions", "> 1%", "Firefox ESR", "ie > 9", "Safari > 8"]
+					browsers: ["Chrome > 30", "Firefox ESR", "ie > 10", "Safari > 7"]
 				})
 			]
 		}
