@@ -28,9 +28,9 @@ define(["module","lodash"],function (module,_) {
 				return pr;
 		},
 		"_b_": function (pr) {
-			if (_.includes([true,"true",1,"1"], pr))
+			if (_.contains([true,"true",1,"1"], pr))
 				return 1;
-			if (_.includes([false,"false",0,"0",null,"null",""], pr))
+			if (_.contains([false,"false",0,"0",null,"null",""], pr))
 				return 0;
 		}
 	};

@@ -100,7 +100,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
@@ -213,7 +213,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
@@ -338,7 +338,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
@@ -463,7 +463,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			safe.series([function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
@@ -571,7 +571,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;
@@ -687,7 +687,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			safe.series([function (cb) {
 				if (req.params.teams) {
 					api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-						var tim = _.map(_team.projects,'_idp');
+						var tim = _.pluck(_team.projects,'_idp');
 						team = _team;
 						api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 							project = _project;
@@ -803,7 +803,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 				function (cb) {
 					if (req.params.teams) {
 						api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (_team) {
-							var tim = _.map(_team.projects,'_idp');
+							var tim = _.pluck(_team.projects,'_idp');
 							team = _team;
 							api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (_project) {
 								project = _project;

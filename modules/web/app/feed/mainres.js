@@ -76,9 +76,9 @@ define(["tinybone/backadapter", "safe","lodash","prefixify"], function (api,safe
 							else {
 								var idf = _.map(usr.favorites, "_idf");
 								api("assets.getTeams", token, {_t_age:"10m", filter:{_id:{ $in:idf}}}, safe.sure( cb, function (teams) {
-									var tpr=_.map(teams, 'projects');
+									var tpr=_.pluck(teams, 'projects');
 									var allpr =_.flattenDeep(tpr);
-									var tim = _.map(allpr,'_idp');
+									var tim = _.pluck(allpr,'_idp');
 									api("assets.getProjects", token, {_t_age:"10m", filter:{_id:{ $in:tim}}}, safe.sure(cb, function (projects) {
 										cb(null, projects);
 									}));
