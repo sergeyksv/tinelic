@@ -37,8 +37,16 @@ define(["module","backctx",'tson','jquery','jquery-cookie'],function (module,ctx
 			p._t_son = p._t_son || config._t_son;
 			var rpc = f.split(".");
 			p._t_st = st;
+			var type = (rpc[1].search(/(^get)/) == -1)?"POST":"GET";
+			try {
+				if (type === "GET") {
+					var size = JSON.stringify(p).length;
+					if (size > 1024)
+						type = "POST";
+				}
+			} catch (e) { /**/ }
 			$.ajax(ctx+t+"/"+rpc[0]+"/"+rpc[1],{
-				type: (rpc[1].search(/(^get)/) == -1)?"POST":"GET",
+				type: type,
 				dataType: "json",
 				data:(p._t_son == 'in' || p._t_son == 'both' )?tson.encode(p,true):p,
 				success:function (data) {
