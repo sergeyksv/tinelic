@@ -11,7 +11,7 @@ define(['require',"tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			data:function (cb) {
 				if (req.route.path == "/team/:teams") {
 					api("assets.getTeam",res.locals.token, {_t_age:"30d",filter:{name:req.params.teams}}, safe.sure( cb, function (team) {
-						var tim = _.pluck(team.projects,'_idp');
+						var tim = _.map(team.projects,'_idp');
 						api("assets.getProjects", res.locals.token, {_t_age:"30d",filter:{_id:{$in:tim}}}, safe.sure( cb, function (project) {
 							var dt = res.locals.dtstart;
 							var dtp = (project._dtPagesErrAck || dt).valueOf();
