@@ -1,1 +1,1 @@
-../../../../node_modules/lodash/index.js
+../../../../node_modules/lodash/lodash.js
