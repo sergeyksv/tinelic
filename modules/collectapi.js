@@ -913,7 +913,7 @@ ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 					});
 					te.stacktrace.frames = te.stacktrace.frames.reverse();
 				}
-				ctx.api.validate.check("error",te, safe.sure(cb, function () {
+				ctx.api.validate.check("error", te, safe.sure(cb, function () {
 					safe.parallel([
 						function(cb) {
 							var md5sum = crypto.createHash('md5');
@@ -1048,6 +1048,102 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 		}
 		res.set('Content-Type', 'image/gif');
 		res.send(buf);
+	});
+});
+ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
+	safe.run(function(cb) {
+		var payload = "";
+		req.on('data', text => payload += text);
+		req.on('end', () => {
+			var ge = JSON.parse(payload);
+			ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, function(idp){
+				var ip = req.headers['x-forwarded-for'] ||
+					req.connection.remoteAddress ||
+					req.socket.remoteAddress ||
+					req.connection.socket.remoteAddress;
+				var te = {
+					_idp:idp,
+					_dt:new Date(),
+					_dtp:new Date(ge._dtp),
+					_s_reporter: "raven",
+					_s_logger: ge.platform,
+					_s_culprit: ge.culprit || 'undefined',
+					_s_server: "rum",
+					_s_message: ge.exception.values[0].value,
+					exception: {
+						_s_type: ge.exception.values[0].type,
+						_s_value: ge.exception.values[0].value
+					},
+					stacktrace: { frames: [] },
+					request: {},
+					agent: useragent.parse(req.headers['user-agent']).toJSON()
+				};
+				if (ge.exception.values[0].stacktrace) {
+					_.each(ge.exception.values[0].stacktrace.frames, function (frame) {
+						te.stacktrace.frames.push({
+							_s_file: frame.filename || "",
+							_i_line: frame.lineno || 0,
+							_i_col: 0,
+							_s_func: frame.function || "",
+							pre_context: [],
+							post_context: [],
+							_s_context: frame.context_line || ""
+						});
+					});
+				}
+				var md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers.host);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(""+(parseInt(te._dtp.valueOf()/(1000*60*60))));
+				te.shash = md5sum.digest('hex');
+				md5sum = crypto.createHash('md5');
+				md5sum.update(ip);
+				md5sum.update(req.headers.host);
+				md5sum.update(req.headers['user-agent']);
+				md5sum.update(te._dtp.toString());
+				te.chash = md5sum.digest('hex');
+				if (ge.request && ge.request.url) {
+					te.request._s_url = ge.request.url;
+				}
+				if (te.stacktrace.frames.length > 1) {
+					te.stacktrace.frames.reverse();
+				}
+				pages.findAndModify({chash:te.chash, _dt:{$lte:te._dt}},{_dt:-1},{$inc:{_i_err:1}},{multi:false}, safe.sure(cb, function (page) {
+					if (page) {
+						te._idpv = page._id;
+						if (page._s_route) te.request._s_route = page._s_route;
+						if (page._s_uri) te.request._s_uri = page._s_uri;
+					}
+					ctx.api.validate.check("error",te, safe.sure(cb, function () {
+						var md5sum = crypto.createHash('md5');
+						md5sum.update(te.exception._s_type);
+						md5sum.update(te._s_message + te.stacktrace.frames.length);
+						te.ehash = md5sum.digest('hex');
+						events.find({_idp:te._idp, ehash: te.ehash}).sort({_dt: 1}).limit(1).toArray(safe.sure(cb,function(edtl){
+							if (edtl.length)
+								te._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
+							else
+								te._dtf = new Date();
+							events.insert(te, safe.sure(cb, function(res){
+								ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
+									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+								});
+								cb(null);
+							}));
+						}));
+					}));
+				}));
+			}));
+		});
+	}, function( error ){
+		if (error) {
+			newrelic.noticeError(error);
+			res.writeHead( 500, { 'x-sentry-error': error.toString() } );
+			res.status(500).end( error.toString() );
+		} else {
+			res.status(200).end( "ok" );
+		}
 	});
 });
 
