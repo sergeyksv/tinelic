@@ -1,3 +1,4 @@
+const newrelic = require('newrelic');
 var argv = require('yargs').argv;
 var fs = require('fs');
 var _ = require("lodash");
@@ -10,8 +11,8 @@ if (fs.existsSync(lcfgPath)) {
 }
 // eslint-disable-next-line no-process-env
 process.env['NEW_RELIC_PORT'] = cfg.config.server.port;
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
-var newrelic = require('newrelic');
 var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');

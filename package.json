@@ -28,7 +28,7 @@
     "moment": "^2.24.0",
     "mongodb": "~1.4.28",
     "multer": "~0.1.7",
-    "newrelic": "^1.40.0",
+    "newrelic": "^4.11.0",
     "raven": "^0.12.3",
     "request": "^2.88.0",
     "requirejs": "^2.3.6",

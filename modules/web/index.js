@@ -3,7 +3,7 @@ var _ = require('lodash');
 var safe = require('safe');
 var path = require('path');
 var express = require('express');
-var static = express.static;
+var staticExpress = express.static;
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
@@ -80,7 +80,7 @@ module.exports.init = function (ctx, cb) {
 		}
 
 	}));
-	ctx.router.use(static(__dirname+"/public",{maxAge:600000}));
+	ctx.router.use(staticExpress(__dirname+"/public",{maxAge:600000}));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
 		ctx.api.cache.get("web_wires",req.params.id, safe.sure(next, function (wire) {
 			if (wire) {

@@ -23,6 +23,6 @@ exports.config = {
     level : 'info'
   },
   host : 'localhost',
-  port : 80,
-  ssl : false
+//   port : 80,
+  ssl : true
 };

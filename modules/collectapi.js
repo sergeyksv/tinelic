@@ -338,12 +338,23 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 		});
 	}
 	safe.run(function (cb) {
+		function redirect() {
+			const _host_arr = req.headers.host.split( ":" );
+			res.json( { return_value: _host_arr[0] } );
+		}
 		var nrpc = {
+			/**
+			 * agent ask for reporting host, return by ourselves
+			 * get_redirect_host function for newrelic agent version 2 or less
+			 * preconnect function for newrelic agent version 3 or higher
+			 * */
 			get_redirect_host:function () {
-				// agent ask for reporting host, return by ourselves
-				var _host_arr = req.headers.host.split( ":" );
-				res.json( { return_value: _host_arr[0] } );
+				redirect();
 			},
+			preconnect: function () {
+				redirect();
+			},
+
 			connect:function () {
 				// on connect we should link agent with its project id when available
 				var body = nrParseBody(req)[0];
@@ -586,7 +597,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 						nrParseStackTrace_dotnet( ne[4].stack_trace, te );
 					}
 					ctx.api.validate.check("error",te, safe.sure(function () {
-						console.log(JSON.stringify(te), ne[4].stack_trace);
+						// console.log(JSON.stringify(te), ne[4].stack_trace);
 						nrNonFatal.apply(this,arguments);
 					}, function () {
 						safe.parallel([
