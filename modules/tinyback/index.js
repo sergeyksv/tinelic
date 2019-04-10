@@ -227,7 +227,7 @@ module.exports.mongodb = function () {
 							options = {};
 						}
 
-						var dbkey = col.db.serverConfig.name+"/"+col.db.databaseName;
+						let dbkey = `${col.s.topology.host}:${col.s.topology.port}/${col.s.dbName}`;
 						var dbif = indexinfo[dbkey];
 						if (!dbif) {
 							dbif = indexinfo[dbkey]={};
