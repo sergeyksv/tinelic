@@ -187,8 +187,8 @@ saveUser: function (t,p,cb) {
 			if (p._id)
 				usr.users.update({_id: p._id},{ $set: p},cb);
 			else
-				usr.users.insert(p,safe.sure(cb, function (res) {
-					cb(null, res[0]);
+				usr.users.insert(p, safe.sure(cb, function () {
+					cb(null, p);
 				}));
 		}));
 	}));

@@ -801,10 +801,10 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 			delete data.r;
 			delete data.p;
 			ctx.api.validate.check("page", data, safe.sure(cb, function(){
-				pages.insert(data, safe.sure(cb, function (docs) {
+				pages.insert(data, safe.sure(cb, function () {
 					// once after inserting page we need to link
 					// this page events that probably cread earlier
-					var _id = docs[0]._id;
+					const _id = data._id;
 					safe.parallel([
 						function(cb) {
 							var n = 0;
@@ -1032,9 +1032,9 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 						else
 							data._dtf = new Date();
 
-						events.insert(data, safe.sure(cb, function(res){
-							ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
-								events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+						events.insert(data, safe.sure(cb, function () {
+							ctx.api.collect.getStackTraceContext(ctx.locals.systoken, data.stacktrace.frames, function (err, frames) {
+								events.update({'_id': data._id}, {$set: {stacktrace: {frames: frames}}},safe.sure(cb, function () {}));
 							});
 							cb(null);
 						}));
@@ -1125,9 +1125,9 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 								te._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 							else
 								te._dtf = new Date();
-							events.insert(te, safe.sure(cb, function(res){
-								ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
-									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+							events.insert(te, safe.sure(cb, function () {
+								ctx.api.collect.getStackTraceContext(ctx.locals.systoken, te.stacktrace.frames, function (err, frames) {
+									events.update({'_id': te._id}, {$set: {stacktrace: {frames: frames}}},safe.sure(cb, function () {}));
 								});
 								cb(null);
 							}));
