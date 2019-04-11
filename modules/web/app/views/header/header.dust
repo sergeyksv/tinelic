@@ -1,51 +1,54 @@
 <nav id="{_t_view.cid}" class="navbar navbar-inverse navbar-static-top">
-  <div class="container">
-	<div class="navbar-header">
-	  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-		<span class="sr-only">Toggle navigation</span>
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-		<span class="icon-bar"></span>
-	  </button>
-	  <a class="navbar-brand" href='{_t_prefix}/'>Tinelic (alpha)</a>
-	</div>
-	<div id="navbar" class="collapse navbar-collapse">
-	  <ul class="nav navbar-nav">
-		<li><a href="{_t_prefix}/" class="doGoHome">Home</a></li>
-		<li><a href="{_t_prefix}/users" class="doManageUsers">Users</a></li>
-		<li><a href="{_t_prefix}/teams" class="doManageTeams">Teams</a></li>
-		<li><a id="logout" href="#">Log out</a></li>
-	  </ul>
-		{?range}
-            <ul class="nav navbar-nav navbar-right">
-                <li id="fat-menu" class="dropdown">
+	<div class="container">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+				aria-expanded="false" aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" href='{_t_prefix}/'>Tinelic</a>
+		</div>
+		<div id="navbar" class="collapse navbar-collapse">
+			<ul class="nav navbar-nav">
+				<li><a href="{_t_prefix}/" class="doGoHome">Home</a></li>
+				<li><a href="{_t_prefix}/users" class="doManageUsers">Users</a></li>
+				<li><a href="{_t_prefix}/teams" class="doManageTeams">Teams</a></li>
+				<li><a id="logout" href="#">Log out</a></li>
+			</ul>
+			{?range}
+			<ul class="nav navbar-nav navbar-right">
+				<li id="fat-menu" class="dropdown">
 					<!-- we need style tag <a>, but href="#" do reload page on 'project page'. I don't know why. -->
-                    <a id="drop1" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button" aria-expanded="false">
+					<a id="drop1" class="dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" role="button"
+						aria-expanded="false">
 						{@select key="{range}"}
-							{@eq value="1h"}Last hour{/eq}
-							{@eq value="6h"}Last 6 hours{/eq}
-							{@eq value="12h"}Last 12 hours{/eq}
-							{@eq value="1d"}Last day{/eq}
-							{@eq value="3d"}Last 3 days{/eq}
-							{@eq value="1w"}Last week{/eq}
-							{@eq value="Custom"}Custom time range{/eq}
-							{@default}Default time range{/default}
+						{@eq value="1h"}Last hour{/eq}
+						{@eq value="6h"}Last 6 hours{/eq}
+						{@eq value="12h"}Last 12 hours{/eq}
+						{@eq value="1d"}Last day{/eq}
+						{@eq value="3d"}Last 3 days{/eq}
+						{@eq value="1w"}Last week{/eq}
+						{@eq value="Custom"}Custom time range{/eq}
+						{@default}Default time range{/default}
 						{/select}
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu" id="menudrop1" role="menu" aria-labelledby="drop1">
-                        <li class="doRange" data-range='1h'> <a href="#">Last hour</a></li>
-                        <li class="doRange" data-range='6h'> <a href="#">Last 6 hours</a></li>
-                        <li class="doRange" data-range='12h'><a href="#">Last 12 hours</a></li>
-                        <li class="doRange" data-range='1d'> <a href="#">Last day</a></li>
-                        <li class="doRange" data-range='3d'> <a href="#">Last 3 days</a></li>
-                        <li class="doRange" data-range='1w'> <a href="#">Last week</a></li>
-                        <li role="presentation" class="divider"></li>
-                        <li id="doCustomRange" role="button" ><a class="disabled">Custom range</a></li>
-                    </ul>
-                </li>
-            </ul>
-		{/range}
-	</div><!--/.nav-collapse -->
-  </div>
+						<span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu" id="menudrop1" role="menu" aria-labelledby="drop1">
+						<li class="doRange" data-range='1h'> <a href="#">Last hour</a></li>
+						<li class="doRange" data-range='6h'> <a href="#">Last 6 hours</a></li>
+						<li class="doRange" data-range='12h'><a href="#">Last 12 hours</a></li>
+						<li class="doRange" data-range='1d'> <a href="#">Last day</a></li>
+						<li class="doRange" data-range='3d'> <a href="#">Last 3 days</a></li>
+						<li class="doRange" data-range='1w'> <a href="#">Last week</a></li>
+						<li role="presentation" class="divider"></li>
+						<li id="doCustomRange" role="button"><a class="disabled">Custom range</a></li>
+					</ul>
+				</li>
+			</ul>
+			{/range}
+		</div>
+		<!--/.nav-collapse -->
+	</div>
 </nav>

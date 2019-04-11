@@ -9,7 +9,6 @@ var childProcess = require('child_process');
 var webdriver = require('selenium-webdriver');
 var _ = require('lodash');
 var fs = require('fs');
-var { Buffer } = require('safe-buffer');
 var argv = require('yargs').argv;
 var childs = [];
 var driver;
@@ -157,7 +156,7 @@ module.exports.setupContext = function () {
 
 	this._uncaughtException = function(err){
 		self.browser.takeScreenshot().then(function(text){
-			require("fs").writeFileSync(__dirname+"/screenshot_err.png",new Buffer(text, 'base64'));
+			require('fs').writeFileSync(`${__dirname}/screenshot_err.png`, Buffer.from(text, 'base64'));
 			killChilds();
 			setTimeout(function(){
 				self._done(err);

@@ -1,9 +1,15 @@
 {
   "name": "tinelic",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "lightweight application performance and error monitoring server for GetSentry (raven.js) and New Relic agents",
+  "author": {
+    "name": "Pushok Software Co. Ltd"
+  },
+  "license": "MIT",
+  "main": "app.js",
   "private": true,
   "engines": {
-    "node": "^6.11.0"
+    "node": ">= 10.15.3"
   },
   "dependencies": {
     "amdefine": "~0.1.0",
@@ -34,7 +40,6 @@
     "requirejs": "^2.3.6",
     "requirejs-text": "^2.0.15",
     "safe": "^0.4.6",
-    "safe-buffer": "^5.1.2",
     "tablesorter": "^2.31.1",
     "useragent": "^2.3.0",
     "yargs": "^13.2.2"
@@ -62,5 +67,13 @@
     "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test",
     "test": "grunt build && mocha -bR spec test/test.js --browser=chrome-headless --testenv=test",
     "test-check": "mocha -bR spec test/test.js --testenv=test"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.pushok.com/pushok/tinelic.git"
+  },
+  "bugs": {
+    "url": "https://git.pushok.com/pushok/tinelic/issues"
+  },
+  "homepage": "https://git.pushok.com/pushok/tinelic"
 }

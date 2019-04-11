@@ -1,7 +1,7 @@
 build:
  script:
   - . ~/.nvm/nvm.sh
-  - nvm use v6
+  - nvm use 10
   - git submodule update --init
   - npm install
   - npm test
