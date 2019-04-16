@@ -50,23 +50,22 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 	app.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		app.api.mongo.dropUnusedIndexes(db, safe.sure(cb, function () {
 			app.locals.newrelic = newrelic;
-			_.each(app.api, function (module, ns) {
-				_.each(module, function (func, name) {
+			_.each(app.api, function (mod, ns) {
+				_.each(mod, function (func, name) {
 					if (!_.isFunction(func)) return;
 					// wrap function
-					module[name] = function (...args) {
+					mod[name] = function (...args) {
 						var cb = args[args.length-1];
 
 						if (_.isFunction(cb)) {
 							// redefined callback to one wrapped by new relic
 
-							args[args.length - 1] = newrelic.createTracer(`api/api/${ns}/${name}`, function (err) {
+							args[args.length - 1] = newrelic.startSegment(`api/api/${ns}/${name}`, false, () => func.call(this, ...args), function (err) {
 								if (err)
 									newrelic.noticeError(err);
 								cb.call(this, ...arguments);
 							});
 
-							func.call(this, ...args);
 						} else {
 							return func.call(this, ...args);
 						}

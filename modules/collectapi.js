@@ -653,6 +653,10 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 			error_event_data:function () {
 				// ???? not suppored now
 				res.json( { return_value: "ok" } );
+			},
+			span_event_data: function () {
+				// ???? not suppored now
+				res.json( { return_value: "ok" } );
 			}
 		};
 

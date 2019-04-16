@@ -1,3 +1,4 @@
+/* global define $ document window */
 define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.core",
 	"moment",
 	"lodash",
@@ -191,10 +192,19 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 
 			if (!cb)
 				cb = this.clientHardError;
-			$.blockUI.defaults.message = "<h4>Loading ...</h4>";
+			$.blockUI.defaults.message = '<img src="/web/img/loading.svg"/>';
+			$.blockUI.defaults.css = {
+				padding:        0,
+				margin:         0,
+				width:          '30%',
+				top:            '40%',
+				left:           '35%',
+				textAlign:      'center',
+				cursor:         'wait'
+			};
 			$.blockUI.defaults.overlayCSS = {
-				backgroundColor: '#FFF',
-				opacity:         0,
+				backgroundColor: '#000',
+				opacity:         0.2,
 				cursor:          'wait'
 			};
 
