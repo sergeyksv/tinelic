@@ -24,53 +24,52 @@ original server. Application performance and error reporting is supported.
 
 ## Launch
 
-1. Install mongodb
+1. Install mongodb\
 Preferable (but nor required) version 3.0 and above
 
-2. Get the code
+2. Get the code\
 Pull this repository code and submodules (git pull & git submodule init & git submodule update)
 
-3. Install nodejs
-NodeJS v4 or v6
+3. Install nodejs\
+NodeJS v10
 
 4. Run server and access it on http://localhost/web
-  ```
+  ```sh
   node app
   ```
-5. Use the app
+5. Use the app\
 You can login into system with default admin user (admin/tinelic). Tinelic monitors itself so you'll immediatelly see some data.
 
 6. (optional) Add ssl certs and host name
 
 7. (optional) Compile minified code and launch in production mode
   - Install grunt and build production code ```grunt build```
-  - copy ```config.json``` to ```local-config.json``` and change ```env``` property to ```production```
+  - copy ```config.js``` to ```local-config.js``` and change ```env``` property to ```production```
 
 ## Agent configuration
 
 Tinelic integrates all agents to monitor itself. So you can check its code for more details. Here are some brief details:
 
-1. NewRelic
-Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. If your server doesn't have https connection also add
-```port:80``` and ```ssl:false``` properties. This will enable server side application performance and error reporting
+1. NewRelic\
+Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. This will enable server side application performance and error reporting
 and client side real user behavior monitoring if it was already inegrated using ```newrelic.getBrowserTimingHeader()```
 
-2. GetSentry (serve side)
+1. GetSentry (serve side)\
 Init agent as follows:
-  ```
+  ```javascript
   new raven.Client('http://blah:blah@some.server.com/collect/sentry/{project_id});
   ```
-3. GetSentry & Tinelic RUM (client side)
+3. GetSentry & Tinelic RUM (client side)\
 It's possible to include and use only GetSentry error reporting or Tinelic RUM or both. Approperiate scripts should be
 referenced. In the example below we use combined version
-```
-<script src="//some.server.com/js/build/tinelic.js></script>
+```html
+<script src='//some.server.com/js/build/tinelic.js'></script>
 <script>
 	var _t_page = new Date();
 	Tinelic.config({
 		url:location.protocol + 'some.server.com',
-		project:"some_project",
-		route:"some_route",
+		project:'some_project',
+		route:'some_route',
 		_dtp:_t_page,
 	});
 	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
@@ -83,9 +82,12 @@ referenced. In the example below we use combined version
 </script>
 ```
 
+## Not supported versions of Newrelic agent
+* 4.13.0
+
 ## MIT License
 
-Copyright (c) [PushOk Software](http://www.pushok.com)
+Copyright © [PushOk Software](http://www.pushok.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
