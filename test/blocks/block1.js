@@ -142,6 +142,31 @@ module.exports.block = function(){
 				});
 			});
 
+			it('Associate user with team', function (done) {
+				let self = this, b = self.browser;
+				self.trackError(done);
+				const editUsers = By.xpath('//legend[contains(.,"NewTeam")]/parent::div//*[@data-role="lead" and contains(@class, "doEditUsers")]');
+
+				helpers.waitPageReload.call(self, null).then(function (pid) {
+					b.findElement(editUsers).click();
+
+					const input = By.css('.tt-input');
+					helpers.waitElementVisible.call(self, input);
+					b.findElement(input).sendKeys('admin');
+
+					const suggestion = By.className('tt-suggestion');
+					helpers.waitElementExist.call(self, suggestion);
+					b.findElement(suggestion).click();
+					// b.findElement(By.css('.tt-dropdown-menu')).click();
+
+					b.findElement(By.css('.doSave')).click();
+
+					helpers.waitPageReload.call(self, pid).then(function () {
+						self.done();
+					});
+				});
+			});
+
 			it("Create project", function (done) {
 				var self = this, b = self.browser;
 				self.trackError(done);
