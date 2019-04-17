@@ -43,6 +43,10 @@ module.exports.shutdownContext = function () {
 	var deferred = new webdriver.promise.Deferred();
 
 	killChilds();
+
+	if (driver)
+		driver.quit();
+
 	setTimeout(function () {
 		deferred.fulfill(true);
 	}, 100);

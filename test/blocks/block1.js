@@ -4,8 +4,6 @@
 
 var webdriver = require("selenium-webdriver");
 var By = webdriver.By;
-var safe = require("safe");
-var _ = require("lodash");
 var helpers = require("../helpers");
 
 module.exports.block = function(){
