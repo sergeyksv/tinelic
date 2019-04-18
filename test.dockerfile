@@ -13,8 +13,6 @@ RUN \
 RUN \
 	export DISPLAY=:99.0
 
-# CMD ["/bin/bash"]
-
 CMD \
 	Xvfb -ac $DISPLAY &
 
