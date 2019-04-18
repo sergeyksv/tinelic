@@ -27,8 +27,6 @@ test:
     NODE_ENV: "test"
   services:
     - mongo:3.4
-  before_script:
-    - echo 'module.exports={}' > local-config.js
   script:
     - npm test
   retry: 2
