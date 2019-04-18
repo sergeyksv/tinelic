@@ -56,16 +56,15 @@
     "grunt-git-describe": "^2.4.4",
     "grunt-nodemon": "~0.4.2",
     "load-grunt-tasks": "^4.0.0",
-    "mocha": "^6.1.3",
-    "phantomjs-prebuilt": "^2.1.16"
+    "mocha": "^6.1.3"
   },
   "optionalDependencies": {
     "chromedriver": "^73.0.0",
     "selenium-webdriver": "^3.6.0"
   },
   "scripts": {
-    "test-headless": "grunt build && mocha -bR spec test/test.js --browser=chrome-headless --testenv=test --exit",
-    "test": "mocha -bR spec test/test.js --browser=chrome --testenv=test --exit",
+    "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test --exit",
+    "test": "mocha -bR spec test/test.js --browser=chrome-headless --testenv=test --exit",
     "test-check": "mocha -bR spec test/test.js --testenv=test"
   },
   "repository": {

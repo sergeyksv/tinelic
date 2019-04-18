@@ -85,9 +85,8 @@ module.exports.getBrowser = function(cb) {
 		if (browser === "chrome" || browser === "chrome-headless") {
 			var chrome = require('selenium-webdriver/chrome');
 			var opt = new chrome.Options();
-			if (browser === "chrome-headless") {
-				opt.addArguments("--headless");
-			}
+			if (browser === 'chrome-headless')
+				opt.addArguments(['headless', 'no-sandbox', 'disable-gpu', '--window-size=1280,768']);
 			driver = new webdriver.Builder()
 				.forBrowser('chrome')
 				.setChromeOptions(opt)
