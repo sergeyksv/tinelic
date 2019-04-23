@@ -223,7 +223,7 @@ module.exports.init = function (ctx, cb) {
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
 setInterval(function() {
-	var dtlw = new Date( (new Date()).valueOf() - 1000*60*60*24*7);
+	var dtlw = new Date( Date.now() - 1000*60*60*24*7);
 	var q = {_dt: {$lte: dtlw}};
 	safe.parallel([
 		function(cb) {

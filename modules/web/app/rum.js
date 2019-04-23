@@ -85,10 +85,10 @@
         if (window.performance && performance.timing && performance.timing.navigationStart) {
             return;
         }
-        var start = new Date().valueOf();
+        var start = Date.now();
         var ttl = new Date(start + 60000);
 
-        document.cookie = '_t_rum=' + (new Date().valueOf()) + ";expires=" + ttl + ";path=/";
+        document.cookie = '_t_rum=' + (Date.now()) + ";expires=" + ttl + ";path=/";
     };
 
     if (window.addEventListener)
@@ -133,7 +133,7 @@
         },
         pageLoad: function(m) {
             m.p = window.location.pathname + window.location.hash;
-            m._dt = (new Date()).valueOf();
+            m._dt = Date.now();
             m._dtp = this._dtp.valueOf();
             m.r = m.r || m.p;
             m._i_tt = m._i_tt || m._i_nt + m._i_dt + m._i_lt;
@@ -184,7 +184,7 @@
                 should = should && !(url.indexOf("://")!=-1 && url.indexOf(window.location.host)==-1);
 
                 if (should) {
-                    var start = (new Date()).valueOf();
+                    var start = Date.now();
                     var oldOnReadyStateChange;
                     var s = {
                         _i_nt: 0
@@ -217,7 +217,7 @@
                                 window.Tinelic.ajaxCallback(s, XHR, data);
                             }
                             s._i_code = self.status;
-                            s._dtc = (new Date()).valueOf();
+                            s._dtc = Date.now();
                             s._dtp = window.Tinelic._dtp.valueOf();
                             sendPixel(s, window.Tinelic.url + "/collect/ajax/" + window.Tinelic.project);
 

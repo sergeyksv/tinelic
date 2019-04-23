@@ -9,40 +9,63 @@ var bodyParser = require('body-parser');
 var multer = require('multer');
 var lxval = require('lx-valid');
 var crypto = require('crypto');
+const os = require("os");
 
-var CustomError = module.exports.CustomError  = function (message, subject) {
-  this.constructor.prototype.__proto__ = Error.prototype;
-  Error.captureStackTrace(this, this.constructor);
-  this.name = this.constructor.name;
-  this.message = message;
-  this.subject = subject;
+const multerconfig = {
+	dest: os.tmpdir(),
+	limits: {
+		"fileSize": 26214400, // 25mb
+		"fieldSize": 26214400 // 25mb
+	}
 };
+
+
+var CustomError = module.exports.CustomError = function (message, subject) {
+	if (Error.captureStackTrace) {
+		Error.captureStackTrace(this, CustomError);
+	} else {
+		Error.call(this, message);
+	}
+
+	this.name = "CustomError";
+	this.message = message;
+	this.subject = subject;
+};
+
+safe.inherits(CustomError, Error);
 
 /**
  * @property {Object} invalid validation result object
  * @type {Function}
  */
 var ValidationError = module.exports.ValidationError = function (invalid) {
-	this.constructor.prototype.__proto__ = Error.prototype;
 	var es = "Validation fails: ";
 
 	_.each(invalid.errors, function (error) {
 		es += error.property + " " + error.message + " ";
 		if (error.expected)
-			es += ", expected  " + JSON.stringify(error.expected);
+			es += ", expected	" + JSON.stringify(error.expected);
 		if (error.actual)
 			es += ", actual " + JSON.stringify(error.actual);
 		es += "; ";
 	});
 
+
+	if (Error.captureStackTrace) {
+		Error.captureStackTrace(this, ValidationError);
+	} else {
+		Error.call(this, es);
+	}
+
 	this.name = 'ValidationError';
 	this.message = es;
 	this.subject = 'Invalid Data';
-	this.data = _.reduce(invalid.errors, function (m, f) {
-		m.push(_.pick(f, ['property', 'message']));
-		return m;
-	},[]);
+	this.data = _.map(invalid.errors, function (f) {
+		return _.pick(f, ['property', 'message']);
+	});
 };
+
+safe.inherits(ValidationError, Error);
 
 module.exports.createApp = function (cfg, cb) {
   var app = express();
@@ -55,7 +78,7 @@ module.exports.createApp = function (cfg, cb) {
 	app.use(bodyParser.json({ limit: "20mb" }));
 	app.use(bodyParser.raw({ limit: "50mb" })); // to parse getsentry "application/octet-stream" requests
 	app.use(bodyParser.urlencoded({ extended: true }));
-	app.use(multer());
+	app.use(multer(multerconfig).any());
 	var api = {};
 	var locals = {};
 	var auto = {};
@@ -86,7 +109,7 @@ module.exports.createApp = function (cfg, cb) {
 			}
 			var dt = new Date();
 			mod.init({api:api,locals:locals,cfg:cfg.config,app:this,express:app,router:router}, safe.sure(cb, function (mobj) {
-				console.log("loaded "+ module.name + " in "+((new Date()).valueOf()-dt.valueOf())/1000.0+" s");
+				console.log("loaded "+ module.name + " in "+(Date.now()-dt.valueOf())/1000.0+" s");
 
 				api[module.name]=mobj.api;
 				cb();
@@ -99,7 +122,7 @@ module.exports.createApp = function (cfg, cb) {
 		return safe.back(cb, new Error("Missing module dependancies: " + missing.join(',')));
 	var dt = new Date();
 	safe.auto(auto, safe.sure(cb, function () {
-		console.log("-> ready in "+((new Date()).valueOf()-dt.valueOf())/1000.0+" s");
+		console.log("-> ready in "+(Date.now()-dt.valueOf())/1000.0+" s");
 		cb(null, {express:app,api:api,locals:locals});
 	}));
 };
@@ -145,7 +168,7 @@ module.exports.restapi = function () {
 					if (maxAge) {
 						res.header('Cache-Control','public');
 						res.header("Max-Age", maxAge );
-						res.header("Expires", (new Date((new Date()).valueOf()+maxAge*1000)).toGMTString());
+						res.header("Expires", (new Date(Date.now()+maxAge*1000)).toGMTString());
 					} else {
 						res.header('Cache-Control','private, no-cache, no-store, must-revalidate');
 						res.header('Expires', '-1');

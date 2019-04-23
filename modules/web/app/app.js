@@ -129,7 +129,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 								range = match[1]*units[match[2]];
 
 						var tolerance = 10 * 60 * 1000;
-						res.locals.dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+						res.locals.dtend = parseInt((Date.now()+tolerance)/tolerance)*tolerance;
 						res.locals.dtstart = res.locals.dtend - range;
 						res.locals.header = {range:str};
 						res.locals.quant = Math.max(Math.round(range/60000/144),1);
@@ -252,7 +252,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				// make app alive
 				mainView.bindWire(wire, null, null, safe.sure(cb, function () {
 
-					$('body').attr('data-id',(new Date()).valueOf());
+					$('body').attr('data-id',Date.now());
 				}));
 			}));
 		},
@@ -295,7 +295,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 				// view is actually ready, finalizing
 				document.title = route.data.title;
 				$.unblockUI();
-				$('body').attr('data-id',(new Date()).valueOf());
+				$('body').attr('data-id',Date.now());
 
 				// do analytics
 				self._pageLoad.dom = new Date();

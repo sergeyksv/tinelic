@@ -1,20 +1,33 @@
-define(["module","backctx",'tson','jquery','jquery-cookie'],function (module,ctx,tson,$) {
+define(["module","backctx",'tson','safe','jquery','jquery-cookie'],function (module,ctx,tson,safe,$) {
 	var config = (module.config && module.config()) || {};
 
 	function CustomError (message, subject) {
-		this.constructor.prototype.__proto__ = Error.prototype;
-		this.name = this.constructor.name;
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, CustomError);
+		} else {
+			Error.call(this, message);
+		}
+
+		this.name = 'CustomError';
 		this.message = message;
 		this.subject = subject;
 	}
 
 	function ValidationError(message, subject, data) {
-		this.constructor.prototype.__proto__ = Error.prototype;
+		if (Error.captureStackTrace) {
+			Error.captureStackTrace(this, ValidationError);
+		} else {
+			Error.call(this, message);
+		}
+
 		this.name = 'ValidationError';
 		this.message = message;
 		this.subject = subject;
 		this.data = data;
 	}
+
+	safe.inherits(CustomError, Error);
+	safe.inherits(ValidationError, Error);
 
 	if (typeof window == 'undefined') {
 		return function (f, t, p, cb) {
@@ -75,7 +88,7 @@ define(["module","backctx",'tson','jquery','jquery-cookie'],function (module,ctx
 		$(window).on("beforeunload", function (e) {
 			// on leaving page (real redirect) drop current path in
 			// short leaving cookie (1m)
-			$.cookie("_t_refresh",window.location.pathname,{expired:new Date((new Date()).valueOf()+60*1000),path:"/"});
+			$.cookie("_t_refresh",window.location.pathname,{expired:new Date(Date.now()+60*1000),path:"/"});
 		});
 
 		// detection of page refresh
