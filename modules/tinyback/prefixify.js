@@ -44,41 +44,64 @@ define(["module","lodash"],function (module,_) {
 	}
 
 	function queryfix(obj, opts) {
-		if (!obj) return null;
+		if (!obj || !_.isPlainObject(obj))
+			return null;
+
 		var nobj = {};
-		_.each(obj, function (v, k) {
+		_.forOwn(obj, function (v, k) {
 			// query can use dot notation for names
 			// last component should refer to actual type
-			var prefix = k.match(/(_..).*$/);
+			var prefix = k.includes("_") ? _.last(k.split('.')).match(/^(_..)/) : null;
 			if (prefix)
 				prefix = prefix[1];
 
-			if (prefix && translate[prefix]) {
+			var exists = _.has(v, "$exists");
+
+			if (!exists && prefix && translate[prefix]) {
 				// object meand op, like {$gt:5,$lt:8}
 				if (_.isPlainObject(v)) {
 					var no = {};
-					_.each(v, function (val, op) {
+					_.forOwn(v, function (val, op) {
 						// op value is array {$in:[1,2,4]}
-						if (_.isArray(val)) {
+						if (Array.isArray(val)) {
 							var na = [];
 							_.each(val, function (a) {
 								try { na.push(translate[prefix](a)); } catch (e) {}
 							});
 							no[op]=na;
+						} else if (op === '$regex' && _.isRegExp(val)) { // special case
+							no[op] = val;
 						} else {
 							try { no[op] = translate[prefix](val); } catch (e) {}
 						}
 					});
 					nobj[k]=no;
+				} else if (prefix === "_s_" && _.isRegExp(v)) { // special case
+					nobj[k] = v;
 				} else {
 					// plain value then
 					try { nobj[k] = translate[prefix](v); } catch (e) {}
 				}
 			} else {
-				if (_.isPlainObject(v))
+				if (_.isPlainObject(v)) {
 					nobj[k]=queryfix(v,opts);
-				else
+				} else if (Array.isArray(v) && (k === "$or" || k === "$and")) {
+					var res = _.reduce(v, function (memo, a) {
+						var r = queryfix(a,opts);
+
+						if (_.size(r)) {
+							memo.push(r);
+						}
+
+						return memo;
+					}, []);
+
+					if (res.length) {
+						nobj[k] = res;
+					}
+				} else {
 					nobj[k]=v;
+				}
 			}
 		});
 		return nobj;
