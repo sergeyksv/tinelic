@@ -844,8 +844,9 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 									}
 								}
 							}, {multi: true}, safe.sure(cb, function (updates) {
-								if (updates)
-									pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+								let update = updates.result.nModified;
+								if (update)
+									pages.update({_id: _id}, {$inc: {_i_err: update}}, cb);
 								else
 									cb();
 							}));
