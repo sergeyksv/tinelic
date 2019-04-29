@@ -2,19 +2,16 @@
 define([
 	'tinybone/base',
 	'lodash',
-	'tinybone/backadapter',
-	'safe',
 	'dustc!views/ajax/ajax_left_list.dust',
 	'dustc!views/common/left_list.dust',
 	'bootstrap-table',
 	'bootstrap-table-cookie'
-], function (tb, _, api, safe) {
-	var view = tb.View;
-
-	var View = view.extend({
+], (tb, _) => {
+	let view = tb.View;
+	let View = view.extend({
 		id: 'views/ajax/ajax_left_list',
 		preRender: function () {
-			this.locals.table = _.reduce(this.data.rpm, (r, d) => {
+			this.locals.leftList = _.reduce(this.data.rpm, (r, d) => {
 				let o = {_id: d._id};
 				_.forEach(d.value, (v, k) => {o[k] = v;});
 				r.push(o);
