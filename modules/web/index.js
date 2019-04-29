@@ -54,6 +54,8 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("jquery", true);
 	requirejs.define("jquery-cookie", true);
 	requirejs.define("jquery.blockUI", true);
+	requirejs.define("bootstrap-table",true);
+	requirejs.define("bootstrap-table-cookie", true);
 	requirejs.define("bootstrap/dropdown", true);
 	requirejs.define("bootstrap/datetimepicker", true);
 	requirejs.define("bootstrap/modal", true);

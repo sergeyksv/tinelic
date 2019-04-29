@@ -25,7 +25,7 @@
 
 <div class="row">
 	<div class="col-sm-4">
-		{@view name="views/ajax/ajax_leftlist_pagination"/}
+		{@view name="views/ajax/ajax_left_list"/}
 	</div>
 	<div class="col-sm-8">
 		{@view name="views/ajax/ajax_graph_table"/}

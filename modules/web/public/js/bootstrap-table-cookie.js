@@ -1,0 +1,1 @@
+../../../../node_modules/bootstrap-table/dist/extensions/cookie/bootstrap-table-cookie.js

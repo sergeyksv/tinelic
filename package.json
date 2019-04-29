@@ -17,6 +17,7 @@
     "blueimp-md5": "^2.10.0",
     "body-parser": "^1.18.3",
     "bootstrap": "^3.4.1",
+    "bootstrap-table": "^1.14.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "dustjs-helpers": "^1.7.4",

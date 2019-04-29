@@ -4,6 +4,7 @@ define(["require","tinybone/base",'views/layout/layout','module','safe',"dust.co
 	"lodash",
 	"tson",
 	"tinybone/backadapter",
+	"bootstrap-table",
 	"jquery.blockUI"
 ],function (require,tb,Layout,module,safe,dust,moment,_,tson) {
 	// Make sure dust.helpers is an object before adding a new helper.

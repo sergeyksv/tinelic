@@ -76,6 +76,8 @@
 			"jquery-cookie": "../js/jquery-cookie",
 			"jquery.blockUI": "../js/jquery.blockUI",
 			"bootstrap":"../js/bootstrap",
+			"bootstrap-table": "../js/bootstrap-table",
+			"bootstrap-table-cookie": "../js/bootstrap-table-cookie",
 			"jquery.tablesorter.combined":"../js/jquery.tablesorter.combined"
 		},
 		config:{
