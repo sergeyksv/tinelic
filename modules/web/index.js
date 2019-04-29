@@ -76,7 +76,7 @@ module.exports.init = function (ctx, cb) {
 					advanced: false
 				}),
 				new (require('less-plugin-autoprefix'))({
-					browsers: ["Chrome > 30", "Firefox ESR", "ie > 10", "Safari > 7"]
+					browsers: ["last 2 Chrome versions", "Firefox ESR", "not dead"]
 				})
 			]
 		}
