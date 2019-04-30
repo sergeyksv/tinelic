@@ -23,6 +23,7 @@ define([
 			this.$el.find('#leftList').bootstrapTable({
 				classes: 'table-sm',
 				pagination: true,
+				pageList: [],
 				cookie: true,
 				cookieIdTable: 'leftListAjax',
 				cookieStorage: 'sessionStorage',
