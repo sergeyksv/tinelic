@@ -2,16 +2,16 @@
 define([
 	'tinybone/base',
 	'lodash',
-	'dustc!views/ajax/ajax_left_list.dust',
+	'dustc!views/application/application_left_list.dust',
 	'dustc!views/common/left_list.dust',
 	'bootstrap-table',
 	'bootstrap-table-cookie'
 ], (tb, _) => {
 	let view = tb.View;
 	let View = view.extend({
-		id: 'views/ajax/ajax_left_list',
+		id: 'views/application/application_left_list',
 		preRender: function () {
-			this.locals.leftList = _.reduce(this.data.rpm, (r, d) => {
+			this.locals.leftList = _.reduce(this.data.data, (r, d) => {
 				let o = {_id: d._id};
 				_.forEach(d.value, (v, k) => {o[k] = v;});
 				r.push(o);
@@ -24,12 +24,12 @@ define([
 				classes: 'table-sm',
 				pagination: true,
 				cookie: true,
-				cookieIdTable: 'leftListAjax',
+				cookieIdTable: 'leftListApplication',
 				cookieStorage: 'sessionStorage',
 				search: true
 			});
 		}
 	});
-	View.id = 'views/ajax/ajax_left_list';
+	View.id = 'views/application/application_left_list';
 	return View;
 });

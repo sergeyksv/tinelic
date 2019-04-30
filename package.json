@@ -9,7 +9,7 @@
   "main": "app.js",
   "private": true,
   "engines": {
-    "node": ">= 10.15.3"
+    "node": ">= 12.1.0"
   },
   "dependencies": {
     "amdefine": "^1.0.1",

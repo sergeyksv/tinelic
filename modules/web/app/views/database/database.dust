@@ -39,10 +39,10 @@
 	</legend>
 <div class="row">
 	<div class="col-sm-4">
-		{@view name="views/database/database_leftlist_pagination"/}
+		{@view name="views/database/database_left_list"/}
 	</div>
 	<div class="col-sm-8">
 		{@view name="views/database/database_graph_table"/}
-    </div>
+	</div>
 </div>
 {/main}
