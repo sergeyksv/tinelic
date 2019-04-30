@@ -1,0 +1,3 @@
+<div id="{_t_view.cid}">
+	{> "views/common/left_list_err" /}
+</div>
