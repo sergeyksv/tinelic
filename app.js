@@ -1,11 +1,11 @@
 const newrelic = require('newrelic');
 var argv = require('yargs').argv;
 var fs = require('fs');
-var _ = require("lodash");
+var _ = require('lodash');
 var cfg = {
-	config:require("./config.js")
+	config:require('./config.js')
 };
-var lcfgPath = argv.config || "./local-config.js";
+var lcfgPath = argv.config || './local-config.js';
 if (fs.existsSync(lcfgPath)) {
 	cfg.config = _.merge(cfg.config, require(lcfgPath));
 }
@@ -17,26 +17,26 @@ var tinyback = require('tinyback');
 var http = require('http');
 var https = require('https');
 var path = require('path');
-var safe = require("safe");
+var safe = require('safe');
 
 _.merge(cfg, {
 	modules:[
-		{name:"prefixify",object:tinyback.prefixify()},
-		{name:"tson",object:tinyback.tson()},
-		{name:"validate",object:tinyback.validate()},
-		{name:"mongo",object:tinyback.mongodb()},
-		{name:"cache",object:tinyback.mongocache()},
-		{name:"obac",object:tinyback.obac()},
-		{name:"users",require:"./modules/usersapi.js"},
-		{name:"restapi",object:tinyback.restapi()},
-		{name:"assets",require:"./modules/assetsapi.js"},
-		{name:"collect",require:"./modules/collectapi.js"},
-		{name:"stats",require:"./modules/statsapi.js"},
-		{name:"web",require:"./modules/web"}
+		{name:'prefixify',object:tinyback.prefixify()},
+		{name:'tson',object:tinyback.tson()},
+		{name:'validate',object:tinyback.validate()},
+		{name:'mongo',object:tinyback.mongodb()},
+		{name:'cache',object:tinyback.mongocache()},
+		{name:'obac',object:tinyback.obac()},
+		{name:'users',require:'./modules/usersapi.js'},
+		{name:'restapi',object:tinyback.restapi()},
+		{name:'assets',require:'./modules/assetsapi.js'},
+		{name:'collect',require:'./modules/collectapi.js'},
+		{name:'stats',require:'./modules/statsapi.js'},
+		{name:'web',require:'./modules/web'}
 	]
 });
 
-console.time("Live !");
+console.time('Live !');
 var cb = function (err) {
 	console.log(err);
 
@@ -74,7 +74,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 					};
 				});
 			});
-			console.timeEnd("Live !");
+			console.timeEnd('Live !');
 			if (cfg.config.server.ssl_port) {
 				try {
 					var options = {
@@ -95,7 +95,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 			httpServer.listen(cfg.config.server.port);
 
 			if (cfg.config.automated && process.send) {
-				process.send({c: "startapp_repl", data: null});
+				process.send({c: 'startapp_repl', data: null});
 			}
 		}));
 	}));
