@@ -43,6 +43,7 @@
     "safe": "^0.4.6",
     "tablesorter": "^2.31.1",
     "tinyback": "./modules/tinyback",
+    "tinybone": "./modules/tinybone",
     "useragent": "^2.3.0",
     "yargs": "^13.2.2"
   },
