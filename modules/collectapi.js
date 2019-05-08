@@ -1,4 +1,4 @@
-/*jslint node: true */
+/* deprecated */
 "use strict";
 var _ = require("lodash");
 var safe = require("safe");
