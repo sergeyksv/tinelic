@@ -32,9 +32,9 @@ class Api {
 
 	invoke(req, res, next) {
 		const nrParseTransactionName = value => {
-			var _value_array = value.split('/');
-			var _type = _value_array.length > 1 ? _value_array[0] + '/' + _value_array[1] : '', _name = '';
-			for (var i = 2; i < _value_array.length; i++)
+			let _value_array = value.split('/');
+			let _type = _value_array.length > 1 ? _value_array[0] + '/' + _value_array[1] : '', _name = '';
+			for (let i = 2; i < _value_array.length; i++)
 				_name += (_name.length > 0 ? '/' : '') + _value_array[i];
 			return { name: _name.length ? _name : '-unknown-', type: _type.length ? _type : '-unknown-' };
 		};
@@ -57,8 +57,8 @@ class Api {
 			if (!st_source)
 				return;
 			_.each(st_source, line => {
-				var si = { pre_context: [], post_context: [], _s_context: '', _s_func: '', _s_file: '', _i_col: 0, _i_line: 0 };
-				var _TOKEN = 'at ';
+				let si = { pre_context: [], post_context: [], _s_context: '', _s_func: '', _s_file: '', _i_col: 0, _i_line: 0 };
+				let _TOKEN = 'at ';
 				if (line.indexOf(_TOKEN) >= 0) {
 					line = line.substr(line.indexOf(_TOKEN) + _TOKEN.length);
 					_TOKEN = '(';
@@ -72,7 +72,7 @@ class Api {
 						si._s_file = line.substr(0, line.indexOf(_TOKEN)).trim();
 						line = line.substr(line.indexOf(_TOKEN) + _TOKEN.length);
 						// line number and column number
-						var arr_line_items = line.split(':');
+						let arr_line_items = line.split(':');
 						if (arr_line_items.length == 2) {
 							si._i_line = arr_line_items[0];
 							si._i_col = arr_line_items[1];
@@ -90,8 +90,8 @@ class Api {
 			if (!st_source)
 				return;
 			_.each(st_source, line => {
-				var si = { pre_context: [], post_context: [], _s_context: '', _s_func: '', _s_file: '', _i_col: 0, _i_line: 0 };
-				var _TOKEN = 'at ';
+				let si = { pre_context: [], post_context: [], _s_context: '', _s_func: '', _s_file: '', _i_col: 0, _i_line: 0 };
+				let _TOKEN = 'at ';
 				if (line.indexOf(_TOKEN) >= 0) {
 					line = line.substr(line.indexOf(_TOKEN) + _TOKEN.length);
 					_TOKEN = ' in ';
@@ -132,11 +132,11 @@ class Api {
 
 				connect: () => {
 					// on connect we should link agent with its project id when available
-					var body = nrParseBody(req)[0];
+					let body = nrParseBody(req)[0];
 					this.ctx.api.assets.ensureProjectId(this.ctx.locals.systoken, body.app_name[0], safe.sure(cb, idp => {
-						var project = {};
+						let project = {};
 						project._id = idp;
-						var run = { _idp: project._id, _s_pid: body.pid, _s_logger: body.language, _s_host: body.host };
+						let run = { _idp: project._id, _s_pid: body.pid, _s_logger: body.language, _s_host: body.host };
 						let _ret = { return_value: { 'agent_run_id': Buffer.from(JSON.stringify(run)).toString('base64') } };
 						// set value to prevent errors from newrelic:api:getBrowserTimingHeader
 						_ret.return_value.application_id = project._id;
@@ -184,25 +184,25 @@ class Api {
 				agent_settings: () => {
 					// seems to be hook to alter agent settings
 					// not supported now, just mirror back
-					var body = nrParseBody(req);
+					let body = nrParseBody(req);
 					if (Array.isArray(body) && body.length > 0)
 						res.json(body[0]);
 					else res.json(body);
 				},
 				metric_data: () => {
-					var body = nrParseBody(req);
+					let body = nrParseBody(req);
 					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
-					var _dts = new Date(body[1] * 1000.0),
+					let _dts = new Date(body[1] * 1000.0),
 						_dte = new Date(body[2] * 1000.0),
 						_dt = new Date((_dts.getTime() + _dte.getTime()) / 2.0);
 
-					var action_stats = {};
+					let action_stats = {};
 					safe.each(body[body.length - 1], (item, cb) => {
 						// grab memory metrics
 						if (item[0].name != 'Memory/Physical')
 							return safe.back(cb);
-						var te = this.prefixify({
+						let te = this.prefixify({
 							_idp: run._idp,
 							_dt: _dt,
 							_dts: _dts,
@@ -231,11 +231,11 @@ class Api {
 
 						_.each(body[body.length - 1], item => {
 							// grab transaction segments stats
-							var scope = item[0].scope;
+							let scope = item[0].scope;
 							if (!scope) return;
 
-							var trnScope = nrParseTransactionName(scope);
-							var trnName = nrParseTransactionName(item[0].name);
+							let trnScope = nrParseTransactionName(scope);
+							let trnName = nrParseTransactionName(item[0].name);
 
 							// need to change name of segement if it match
 							// transcation name (scope)
@@ -269,14 +269,14 @@ class Api {
 						// extra pass to get scope metrics (if any)
 						_.each(body[body.length - 1], item => {
 							// now process only metrics without scope
-							var scope = item[0].scope;
+							let scope = item[0].scope;
 							if (scope) return;
 
 							// but thous that already have details
-							var stat = action_stats[item[0].name];
+							let stat = action_stats[item[0].name];
 							if (!stat) return;
 
-							var trnName = nrParseTransactionName(item[0].name);
+							let trnName = nrParseTransactionName(item[0].name);
 
 							stat.data.unshift({
 								_s_name: trnName.name,
@@ -315,12 +315,12 @@ class Api {
 					let body = nrParseBody(req);
 					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
-					var arecs = [];
+					let arecs = [];
 					safe.each(body[body.length - 1], (item, cb) => {
 						item = item[0];
-						var trnName = nrParseTransactionName(item.name);
-						var ct = trnName.type.split('/', 2);
-						var te = {
+						let trnName = nrParseTransactionName(item.name);
+						let ct = trnName.type.split('/', 2);
+						let te = {
 							'_idp': run._idp,
 							'_s_name': trnName.name,
 							'_s_cat': ct[0],
@@ -342,12 +342,12 @@ class Api {
 					});
 				},
 				error_data: () => {
-					var body = nrParseBody(req);
+					let body = nrParseBody(req);
 					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 					_.each(body[body.length - 1], ne => {
-						var trnName = nrParseTransactionName(ne[1]);
-						var te = {
+						let trnName = nrParseTransactionName(ne[1]);
+						let te = {
 							_idp: run._idp,
 							_dt: new Date(),
 							_s_reporter: 'newrelic',
@@ -378,7 +378,7 @@ class Api {
 							safe.parallel([
 								cb => {
 									// save actual error
-									var md5sum = crypto.createHash('md5');
+									let md5sum = crypto.createHash('md5');
 									md5sum.update(te.exception._s_type);
 									md5sum.update(te._s_message + te.stacktrace.frames.length);
 									te.ehash = md5sum.digest('hex');
@@ -440,7 +440,7 @@ class Api {
 			if (this.ctx.locals.newrelic)
 				this.ctx.locals.newrelic.setTransactionName(req.method + '//newrelic/' + req.query.method);
 
-			var fn = nrpc[req.query.method];
+			let fn = nrpc[req.query.method];
 			if (!fn)
 				throw new Error('NewRelic: unknown method ' + req.query.method);
 			fn();
@@ -762,14 +762,14 @@ module.exports.init = (ctx, cb) => {
 				}, 1000 * 60 * 60);
 
 				ctx.router.get('/ajax/:project', (req, res, next) => {
-					var data = req.query;
+					let data = req.query;
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							data._idp = new mongo.ObjectID(idp);
 							data._dtr = new Date();
 							data._dt = data._dtr;
 
-							var ip = req.headers['x-forwarded-for'] ||
+							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
 								req.socket.remoteAddress ||
 								req.connection.socket.remoteAddress;
@@ -783,7 +783,7 @@ module.exports.init = (ctx, cb) => {
 							if (Math.abs(data._i_tt - data._i_pt - data._i_nt) > 1000)
 								return cb(new Error('ajax total time do not match components'));
 
-							var md5sum = crypto.createHash('md5');
+							let md5sum = crypto.createHash('md5');
 							md5sum.update(ip);
 							md5sum.update(req.headers.host);
 							md5sum.update(req.headers['user-agent']);
@@ -815,7 +815,7 @@ module.exports.init = (ctx, cb) => {
 								}
 							}, safe.sure(cb, res => {
 								// by default previous is fine
-								var page = res.before || null;
+								let page = res.before || null;
 								// but if anything in front that wittin page load time need to choose it
 								if (res.after && data._dtc.valueOf() >= (res.after._dtc.valueOf() - res.after._i_tt))
 									page = res.after;
@@ -849,7 +849,7 @@ module.exports.init = (ctx, cb) => {
 					});
 				});
 				ctx.router.get('/browser/:project', (req, res, next) => {
-					var data = req.query;
+					let data = req.query;
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							data._idp = idp;
@@ -857,12 +857,12 @@ module.exports.init = (ctx, cb) => {
 							data._dtc = data._dt;
 							data._dt = data._dtr;
 							data.agent = useragent.parse(req.headers['user-agent']).toJSON();
-							var ip = req.headers['x-forwarded-for'] ||
+							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
 								req.socket.remoteAddress ||
 								req.connection.socket.remoteAddress;
 
-							var geo = geoip.lookup(ip);
+							let geo = geoip.lookup(ip);
 							if (geo)
 								data.geo = JSON.parse(JSON.stringify(geo));
 
@@ -875,7 +875,7 @@ module.exports.init = (ctx, cb) => {
 							if (Math.abs(data._i_tt - data._i_nt - data._i_lt - data._i_dt) > 1000)
 								return cb(new Error('Page total time do not match components'));
 
-							var md5sum = crypto.createHash('md5');
+							let md5sum = crypto.createHash('md5');
 							md5sum.update(ip);
 							md5sum.update(req.headers.host);
 							md5sum.update(req.headers['user-agent']);
@@ -899,10 +899,10 @@ module.exports.init = (ctx, cb) => {
 									const _id = data._id;
 									safe.parallel([
 										cb => {
-											var n = 0;
+											let n = 0;
 											ctx.api.assets.getProjectPageRules(ctx.locals.systoken, { _id: data._idp }, safe.sure(cb, pageRules => {
 												safe.forEach(pageRules, (pageRule, cb) => {
-													var condition = JSON.parse(pageRule._s_condition);
+													let condition = JSON.parse(pageRule._s_condition);
 													condition._id = _id;
 													collections.pages.findOne(condition, { _id: 1 }, safe.sure(cb, matched => {
 														if (matched) {
@@ -979,9 +979,9 @@ module.exports.init = (ctx, cb) => {
 						let zip_buffer = Buffer.from(req.body.toString(), 'base64');
 						//		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
 						zlib.inflate(zip_buffer, safe.sure(cb, _buffer_getsentry_data => {
-							var ge = JSON.parse(_buffer_getsentry_data.toString());
+							let ge = JSON.parse(_buffer_getsentry_data.toString());
 							ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, idp => {
-								var te = {
+								let te = {
 									_idp: new mongo.ObjectID(idp),
 									_dt: new Date(ge.timestamp),
 									_s_reporter: 'raven',
@@ -1012,7 +1012,7 @@ module.exports.init = (ctx, cb) => {
 								ctx.api.validate.check('error', te, safe.sure(cb, () => {
 									safe.parallel([
 										cb => {
-											var md5sum = crypto.createHash('md5');
+											let md5sum = crypto.createHash('md5');
 											md5sum.update(te.exception._s_type);
 											md5sum.update(te._s_message + te.stacktrace.frames.length);
 											te.ehash = md5sum.digest('hex');
@@ -1026,7 +1026,7 @@ module.exports.init = (ctx, cb) => {
 											}));
 										},
 										cb => {
-											var q = { _idp: te._idp, _dt: { $gte: te._dt } };
+											let q = { _idp: te._idp, _dt: { $gte: te._dt } };
 											collections.actions.update(q, { $inc: { _i_err: 1 } }, { multi: false }, cb);
 										}
 									], cb);
@@ -1045,16 +1045,16 @@ module.exports.init = (ctx, cb) => {
 					});
 				});
 				ctx.router.get('/sentry/api/:project/:action', (req, res, next) => {
-					var data = {};
+					let data = {};
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							data = JSON.parse(req.query.sentry_data);
-							var ip = req.headers['x-forwarded-for'] ||
+							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
 								req.socket.remoteAddress ||
 								req.connection.socket.remoteAddress;
 
-							var _dtp = data._dtp || data._dtInit;
+							let _dtp = data._dtp || data._dtInit;
 							if (data.project) delete data.project;
 							data._idp = idp;
 							data._dtr = new Date();
@@ -1064,7 +1064,7 @@ module.exports.init = (ctx, cb) => {
 							if (data._dtInit) delete data._dtInit;
 							data.agent = useragent.parse(req.headers['user-agent'], data.request.headers['User-Agent']).toJSON();
 							data = prefixify(data, { strict: 1 });
-							var md5sum = crypto.createHash('md5');
+							let md5sum = crypto.createHash('md5');
 							md5sum.update(ip);
 							md5sum.update(req.headers.host);
 							md5sum.update(req.headers['user-agent']);
@@ -1148,16 +1148,16 @@ module.exports.init = (ctx, cb) => {
 				});
 				ctx.router.post('/sentry/api/:project/:action', (req, res, next) => {
 					safe.run(cb => {
-						var payload = '';
+						let payload = '';
 						req.on('data', text => payload += text);
 						req.on('end', () => {
-							var ge = JSON.parse(payload);
+							let ge = JSON.parse(payload);
 							ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, idp => {
-								var ip = req.headers['x-forwarded-for'] ||
+								let ip = req.headers['x-forwarded-for'] ||
 									req.connection.remoteAddress ||
 									req.socket.remoteAddress ||
 									req.connection.socket.remoteAddress;
-								var te = {
+								let te = {
 									_idp: idp,
 									_dt: new Date(),
 									_dtp: new Date(ge._dtp),
@@ -1187,7 +1187,7 @@ module.exports.init = (ctx, cb) => {
 										});
 									});
 								}
-								var md5sum = crypto.createHash('md5');
+								let md5sum = crypto.createHash('md5');
 								md5sum.update(ip);
 								md5sum.update(req.headers.host);
 								md5sum.update(req.headers['user-agent']);
@@ -1212,7 +1212,7 @@ module.exports.init = (ctx, cb) => {
 										if (page._s_uri) te.request._s_uri = page._s_uri;
 									}
 									ctx.api.validate.check('error', te, safe.sure(cb, () => {
-										var md5sum = crypto.createHash('md5');
+										let md5sum = crypto.createHash('md5');
 										md5sum.update(te.exception._s_type);
 										md5sum.update(te._s_message + te.stacktrace.frames.length);
 										te.ehash = md5sum.digest('hex');
