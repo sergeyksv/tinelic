@@ -1,3 +1,6 @@
 [submodule "modules/tinyback"]
 	path = modules/tinyback
 	url = git@git.pushok.com:pushok/tinyback.git
+[submodule "modules/tinybone"]
+	path = modules/tinybone
+	url = git@git.pushok.com:pushok/tinybone.git
