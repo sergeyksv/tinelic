@@ -33,7 +33,7 @@ class Api {
 	invoke(req, res, next) {
 		const nrParseTransactionName = value => {
 			let _value_array = value.split('/');
-			let _type = _value_array.length > 1 ? _value_array[0] + '/' + _value_array[1] : '', _name = '';
+			let _type = _value_array.length > 1 ? `${_value_array[0]}/${_value_array[1]}` : '', _name = '';
 			for (let i = 2; i < _value_array.length; i++)
 				_name += (_name.length > 0 ? '/' : '') + _value_array[i];
 			return { name: _name.length ? _name : '-unknown-', type: _type.length ? _type : '-unknown-' };
