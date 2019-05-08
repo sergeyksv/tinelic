@@ -625,7 +625,7 @@ module.exports.init = (ctx, cb) => {
 				extra: {
 					type: 'object', patternProperties: {
 						'.*': [{ type: 'string', 'maxLength': 1024 },
-						{ type: 'ineteger' }]
+							{ type: 'ineteger' }]
 					}
 				}
 			}
