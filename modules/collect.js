@@ -27,7 +27,7 @@ module.exports.deps = ['mongo', 'prefixify', 'validate', 'assets', 'cache'];
 class Api {
 	constructor(ctx) {
 		this.ctx = ctx;
-		this.prefixify = ctx.api.prefixify.datafix;
+		this.datafix = ctx.api.prefixify.datafix;
 	}
 
 	invoke(req, res, next) {
@@ -80,7 +80,7 @@ class Api {
 							si._i_line = arr_line_items[0];
 						}
 					}
-					error_dest.stacktrace.frames.push(this.prefixify(si));
+					error_dest.stacktrace.frames.push(this.datafix(si));
 				} else {
 					error_dest._s_message = line;
 				}
@@ -106,7 +106,7 @@ class Api {
 							si._i_line = line.trim();
 						}
 					} else si._s_func = line;
-					error_dest.stacktrace.frames.push(this.prefixify(si));
+					error_dest.stacktrace.frames.push(this.datafix(si));
 				} else {
 					error_dest._s_message = line;
 				}
@@ -191,7 +191,7 @@ class Api {
 				},
 				metric_data: () => {
 					let body = nrParseBody(req);
-					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
+					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 					let _dts = new Date(body[1] * 1000.0),
 						_dte = new Date(body[2] * 1000.0),
@@ -202,7 +202,7 @@ class Api {
 						// grab memory metrics
 						if (item[0].name != 'Memory/Physical')
 							return safe.back(cb);
-						let te = this.prefixify({
+						let te = this.datafix({
 							_idp: run._idp,
 							_dt: _dt,
 							_dts: _dts,
@@ -313,7 +313,7 @@ class Api {
 				},
 				analytic_event_data: () => {
 					let body = nrParseBody(req);
-					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
+					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 					let arecs = [];
 					safe.each(body[body.length - 1], (item, cb) => {
@@ -343,7 +343,7 @@ class Api {
 				},
 				error_data: () => {
 					let body = nrParseBody(req);
-					let run = this.prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
+					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 					_.each(body[body.length - 1], ne => {
 						let trnName = nrParseTransactionName(ne[1]);
@@ -753,7 +753,7 @@ module.exports.init = (ctx, cb) => {
 				setInterval(() => {
 					let dtlw = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
 					let q = { _dt: { $lte: dtlw } };
-					let collectionsToClear = ['events', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
+					let collectionsToClear = ['page_errors', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
 					safe.each(collectionsToClear, (ctc, cb) => {
 						collections[ctc].remove(q, cb);
 					}, err => {
@@ -924,7 +924,7 @@ module.exports.init = (ctx, cb) => {
 											}));
 										},
 										cb => {
-											collections.events.update({ chash: data.chash, _dt: { $gte: (Date.now() - data._i_tt * 2), $lte: data._dt } }, {
+											collections.page_errors.update({ chash: data.chash, _dt: { $gte: (Date.now() - data._i_tt * 2), $lte: data._dt } }, {
 												$set: {
 													_idpv: _id,
 													request: {
@@ -1122,15 +1122,15 @@ module.exports.init = (ctx, cb) => {
 									md5sum.update(data._s_message + data.stacktrace.frames.length);
 									data.ehash = md5sum.digest('hex');
 									//find().sort().limit(1).toArray
-									collections.events.find({ _idp: data._idp, ehash: data.ehash }).sort({ _dt: 1 }).limit(1).toArray(safe.sure(cb, edtl => {
+									collections.page_errors.find({ _idp: data._idp, ehash: data.ehash }).sort({ _dt: 1 }).limit(1).toArray(safe.sure(cb, edtl => {
 										if (edtl.length)
 											data._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 										else
 											data._dtf = new Date();
 
-										collections.events.insert(data, safe.sure(cb, () => {
+										collections.page_errors.insert(data, safe.sure(cb, () => {
 											ctx.api.collect.getStackTraceContext(ctx.locals.systoken, data.stacktrace.frames, (err, frames) => {
-												collections.events.update({ '_id': data._id }, { $set: { stacktrace: { frames: frames } } }, safe.sure(cb, () => { }));
+												collections.page_errors.update({ '_id': data._id }, { $set: { stacktrace: { frames: frames } } }, safe.sure(cb, () => { }));
 											});
 											cb(null);
 										}));
@@ -1216,14 +1216,14 @@ module.exports.init = (ctx, cb) => {
 										md5sum.update(te.exception._s_type);
 										md5sum.update(te._s_message + te.stacktrace.frames.length);
 										te.ehash = md5sum.digest('hex');
-										collections.events.find({ _idp: te._idp, ehash: te.ehash }).sort({ _dt: 1 }).limit(1).toArray(safe.sure(cb, edtl => {
+										collections.page_errors.find({ _idp: te._idp, ehash: te.ehash }).sort({ _dt: 1 }).limit(1).toArray(safe.sure(cb, edtl => {
 											if (edtl.length)
 												te._dtf = edtl[0]._dtf || edtl[0]._dt || new Date();
 											else
 												te._dtf = new Date();
-											collections.events.insert(te, safe.sure(cb, () => {
+											collections.page_errors.insert(te, safe.sure(cb, () => {
 												ctx.api.collect.getStackTraceContext(ctx.locals.systoken, te.stacktrace.frames, (err, frames) => {
-													collections.events.update({ '_id': te._id }, { $set: { stacktrace: { frames: frames } } }, safe.sure(cb, () => { }));
+													collections.page_errors.update({ '_id': te._id }, { $set: { stacktrace: { frames: frames } } }, safe.sure(cb, () => { }));
 												});
 												cb(null);
 											}));

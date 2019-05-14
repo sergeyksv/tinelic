@@ -6,23 +6,25 @@ module.exports = {
 	},
 	restapi: {
 		modules: {
+			_t_registry: 1,
 			prefixify: 1,
 			tson: 1,
 			validate: 1,
 			mongo: 1,
-			cache: 1,
 			obac: 1,
-			web: 1,
 			restapi: 1,
+			cache: 1,
+			stats: 1,
 			users: 1,
 			assets: 1,
 			collect: 1,
 			agent_listener: 1,
-			stats: 1
+			web: 1
 		}
 	},
 	mongo: {
 		main: {
+			// url: 'mongodb://localhost:27017/tinelic',
 			db: 'tinelic',
 			host: 'localhost',
 			port: 27017,
