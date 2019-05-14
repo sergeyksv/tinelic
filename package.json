@@ -9,7 +9,7 @@
   "main": "app.js",
   "private": true,
   "engines": {
-    "node": ">= 12.1.0"
+    "node": ">= 12.2.0"
   },
   "dependencies": {
     "amdefine": "^1.0.1",
@@ -33,7 +33,7 @@
     "lodash": "^4.17.11",
     "lx-valid": "git://github.com/sergeyksv/lx-valid.git",
     "moment": "^2.24.0",
-    "mongodb": "^2.2.36",
+    "mongodb": "^3.2.3",
     "multer": "^1.4.1",
     "newrelic": "^4.11.0",
     "raven": "^0.12.3",
@@ -42,6 +42,8 @@
     "requirejs-text": "^2.0.15",
     "safe": "^0.4.6",
     "tablesorter": "^2.31.1",
+    "tinyback": "./modules/tinyback",
+    "tinybone": "./modules/tinybone",
     "useragent": "^2.3.0",
     "yargs": "^13.2.2"
   },
