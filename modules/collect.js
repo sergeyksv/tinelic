@@ -193,6 +193,8 @@ class Api {
 					let body = nrParseBody(req);
 					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
+					if (!run._idp) return; // temporary solution
+
 					let _dts = new Date(body[1] * 1000.0),
 						_dte = new Date(body[2] * 1000.0),
 						_dt = new Date((_dts.getTime() + _dte.getTime()) / 2.0);
@@ -207,7 +209,7 @@ class Api {
 							_dt: _dt,
 							_dts: _dts,
 							_dte: _dte,
-							_s_type: item[0].name,
+							_s_type: nrParseTransactionName(item[0].name).type,
 							_s_name: '',
 							_s_pid: run._s_pid,
 							_s_host: run._s_host,
@@ -257,7 +259,7 @@ class Api {
 							action_stats[scope].data.push({
 								_s_name: trnName.name,
 								_s_cat: trnName.type.split('/', 2)[0],
-								_s_type: trnName.type.split('/', 2)[1],
+								_s_type: trnName.type.split('/', 2)[1] || '-unknown-', // temporary solution
 								_i_cnt: item[1][0],
 								_i_tt: Math.round(item[1][1] * 1000),
 								_i_own: Math.round(item[1][2] * 1000),
@@ -281,7 +283,7 @@ class Api {
 							stat.data.unshift({
 								_s_name: trnName.name,
 								_s_cat: trnName.type.split('/', 2)[0],
-								_s_type: trnName.type.split('/', 2)[1],
+								_s_type: trnName.type.split('/', 2)[1] || '-unknown-', // temporary solution
 								_i_cnt: item[1][0],
 								_i_tt: Math.round(item[1][1] * 1000),
 								_i_own: Math.round(item[1][2] * 1000),

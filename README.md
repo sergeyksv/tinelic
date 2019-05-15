@@ -1,4 +1,5 @@
 # Tinelic
+
 Lightweight application performance and error monitoring server for GetSentry (raven.js) and New Relic agents.
 
 [![Build Status](https://travis-ci.org/sergeyksv/tinelic.svg?branch=master)](https://travis-ci.org/sergeyksv/tinelic)
@@ -6,10 +7,12 @@ Lightweight application performance and error monitoring server for GetSentry (r
 Live system with demo account (log-in: demo, password: demo): http://tinelic.skilap.org/web
 
 ## Intro
+
 We are developers. We see a lot of benefits from using of error reporting and app monitoring software. We tried to use
 many tools and nothing satisfied us. We tried to improve some of them but at the end we built our own. Everybody does the same ;)
 
 ## Concept
+
 Tinelic is Node.JS application which works as backend for application and error reporting agents and as GUI. In order
 to simplify things we didn't do any complex data processing and fully rely to MongoDB scalability. It gives us
 flexibility and enough capacity for midle sized apps.
@@ -31,20 +34,23 @@ Preferable (but nor required) version 3.0 and above
 Pull this repository code and submodules (git pull & git submodule init & git submodule update)
 
 3. Install nodejs\
-NodeJS v10
+NodeJS v12
 
-4. Run server and access it on http://localhost/web
+4. Run server and access it on <http://localhost/web>
+
   ```sh
   node app
   ```
+
 5. Use the app\
 You can login into system with default admin user (admin/tinelic). Tinelic monitors itself so you'll immediatelly see some data.
 
 6. (optional) Add ssl certs and host name
 
 7. (optional) Compile minified code and launch in production mode
-  - Install grunt and build production code ```grunt build```
-  - copy ```config.js``` to ```local-config.js``` and change ```env``` property to ```production```
+
+   - Install grunt and build production code ```grunt build```
+   - copy ```config.js``` to ```local-config.js``` and change ```env``` property to ```production```
 
 ## Agent configuration
 
@@ -54,36 +60,36 @@ Tinelic integrates all agents to monitor itself. So you can check its code for m
 Add ```host:'some.server.com'``` property into ```newrelic.js``` configuration file. This will enable server side application performance and error reporting
 and client side real user behavior monitoring if it was already inegrated using ```newrelic.getBrowserTimingHeader()```
 
-1. GetSentry (serve side)\
+2. GetSentry (serve side)\
 Init agent as follows:
+
   ```javascript
   new raven.Client('http://blah:blah@some.server.com/collect/sentry/{project_id});
   ```
+
 3. GetSentry & Tinelic RUM (client side)\
 It's possible to include and use only GetSentry error reporting or Tinelic RUM or both. Approperiate scripts should be
 referenced. In the example below we use combined version
+
 ```html
 <script src='//some.server.com/js/build/tinelic.js'></script>
 <script>
-	var _t_page = new Date();
-	Tinelic.config({
-		url:location.protocol + 'some.server.com',
-		project:'some_project',
-		route:'some_route',
-		_dtp:_t_page,
-	});
-	Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
-		dataCallback: function(data) {
-			data._dtp = _t_page;
-			data._dt = new Date();
-			return data;
-		}
-	}).install();
+    var _t_page = new Date();
+    Tinelic.config({
+        url:location.protocol + 'some.server.com',
+        project:'some_project',
+        route:'some_route',
+        _dtp:_t_page,
+    });
+    Raven.config(location.protocol + '//nah@' + location.hostname + (location.port ? ':' + location.port : '')+'/collect/sentry/{_t_self_id}', {
+        dataCallback: function(data) {
+            data._dtp = _t_page;
+            data._dt = new Date();
+            return data;
+        }
+    }).install();
 </script>
 ```
-
-## Not supported versions of Newrelic agent
-* 4.13.0
 
 ## MIT License
 
