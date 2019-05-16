@@ -33,7 +33,7 @@
     "lodash": "^4.17.11",
     "lx-valid": "git://github.com/sergeyksv/lx-valid.git",
     "moment": "^2.24.0",
-    "mongodb": "^3.2.3",
+    "mongodb": "^3.2.4",
     "multer": "^1.4.1",
     "newrelic": "^5.8.0",
     "raven": "^0.12.3",
@@ -45,7 +45,7 @@
     "tinyback": "./modules/tinyback",
     "tinybone": "./modules/tinybone",
     "useragent": "^2.3.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
