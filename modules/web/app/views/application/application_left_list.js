@@ -4,8 +4,7 @@ define([
 	'lodash',
 	'dustc!views/application/application_left_list.dust',
 	'dustc!views/common/left_list.dust',
-	'bootstrap-table',
-	'bootstrap-table-cookie'
+	'bootstrap-table'
 ], (tb, _) => {
 	let view = tb.View;
 	let View = view.extend({
@@ -24,9 +23,6 @@ define([
 				classes: 'table-sm',
 				pagination: true,
 				pageList: [],
-				cookie: true,
-				cookieIdTable: 'leftListApplication',
-				cookieStorage: 'sessionStorage',
 				search: true
 			});
 		}

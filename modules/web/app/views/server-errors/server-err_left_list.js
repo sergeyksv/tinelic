@@ -4,8 +4,7 @@ define([
 	'lodash',
 	'dustc!views/server-errors/server-err_left_list.dust',
 	'dustc!views/common/left_list_err.dust',
-	'bootstrap-table',
-	'bootstrap-table-cookie'
+	'bootstrap-table'
 ], (tb, _) => {
 	let view = tb.View;
 	let View = view.extend({
@@ -16,9 +15,6 @@ define([
 				classes: 'table-sm',
 				pagination: true,
 				pageList: [],
-				cookie: true,
-				cookieIdTable: 'leftListServerErr',
-				cookieStorage: 'sessionStorage',
 				search: true
 			});
 		}

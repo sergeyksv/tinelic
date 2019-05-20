@@ -77,7 +77,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 							cb.call(this, err, ...args2);
 						};
 
-						newrelic.startSegment(`api/api/${ns}/${name}`, false, cb => {
+						newrelic.startSegment(`api/api/${ns}/${name}`, true, cb => {
 							func.call(this, ...args, cb);
 						}, callback);
 					};
