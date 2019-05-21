@@ -49,6 +49,25 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres', 'mo
 				});
 			}));
 		})),
+		prepare: (req, res, next) => {
+			if (req.params.teams) {
+				api('assets.getTeam', res.locals.token, { _t_age: '30d', filter: { name: req.params.teams } }, safe.sure(next, (_team) => {
+					let tim = _.map(_team.projects, '_idp');
+					res.locals.team = _team;
+					api('assets.getProjects', res.locals.token, { _t_age: '30d', filter: { _id: { $in: tim } } }, safe.sure(next, (_project) => {
+						res.locals.project = _project;
+						res.locals.projIds = { $in: tim };
+						next();
+					}));
+				}));
+			} else {
+				api('assets.getProject', res.locals.token, { _t_age: '30d', filter: { slug: req.params.slug } }, safe.sure(next, (_project) => {
+					res.locals.project = _project;
+					res.locals.projIds = res.locals.project._id;
+					next();
+				}));
+			}
+		},
 		ajax: (req, res, cb) => require(['routes/ajax'], route => {
 			route(req, res, cb);
 		}, cb),
@@ -75,39 +94,17 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres', 'mo
 		))),
 		metrics: (req, res, cb) => {
 			let quant = res.locals.quant;
-			let project, projIds, team;
-			safe.series([
-				(cb) => {
-					if (req.params.teams) {
-						api('assets.getTeam', res.locals.token, { _t_age: '30d', filter: { name: req.params.teams } }, safe.sure(cb, (_team) => {
-							let tim = _.map(_team.projects, '_idp');
-							team = _team;
-							api('assets.getProjects', res.locals.token, { _t_age: '30d', filter: { _id: { $in: tim } } }, safe.sure(cb, (_project) => {
-								project = _project;
-								projIds = { $in: tim };
-								cb(null);
-							}));
-						}));
-					} else {
-						api('assets.getProject', res.locals.token, { _t_age: '30d', filter: { slug: req.params.slug } }, safe.sure(cb, (_project) => {
-							project = _project;
-							projIds = project._id;
-							cb(null);
-						}));
+			safe.parallel({
+				view: (cb) => require(['views/metrics/metrics'], (view) => safe.back(cb, null, view), cb),
+				memory: (cb) => api('stats.getMetricTimings', res.locals.token, {
+					quant: quant,
+					filter: {
+						_s_type: 'Memory/Physical',
+						_idp: res.locals.projIds,
+						_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend }
 					}
-				},
-				(cb) => safe.parallel({
-					view: (cb) => require(['views/metrics/metrics'], (view) => safe.back(cb, null, view), cb),
-					memory: (cb) => api('stats.getMetricTimings', res.locals.token, {
-						quant: quant,
-						filter: {
-							_s_type: 'Memory/Physical',
-							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend }
-						}
-					}, cb)
-				}, safe.sure(cb, (r) => res.renderX({ view: r.view, data: { title: 'Metrics', project: project, team: team, mem: r.memory } })))
-			], cb);
+				}, cb)
+			}, safe.sure(cb, (r) => res.renderX({ view: r.view, data: { title: 'Metrics', project: res.locals.project, team: res.locals.team, mem: r.memory } })));
 		},
 		group_info: (req, res, cb) => require(['routes/group-info'], (route) => route(req, res, cb), cb)
 
