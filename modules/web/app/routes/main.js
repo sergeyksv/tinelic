@@ -1,5 +1,5 @@
 /* global define */
-define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres', 'moment'], (require, api, safe, _, feed, moment) => {
+define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres'], (require, api, safe, _, feed) => {
 	return {
 		index: (req, res, cb) => require(['routes/index'], (route) => route(req, res, cb), cb),
 		project: (req, res, cb) => require(['routes/project'], (route) => route(req, res, cb), cb),
@@ -68,19 +68,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres', 'mo
 				}));
 			}
 		},
-		ajax: (req, res, cb) => require(['routes/ajax'], route => {
-			route(req, res, cb);
-		}, cb),
-		application: (req, res, cb) => require(['routes/application'], route => {
-			route(req, res, cb);
-		}, cb),
-		pages: (req, res, cb) => require(['routes/pages'], route => {
-			route(req, res, cb);
-		}, cb),
 		errors: (req, res, cb) => require(['routes/client-errors'], route => {
-			route(req, res, cb);
-		}, cb),
-		database: (req, res, cb) => require(['routes/database'], route => {
 			route(req, res, cb);
 		}, cb),
 		server_errors: (req, res, cb) => require(['routes/server-errors'], route => {

@@ -99,10 +99,13 @@ define(['require', 'tinybone/base', 'views/layout/layout', 'module', 'safe', 'du
 			});
 		},
 		initRoutes: function (cb) {
-			var self = this;
-			var router = self.router;
-			var routes = ['routes/main'];
-			require(routes, function (main) {
+			let self = this;
+			let router = self.router;
+			let routes = [
+				'routes/main',
+				'routes/details'
+			];
+			require(routes, function (main, details) {
 				// some standard locals grabber
 				router.use(function (req, res, next) {
 					res.locals.token = req.cookies.token || 'public';
@@ -144,24 +147,24 @@ define(['require', 'tinybone/base', 'views/layout/layout', 'module', 'safe', 'du
 				router.get('/group-info/:name', main.group_info);
 				router.get('/project/:slug', main.project);
 				router.get('/users', main.users);
-				router.get('/project/:slug/ajax/:stats', main.prepare, main.ajax);
-				router.get('/project/:slug/application/:stats', main.prepare, main.application);
-				router.get('/project/:slug/pages/:stats', main.prepare, main.pages);
+				router.get('/project/:slug/ajax/:stats', main.prepare, details.ajax);
+				router.get('/project/:slug/application/:stats', main.prepare, details.application);
+				router.get('/project/:slug/pages/:stats', main.prepare, details.pages);
 				router.get('/project/:slug/errors/:sort', main.errors);
 				router.get('/project/:slug/errors/:sort/:id', main.errors);
-				router.get('/project/:slug/database/:stats', main.prepare, main.database);
+				router.get('/project/:slug/database/:stats', main.prepare, details.database);
 				router.get('/project/:slug/server_errors/:sort', main.server_errors);
 				router.get('/project/:slug/server_errors/:sort/:id', main.server_errors);
 				router.get('/project/:slug/settings', main.settings);
 				router.get('/project/:slug/metrics', main.prepare, main.metrics);
 				router.get('/teams', main.teams);
 				router.get('/team/:teams', main.project);
-				router.get('/team/:teams/ajax/:stats', main.prepare, main.ajax);
-				router.get('/team/:teams/application/:stats', main.prepare, main.application);
-				router.get('/team/:teams/pages/:stats', main.prepare, main.pages);
+				router.get('/team/:teams/ajax/:stats', main.prepare, details.ajax);
+				router.get('/team/:teams/application/:stats', main.prepare, details.application);
+				router.get('/team/:teams/pages/:stats', main.prepare, details.pages);
 				router.get('/team/:teams/errors/:sort', main.errors);
 				router.get('/team/:teams/errors/:sort/:id', main.errors);
-				router.get('/team/:teams/database/:stats', main.prepare, main.database);
+				router.get('/team/:teams/database/:stats', main.prepare, details.database);
 				router.get('/team/:teams/server_errors/:sort', main.server_errors);
 				router.get('/team/:teams/server_errors/:sort/:id', main.server_errors);
 				router.get('/team/:teams/settings', main.settings);
