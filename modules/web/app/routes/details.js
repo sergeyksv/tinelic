@@ -1,11 +1,68 @@
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, safe, _) => {
+
+	const parseData = ({data, st, dtStart, dtEnd}) => {
+		// sorting "mtc", "sar" etc
+		data = _.sortBy(data, (v) => {
+			if (st == 'rpm')
+				return -1 * v.value.c;
+			if (st == 'mtc')
+				return -1 * (v.value.tt);
+			if (st == 'sar')
+				return -1 * v.value.tt / v.value.c;
+			if (st == 'wa')
+				return 1 * v.value.apdex;
+			if (st == 'req')
+				return v.value.c * -1;
+		});
+
+		let sum = 0;
+		_.forEach(data, (r) => {
+			if (st == 'rpm')
+				sum += r.value.c;
+			if (st == 'mtc')
+				sum += r.value.tt;
+			if (st == 'sar')
+				sum += r.value.tt / r.value.c;
+			if (st == 'wa')
+				sum += r.value.apdex;
+			if (st == 'req')
+				sum += r.value.c;
+		});
+
+		let percent = sum / 100;
+		_.forEach(data, (r) => {
+			if (st == 'rpm')
+				r.value.bar = Math.round(r.value.c / percent);
+			if (st == 'mtc')
+				r.value.bar = Math.round((r.value.tt) / percent);
+			if (st == 'sar')
+				r.value.bar = Math.round(r.value.tt / r.value.c / percent);
+			if (st == 'wa')
+				r.value.bar = r.value.apdex * 100;
+			if (st == 'req')
+				r.value.bar = Math.round(r.value.c / percent);
+			r.value.r = r.value.c / ((dtEnd - dtStart) / (1000 * 60));
+			r.value.tta = r.value.tt / r.value.c / 1000;
+		});
+
+		data = _.reduce(data, (r, d) => {
+			let o = {_id: d._id};
+			_.forEach(d.value, (v, k) => {o[k] = v;});
+			r.push(o);
+			return r;
+		}, []);
+
+		return data;
+	};
+
 	return {
 		application: (req, res, cb) => {
 			let st = req.params.stats;
 			let quant = res.locals.quant;
 			let cat = req.query.cat || 'WebTransaction';
 			let projIds = res.locals.projIds;
+			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
 
 			safe.parallel({
 				view: (cb) => require(['views/application/application'], (view) => safe.back(cb, null, view), cb),
@@ -15,7 +72,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					api('stats.getActionBreakdown', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, filter: {
 							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+							_dt: { $gt: dtStart, $lte: dtEnd },
 							_s_name: req.query.selected
 						}
 					}, cb);
@@ -26,7 +83,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					api('stats.getActionMixStats', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, facet: { timings: true }, filter: {
 							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+							_dt: { $gt: dtStart, $lte: dtEnd },
 							_s_name: req.query.selected
 						}
 					}, cb);
@@ -34,7 +91,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				getActionMixStats: (cb) => {
 					let filter = {
 						_idp: projIds,
-						_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+						_dt: { $gt: dtStart, $lte: dtEnd },
 						_s_cat: cat
 					};
 					api('stats.getActionMixStats', res.locals.token, {
@@ -57,55 +114,13 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.tta = stat.tta / c / 1000;
 				stat.rpm = stat.rpm / c;
 
-				// sorting "mtc", "sar" etc
-				r.data = _.sortBy(r.data, (v) => {
-					if (st == 'rpm')
-						return -1 * v.value.c;
-					if (st == 'mtc')
-						return -1 * (v.value.tt);
-					if (st == 'sar')
-						return -1 * v.value.tt / v.value.c;
-					if (st == 'wa')
-						return 1 * v.value.apdex;
-				});
-				let sum = 0;
-				_.forEach(r.data, (r) => {
-					if (st == 'rpm')
-						sum += r.value.c;
-					if (st == 'mtc')
-						sum += r.value.tt;
-					if (st == 'sar')
-						sum += r.value.tt / r.value.c;
-					if (st == 'wa') {
-						sum += r.value.apdex;
-					}
-				});
-				let percent = sum / 100;
-				_.forEach(r.data, (r) => {
-					if (st == 'rpm')
-						r.value.bar = Math.round(r.value.c / percent);
-					if (st == 'mtc')
-						r.value.bar = Math.round((r.value.tt) / percent);
-					if (st == 'sar')
-						r.value.bar = Math.round(r.value.tt / r.value.c / percent);
-					if (st == 'wa')
-						r.value.bar = r.value.apdex * 100;
-					r.value.r = r.value.c / ((res.locals.dtend - res.locals.dtstart) / (1000 * 60));
-					r.value.tta = r.value.tt / r.value.c / 1000;
-				});
+				r.data = parseData({ data: r.data, st, dtStart, dtEnd });
 
 				_.forEach(r.breakdown, (r) => {
 					r.value.cnt = r.value.c;
 					r.value.tta = r.value.tt / r.value.c;
 					r.value.owna = r.value.ot / r.value.c;
 				});
-
-				r.data = _.reduce(r.data, (r, d) => {
-					let o = {_id: d._id};
-					_.forEach(d.value, (v, k) => {o[k] = v;});
-					r.push(o);
-					return r;
-				}, []);
 
 				res.renderX({
 					view: r.view,
@@ -128,6 +143,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let st = req.params.stats;
 			let quant = res.locals.quant;
 			let projIds = res.locals.projIds;
+			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
 
 			safe.parallel({
 				view: (cb) => require(['views/ajax/ajax'], (view) => safe.back(cb, null, view), cb),
@@ -137,7 +153,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					api('stats.getAjaxMixStats', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, facet: { timings: true, breakdown: true }, filter: {
 							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+							_dt: { $gt: dtStart, $lte: dtEnd },
 							_s_name: req.query.selected
 						}
 					}, cb);
@@ -145,7 +161,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				getAjaxMixStats: (cb) => api('stats.getAjaxMixStats', res.locals.token, {
 					_t_age: quant + 'm', quant: quant, facet: { stats: true, timings: true }, filter: {
 						_idp: projIds,
-						_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend }
+						_dt: { $gt: dtStart, $lte: dtEnd }
 					}
 				}, cb)
 			}, safe.sure(cb, (r) => {
@@ -168,49 +184,9 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.epm = stat.e / c;
 				stat.e = stat.epm / stat.r;
 
-				// sorting "mtc", "sar" etc
-				r.rpm = _.sortBy(r.rpm, (v) => {
-					if (st == 'rpm')
-						return -1 * v.value.c;
-					if (st == 'mtc')
-						return -1 * (v.value.tt);
-					if (st == 'sar')
-						return -1 * v.value.tt / v.value.c;
-					if (st == 'wa')
-						return 1 * v.value.apdex;
-				});
-				let sum = 0;
-				_.forEach(r.rpm, (r) => {
-					if (st == 'rpm')
-						sum += r.value.c;
-					if (st == 'mtc')
-						sum += r.value.tt;
-					if (st == 'sar')
-						sum += r.value.tt / r.value.c;
-					if (st == 'wa')
-						sum += r.value.apdex;
-				});
-				let percent = sum / 100;
-				_.forEach(r.rpm, (r) => {
-					if (st == 'rpm')
-						r.value.bar = Math.round(r.value.c / percent);
-					if (st == 'mtc')
-						r.value.bar = Math.round(r.value.tt / percent);
-					if (st == 'sar')
-						r.value.bar = Math.round(r.value.tt / r.value.c / percent);
-					if (st == 'wa')
-						r.value.bar = r.value.apdex * 100;
-					r.value.r = r.value.c / ((res.locals.dtend - res.locals.dtstart) / (1000 * 60));
-					r.value.tta = (r.value.tt / r.value.c / 1000);
-				});
-				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
+				r.rpm = parseData({data: r.rpm, st, dtStart, dtEnd});
 
-				r.rpm = _.reduce(r.rpm, (r, d) => {
-					let o = { _id: d._id };
-					_.forEach(d.value, (v, k) => { o[k] = v; });
-					r.push(o);
-					return r;
-				}, []);
+				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
 
 				res.renderX({
 					view: r.view,
@@ -231,8 +207,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 		database: (req, res, cb) => {
 			let st = req.params.stats;
 			let quant = res.locals.quant;
-			let dtstart = res.locals.dtstart;
-			let dtend = res.locals.dtend;
+			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
 			let cat = req.query.cat || 'Datastore';
 			let projIds = res.locals.projIds;
 
@@ -241,7 +216,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				getActionSegmentMix: (cb) => api('stats.getActionSegmentMix', res.locals.token, {
 					_t_age: quant + 'm', quant: quant, facet: { stats: true, timings: true }, filter: {
 						_idp: projIds,
-						_dt: { $gt: dtstart, $lte: dtend },
+						_dt: { $gt: dtStart, $lte: dtEnd },
 						'data._s_cat': cat
 					}
 				}, cb),
@@ -250,7 +225,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 						api('stats.getActionSegmentMix', res.locals.token, {
 							_t_age: quant + 'm', facet: { timings: true, breakdown: true }, quant: quant, filter: {
 								_idp: projIds,
-								_dt: { $gt: dtstart, $lte: dtend },
+								_dt: { $gt: dtStart, $lte: dtEnd },
 								'data._s_cat': cat,
 								'data._s_name': req.query.selected
 							}
@@ -264,7 +239,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					_t_age: quant + 'm', quant: quant,
 					filter: {
 						_idp: projIds,
-						_dt: { $gt: dtstart, $lte: dtend }
+						_dt: { $gt: dtStart, $lte: dtEnd }
 					}
 				};
 				r.data = r.getActionSegmentMix.stats;
@@ -281,46 +256,12 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.tta = stat.tta / c / 1000;
 				stat.r = stat.r / c;
 
-				// sorting "req" , "mtc" etc
-				let sum = 0;
-				_.forEach(r.data, (r) => {
-					if (st == 'req')
-						sum += r.value.c;
-					if (st == 'mtc')
-						sum += r.value.tt;
-					if (st == 'sar')
-						sum += r.value.tt / r.value.c;
-				});
-				let procent = sum / 100;
-				_.forEach(r.data, (r) => {
-					if (st == 'req')
-						r.value.bar = r.value.c / procent;
-					if (st == 'mtc')
-						r.value.bar = r.value.tt / procent;
-					if (st == 'sar')
-						r.value.bar = r.value.tt / r.value.c / procent;
-					r.value.r = r.value.c / ((res.locals.dtend - res.locals.dtstart) / (1000 * 60));
-					r.value.tta = r.value.tt / r.value.c / 1000;
-				});
-				r.data = _.sortBy(r.data, (r) => {
-					if (st == 'req')
-						r.value.c * -1;
-					if (st == 'mtc')
-						return (r.value.tt) * -1;
-					if (st == 'sar')
-						return r.value.tt / r.value.c * -1;
-				});
+				r.data = parseData({data: r.data, st, dtStart, dtEnd});
+
 				_.forEach(r.breakdown, (r) => {
 					r.value.cnt = r.value.c;
 					r.value.tta = r.value.tt / r.value.c;
 				});
-
-				r.data = _.reduce(r.data, (r, d) => {
-					let o = {_id: d._id};
-					_.forEach(d.value, (v, k) => {o[k] = v;});
-					r.push(o);
-					return r;
-				}, []);
 
 				res.renderX({
 					view: r.view,
@@ -345,6 +286,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let st = req.params.stats;
 			let quant = res.locals.quant;
 			let projIds = res.locals.projIds;
+			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
 
 			safe.parallel({
 				view: (cb) => require(['views/pages/pages'], (view) => safe.back(cb, null, view), cb),
@@ -354,7 +296,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					api('stats.getPageBreakdown', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, filter: {
 							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+							_dt: { $gt: dtStart, $lte: dtEnd },
 							_s_route: req.query.selected
 						}
 					}, cb);
@@ -365,7 +307,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					api('stats.getPageMixStats', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, facet: { timings: true }, filter: {
 							_idp: projIds,
-							_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend },
+							_dt: { $gt: dtStart, $lte: dtEnd },
 							_s_route: req.query.selected
 						}
 					}, cb);
@@ -373,7 +315,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				getPageMixStats: (cb) => api('stats.getPageMixStats', res.locals.token, {
 					_t_age: quant + 'm', quant: quant, facet: { stats: true, timings: true }, filter: {
 						_idp: projIds,
-						_dt: { $gt: res.locals.dtstart, $lte: res.locals.dtend }
+						_dt: { $gt: dtStart, $lte: dtEnd }
 					}
 				}, cb)
 			}, safe.sure(cb, (r) => {
@@ -395,50 +337,9 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.epm = stat.e / c;
 				stat.erate = stat.epm / stat.r;
 
-				// sorting "mtc", "sar" etc
-				r.data = _.sortBy(r.data, (v) => {
-					if (st == 'rpm')
-						return -1 * v.value.c;
-					if (st == 'mtc')
-						return -1 * v.value.tt;
-					if (st == 'sar')
-						return -1 * v.value.tt / v.value.c;
-					if (st == 'wa')
-						return 1 * v.value.apdex;
-				});
-				let sum = 0;
-				_.forEach(r.data, (r) => {
-					if (st == 'rpm')
-						sum += r.value.c;
-					if (st == 'mtc')
-						sum += r.value.tt;
-					if (st == 'sar')
-						sum += r.value.tt / r.value.c;
-					if (st == 'wa') {
-						sum += r.value.apdex;
-					}
-				});
-				let percent = sum / 100;
-				_.forEach(r.data, (r) => {
-					if (st == 'rpm')
-						r.value.bar = Math.round(r.value.c / percent);
-					if (st == 'mtc')
-						r.value.bar = Math.round((r.value.tt) / percent);
-					if (st == 'sar')
-						r.value.bar = Math.round(r.value.tt / r.value.c / percent);
-					if (st == 'wa')
-						r.value.bar = r.value.apdex * 100;
-					r.value.r = r.value.c / ((res.locals.dtend - res.locals.dtstart) / (1000 * 60));
-					r.value.tta = r.value.tt / r.value.c / 1000;
-				});
-				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
+				r.data = parseData({data: r.data, st, dtStart, dtEnd});
 
-				r.data = _.reduce(r.data, (r, d) => {
-					let o = {_id: d._id};
-					_.forEach(d.value, (v, k) => {o[k] = v;});
-					r.push(o);
-					return r;
-				}, []);
+				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
 
 				res.renderX({
 					view: r.view,
