@@ -37,7 +37,7 @@
 	</legend>
 <div class="row">
 	<div class="col-sm-4">
-		{@view name="views/application/application_left_list"/}
+		{@view name="views/common/left_list"/}
 	</div>
 	<div class="col-sm-8">
 		{@view name="views/application/application_graph_table"/}
