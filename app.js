@@ -1,41 +1,55 @@
-var argv = require('yargs').argv;
-var fs = require('fs');
-var _ = require("lodash");
-var cfg = {
-	config:require("./config.js")
-};
-var lcfgPath = argv.config || "./local-config.js";
-if (fs.existsSync(lcfgPath)) {
-	cfg.config = _.merge(cfg.config, require(lcfgPath));
-}
-// eslint-disable-next-line no-process-env
-process.env['NEW_RELIC_PORT'] = cfg.config.server.port;
+const newrelic = require('newrelic'),
+	{ argv } = require('yargs'),
+	fs = require('fs'),
+	_ = require('lodash'),
+	tinyback = require('tinyback'),
+	http = require('http'),
+	https = require('https'),
+	path = require('path'),
+	safe = require('safe');
 
-var newrelic = require('newrelic');
-var tinyback = require('tinyback');
-var http = require('http');
-var https = require('https');
-var path = require('path');
-var safe = require("safe");
+let cfg = {
+	config: require('./config.js')
+};
+
+const lcfgPath = argv.config || './local-config.js';
+if (fs.existsSync(lcfgPath))
+	cfg.config = _.defaultsDeep(require(lcfgPath), cfg.config);
+
+process.env['NEW_RELIC_PORT'] = cfg.config.server.port;
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
 _.merge(cfg, {
-	modules:[
-		{name:"prefixify",object:tinyback.prefixify()},
-		{name:"tson",object:tinyback.tson()},
-		{name:"validate",object:tinyback.validate()},
-		{name:"mongo",object:tinyback.mongodb()},
-		{name:"cache",object:tinyback.mongocache()},
-		{name:"obac",object:tinyback.obac()},
-		{name:"users",require:"./modules/usersapi.js"},
-		{name:"restapi",object:tinyback.restapi()},
-		{name:"assets",require:"./modules/assetsapi.js"},
-		{name:"collect",require:"./modules/collectapi.js"},
-		{name:"stats",require:"./modules/statsapi.js"},
-		{name:"web",require:"./modules/web"}
+	modules: [
+		{ name: 'prefixify', object: tinyback.prefixify() },
+		{ name: 'tson', object: tinyback.tson() },
+		{ name: 'validate', object: tinyback.validate() },
+		{ name: 'mongo', object: tinyback.mongodb() },
+		{ name: 'cache', object: tinyback.mongocache() },
+		{ name: 'obac', object: tinyback.obac() },
+		{ name: 'users', require: './modules/usersapi.js' },
+		{ name: 'restapi', object: tinyback.restapi() },
+		{ name: 'assets', require: './modules/assetsapi.js' },
+		{ name: 'collect', require: './modules/collect.js' },
+		{ name: 'agent_listener', require: './modules/agent_listener.js' },
+		{ name: 'stats', require: './modules/statsapi.js' },
+		{ name: 'web', require: './modules/web' }
 	]
 });
 
-console.time("Live !");
+cfg.defaults = {
+	module: {
+		reqs: {
+			router: true,
+			globalUse: true
+		}
+	},
+	obac: {
+		registerStillSync: true
+	}
+};
+
+console.time('Live !');
 var cb = function (err) {
 	console.log(err);
 
@@ -49,30 +63,27 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 	app.api.mongo.getDb({}, safe.sure(cb, function (db) {
 		app.api.mongo.dropUnusedIndexes(db, safe.sure(cb, function () {
 			app.locals.newrelic = newrelic;
-			_.each(app.api, function (module, ns) {
-				_.each(module, function (func, name) {
+			_.each(app.api, function (mod, ns) {
+				_.each(mod, function (func, name) {
 					if (!_.isFunction(func)) return;
 					// wrap function
-					module[name] = function (...args) {
-						var cb = args[args.length-1];
+					mod[name] = function (...args) {
+						if (!_.isFunction(_.last(args))) return func.call(this, ...args);
+						const cb = args.pop();
 
-						if (_.isFunction(cb)) {
-							// redefined callback to one wrapped by new relic
+						const callback = function (err, ...args2) {
+							if (err)
+								newrelic.noticeError(err);
+							cb.call(this, err, ...args2);
+						};
 
-							args[args.length - 1] = newrelic.createTracer(`api/api/${ns}/${name}`, function (err) {
-								if (err)
-									newrelic.noticeError(err);
-								cb.call(this, ...arguments);
-							});
-
-							func.call(this, ...args);
-						} else {
-							return func.call(this, ...args);
-						}
+						newrelic.startSegment(`api/api/${ns}/${name}`, true, cb => {
+							func.call(this, ...args, cb);
+						}, callback);
 					};
 				});
 			});
-			console.timeEnd("Live !");
+			console.timeEnd('Live !');
 			if (cfg.config.server.ssl_port) {
 				try {
 					var options = {
@@ -85,7 +96,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 					var httpsServer = https.createServer(options, app.express);
 
 					httpsServer.listen(cfg.config.server.ssl_port);
-				} catch (e) {/**/}
+				} catch (e) { console.error(e); }
 			}
 
 			var httpServer = http.createServer(app.express);
@@ -93,7 +104,7 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 			httpServer.listen(cfg.config.server.port);
 
 			if (cfg.config.automated && process.send) {
-				process.send({c: "startapp_repl", data: null});
+				process.send({ c: 'startapp_repl', data: null });
 			}
 		}));
 	}));

@@ -9,7 +9,6 @@ var childProcess = require('child_process');
 var webdriver = require('selenium-webdriver');
 var _ = require('lodash');
 var fs = require('fs');
-var { Buffer } = require('safe-buffer');
 var argv = require('yargs').argv;
 var childs = [];
 var driver;
@@ -44,6 +43,10 @@ module.exports.shutdownContext = function () {
 	var deferred = new webdriver.promise.Deferred();
 
 	killChilds();
+
+	if (driver)
+		driver.quit();
+
 	setTimeout(function () {
 		deferred.fulfill(true);
 	}, 100);
@@ -82,9 +85,8 @@ module.exports.getBrowser = function(cb) {
 		if (browser === "chrome" || browser === "chrome-headless") {
 			var chrome = require('selenium-webdriver/chrome');
 			var opt = new chrome.Options();
-			if (browser === "chrome-headless") {
-				opt.addArguments("--headless");
-			}
+			if (browser === 'chrome-headless')
+				opt.addArguments(['headless', 'no-sandbox', 'disable-gpu', '--window-size=1280,768']);
 			driver = new webdriver.Builder()
 				.forBrowser('chrome')
 				.setChromeOptions(opt)
@@ -157,7 +159,7 @@ module.exports.setupContext = function () {
 
 	this._uncaughtException = function(err){
 		self.browser.takeScreenshot().then(function(text){
-			require("fs").writeFileSync(__dirname+"/screenshot_err.png",new Buffer(text, 'base64'));
+			require('fs').writeFileSync(`${__dirname}/screenshot_err.png`, Buffer.from(text, 'base64'));
 			killChilds();
 			setTimeout(function(){
 				self._done(err);

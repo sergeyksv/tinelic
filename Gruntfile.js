@@ -14,18 +14,18 @@ module.exports = function(grunt) {
 		requirejs: {
 			compile: {
 				options: {
-					appDir: "./modules/web/app",
-					baseUrl: ".",
-					dir: "./modules/web/public/js/build",
+					appDir: './modules/web/app',
+					baseUrl: '.',
+					dir: './modules/web/public/js/build',
 					findNestedDependencies: true,
 					removeCombined: true,
 					skipDirOptimize: false,
 					modules: [{
-						name: "app"
+						name: 'app'
 					}, {
-						name: "routes/main",
+						name: 'routes/main',
 						exclude: [
-							"app"
+							'app'
 						]
 					}],
 					packages: [
@@ -36,25 +36,26 @@ module.exports = function(grunt) {
 						}
 					],
 					paths: {
-						"tson": "../../tinyback/tson",
-						"prefixify": "../../tinyback/prefixify",
-						"tinybone": "../../tinybone",
-						"lodash": "../public/js/lodash",
-						"dust.core": "../public/js/dust",
-						"dust.parse": "../public/js/parser",
-						"dust.compile": "../public/js/compiler",
-						"md5":"../public/js/md5",
-						"dust-helpers": "../public/js/dust-helpers",
-						"dustc": "../../tinybone/dustc",
-						"text": "../../../node_modules/requirejs-text/text",
-						"safe": "../public/js/safe",
-						"bootstrap": "../public/js/bootstrap",
-						"backctx": "empty:",
-						"highcharts": "../public/js/highcharts",
-						"jquery": "empty:",
-						"jquery-cookie": "../public/js/jquery-cookie",
-						"jquery.blockUI": "../public/js/jquery.blockUI",
-						"jquery.tablesorter.combined": "../public/js/jquery.tablesorter.combined"
+						'tson': '../../tinyback/tson',
+						'prefixify': '../../tinyback/prefixify',
+						'tinybone': '../../tinybone',
+						'lodash': '../public/js/lodash',
+						'dust.core': '../public/js/dust',
+						'dust.parse': '../public/js/parser',
+						'dust.compile': '../public/js/compiler',
+						'md5':'../public/js/md5',
+						'dust-helpers': '../public/js/dust-helpers',
+						'dustc': '../../tinybone/dustc',
+						'text': '../../../node_modules/requirejs-text/text',
+						'safe': '../public/js/safe',
+						'bootstrap': '../public/js/bootstrap',
+						'bootstrap-table': '../public/js/bootstrap-table',
+						'backctx': 'empty:',
+						'highcharts': '../public/js/highcharts',
+						'jquery': 'empty:',
+						'jquery-cookie': '../public/js/jquery-cookie',
+						'jquery.blockUI': '../public/js/jquery.blockUI',
+						'jquery.tablesorter.combined': '../public/js/jquery.tablesorter.combined'
 					},
 					done: function(done, output) {
 						console.log(output);
@@ -63,15 +64,16 @@ module.exports = function(grunt) {
 				}
 			}
 		},
-		"git-describe": {
-			"options": {},
-			"main": {}
+		'git-describe': {
+			'options': {},
+			'main': {}
 		},
 		eslint: {
 			options: {
-				configFile: ".eslintrc",
-				ignorePath: ".eslintignore",
-				fix: true
+				configFile: '.eslintrc.js',
+				ignorePath: '.eslintignore',
+				format: 'codeframe',
+				fix: false
 			},
 			all: [
 				'./*.js',
@@ -80,7 +82,7 @@ module.exports = function(grunt) {
 				'!./local-config.js',
 				'!modules/tinyback/**',
 				'!modules/tinybone/**',
-				"!modules/web/app/**"
+				'!modules/web/app/**'
 			]
 		},
 		uglify: {
@@ -103,11 +105,11 @@ module.exports = function(grunt) {
 	grunt.registerTask('ensureLocalConfig', function() {
 		var config = {};
 		if (grunt.file.exists('local-config.js'))
-			config = require("./local-config.js");
+			config = require('./local-config.js');
 		var rev = grunt.option('buildrev').toString();
 		if (config.rev != rev) {
 			config.rev = rev;
-			grunt.file.write('local-config.js', "module.exports=" + JSON.stringify(config, null, "\t"));
+			grunt.file.write('local-config.js', 'module.exports=' + JSON.stringify(config, null, '\t'));
 		}
 	});
 

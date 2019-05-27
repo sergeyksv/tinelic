@@ -1,4 +1,4 @@
-/*jslint node: true */
+/* deprecated */
 "use strict";
 var _ = require("lodash");
 var safe = require("safe");
@@ -9,9 +9,8 @@ var geoip = require('geoip-lite');
 var request = require('request');
 var zlib = require('zlib');
 var newrelic = require("newrelic");
-var { Buffer } = require("safe-buffer");
 
-var buf = new Buffer(35);
+let buf = Buffer.alloc(35);
 buf.write("R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=", "base64");
 
 module.exports.deps = ['mongo','prefixify','validate','assets','cache'];
@@ -224,7 +223,7 @@ module.exports.init = function (ctx, cb) {
 			}
 		],safe.sure_spread(cb, function (events,pages,ajax, actions, as, action_errors, metrics) {
 setInterval(function() {
-	var dtlw = new Date( (new Date()).valueOf() - 1000*60*60*24*7);
+	var dtlw = new Date( Date.now() - 1000*60*60*24*7);
 	var q = {_dt: {$lte: dtlw}};
 	safe.parallel([
 		function(cb) {
@@ -338,12 +337,23 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 		});
 	}
 	safe.run(function (cb) {
+		function redirect() {
+			const _host_arr = req.headers.host.split( ":" );
+			res.json( { return_value: _host_arr[0] } );
+		}
 		var nrpc = {
+			/**
+			 * agent ask for reporting host, return by ourselves
+			 * get_redirect_host function for newrelic agent version 2 or less
+			 * preconnect function for newrelic agent version 3 or higher
+			 * */
 			get_redirect_host:function () {
-				// agent ask for reporting host, return by ourselves
-				var _host_arr = req.headers.host.split( ":" );
-				res.json( { return_value: _host_arr[0] } );
+				redirect();
 			},
+			preconnect: function () {
+				redirect();
+			},
+
 			connect:function () {
 				// on connect we should link agent with its project id when available
 				var body = nrParseBody(req)[0];
@@ -351,7 +361,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 					var project={};
 					project._id = idp;
 					var run = {_idp:project._id, _s_pid:body.pid, _s_logger:body.language, _s_host:body.host};
-					var _ret = {return_value:{"agent_run_id": new Buffer(JSON.stringify(run)).toString('base64')}};
+					let _ret = {return_value: {'agent_run_id': Buffer.from(JSON.stringify(run)).toString('base64')}};
 					// set value to prevent errors from newrelic:api:getBrowserTimingHeader
 					_ret.return_value.application_id = project._id;
 					// need to decode newrelic transaction, see rum.js:decode_newrelic_transaction()
@@ -405,7 +415,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 			},
 			metric_data:function () {
 				var body = nrParseBody(req);
-				var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+				let run = prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 				var _dts = new Date( body[1] * 1000.0 ),
 					_dte = new Date( body[2] * 1000.0 ),
@@ -527,7 +537,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 			},
 			analytic_event_data:function () {
 				var body = nrParseBody(req);
-				var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+				let run = prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 				var arecs = [];
 				safe.each(body[body.length - 1], function (item,cb) {
@@ -557,7 +567,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 			},
 			error_data:function () {
 				var body = nrParseBody(req);
-				var run = prefixify(JSON.parse(new Buffer(req.query.run_id, 'base64').toString('utf8')));
+				let run = prefixify(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
 				_.each(body[body.length - 1], function (ne) {
 					var trnName = nrParseTransactionName(ne[1]);
@@ -586,7 +596,7 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 						nrParseStackTrace_dotnet( ne[4].stack_trace, te );
 					}
 					ctx.api.validate.check("error",te, safe.sure(function () {
-						console.log(JSON.stringify(te), ne[4].stack_trace);
+						// console.log(JSON.stringify(te), ne[4].stack_trace);
 						nrNonFatal.apply(this,arguments);
 					}, function () {
 						safe.parallel([
@@ -641,6 +651,10 @@ ctx.express.post("/agent_listener/invoke_raw_method", function( req, res, next )
 				res.json( { return_value: "ok" } );
 			},
 			error_event_data:function () {
+				// ???? not suppored now
+				res.json( { return_value: "ok" } );
+			},
+			span_event_data: function () {
 				// ???? not suppored now
 				res.json( { return_value: "ok" } );
 			}
@@ -790,10 +804,10 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 			delete data.r;
 			delete data.p;
 			ctx.api.validate.check("page", data, safe.sure(cb, function(){
-				pages.insert(data, safe.sure(cb, function (docs) {
+				pages.insert(data, safe.sure(cb, function () {
 					// once after inserting page we need to link
 					// this page events that probably cread earlier
-					var _id = docs[0]._id;
+					const _id = data._id;
 					safe.parallel([
 						function(cb) {
 							var n = 0;
@@ -830,8 +844,9 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 									}
 								}
 							}, {multi: true}, safe.sure(cb, function (updates) {
-								if (updates)
-									pages.update({_id: _id}, {$inc: {_i_err: updates}}, cb);
+								let update = updates.result.nModified;
+								if (update)
+									pages.update({_id: _id}, {$inc: {_i_err: update}}, cb);
 								else
 									cb();
 							}));
@@ -869,7 +884,7 @@ ctx.router.get("/browser/:project",function (req, res, next) {
 // dsn is like http://auth1:auth2@{host}/collect/sentry/{projectid}
 ctx.router.post( "/sentry/api/store", function( req, res, next ) {
 	safe.run(function(cb) {
-		var zip_buffer = new Buffer( req.body.toString(), 'base64' );
+		let zip_buffer = Buffer.from(req.body.toString(), 'base64');
 //		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
 		zlib.inflate( zip_buffer, safe.sure( cb, function( _buffer_getsentry_data ) {
 			var ge = JSON.parse( _buffer_getsentry_data.toString() );
@@ -1021,9 +1036,9 @@ ctx.router.get("/sentry/api/:project/:action",function (req, res, next) {
 						else
 							data._dtf = new Date();
 
-						events.insert(data, safe.sure(cb, function(res){
-							ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
-								events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+						events.insert(data, safe.sure(cb, function () {
+							ctx.api.collect.getStackTraceContext(ctx.locals.systoken, data.stacktrace.frames, function (err, frames) {
+								events.update({'_id': data._id}, {$set: {stacktrace: {frames: frames}}},safe.sure(cb, function () {}));
 							});
 							cb(null);
 						}));
@@ -1114,9 +1129,9 @@ ctx.router.post("/sentry/api/:project/:action", function (req, res, next) {
 								te._dtf = edtl[0]._dtf || edtl[0]._dt ||  new Date();
 							else
 								te._dtf = new Date();
-							events.insert(te, safe.sure(cb, function(res){
-								ctx.api.collect.getStackTraceContext(ctx.locals.systoken,res[0].stacktrace.frames, function (err,frames) {
-									events.update({"_id":res[0]._id},{$set : {stacktrace:{frames : frames}}},safe.sure(cb, function(res){}));
+							events.insert(te, safe.sure(cb, function () {
+								ctx.api.collect.getStackTraceContext(ctx.locals.systoken, te.stacktrace.frames, function (err, frames) {
+									events.update({'_id': te._id}, {$set: {stacktrace: {frames: frames}}},safe.sure(cb, function () {}));
 								});
 								cb(null);
 							}));

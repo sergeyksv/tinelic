@@ -3,7 +3,7 @@ var _ = require('lodash');
 var safe = require('safe');
 var path = require('path');
 var express = require('express');
-var static = express.static;
+var staticExpress = express.static;
 var lessMiddleware = require('less-middleware');
 var raven = require('raven');
 
@@ -54,6 +54,7 @@ module.exports.init = function (ctx, cb) {
 	requirejs.define("jquery", true);
 	requirejs.define("jquery-cookie", true);
 	requirejs.define("jquery.blockUI", true);
+	requirejs.define("bootstrap-table",true);
 	requirejs.define("bootstrap/dropdown", true);
 	requirejs.define("bootstrap/datetimepicker", true);
 	requirejs.define("bootstrap/modal", true);
@@ -74,13 +75,13 @@ module.exports.init = function (ctx, cb) {
 					advanced: false
 				}),
 				new (require('less-plugin-autoprefix'))({
-					browsers: ["Chrome > 30", "Firefox ESR", "ie > 10", "Safari > 7"]
+					browsers: ["last 2 Chrome versions", "Firefox ESR", "not dead"]
 				})
 			]
 		}
 
 	}));
-	ctx.router.use(static(__dirname+"/public",{maxAge:600000}));
+	ctx.router.use(staticExpress(__dirname+"/public",{maxAge:600000}));
 	ctx.router.get("/app/wire/:id", function (req, res, next) {
 		ctx.api.cache.get("web_wires",req.params.id, safe.sure(next, function (wire) {
 			if (wire) {

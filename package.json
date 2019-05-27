@@ -1,16 +1,23 @@
 {
   "name": "tinelic",
-  "version": "0.0.1",
+  "version": "1.0.0",
+  "description": "lightweight application performance and error monitoring server for GetSentry (raven.js) and New Relic agents",
+  "author": {
+    "name": "Pushok Software Co. Ltd"
+  },
+  "license": "MIT",
+  "main": "app.js",
   "private": true,
   "engines": {
-    "node": "^6.11.0"
+    "node": ">= 12.3.1"
   },
   "dependencies": {
-    "amdefine": "~0.1.0",
+    "amdefine": "^1.0.1",
     "block-ui": "^2.70.1",
     "blueimp-md5": "^2.10.0",
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "bootstrap": "^3.4.1",
+    "bootstrap-table": "^1.14.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.4",
     "dustjs-helpers": "^1.7.4",
@@ -19,31 +26,33 @@
     "express": "^4.16.4",
     "geoip-lite": "^1.3.7",
     "highcharts": "^6.x.x",
-    "jquery": "^3.3.1",
+    "jquery": "^3.4.1",
     "less-middleware": "^3.1.x",
     "less-plugin-autoprefix": "^2.0.0",
     "less-plugin-clean-css": "^1.5.1",
     "lodash": "^4.17.11",
     "lx-valid": "git://github.com/sergeyksv/lx-valid.git",
     "moment": "^2.24.0",
-    "mongodb": "~1.4.28",
-    "multer": "~0.1.7",
-    "newrelic": "^1.40.0",
+    "mongodb": "^3.2.4",
+    "multer": "^1.4.1",
+    "newrelic": "^5.8.0",
     "raven": "^0.12.3",
     "request": "^2.88.0",
     "requirejs": "^2.3.6",
     "requirejs-text": "^2.0.15",
     "safe": "^0.4.6",
-    "safe-buffer": "^5.1.2",
     "tablesorter": "^2.31.1",
+    "tinyback": "./modules/tinyback",
+    "tinybone": "./modules/tinybone",
+    "tinyhook": "^0.4.1",
     "useragent": "^2.3.0",
-    "yargs": "^13.2.2"
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
     "eslint": "^5.16.0",
     "eslint-plugin-json": "^1.4.0",
     "eslint-plugin-no-inferred-method-name": "^1.0.2",
-    "eslint-plugin-node": "^6.0.0",
+    "eslint-plugin-node": "^9.0.1",
     "grunt": "^1.0.4",
     "grunt-contrib-requirejs": "~1.0.0",
     "grunt-contrib-uglify": "^4.0.1",
@@ -51,16 +60,23 @@
     "grunt-git-describe": "^2.4.4",
     "grunt-nodemon": "~0.4.2",
     "load-grunt-tasks": "^4.0.0",
-    "mocha": "^3.5.0",
-    "phantomjs-prebuilt": "^2.1.16"
+    "mocha": "^6.1.4"
   },
   "optionalDependencies": {
-    "chromedriver": "^2.46.0",
+    "chromedriver": "^74.0.0",
     "selenium-webdriver": "^3.6.0"
   },
   "scripts": {
-    "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test",
-    "test": "grunt build && mocha -bR spec test/test.js --browser=chrome-headless --testenv=test",
+    "test-chrome": "grunt build && mocha -bR spec test/test.js --browser=chrome --testenv=test --exit",
+    "test": "mocha -bR spec test/test.js --browser=chrome-headless --testenv=test --exit",
     "test-check": "mocha -bR spec test/test.js --testenv=test"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.pushok.com/pushok/tinelic.git"
+  },
+  "bugs": {
+    "url": "https://git.pushok.com/pushok/tinelic/issues"
+  },
+  "homepage": "https://git.pushok.com/pushok/tinelic"
 }

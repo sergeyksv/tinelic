@@ -8,7 +8,7 @@ define(['tinybone/base', 'lodash',"tinybone/backadapter", "safe", 'dustc!views/c
 			var plot = [];
 			var factor = this.get('quant') * 60000;
 			var dtstart = parseInt(new Date(this.get('dtstart')).valueOf()/factor);
-			var dtend = parseInt(Math.min(new Date(this.get('dtend')).valueOf(),new Date().valueOf())/factor);
+			var dtend = parseInt(Math.min(new Date(this.get('dtend')).valueOf(),Date.now())/factor);
 			var flen = this.get('filter-len',parseInt((dtend - dtstart)*0.05));
 			if (flen%2===0) flen++;
 			var halv = Math.floor(flen/2);

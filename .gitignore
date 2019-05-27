@@ -9,3 +9,4 @@ test/snapshots
 screenshot*
 doc
 out
+.vscode

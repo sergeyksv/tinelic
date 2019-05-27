@@ -3,7 +3,7 @@
 	<legend>
 		{?team}<a href="{_t_prefix}/team/{team.name}">{team.name}</a>
 		{:else}<a href='{_t_prefix}/project/{project.slug}'>{project.name}</a>{/team}
-		<span class="text-info h5"> {query} </span>
+		<span class="text-info h5"> {query.selected} </span>
 		<span class="text-success h5">{@formatnumber val=stat.apdex type="apdex"/} / {@formatnumber val=stat.r type="rpm"/} / {@formatnumber val=stat.tta type="tm"/} / {@formatnumber val=stat.erate type="erate"/} </span>
 		<div class="pull-right dropdown">
 				<span class="btn btn-xs btn-info" data-toggle="dropdown">
@@ -25,10 +25,10 @@
 
 <div class="row">
 	<div class="col-sm-4">
-		{@view name="views/pages/pages_leftlist_pagination"/}
+		{@view name="views/common/left_list"/}
 	</div>
 	<div class="col-sm-8">
-		   {@view name="views/pages/pages_graph_table"/}
+		{@view name="views/pages/pages_graph_table"/}
 	</div>
 </div>
 {/main}

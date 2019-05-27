@@ -84,6 +84,7 @@ define(['tinybone/base','bootstrap/modal','tinybone/backadapter','safe', 'lodash
 							api("assets.getTeam", $.cookie('token'), {filter:{_id:data._id[0]}}, cb);
 						},
 						saveIntoTeams:['saveProject','team',function(cb,result) {
+							if (!result.team.projects) result.team.projects = [];
 							result.team.projects.push({_idp: result.saveProject._id});
 							api('assets.saveTeamProjects', $.cookie('token'), {_id:data._id[0],projects:result.team.projects}, cb);
 						}]

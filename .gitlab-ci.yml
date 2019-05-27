@@ -1,7 +1,32 @@
+image: git.pushok.com:4567/pushok/tinelic/tinelic-test
+
+cache:
+  key: "$CI_PIPELINE_ID"
+  paths:
+  - node_modules/
+  - modules/web/app/
+
+stages:
+  - build
+  - test
+
 build:
- script:
-  - . ~/.nvm/nvm.sh
-  - nvm use v6
-  - git submodule update --init
-  - npm install
-  - npm test
+  stage: build
+  variables:
+    NODE_ENV: "development"
+  before_script:
+    - npm i
+    - git checkout node_modules/
+    - npm i grunt-cli
+  script:
+    - ./node_modules/.bin/grunt build
+
+test:
+  stage: test
+  variables:
+    NODE_ENV: "test"
+  services:
+    - mongo:3.4
+  script:
+    - npm test
+  retry: 2

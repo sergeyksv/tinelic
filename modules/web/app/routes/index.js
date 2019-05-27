@@ -9,7 +9,7 @@ define(["require","tinybone/backadapter", "safe","lodash","feed/mainres","moment
 			},
 			data: function (cb) {
 				var tolerance = 5 * 60 * 1000;
-				var dtend = parseInt(((new Date()).valueOf()+tolerance)/tolerance)*tolerance;
+				var dtend = parseInt((Date.now()+tolerance)/tolerance)*tolerance;
 				var dtstart = res.locals.dtend - 20*60*1000;
 				api("web.getFeed",res.locals.token, {_t_age:quant+"m", feed:"mainres.homeInfo", params:{quant:quant, fv:req.query.fv, filter:{
 					_dt: {$gt: dtstart,$lte:dtend}
