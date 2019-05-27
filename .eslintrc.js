@@ -1,5 +1,5 @@
 'use strict';
-const node = '12.2.0';
+const node = '12.3.1';
 module.exports = {
 	'env': {
 		'es6': true,

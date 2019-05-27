@@ -1,27 +1,29 @@
-<table id="leftList">
-	<thead><tr><th></th></tr></thead>
-	<tbody>
-	{#leftList}
-		<tr>
-			<td>
-				<div class="progress" data-idx='{$idx}' style="border-radius:20px">
-					<span style="text-align:right;position:absolute; right:20px">
-						{@select key="{st}"}
-							{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
-							{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
-							{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
-						{/select}
-					</span>
-					<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
-						<div style="text-align:left; padding-left:20px">
-							<a href="./{st}?selected={_id}" style="color: black;" class="
-							{@eq key="{_id}" value="{query.selected}"} leftlist{/eq}">{_id}</a>
+<div id="{_t_view.cid}">
+	<table id="leftList">
+		<thead><tr><th></th></tr></thead>
+		<tbody>
+		{#leftList}
+			<tr>
+				<td>
+					<div class="progress" data-idx='{$idx}' style="border-radius:20px">
+						<span style="text-align:right;position:absolute; right:20px">
+							{@select key="{st}"}
+								{@eq value="rpm"}{@formatnumber val=r type="rpm"/}{/eq}
+								{@eq value="mtc"}{@formatnumber val=c type="reqs"/} x {@formatnumber val=tta type="tm"/}{/eq}
+								{@eq value="sar"}{@formatnumber val=tta type="tm"/}{/eq}
+								{@eq value="wa"}{@formatnumber val=apdex type="apdex"/} <span class="text-info">apdex</span>{/eq}
+							{/select}
+						</span>
+						<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
+							<div style="text-align:left; padding-left:20px">
+								<a href="./{st}?selected={_id}" style="color: black;" class="
+								{@eq key="{_id}" value="{query.selected}"} leftlist{/eq}">{_id}</a>
+							</div>
 						</div>
 					</div>
-				</div>
-			</td>
-		</tr>
-	{/leftList}
-	</tbody>
-</table>
+				</td>
+			</tr>
+		{/leftList}
+		</tbody>
+	</table>
+</div>

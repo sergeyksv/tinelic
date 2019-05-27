@@ -9,7 +9,7 @@
   "main": "app.js",
   "private": true,
   "engines": {
-    "node": ">= 12.2.0"
+    "node": ">= 12.3.1"
   },
   "dependencies": {
     "amdefine": "^1.0.1",
@@ -44,6 +44,7 @@
     "tablesorter": "^2.31.1",
     "tinyback": "./modules/tinyback",
     "tinybone": "./modules/tinybone",
+    "tinyhook": "^0.4.1",
     "useragent": "^2.3.0",
     "yargs": "^13.2.4"
   },
