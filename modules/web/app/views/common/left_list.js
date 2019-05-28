@@ -8,17 +8,15 @@ define([
 	let view = tb.View;
 	let View = view.extend({
 		id: 'views/common/left_list',
-		postRender: function () {
-			view.prototype.postRender.call(this);
-			this.$el.find('#leftList').bootstrapTable({
-				classes: 'table-sm',
-				pagination: true,
-				// pageNumber: this.data.query.page,
-				// onPageChange: (n) => this.data.query.page = n,
-				pageList: [],
-				search: true
-			});
-		}
+		events: {
+			'submit #filterform': function (e) {
+				e.preventDefault();
+				let $form = this.$(e.currentTarget),
+					app = this.app, data = this.data;
+				app.router.navigateTo(`${app.prefix}/project/${data.project.slug}/${data.type}/${data.st}?${$form.serialize()}`, app.clientError);
+			}
+		},
+		postRender: function () {}
 	});
 	View.id = 'views/common/left_list';
 	return View;

@@ -1,5 +1,17 @@
 <div id="{_t_view.cid}">
-	<table id="leftList">
+	<form class="form-inline my-4" id="filterform">
+		<div class="form-group mr-1">
+			<input type="text" name="search" value="{search}" class="form-control" placeholder="Filter">
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-default">
+				<i class="fa fa-search"></i>Search
+			</button>
+		</div>
+	</form>
+	<br>
+	<table id="leftList" style="width: 100%;">
 		<thead><tr><th></th></tr></thead>
 		<tbody>
 		{#leftList}
@@ -16,8 +28,8 @@
 						</span>
 						<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black; text-">
 							<div style="text-align:left; padding-left:20px">
-								<a href="./{st}?selected={_id}" style="color: black;" class="
-								{@eq key="{_id}" value="{query.selected}"} leftlist{/eq}">{_id}</a>
+								<a href="./{st}?selected={_id}&page={page}&search={search}" style="color: black;" class="
+								{@eq key="{_id}" value="{selected}"} leftlist{/eq}">{_id}</a>
 							</div>
 						</div>
 					</div>
@@ -26,4 +38,5 @@
 		{/leftList}
 		</tbody>
 	</table>
+	{@view name="views/common/pagination" locals-cnt=count locals-page=page locals-per_page=10 locals-req=_t_req /}
 </div>

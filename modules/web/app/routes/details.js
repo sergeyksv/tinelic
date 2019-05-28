@@ -1,7 +1,8 @@
+'use strict';
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, safe, _) => {
 
-	const parseData = ({data, st, dtStart, dtEnd}) => {
+	const parseData = ({data, st, dtStart, dtEnd, search}) => {
 		// sorting "mtc", "sar" etc
 		data = _.sortBy(data, (v) => {
 			if (st == 'rpm')
@@ -53,6 +54,9 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			return r;
 		}, []);
 
+		if (search)
+			data = _.filter(data, d => _.includes(d._id, search));
+
 		return data;
 	};
 
@@ -63,6 +67,10 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let cat = req.query.cat || 'WebTransaction';
 			let projIds = res.locals.projIds;
 			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
+			let search = req.query.search;
+			let selected = req.query.selected;
+			let page = req.query.page || 0;
+			let limit = parseInt(req.query.limit || 10);
 
 			safe.parallel({
 				view: (cb) => require(['views/application/application'], (view) => safe.back(cb, null, view), cb),
@@ -114,7 +122,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.tta = stat.tta / c / 1000;
 				stat.rpm = stat.rpm / c;
 
-				r.data = parseData({ data: r.data, st, dtStart, dtEnd });
+				r.data = parseData({ data: r.data, st, dtStart, dtEnd, search });
 
 				_.forEach(r.breakdown, (r) => {
 					r.value.cnt = r.value.c;
@@ -125,13 +133,17 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				res.renderX({
 					view: r.view,
 					data: {
-						leftList: r.data,
+						count: _.size(r.data),
+						page: page || 0,
+						selected: selected,
+						search: search,
+						leftList: _.chunk(r.data, limit)[page],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Application',
+						type: 'application',
 						st: st,
 						cat: cat,
-						query: req.query,
 						project: res.locals.project,
 						team: res.locals.team,
 						stat: stat
@@ -144,17 +156,22 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let quant = res.locals.quant;
 			let projIds = res.locals.projIds;
 			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
+			let search = req.query.search;
+			let selected = req.query.selected;
+			let page = req.query.page || 0;
+			let limit = parseInt(req.query.limit || 10);
+			// let skip = page * limit;
 
 			safe.parallel({
 				view: (cb) => require(['views/ajax/ajax'], (view) => safe.back(cb, null, view), cb),
 				getAjaxMixBreakdown: (cb) => {
-					if (!req.query.selected)
+					if (!selected)
 						return safe.back(cb, null, []);
 					api('stats.getAjaxMixStats', res.locals.token, {
 						_t_age: quant + 'm', quant: quant, facet: { timings: true, breakdown: true }, filter: {
 							_idp: projIds,
 							_dt: { $gt: dtStart, $lte: dtEnd },
-							_s_name: req.query.selected
+							_s_name: selected
 						}
 					}, cb);
 				},
@@ -184,22 +201,26 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.epm = stat.e / c;
 				stat.e = stat.epm / stat.r;
 
-				r.rpm = parseData({data: r.rpm, st, dtStart, dtEnd});
+				r.rpm = parseData({data: r.rpm, st, dtStart, dtEnd, search});
 
 				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
 
 				res.renderX({
 					view: r.view,
 					data: {
-						leftList: r.rpm,
+						count: _.size(r.rpm),
+						page: page || 0,
+						selected: selected,
+						search: search,
+						leftList: _.chunk(r.rpm, limit)[page],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						project: res.locals.project,
 						team: res.locals.team,
 						st: st,
 						title: 'Ajax',
-						stat: stat,
-						query: req.query
+						type: 'ajax',
+						stat: stat
 					}
 				});
 			}));
@@ -210,6 +231,10 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
 			let cat = req.query.cat || 'Datastore';
 			let projIds = res.locals.projIds;
+			let search = req.query.search;
+			let selected = req.query.selected;
+			let page = req.query.page || 0;
+			let limit = parseInt(req.query.limit || 10);
 
 			safe.parallel({
 				view: (cb) => require(['views/database/database'], (view) => safe.back(cb, null, view), cb),
@@ -256,7 +281,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.tta = stat.tta / c / 1000;
 				stat.r = stat.r / c;
 
-				r.data = parseData({data: r.data, st, dtStart, dtEnd});
+				r.data = parseData({data: r.data, st, dtStart, dtEnd, search});
 
 				_.forEach(r.breakdown, (r) => {
 					r.value.cnt = r.value.c;
@@ -267,15 +292,19 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					view: r.view,
 					route: req.route.path,
 					data: {
-						leftList: r.data,
+						count: _.size(r.data),
+						page: page || 0,
+						selected: selected,
+						search: search,
+						leftList: _.chunk(r.data, limit)[page],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Database/Statements',
+						type: '',
 						st: st,
 						team: res.locals.team,
 						cat: cat,
 						fr: filter,
-						query: req.query,
 						project: res.locals.project,
 						stat: stat
 					}
@@ -287,6 +316,10 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			let quant = res.locals.quant;
 			let projIds = res.locals.projIds;
 			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
+			let search = req.query.search;
+			let selected = req.query.selected;
+			let page = req.query.page || 0;
+			let limit = parseInt(req.query.limit || 10);
 
 			safe.parallel({
 				view: (cb) => require(['views/pages/pages'], (view) => safe.back(cb, null, view), cb),
@@ -337,19 +370,23 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 				stat.epm = stat.e / c;
 				stat.erate = stat.epm / stat.r;
 
-				r.data = parseData({data: r.data, st, dtStart, dtEnd});
+				r.data = parseData({data: r.data, st, dtStart, dtEnd, search});
 
 				_.forEach(r.breakdown, (r) => r.value.tta = r.value.tt / r.value.c);
 
 				res.renderX({
 					view: r.view,
 					data: {
-						leftList: r.data,
+						count: _.size(r.data),
+						page: page || 0,
+						selected: selected,
+						search: search,
+						leftList: _.chunk(r.data, limit)[page],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Pages',
+						type: 'pages',
 						st: st,
-						query: req.query,
 						project: res.locals.project,
 						team: res.locals.team,
 						stat: stat

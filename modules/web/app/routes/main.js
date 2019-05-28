@@ -1,3 +1,4 @@
+'use strict';
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres'], (require, api, safe, _, feed) => {
 	return {

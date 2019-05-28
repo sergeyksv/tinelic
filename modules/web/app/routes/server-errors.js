@@ -1,3 +1,4 @@
+'use strict';
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require, api, safe, _, moment) => (req, res, cb) => {
 	if (req.path.substr(-1) != '/' && !req.params.id)
