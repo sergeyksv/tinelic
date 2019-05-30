@@ -49,7 +49,6 @@ module.exports = function(grunt) {
 						'text': '../../../node_modules/requirejs-text/text',
 						'safe': '../public/js/safe',
 						'bootstrap': '../public/js/bootstrap',
-						'bootstrap-table': '../public/js/bootstrap-table',
 						'backctx': 'empty:',
 						'highcharts': '../public/js/highcharts',
 						'jquery': 'empty:',

@@ -69,12 +69,6 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres'], (r
 				}));
 			}
 		},
-		errors: (req, res, cb) => require(['routes/client-errors'], route => {
-			route(req, res, cb);
-		}, cb),
-		server_errors: (req, res, cb) => require(['routes/server-errors'], route => {
-			route(req, res, cb);
-		}, cb),
 		settings: (req, res, cb) => api('assets.getProject', res.locals.token, { _t_age: '30d', filter: { slug: req.params.slug } }, safe.sure(cb, (project) => safe.parallel({
 			view: (cb) => require(['views/project-settings/settings'], (view) => safe.back(cb, null, view), cb),
 			apdexConfig: (cb) => api('assets.getProjectApdexConfig', res.locals.token, { _id: project._id }, cb),

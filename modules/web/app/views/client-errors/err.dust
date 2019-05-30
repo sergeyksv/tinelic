@@ -34,7 +34,7 @@
 </legend>
 <div class="row">
 	<div class="col-sm-4">
-		{@view name="views/client-errors/err_left_list"/}
+		{@view name="views/common/left_list_err"/}
 	</div>
 	<div class="col-sm-8">
 		{@view name="views/common/graph" data="rpm" locals-name="Rpm" locals-color="green" locals-fillColor="lightgreen" locals-plot-value="r" locals-filter-median=0/}
