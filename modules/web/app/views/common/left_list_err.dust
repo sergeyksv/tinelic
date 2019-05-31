@@ -1,15 +1,15 @@
 <div id="{_t_view.cid}">
-	<form class="form-inline my-4" id="filterErr">
-		<div class="form-group mr-1">
+	<form class="form-inline" id="filterErr">
+		<div class="form-group">
 			<input type="text" name="search" value="{search}" class="form-control" placeholder="Filter">
 		</div>
 
 		<div class="form-group">
 			<button type="submit" class="btn btn-default">
-				Search
+				<span class="glyphicon glyphicon-search"></span>
 			</button>
 			<button type="reset" class="btn btn-default">
-				X
+				<span class="glyphicon glyphicon-remove"></span>
 			</button>
 		</div>
 	</form>

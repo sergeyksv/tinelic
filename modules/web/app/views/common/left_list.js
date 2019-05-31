@@ -8,13 +8,13 @@ define([
 	let View = view.extend({
 		id: 'views/common/left_list',
 		events: {
-			'submit #filterform': function (e) {
+			'submit #filterForm': function (e) {
 				e.preventDefault();
 				let $form = this.$(e.currentTarget),
 					app = this.app, data = this.data;
 				app.router.navigateTo(`${app.prefix}/project/${data.project.slug}/${data.type}/${data.st}?${$form.serialize()}`, app.clientError);
 			},
-			'reset #filterform': function (e) {
+			'reset #filterForm': function (e) {
 				e.preventDefault();
 				let app = this.app, data = this.data;
 				app.router.navigateTo(`${app.prefix}/project/${data.project.slug}/${data.type}/${data.st}`, app.clientError);
