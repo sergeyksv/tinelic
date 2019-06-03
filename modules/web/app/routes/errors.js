@@ -86,9 +86,9 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 					_.forEach(r.data, (r) => r.bar = r.stats[f] / percent);
 					r.data = _.sortBy(r.data, (r) => {
 						if (st == 'mr')
-							r.error._dtf * -1;
+							return r.error._dtf * -1;
 						else
-							r.stats[f] * -1;
+							return r.stats[f] * -1;
 					});
 
 					const count = _.size(r.data);
@@ -184,9 +184,9 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 					_.forEach(r.data, (r) => r.bar = r.stats.c / percent);
 					r.data = _.sortBy(r.data, (r) => {
 						if (st == 'mr')
-							r.error._dtf * -1;
+							return r.error._dtf * -1;
 						else
-							r.stats.c * -1;
+							return r.stats.c * -1;
 					});
 
 					const count = _.size(r.data);

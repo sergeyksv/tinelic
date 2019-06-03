@@ -317,6 +317,8 @@ class Api {
 					let body = nrParseBody(req);
 					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
 
+					if (!run._idp) return; // temporary solution
+
 					let arecs = [];
 					safe.each(body[body.length - 1], (item, cb) => {
 						item = item[0];
@@ -346,6 +348,8 @@ class Api {
 				error_data: () => {
 					let body = nrParseBody(req);
 					let run = this.datafix(JSON.parse(Buffer.from(req.query.run_id, 'base64').toString('utf8')));
+
+					if (!run._idp) return; // temporary solution
 
 					_.each(body[body.length - 1], ne => {
 						let trnName = nrParseTransactionName(ne[1]);
