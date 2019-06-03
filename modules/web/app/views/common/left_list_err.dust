@@ -39,7 +39,7 @@
 						</span>
 						<div class="progress-bar progress-bar-info" role="progressbar" style="width: {bar}%;color:black;white-space: nowrap;">
 								<div style="border: 1px solid white;text-align:left;height:23px;position: absolute;width:93%;padding-left:5px;padding-right:25px;white-space: nowrap;overflow: hidden; text-overflow: ellipsis;">
-								<a href="./{stats._id}?page={page}&search={search}" style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};"
+								<a href="./{st}?selected={stats._id}&page={page}&search={search}" style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};"
 									class="{@eq key="{error._s_message}" value="{event.event._s_message}"} leftlist{/eq}">
 									{error._s_message}
 								</a>

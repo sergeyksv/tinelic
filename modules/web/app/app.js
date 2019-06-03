@@ -151,10 +151,10 @@ define(['require', 'tinybone/base', 'views/layout/layout', 'module', 'safe', 'du
 				router.get('/project/:slug/application/:stats', main.prepare, details.application);
 				router.get('/project/:slug/pages/:stats', main.prepare, details.pages);
 				router.get('/project/:slug/errors/:sort', errors.client_errors);
-				router.get('/project/:slug/errors/:sort/:id', errors.client_errors);
+				router.get('/project/:slug/errors/:sort', errors.client_errors);
 				router.get('/project/:slug/database/:stats', main.prepare, details.database);
 				router.get('/project/:slug/server_errors/:sort', errors.server_errors);
-				router.get('/project/:slug/server_errors/:sort/:id', errors.server_errors);
+				router.get('/project/:slug/server_errors/:sort', errors.server_errors);
 				router.get('/project/:slug/settings', main.settings);
 				router.get('/project/:slug/metrics', main.prepare, main.metrics);
 				router.get('/teams', main.teams);
@@ -163,10 +163,10 @@ define(['require', 'tinybone/base', 'views/layout/layout', 'module', 'safe', 'du
 				router.get('/team/:teams/application/:stats', main.prepare, details.application);
 				router.get('/team/:teams/pages/:stats', main.prepare, details.pages);
 				router.get('/team/:teams/errors/:sort', errors.client_errors);
-				router.get('/team/:teams/errors/:sort/:id', errors.client_errors);
+				router.get('/team/:teams/errors/:sort', errors.client_errors);
 				router.get('/team/:teams/database/:stats', main.prepare, details.database);
 				router.get('/team/:teams/server_errors/:sort', errors.server_errors);
-				router.get('/team/:teams/server_errors/:sort/:id', errors.server_errors);
+				router.get('/team/:teams/server_errors/:sort', errors.server_errors);
 				router.get('/team/:teams/settings', main.settings);
 				router.get('/team/:teams/metrics', main.prepare, main.metrics);
 

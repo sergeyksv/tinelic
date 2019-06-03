@@ -10,8 +10,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 	return {
 
 		client_errors: (req, res, cb) => {
-			// if (req.path.substr(-1) != '/' && !req.params.id)
-			// 	return res.redirect(req.baseUrl + req.path + '/');
+			let selected = req.query.selected;
 			let st = req.params.sort,
 				quant = res.locals.quant,
 				dtp;
@@ -45,8 +44,8 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 				}
 			},
 			(cb) => safe.run((cb) => {
-				if (req.params.id)
-					api('stats.getPageError', res.locals.token, { _t_age: '30d', filter: { _id: req.params.id } }, cb);
+				if (selected)
+					api('stats.getPageError', res.locals.token, { _t_age: '30d', filter: { _id: selected } }, cb);
 				else
 					cb();
 			}, safe.sure(cb, (error) => {
@@ -107,7 +106,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 							team: team,
 							lastAck: lastAck,
 							projIds: projIds,
-							id: req.params.id
+							id: selected
 						})
 					});
 				}));
@@ -116,8 +115,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 		},
 
 		server_errors: (req, res, cb) => {
-			// if (req.path.substr(-1) != '/' && !req.params.id)
-			// 	return res.redirect(req.baseUrl + req.path + '/');
+			let selected = req.query.selected;
 			let quant = res.locals.quant,
 				dta,
 				st = req.params.sort;
@@ -151,8 +149,8 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 				}
 			},
 			(cb) => safe.run((cb) => {
-				if (req.params.id)
-					api('stats.getActionError', res.locals.token, { _t_age: '30d', filter: { _id: req.params.id } }, cb);
+				if (selected)
+					api('stats.getActionError', res.locals.token, { _t_age: '30d', filter: { _id: selected } }, cb);
 				else
 					cb();
 			}, safe.sure(cb, (error) => {
@@ -207,7 +205,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 								project: project,
 								projIds: projIds,
 								lastAck: lastAck,
-								id: req.params.id
+								id: selected
 							})
 					});
 				}));
