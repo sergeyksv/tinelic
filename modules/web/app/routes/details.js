@@ -303,7 +303,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Database/Statements',
-						type: '',
+						type: 'database',
 						st: st,
 						team: res.locals.team,
 						cat: cat,

@@ -756,18 +756,13 @@ module.exports.init = (ctx, cb) => {
 		}, safe.sure(cb, () => {
 			ctx.api.cache.register('collect_client_context', { maxAge: 3600 }, safe.sure(cb, () => {
 				setInterval(() => {
-					newrelic.startBackgroundTransaction('collect:clearCollections', function transactionHandler() {
-						const transaction = newrelic.getTransaction();
-						let dtlw = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
-						let q = { _dt: { $lte: dtlw } };
-						let collectionsToClear = ['page_errors', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
-						safe.each(collectionsToClear, (ctc, cb) => {
-							collections[ctc].remove(q, cb);
-						}, err => {
-							if (err)
-								newrelic.noticeError(err);
-							transaction.end();
-						});
+					let dtlw = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
+					let q = { _dt: { $lte: dtlw } };
+					let collectionsToClear = ['page_errors', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
+					safe.each(collectionsToClear, (ctc, cb) => {
+						collections[ctc].remove(q, cb);
+					}, err => {
+						if (err) newrelic.noticeError(err);
 					});
 				}, 1000 * 60 * 60);
 
