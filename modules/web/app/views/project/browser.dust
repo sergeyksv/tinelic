@@ -12,12 +12,12 @@
 		{#errors.data}
 			<li style="overflow: hidden; text-overflow: ellipsis;">
 				{?team}
-				<a class="text-default" href='{_t_prefix}/team/{team.name}/errors/perr/{error._id}'>
+				<a class="text-default" href='{_t_prefix}/team/{team.name}/errors/perr/?selected={error._id}'>
 					<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
 					<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
 				</a><br>
 				{:else}
-				<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/{error._id}'>
+				<a class="text-default" href='{_t_prefix}/project/{project.slug}/errors/perr/?selected={error._id}'>
 					<span class="badge text-danger" >{stats.pages}</span>&nbsp;-&nbsp;
 					<span style="color: {@gt value=error._dtf key=dtcliack}black{:else}red{/gt};">{error._s_message}</span>
 				</a><br>{/team}
