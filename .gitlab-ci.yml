@@ -16,7 +16,6 @@ build:
     NODE_ENV: "development"
   before_script:
     - npm i
-    - git checkout node_modules/
     - npm i grunt-cli
   script:
     - ./node_modules/.bin/grunt build
