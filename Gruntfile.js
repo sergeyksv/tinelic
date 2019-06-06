@@ -13,6 +13,7 @@ module.exports = function (grunt) {
 		requirejs: {
 			compile: {
 				options: {
+					optimize: 'none', // TODO: add grunt-babel and remove this option
 					appDir: './modules/web/app',
 					baseUrl: '.',
 					dir: './modules/web/public/js/build',
