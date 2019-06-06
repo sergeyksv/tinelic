@@ -15,10 +15,10 @@ build:
   variables:
     NODE_ENV: "development"
   before_script:
-    - git submodule init
-    - git submodule update
+    - git submodule sync --recursive
+    - git submodule update --init --recursive
     - npm i
-    - npm i grunt-cli
+    - npm i --no-save grunt-cli
   script:
     - ./node_modules/.bin/grunt build
 
