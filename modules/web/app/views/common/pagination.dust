@@ -1,0 +1,28 @@
+<div id="{_t_view.cid}">
+	{#pagination}
+		<nav class="row">
+			<ul class="pagination text-center float-left mx-auto">
+				<li class="disabled page-item">
+					<a class="page-link" href="#">
+						<span>{count} rows</span>
+					</a>
+				</li>
+				<li class="page-item {?first}disabled{/first}">
+					<a class="page-link" href="{?first}#{/first}{^first}{baseUrlWithQueryString}page={prev}{/first}">
+						<span aria-hidden="true">&laquo;</span>
+					</a>
+				</li>
+				{#pages}
+					<li class="page-item {?active}active{/active}">
+						<a class="page-link" href="{?active}#{:else}{baseUrlWithQueryString}page={page}{/active}">{label}</a>
+					</li>
+				{/pages}
+				<li class="page-item {?last}disabled{/last}">
+					<a class="page-link" href="{?last}#{/last}{^last}{baseUrlWithQueryString}page={next}{/last}">
+						<span aria-hidden="true">&raquo;</span>
+					</a>
+				</li>
+			</ul>
+		</nav>
+	{/pagination}
+</div>
