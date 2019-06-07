@@ -10,32 +10,32 @@
 
 define(['tinybone/base', 'lodash', 'dustc!views/common/pagination.dust'], (tb, _) => {
 	const getPagination = (page, pages, count) => {
-		page = parseInt(page, 10) || 0;
+		page = parseInt(page, 10) || 1;
 		pages = parseInt(pages, 10) || 0;
 
 		if (pages < 2)
 			return false;
 
 		let limit = 4,
-			middle = 4,
-			start = 0,
+			middle = 2,
+			start = 1,
 			end = pages,
 			i,
 			pg = { pages: [], count: count };
 
-		if (page === 0)
+		if (page === 1)
 			pg.first = 1;
 		else
 			pg.prev = page - 1;
 
-		if (page === (pages - 1))
+		if (page === pages)
 			pg.last = 1;
 		else
 			pg.next = page + 1;
 
 		if (pages <= limit) {
-			for (i = 0; i < pages; i++) {
-				pg.pages.push({ page: i, label: (i + 1), active: (i === page) });
+			for (i = 1; i <= pages; i++) {
+				pg.pages.push({ page: i, label: i, active: (i === page) });
 			}
 
 			return pg;
@@ -48,37 +48,37 @@ define(['tinybone/base', 'lodash', 'dustc!views/common/pagination.dust'], (tb, _
 			start = end - limit;
 		}
 
-		if (start < 0) {
-			start = 0;
+		if (start < 1) {
+			start = 1;
 			end = start + limit;
 		}
 
 		if (end > pages) {
 			end = pages;
 			start = end - limit;
-			if (start < 0)
-				start = 0;
+			if (start < 1)
+				start = 1;
 		}
 
-		pg.pages.push({ page: 0, label: 1, active: (0 === page) });
+		pg.pages.push({ page: 1, label: 1, active: (1 === page) });
 
 		if (pages > limit && page > middle) {
 			pg.pages.push({ page: start, label: '...', active: false, delimiter: 1 });
 			start++;
 		}
 
-		for (i = start + 1; i < end - 1; i++) {
-			pg.pages.push({ page: i, label: (i + 1), active: (i === page) });
+		for (i = start + 1; i < end; i++) {
+			pg.pages.push({ page: i, label: i, active: (i === page) });
 		}
 
 		if (pages > limit && page < pages - middle) {
-			if (i === pages - 2)
-				pg.pages.push({ page: i, label: (i + 1), active: (i === page) });
+			if (i === pages)
+				pg.pages.push({ page: i, label: i, active: (i === page) });
 			else
-				pg.pages.push({ page: pages - 2, label: '...', active: false, delimiter: 1 });
+				pg.pages.push({ page: pages, label: '...', active: false, delimiter: 1 });
 		}
 
-		pg.pages.push({ page: pages - 1, label: pages, active: (pages - 1 === page) });
+		pg.pages.push({ page: pages, label: pages, active: (pages === page) });
 
 		if (pages > limit) {
 			if (pg.pages[1].delimiter)
@@ -154,7 +154,7 @@ define(['tinybone/base', 'lodash', 'dustc!views/common/pagination.dust'], (tb, _
 			let cnt = _.get(this.locals, 'cnt', 0);
 			let pages = Math.ceil(cnt / _.get(this.locals, 'per_page', 10));
 			if (pages > 1) {
-				this.data.pagination = getPagination(_.get(this.locals, 'page', 0), pages, cnt);
+				this.data.pagination = getPagination(_.get(this.locals, 'page', 1), pages, cnt);
 				let queryString = param(_.omit(this.locals.req.query, 'page'));
 				this.data.pagination.baseUrlWithQueryString = this.locals.req.baseUrl + this.locals.req.path + '?' + (queryString ? queryString + '&' : '');
 			}

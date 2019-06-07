@@ -13,7 +13,7 @@
 					</a>
 				</li>
 				{#pages}
-					<li class="page-item {?active}active{/active}">
+					<li class="page-item {?active}active{/active} {?delimiter}disabled{/delimiter}">
 						<a class="page-link" href="{?active}#{:else}{baseUrlWithQueryString}page={page}{/active}">{label}</a>
 					</li>
 				{/pages}
