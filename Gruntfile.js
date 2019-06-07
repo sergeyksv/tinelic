@@ -1,12 +1,11 @@
-/*jslint node: true */
 'use strict';
-var requirejs = require('requirejs');
+const requirejs = require('requirejs');
 requirejs.define.amd.dust = true;
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 	require('load-grunt-tasks')(grunt);
 
-	grunt.event.once('git-describe', function(rev) {
+	grunt.event.once('git-describe', function (rev) {
 		grunt.option('buildrev', rev);
 	});
 
@@ -14,6 +13,7 @@ module.exports = function(grunt) {
 		requirejs: {
 			compile: {
 				options: {
+					optimize: 'none', // TODO: add grunt-babel and remove this option
 					appDir: './modules/web/app',
 					baseUrl: '.',
 					dir: './modules/web/public/js/build',
@@ -43,7 +43,7 @@ module.exports = function(grunt) {
 						'dust.core': '../public/js/dust',
 						'dust.parse': '../public/js/parser',
 						'dust.compile': '../public/js/compiler',
-						'md5':'../public/js/md5',
+						'md5': '../public/js/md5',
 						'dust-helpers': '../public/js/dust-helpers',
 						'dustc': '../../tinybone/dustc',
 						'text': '../../../node_modules/requirejs-text/text',
@@ -56,8 +56,8 @@ module.exports = function(grunt) {
 						'jquery.blockUI': '../public/js/jquery.blockUI',
 						'jquery.tablesorter.combined': '../public/js/jquery.tablesorter.combined'
 					},
-					done: function(done, output) {
-						console.log(output);
+					done: function (done, output) {
+						console.info(output);
 						done();
 					}
 				}
@@ -72,7 +72,7 @@ module.exports = function(grunt) {
 				configFile: '.eslintrc.js',
 				ignorePath: '.eslintignore',
 				format: 'codeframe',
-				fix: false
+				fix: true
 			},
 			all: [
 				'./*.js',
@@ -87,8 +87,8 @@ module.exports = function(grunt) {
 		uglify: {
 			tinelic: {
 				files: {
-					'./modules/web/public/js/build/tinelic.js':['./modules/web/public/js/raven.js','./modules/web/app/rum.js'],
-					'./modules/web/public/js/build/jquery.js':'./modules/web/public/js/jquery.js'
+					'./modules/web/public/js/build/tinelic.js': ['./modules/web/public/js/raven.js', './modules/web/app/rum.js'],
+					'./modules/web/public/js/build/jquery.js': './modules/web/public/js/jquery.js'
 				},
 				options: {
 				}
@@ -101,7 +101,7 @@ module.exports = function(grunt) {
 		}
 	});
 
-	grunt.registerTask('ensureLocalConfig', function() {
+	grunt.registerTask('ensureLocalConfig', function () {
 		var config = {};
 		if (grunt.file.exists('local-config.js'))
 			config = require('./local-config.js');
