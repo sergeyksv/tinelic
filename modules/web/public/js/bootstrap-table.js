@@ -1,1 +1,0 @@
-../../../../node_modules/bootstrap-table/dist/bootstrap-table.js
