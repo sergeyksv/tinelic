@@ -2,22 +2,33 @@
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require, api, safe, _, moment) => {
 
+	const getVariables = (req, res) => {
+		let page = parseInt(req.query.page);
+		if (!page || page < 1) page = 1;
+		// let skip = page * limit;
+		return {
+			st: req.params.sort,
+			quant: res.locals.quant,
+			search: req.query.search,
+			selected: req.query.selected,
+			page: page,
+			limit: parseInt(req.query.limit || 10)
+		};
+	};
+
 	const parseData = ({data, limit, page, search}) => {
 		if (search) data = _.filter(data, d => _.includes(d.error._s_message, search));
-		return _.chunk(data, limit)[page];
+		return _.chunk(data, limit)[page - 1];
 	};
 
 	return {
 
 		client_errors: (req, res, cb) => {
-			let selected = req.query.selected;
-			let st = req.params.sort,
-				quant = res.locals.quant,
-				dtp;
-			let project, projIds, team;
-			let search = req.query.search;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
+
+			let { selected, quant, st, search, page, limit } = getVariables(req, res);
+
+			let project, projIds, team, dtp;
+
 			safe.series([(cb) => {
 				if (req.params.teams) {
 					api('assets.getTeam', res.locals.token, { _t_age: '30d', filter: { name: req.params.teams } }, safe.sure(cb, (_team) => {
@@ -97,7 +108,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 					res.renderX({
 						view: r.view, data: _.assign(r, {
 							count: count,
-							page: page || 0,
+							page: page,
 							search: search,
 							title: 'Errors',
 							type: 'errors',
@@ -115,14 +126,11 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 		},
 
 		server_errors: (req, res, cb) => {
-			let selected = req.query.selected;
-			let quant = res.locals.quant,
-				dta,
-				st = req.params.sort;
-			let project, projIds, team;
-			let search = req.query.search;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
+
+			let { selected, quant, st, search, page, limit } = getVariables(req, res);
+
+			let project, projIds, team, dta;
+
 			safe.series([(cb) => {
 				if (req.params.teams) {
 					api('assets.getTeam', res.locals.token, { _t_age: '30d', filter: { name: req.params.teams } }, safe.sure(cb, (_team) => {
@@ -196,7 +204,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'moment'], (require
 						view: r.view, data: _.assign(r,
 							{
 								count: count,
-								page: page || 0,
+								page: page,
 								search: search,
 								title: 'Server-errors',
 								type: 'server_errors',

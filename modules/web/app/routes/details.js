@@ -2,6 +2,23 @@
 /* global define */
 define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, safe, _) => {
 
+	const getVariables = (req, res) => {
+		let page = parseInt(req.query.page);
+		if (!page || page < 1) page = 1;
+		// let skip = page * limit;
+		return {
+			st: req.params.stats,
+			quant: res.locals.quant,
+			projIds: res.locals.projIds,
+			dtStart: res.locals.dtstart,
+			dtEnd: res.locals.dtend,
+			search: req.query.search,
+			selected: req.query.selected,
+			page: page,
+			limit: parseInt(req.query.limit || 10)
+		};
+	};
+
 	const parseData = ({data, st, dtStart, dtEnd, search}) => {
 		// sorting "mtc", "sar" etc
 		data = _.sortBy(data, (v) => {
@@ -62,15 +79,10 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 
 	return {
 		application: (req, res, cb) => {
-			let st = req.params.stats;
-			let quant = res.locals.quant;
+
 			let cat = req.query.cat || 'WebTransaction';
-			let projIds = res.locals.projIds;
-			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
-			let search = req.query.search;
-			let selected = req.query.selected;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
+
+			let { st, quant, projIds, dtStart, dtEnd, search, selected, page, limit } = getVariables(req, res);
 
 			safe.parallel({
 				view: (cb) => require(['views/application/application'], (view) => safe.back(cb, null, view), cb),
@@ -134,11 +146,11 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					view: r.view,
 					data: {
 						count: _.size(r.data),
-						page: page || 0,
+						page: page,
 						selected: selected,
 						query: selected ? true : false,
 						search: search,
-						leftList: _.chunk(r.data, limit)[page],
+						leftList: _.chunk(r.data, limit)[page - 1],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Application',
@@ -153,15 +165,8 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			}));
 		},
 		ajax: (req, res, cb) => {
-			let st = req.params.stats;
-			let quant = res.locals.quant;
-			let projIds = res.locals.projIds;
-			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
-			let search = req.query.search;
-			let selected = req.query.selected;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
-			// let skip = page * limit;
+
+			let { st, quant, projIds, dtStart, dtEnd, search, selected, page, limit } = getVariables(req, res);
 
 			safe.parallel({
 				view: (cb) => require(['views/ajax/ajax'], (view) => safe.back(cb, null, view), cb),
@@ -210,11 +215,11 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					view: r.view,
 					data: {
 						count: _.size(r.rpm),
-						page: page || 0,
+						page: page,
 						selected: selected,
 						query: selected ? true : false,
 						search: search,
-						leftList: _.chunk(r.rpm, limit)[page],
+						leftList: _.chunk(r.rpm, limit)[page - 1],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						project: res.locals.project,
@@ -228,15 +233,10 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			}));
 		},
 		database: (req, res, cb) => {
-			let st = req.params.stats;
-			let quant = res.locals.quant;
-			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
+
 			let cat = req.query.cat || 'Datastore';
-			let projIds = res.locals.projIds;
-			let search = req.query.search;
-			let selected = req.query.selected;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
+
+			let { st, quant, projIds, dtStart, dtEnd, search, selected, page, limit } = getVariables(req, res);
 
 			safe.parallel({
 				view: (cb) => require(['views/database/database'], (view) => safe.back(cb, null, view), cb),
@@ -295,11 +295,11 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					route: req.route.path,
 					data: {
 						count: _.size(r.data),
-						page: page || 0,
+						page: page,
 						selected: selected,
 						query: selected ? true : false,
 						search: search,
-						leftList: _.chunk(r.data, limit)[page],
+						leftList: _.chunk(r.data, limit)[page - 1],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Database/Statements',
@@ -315,14 +315,8 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 			}));
 		},
 		pages: (req, res, cb) => {
-			let st = req.params.stats;
-			let quant = res.locals.quant;
-			let projIds = res.locals.projIds;
-			let dtStart = res.locals.dtstart, dtEnd = res.locals.dtend;
-			let search = req.query.search;
-			let selected = req.query.selected;
-			let page = req.query.page || 0;
-			let limit = parseInt(req.query.limit || 10);
+
+			let { st, quant, projIds, dtStart, dtEnd, search, selected, page, limit } = getVariables(req, res);
 
 			safe.parallel({
 				view: (cb) => require(['views/pages/pages'], (view) => safe.back(cb, null, view), cb),
@@ -381,11 +375,11 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash'], (require, api, saf
 					view: r.view,
 					data: {
 						count: _.size(r.data),
-						page: page || 0,
+						page: page,
 						selected: selected,
 						query: selected ? true : false,
 						search: search,
-						leftList: _.chunk(r.data, limit)[page],
+						leftList: _.chunk(r.data, limit)[page - 1],
 						breakdown: r.breakdown,
 						graphs: r.graphs,
 						title: 'Pages',

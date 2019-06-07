@@ -856,10 +856,7 @@ module.exports.init = (ctx, cb) => {
 							}));
 						}));
 					}, err => {
-						if (err) {
-							console.log('BAD ajax: ' + JSON.stringify(data));
-							newrelic.noticeError(err);
-						}
+						if (err) newrelic.noticeError(err);
 						res.set('Content-Type', 'image/gif');
 						res.send(buf);
 					});
