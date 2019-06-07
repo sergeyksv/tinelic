@@ -73,7 +73,7 @@ define(['tinybone/base', 'lodash', 'dustc!views/common/pagination.dust'], (tb, _
 
 		if (pages > limit && page < pages - middle) {
 			if (i === pages) pg.pages.push({ page: i, label: i, active: (i === page) });
-			else pg.pages.push({ page: pages, label: '...', active: false, delimiter: 1 });
+			else pg.pages.push({ page: end, label: '...', active: false, delimiter: 1 });
 		}
 
 		if (_.size(pg.pages) != pages)
