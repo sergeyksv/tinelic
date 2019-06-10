@@ -763,9 +763,12 @@ module.exports.init = (ctx, cb) => {
 						let q = { _dt: { $lte: dtlw } };
 						let collectionsToClear = ['page_errors', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
 						safe.each(collectionsToClear, async ctc => {
-							const { deletedCount } = await collections[ctc].deleteMany(q);
+							await collections[ctc].deleteMany(q);
+							/* const { deletedCount } = */ await collections[ctc].deleteMany(q);
+							/*
 							if (deletedCount > 0)
 								console.info('cleaned %d documents in collection %s at %s', deletedCount, ctc, new Date());
+							*/
 						}, err => {
 							if (err)
 								newrelic.noticeError(err);
@@ -775,7 +778,8 @@ module.exports.init = (ctx, cb) => {
 					setTimeout(cleaner, 1000 * 60 * 60); // 1 hour
 				}
 
-				setTimeout(cleaner, 1000 * 60); // 1 minute
+				if (process.env.NODE_ENV == 'production')
+					setTimeout(cleaner, 1000 * 60); // 1 minute
 
 				ctx.router.get('/ajax/:project', (req, res, next) => {
 					let data = req.query;

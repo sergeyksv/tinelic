@@ -44,6 +44,7 @@ cfg.defaults = {
 			globalUse: true
 		}
 	},
+	prefixify: {legacyBoolean: true},
 	obac: {
 		registerStillSync: true
 	}
