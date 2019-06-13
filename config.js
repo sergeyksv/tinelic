@@ -32,6 +32,20 @@ module.exports = {
 			ccfg: { native_parser: true, w: 1 }
 		}
 	},
+	/**
+	 * config for dumping
+	dump: {
+		start: '2019-06-10T10:00:00.000',
+		end:'2019-06-10T10:10:00.000',
+		host: 'localhost', // optional
+		port: '27017', // optional
+		db: 'tinelic',
+		out: `${__dirname}/tmp/dump/`,
+		authenticationDatabase: 'admin', // optional
+		username: null, // optional
+		password: null // optional
+	},
+	*/
 	server: {
 		port: 80,
 		ssl_port: false
