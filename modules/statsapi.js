@@ -1,3 +1,4 @@
+/* deprecated */
 'use strict';
 const _ = require('lodash'),
 	safe = require('safe'),

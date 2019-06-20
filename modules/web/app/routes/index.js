@@ -1,6 +1,6 @@
 'use strict';
 /* global define */
-define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres', 'moment'], (require, api, safe, _, feed, moment) => (req, res, cb) => {
+define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres'], (require, api, safe, _, feed) => (req, res, cb) => {
 	let quant = 5;
 	safe.auto({
 		view: (cb) => require(['views/index/index'], (view) => safe.back(cb, null, view), cb),

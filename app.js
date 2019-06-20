@@ -32,7 +32,7 @@ _.merge(cfg, {
 		{ name: 'assets', require: './modules/assetsapi.js' },
 		{ name: 'collect', require: './modules/collect.js' },
 		{ name: 'agent_listener', require: './modules/agent_listener.js' },
-		{ name: 'stats', require: './modules/statsapi.js' },
+		{ name: 'stats', require: './modules/stats.js' },
 		{ name: 'web', require: './modules/web' }
 	]
 });
