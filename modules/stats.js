@@ -18,6 +18,7 @@ class Api {
 		this.collections = collections;
 		this.queryfix = ctx.api.prefixify.queryfix;
 		this.sortfix = ctx.api.prefixify.sort;
+		this.quant = 5;
 	}
 
 	/**
@@ -436,8 +437,7 @@ class Api {
 					]
 				}
 			}
-		], { allowDiskUse: true },
-		safe.sure(cb, (tmpData) => {
+		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
 				cb(null, { route: [], server: [], reporter: [], lang: [], count: 0 });
 			}
@@ -556,8 +556,7 @@ class Api {
 					]
 				}
 			}
-		], { allowDiskUse: true },
-		safe.sure(cb, (tmpData) => {
+		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
 				cb(null, { route: [], os: [], browser: [], count: 0, sessions: 0, views: 0 });
 			}
@@ -637,8 +636,7 @@ class Api {
 					}
 				},
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true },
-			safe.sure(cb, (stats) => {
+			], { allowDiskUse: true }, safe.sure(cb, (stats) => {
 				let ids = {};
 				_.each(stats, (s) => ids[s._id0] = {
 					stats: {
@@ -762,8 +760,7 @@ class Api {
 				},
 				{ $project: { value: { _id: '$_id0', c: '$c', _dtmax: '$_dtmax', _dtmin: '$_dtmin' } } },
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true },
-			safe.sure(cb, (stats) => {
+			], { allowDiskUse: true }, safe.sure(cb, (stats) => {
 				let ids = {};
 				_.forEach(stats, (s) => ids[s.value._id] = { stats: s.value, error: s._id });
 				this.collections.action_errors.find(this.queryfix({ _id: { $in: _.keys(ids) } }))
@@ -943,6 +940,176 @@ class Api {
 				return cb(new CustomError('Current user is unknown', 'Unauthorized'));
 			cb();
 		}));
+	}
+
+	getIndex({ req, res }, cb) {
+		safe.auto({
+			data: cb => this.getIndexData({ req, res }, cb),
+			teams: cb => this.getIndexTeams({ req, res }, cb),
+			metrics: ['data', 'teams', (cb, r) => this.getIndexMetrics(r, cb)]
+		}, safe.sure(cb, r => cb(null, r.metrics)));
+	}
+
+	getIndexData({ req, res }, cb) {
+		let tolerance = 5 * 60 * 1000;
+		let dtend = parseInt((Date.now() + tolerance) / tolerance) * tolerance;
+		let dtstart = res.locals.dtend - 20 * 60 * 1000;
+
+		safe.run(cb => {
+			this.ctx.api.web.getFeed(res.locals.token, {
+				_t_age: this.quant + 'm', feed: 'mainres.homeInfo', params: {
+					quant: this.quant, fv: req.query.fv, filter: {
+						_dt: { $gt: dtstart, $lte: dtend }
+					}
+				}
+			}, cb);
+		}, safe.sure(cb, result => {
+
+			for (let r of result) {
+				let period;
+				let errAck = r.result.errAck;
+				let apdex = {}, server = {}, client = {}, ajax = {};
+
+				client.r = client.e = client.etu = 0;
+				apdex.client = apdex.server = apdex.ajax = 0;
+				ajax.r = ajax.e = ajax.etu = 0;
+				server.r = server.e = server.etu = server.proc = server.mem = 0;
+
+				if (r.result.views.length) {
+					period = r.result.views.length;
+					_.each(r.result.views, (v) => {
+						v = v.value;
+						client.r += v.r;
+						client.etu += v.tta;
+						client.e += v.e / v.r;
+						apdex.client += v.apdex;
+					});
+
+					client.r = client.r / period;
+					client.etu = client.etu / period / 1000;
+					client.e = client.e / period;
+					apdex.client = apdex.client / period;
+				}
+
+				if (r.result.ajax.length) {
+					period = r.result.ajax.length;
+					_.forEach(r.result.ajax, (v) => {
+						v = v.value;
+						ajax.r += v.r;
+						ajax.etu += v.tta;
+						ajax.e += v.e / v.r;
+						apdex.ajax += v.apdex;
+					});
+
+					ajax.etu = ajax.etu / period / 1000;
+					ajax.e = ajax.e / period;
+					ajax.r = ajax.r / period;
+					apdex.ajax = apdex.ajax / period;
+				}
+
+				if (r.result.actions.length) {
+					period = r.result.actions.length;
+					_.forEach(r.result.actions, (v) => {
+						v = v.value;
+						server.e += v.e / v.r;
+						server.r += v.r;
+						server.etu += v.tta;
+						apdex.server += v.apdex;
+					});
+
+					server.etu = server.etu / period / 1000;
+					server.r = server.r / period;
+					server.e = server.e / period;
+					apdex.server = apdex.server / period;
+				}
+
+				if (r.result.metrics) {
+					server.proc = r.result.metrics.proc;
+					server.mem = r.result.metrics.mem;
+				}
+
+				_.assign(r, { apdex, server, client, ajax, errAck });
+
+			}
+
+			cb(null, result);
+		}));
+	}
+
+	getIndexTeams({ req, res }, cb) {
+
+		safe.run(cb => {
+			this.ctx.api.users.getCurrentUser(res.locals.token, {}, cb);
+		}, safe.sure(cb, usr => {
+			if (!usr.favorites || !usr.favorites.length) {
+				this.ctx.api.assets.getTeams(res.locals.token, { _t_age: this.quant + 'm' }, safe.sure(cb, teams => {
+					cb(null, { teams, fv: 'ALL' });
+				}));
+
+			} else {
+				if (req.query.fv == 'ALL') {
+					this.ctx.api.assets.getTeams(res.locals.token, { _t_age: this.quant + 'm' }, safe.sure(cb, teams => {
+						cb(null, { teams, fv: 'ALL' });
+					}));
+				}
+				else {
+					let idf = _.map(usr.favorites, '_idf');
+					this.ctx.api.assets.getTeams(res.locals.token, { _t_age: this.quant + 'm', filter: { _id: { $in: idf } } }, safe.sure(cb, teams => {
+						cb(null, { teams, fv: 'FAV' });
+					}));
+				}
+			}
+		}));
+
+	}
+
+	getIndexMetrics(r, cb) {
+		let { teams, fv } = r.teams;
+
+		for (let team of teams) {
+
+			let projects = {};
+			for (const proj of r.data) {
+				projects[proj._id] = proj;
+			}
+
+			for (let proj of team.projects) {
+				proj._t_proj = projects[proj._idp];
+			}
+
+			let tmetrics = {};
+
+			for (let proj of team.projects) {
+				_.assignInWith(tmetrics, _.pick(proj._t_proj, ['apdex', 'server', 'client', 'errAck', 'ajax']), (oval, sval, key) => {
+					let memo = {};
+					let rpm = 1, k;
+					if (key == 'apdex') for (k in sval) {
+						if (_.isUndefined(proj._t_proj[k].r)) rpm = 1; else rpm = proj._t_proj[k].r;
+						if (_.isUndefined(oval)) memo[k] = sval[k] * rpm; else memo[k] = oval[k] + sval[k] * rpm;
+					} else
+						for (k in sval) {
+							if ((k == 'e') || (k == 'etu')) rpm = sval.r; else rpm = 1;
+							if (_.isUndefined(oval)) memo[k] = sval[k] * rpm; else memo[k] = oval[k] + sval[k] * rpm;
+						}
+					return memo;
+				});
+			}
+
+			_.forEach(tmetrics.apdex, (stat, key) => tmetrics.apdex[key] = stat / tmetrics[key].r);
+
+			_.forEach(_.pick(tmetrics, 'server', 'client', 'ajax'), (stat, key) => {
+				tmetrics[key].e = stat.e / tmetrics[key].r;
+				tmetrics[key].etu = stat.etu / tmetrics[key].r;
+			});
+
+			if (tmetrics.server) {
+				tmetrics.server.mem = tmetrics.server.mem / tmetrics.server.proc;
+			}
+
+			team.t_metrics = tmetrics;
+		}
+
+		cb(null, { teams, fv });
 	}
 
 }
