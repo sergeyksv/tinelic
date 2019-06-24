@@ -942,7 +942,7 @@ class Api {
 		}));
 	}
 
-	getIndex({ req, res }, cb) {
+	getIndex(t, { req, res }, cb) {
 		safe.auto({
 			data: cb => this.getIndexData({ req, res }, cb),
 			teams: cb => this.getIndexTeams({ req, res }, cb),

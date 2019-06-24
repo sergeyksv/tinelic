@@ -4,7 +4,7 @@ define(['require', 'tinybone/backadapter', 'safe', 'lodash', 'feed/mainres'], (r
 
 	safe.auto({
 		view: cb => require(['views/index/index'], (view) => safe.back(cb, null, view), cb),
-		data: cb => api('stats.getIndex', { req, res }, cb)
+		data: cb => api('stats.getIndex', res.locals.token, { req, res }, cb)
 	}, safe.sure(cb, r => {
 		res.renderX({
 			view: r.view,
