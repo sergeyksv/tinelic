@@ -1,8 +1,9 @@
 'use strict';
 module.exports = {
-	env: 'production',
+	env: 'development',
 	app: {
-		wrapErrors: 1
+		wrapErrors: 1,
+		cleanInterval: 3600000,		// 1 hour
 	},
 	restapi: {
 		modules: {
