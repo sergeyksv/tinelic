@@ -759,7 +759,7 @@ module.exports.init = (ctx, cb) => {
 				function cleaner() {
 					newrelic.startBackgroundTransaction('collect:clearCollections', function transactionHandler() {
 						const transaction = newrelic.getTransaction();
-						let dtlw = new Date(Date.now() - 1000 * 60 * 60 * 24 * 7);
+						let dtlw = new Date(Date.now() - ctx.cfg.app.cleanRetention);
 						let q = { _dt: { $lte: dtlw } };
 						let collectionsToClear = ['page_errors', 'pages', 'page_reqs', 'actions', 'action_stats', 'action_errors', 'metrics'];
 						safe.each(collectionsToClear, async ctc => {
@@ -775,10 +775,12 @@ module.exports.init = (ctx, cb) => {
 							transaction.end();
 						});
 					});
-					setTimeout(cleaner, 1000 * 60 * 60); // 1 hour
+					setTimeout(cleaner, ctx.cfg.app.cleanInterval); 
 				}
 
-				if (process.env.NODE_ENV == 'production')
+				// will force clean on start in one minute after start
+				// and start clean loop in general
+				if (ctx.cfg.app.cleanInterval)
 					setTimeout(cleaner, 1000 * 60); // 1 minute
 
 				ctx.router.get('/ajax/:project', (req, res, next) => {
