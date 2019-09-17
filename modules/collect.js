@@ -778,7 +778,7 @@ module.exports.init = (ctx, cb) => {
 					setTimeout(cleaner, 1000 * 60 * 60); // 1 hour
 				}
 
-				if (process.env.NODE_ENV == 'production')
+//				if (process.env.NODE_ENV == 'production')
 					setTimeout(cleaner, 1000 * 60); // 1 minute
 
 				ctx.router.get('/ajax/:project', (req, res, next) => {
