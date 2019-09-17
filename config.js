@@ -1,8 +1,10 @@
 'use strict';
 module.exports = {
-	env: 'production',
+	env: 'development',
 	app: {
-		wrapErrors: 1
+		wrapErrors: 1,
+		cleanInterval: 3600000,		// 1 hour, set zero of false to avoid clean
+		cleanRetention: 604800000	// data will be kep for 1 week 604800000 = 1000 * 60 * 60 * 24 * 7
 	},
 	restapi: {
 		modules: {
