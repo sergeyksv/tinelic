@@ -7,7 +7,8 @@ const _ = require('lodash'),
 	geoip = require('geoip-lite'),
 	request = require('request'),
 	zlib = require('zlib'),
-	newrelic = require('newrelic');
+	newrelic = require('newrelic'),
+	util = require('util');
 
 let buf = Buffer.alloc(35);
 buf.write('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=', 'base64');
@@ -36,7 +37,7 @@ class Api {
 			let _type = _value_array.length > 1 ? `${_value_array[0]}/${_value_array[1]}` : '', _name = '';
 			for (let i = 2; i < _value_array.length; i++)
 				_name += (_name.length > 0 ? '/' : '') + _value_array[i];
-			return { name: _name.length ? _name : '-unknown-', type: _type.length ? _type : '-unknown-' };
+			return { name: _name.length ? _name : '-unknown-', type: _type.length ? _type : '-unknown-/-unknown-' };
 		};
 		const nrNonFatal = err => {
 			// capture NewRelic errors with GetSentry, cool to be doublec backed up
@@ -380,7 +381,6 @@ class Api {
 							nrParseStackTrace_dotnet(ne[4].stack_trace, te);
 						}
 						this.ctx.api.validate.check('error', te, safe.sure(() => {
-							// console.log(JSON.stringify(te), ne[4].stack_trace);
 							nrNonFatal.apply(this, arguments);
 						}, () => {
 							safe.parallel([
@@ -999,7 +999,7 @@ module.exports.init = (ctx, cb) => {
 					});
 				});
 				// dsn is like http://auth1:auth2@{host}/collect/sentry/{projectid}
-				ctx.router.post('/sentry/api/store', (req, res, next) => {
+				function sentryP1 (req, res, next) {
 					safe.run(cb => {
 						let zip_buffer = Buffer.from(req.body.toString(), 'base64');
 						//		zlib.inflate( zip_buffer, safe.sure( cb, function(buf){console.log("buf", buf.toString()); cb;}));
@@ -1010,7 +1010,7 @@ module.exports.init = (ctx, cb) => {
 									return cb(new Error(`SentryP1, bad id ${ge.project} - ${req.headers.referer||req.headers.origin||req.headers['x-forwarded-for']}`));									
 								let te = {
 									_idp: new mongo.ObjectID(idp),
-									_dt: new Date(ge.timestamp),
+									_dt: new Date(), // TODO: need to get real error date, but what with TZ ? new Date(ge.timestamp),
 									_s_reporter: 'raven',
 									_s_server: ge.server_name,
 									_s_logger: ge.platform,
@@ -1070,7 +1070,8 @@ module.exports.init = (ctx, cb) => {
 							res.status(200).end('ok');
 						}
 					});
-				});
+				};
+				ctx.router.post('/sentry/api/store',sentryP1);
 				ctx.router.get('/sentry/api/:project/:action', (req, res, next) => {
 					let data = {};
 					safe.run(cb => {
@@ -1176,6 +1177,8 @@ module.exports.init = (ctx, cb) => {
 					});
 				});
 				ctx.router.post('/sentry/api/:project/:action', (req, res, next) => {
+					if (_.isBuffer(req.body))
+						return sentryP1(req,res,next);
 					safe.run(cb => {
 						let ge = JSON.parse(req.body);
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, idp => {
@@ -1186,7 +1189,7 @@ module.exports.init = (ctx, cb) => {
 								req.socket.remoteAddress ||
 								req.connection.socket.remoteAddress;
 							let te = {
-								_idp: idp,
+								_idp: new mongo.ObjectID(idp),
 								_dt: new Date(),
 								_dtp: new Date(ge._dtp),
 								_s_reporter: 'raven',
