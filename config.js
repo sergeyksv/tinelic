@@ -49,6 +49,7 @@ module.exports = {
 	},
 	*/
 	server: {
+		host: "localhost",
 		port: 80,
 		ssl_port: false
 	}
