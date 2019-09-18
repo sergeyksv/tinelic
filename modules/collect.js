@@ -8,7 +8,9 @@ const _ = require('lodash'),
 	request = require('request'),
 	zlib = require('zlib'),
 	newrelic = require('newrelic'),
-	util = require('util');
+	LRU = require("lru-cache");
+
+let errProjectIds = new LRU({ max: 500, maxAge: 1000 * 60 * 60 });
 
 let buf = Buffer.alloc(35);
 buf.write('R0lGODlhAQABAIAAAP///wAAACwAAAAAAQABAAACAkQBADs=', 'base64');
@@ -789,8 +791,13 @@ module.exports.init = (ctx, cb) => {
 					let data = req.query;
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
-							if (!idp)
-								return cb(new Error(`Ajax, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`));								
+							if (!idp) {
+								let errSlug = `Ajax, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`;
+								if (errProjectIds.has(errSlug))
+									return cb(null);
+								errProjectIds.set(errSlug,true); 
+								return cb(new Error(errSlug));
+							}								
 							data._idp = new mongo.ObjectID(idp);
 							data._dtr = new Date();
 							data._dt = data._dtr;
@@ -875,8 +882,13 @@ module.exports.init = (ctx, cb) => {
 					let data = req.query;
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
-							if (!idp)
-								return cb(new Error(`Browser, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`));								
+							if (!idp) {
+								let errSlug = `Browser, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`;
+								if (errProjectIds.has(errSlug))
+									return cb(null);
+								errProjectIds.set(errSlug,true); 
+								return cb(new Error(errSlug));
+							}							
 							data._idp = idp;
 							data._dtr = new Date();
 							data._dtc = data._dt;
@@ -1006,8 +1018,13 @@ module.exports.init = (ctx, cb) => {
 						zlib.inflate(zip_buffer, safe.sure(cb, _buffer_getsentry_data => {
 							let ge = JSON.parse(_buffer_getsentry_data.toString());
 							ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, idp => {
-								if (!idp)
-									return cb(new Error(`SentryP1, bad id ${ge.project} - ${req.headers.referer||req.headers.origin||req.headers['x-forwarded-for']}`));									
+								if (!idp) {
+									let errSlug = `SentryP1, bad id ${ge.project} - ${req.headers.referer||req.headers.origin||req.headers['x-forwarded-for']}`;
+									if (errProjectIds.has(errSlug))
+										return cb(null);
+									errProjectIds.set(errSlug,true); 
+									return cb(new Error(errSlug));
+								}
 								let te = {
 									_idp: new mongo.ObjectID(idp),
 									_dt: new Date(), // TODO: need to get real error date, but what with TZ ? new Date(ge.timestamp),
@@ -1076,8 +1093,13 @@ module.exports.init = (ctx, cb) => {
 					let data = {};
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
-							if (!idp)
-								return cb(new Error(`SentryG, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`));							
+							if (!idp) {
+								let errSlug = `SentryG, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`;
+								if (errProjectIds.has(errSlug))
+									return cb(null);
+								errProjectIds.set(errSlug,true); 
+								return cb(new Error(errSlug));
+							}
 							data = JSON.parse(req.query.sentry_data);
 							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
@@ -1182,8 +1204,13 @@ module.exports.init = (ctx, cb) => {
 					safe.run(cb => {
 						let ge = JSON.parse(req.body);
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, ge.project, safe.sure(cb, idp => {
-							if (!idp)
-								return cb(new Error(`SentryP2, bad id ${ge.project} - ${req.headers.referer||req.headers.origin}`));
+							if (!idp) {
+								let errSlug = `SentryP2, bad id ${ge.project} - ${req.headers.referer||req.headers.origin}`;
+								if (errProjectIds.has(errSlug))
+									return cb(null);
+								errProjectIds.set(errSlug,true); 
+								return cb(new Error(errSlug));
+							}
 							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
 								req.socket.remoteAddress ||
