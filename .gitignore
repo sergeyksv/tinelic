@@ -10,3 +10,5 @@ screenshot*
 doc
 out
 .vscode
+privatekey.key
+privatekey.cert

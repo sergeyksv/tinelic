@@ -46,6 +46,14 @@ NodeJS v12
 You can login into system with default admin user (admin/tinelic). Tinelic monitors itself so you'll immediatelly see some data.
 
 6. (optional) Add ssl certs and host name
+In order for Tinelic to monitor itself as an application (APM) it need to be accessible on SSL (443) port. Normally you should put Tinelic under reverse proxy (like NGinX) and set SSL here (with letsencrypt for instance). However it is also possible to use selfsigned certs to play with system locall. Execute following command to get selfsigned certs:
+
+   ```sh
+   openssl genrsa -out privatekey.key 2048
+   openssl req -new -x509 -key privatekey.key -out privatekey.cert -days 3650 -subj /CN=localhost
+   ```
+
+   Then modify in local config `server.ssl_port` from `false` to `443`. After this your development instance will report error to itself.
 
 7. (optional) Compile minified code and launch in production mode
 

@@ -88,8 +88,8 @@ tinyback.createApp(cfg, safe.sure(cb, function (app) {
 			if (cfg.config.server.ssl_port) {
 				try {
 					var options = {
-						key: fs.readFileSync(path.resolve(__dirname + '/privatekey.pem'), 'utf8'),
-						cert: fs.readFileSync(path.resolve(__dirname + '/certificate.pem'), 'utf8'),
+						key: fs.readFileSync(path.resolve(__dirname + '/privatekey.key'), 'utf8'),
+						cert: fs.readFileSync(path.resolve(__dirname + '/privatekey.cert'), 'utf8'),
 						ssl: true,
 						plain: false
 					};

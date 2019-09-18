@@ -113,7 +113,7 @@ module.exports.init = function (ctx, cb) {
 								if (_.isEmpty(tmpQuery))
 									tmpQuery = { name: projNameOrID };
 								ctx.api.assets.getProject(ctx.locals.systoken, { filter: tmpQuery }, safe.sure(cb, function (project) {
-									cb(null, project._id);
+									cb(null, _.get(project,'_id'));
 								}));
 							}
 						},
