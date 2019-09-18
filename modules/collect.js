@@ -790,7 +790,7 @@ module.exports.init = (ctx, cb) => {
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							if (!idp)
-								return cb(new Error(`Ajax, bad id ${ge.project} - ${req.headers.referer||req.headers.origin}`))								
+								return cb(new Error(`Ajax, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`))								
 							data._idp = new mongo.ObjectID(idp);
 							data._dtr = new Date();
 							data._dt = data._dtr;
@@ -876,7 +876,7 @@ module.exports.init = (ctx, cb) => {
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							if (!idp)
-								return cb(new Error(`Browser, bad id ${ge.project} - ${req.headers.referer||req.headers.origin}`))								
+								return cb(new Error(`Browser, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`))								
 							data._idp = idp;
 							data._dtr = new Date();
 							data._dtc = data._dt;
@@ -1076,7 +1076,7 @@ module.exports.init = (ctx, cb) => {
 					safe.run(cb => {
 						ctx.api.assets.ensureProjectId(ctx.locals.systoken, req.params.project, safe.sure(cb, idp => {
 							if (!idp)
-								return cb(new Error(`SentryG, bad id ${ge.project} - ${req.headers.referer||req.headers.origin}`))							
+								return cb(new Error(`SentryG, bad id ${req.params.project} - ${req.headers.referer||req.headers.origin}`))							
 							data = JSON.parse(req.query.sentry_data);
 							let ip = req.headers['x-forwarded-for'] ||
 								req.connection.remoteAddress ||
