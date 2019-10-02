@@ -439,7 +439,7 @@ class Api {
 			}
 		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
-				cb(null, { route: [], server: [], reporter: [], lang: [], count: 0 });
+				return cb(null, { route: [], server: [], reporter: [], lang: [], count: 0 });
 			}
 			let tmp_id = tmpData[0]._id[0];
 			let tmpRoute = tmpData[0].route;
@@ -558,7 +558,7 @@ class Api {
 			}
 		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
-				cb(null, { route: [], os: [], browser: [], count: 0, sessions: 0, views: 0 });
+				return cb(null, { route: [], os: [], browser: [], count: 0, sessions: 0, views: 0 });
 			}
 			let tmp_id = tmpData[0]._id[0];
 			let tmpRoute = tmpData[0].route;
