@@ -12,3 +12,4 @@ out
 .vscode
 privatekey.key
 privatekey.cert
+newrelic.js
