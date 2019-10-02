@@ -1,5 +1,5 @@
 'use strict';
-const node = '12.3.1';
+const node = '12.10.0';
 module.exports = {
 	'env': {
 		'es6': true,
@@ -38,10 +38,11 @@ module.exports = {
 		'comma-dangle': ['error', 'never'],
 		'no-unused-vars': ['warn', {'vars': 'all', 'args': 'none'}],
 		'no-process-exit': 0,
-		'node/no-unpublished-require': 0,
-		'node/no-extraneous-require': 0,
-		'node/no-unsupported-features/es-syntax': ['error', {'version': node}],
-		'node/no-unsupported-features/es-builtins': ['error', {'version': node}],
-		'node/no-unsupported-features/node-builtins': ['error', {'version': node}]
+		"require-atomic-updates": 0,
+		"node/no-unpublished-require": 0,
+		"node/no-extraneous-require": 0,
+		"node/no-unsupported-features/es-syntax": ["error", {"version": "12.10.0"}],
+		"node/no-unsupported-features/es-builtins": ["error", {"version": "12.10.0"}],
+		"node/no-unsupported-features/node-builtins": ["error", {"version": "12.10.0"}]
 	}
 };
