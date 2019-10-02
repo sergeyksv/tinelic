@@ -8,7 +8,7 @@ const _ = require('lodash'),
 	request = require('request'),
 	zlib = require('zlib'),
 	newrelic = require('newrelic'),
-	LRU = require("lru-cache");
+	LRU = require('lru-cache');
 
 let errProjectIds = new LRU({ max: 500, maxAge: 1000 * 60 * 60 });
 
@@ -1087,7 +1087,7 @@ module.exports.init = (ctx, cb) => {
 							res.status(200).end('ok');
 						}
 					});
-				};
+				}
 				ctx.router.post('/sentry/api/store',sentryP1);
 				ctx.router.get('/sentry/api/:project/:action', (req, res, next) => {
 					let data = {};
