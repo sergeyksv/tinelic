@@ -62,7 +62,7 @@ class Api {
 					}
 				};
 				q = this.queryfix(q);
-				this.collections.action_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res.length)));
+				this.collections.action_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res.length)));
 			},
 			dtlActions: (cb) => {
 				let q = {
@@ -73,7 +73,7 @@ class Api {
 					}
 				};
 				q = this.queryfix(q);
-				this.collections.action_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res.length)));
+				this.collections.action_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res.length)));
 			},
 			pages: (cb) => {
 				let q = {
@@ -84,7 +84,7 @@ class Api {
 					}
 				};
 				q = this.queryfix(q);
-				this.collections.page_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res.length)));
+				this.collections.page_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res.length)));
 			},
 			dtlPages: (cb) => {
 				let q = {
@@ -95,7 +95,7 @@ class Api {
 					}
 				};
 				q = this.queryfix(q);
-				this.collections.page_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res.length)));
+				this.collections.page_errors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res.length)));
 			}
 		}, cb)));
 	}
@@ -111,7 +111,7 @@ class Api {
 		this.checkAccess(t, query, safe.sure(cb, () => this.collections.metrics.aggregate([
 			{ $match: query },
 			{ $group: { _id: '$_s_pid', mem1: { $sum: '$_f_val' }, c1: { $sum: '$_i_cnt' } } }
-		], { allowDiskUse: true }, safe.sure(cb, (res) => {
+		], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => {
 			let memtt = 0;
 			_.forEach(res, (r) => memtt += r.mem1 / r.c1);
 			cb(null, { proc: res.length, mem: Math.round(memtt) });
@@ -177,7 +177,7 @@ class Api {
 				{ $match: query },
 				{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 				{ $facet: facet_obj }
-			], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res[0])));
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res[0])));
 		}));
 	}
 
@@ -273,7 +273,7 @@ class Api {
 				{ $match: query },
 				{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 				{ $facet: facet_obj }
-			], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res[0])));
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res[0])));
 		}));
 	}
 
@@ -349,7 +349,7 @@ class Api {
 				{ $match: query },
 				{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 				{ $facet: facet_obj }
-			], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res[0])));
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res[0])));
 		}));
 	}
 
@@ -437,7 +437,7 @@ class Api {
 					]
 				}
 			}
-		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
+		], { allowDiskUse: true }).toArray(safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
 				return cb(null, { route: [], server: [], reporter: [], lang: [], count: 0 });
 			}
@@ -556,7 +556,7 @@ class Api {
 					]
 				}
 			}
-		], { allowDiskUse: true }, safe.sure(cb, (tmpData) => {
+		], { allowDiskUse: true }).toArray(safe.sure(cb, (tmpData) => {
 			if (!tmpData[0]._id.length) {
 				return cb(null, { route: [], os: [], browser: [], count: 0, sessions: 0, views: 0 });
 			}
@@ -636,7 +636,7 @@ class Api {
 					}
 				},
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true }, safe.sure(cb, (stats) => {
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (stats) => {
 				let ids = {};
 				_.each(stats, (s) => ids[s._id0] = {
 					stats: {
@@ -695,7 +695,7 @@ class Api {
 				},
 				{ $project: { value: { r: '$r', _dt: '$_dt' } } },
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true }, cb);
+			], { allowDiskUse: true }).toArray(cb);
 		}))));
 	}
 
@@ -728,7 +728,7 @@ class Api {
 						},
 						{ $project: { value: { r: '$r' } } },
 						{ $sort: { _id: 1 } }
-					], { allowDiskUse: true }, cb);
+					], { allowDiskUse: true }).toArray(cb);
 				}));
 			} else {
 				cb(null, '');
@@ -760,7 +760,7 @@ class Api {
 				},
 				{ $project: { value: { _id: '$_id0', c: '$c', _dtmax: '$_dtmax', _dtmin: '$_dtmin' } } },
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true }, safe.sure(cb, (stats) => {
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (stats) => {
 				let ids = {};
 				_.forEach(stats, (s) => ids[s.value._id] = { stats: s.value, error: s._id });
 				this.collections.action_errors.find(this.queryfix({ _id: { $in: _.keys(ids) } }))
@@ -789,7 +789,7 @@ class Api {
 			{ $group: { _id: '$data._s_name', c: { $sum: '$data._i_cnt' }, tt: { $sum: '$data._i_tt' }, ot: { $sum: '$data._i_own' }, _s_cat: { $last: '$data._s_cat' } } },
 			{ $project: { value: { c: '$c', tt: '$tt', ot: '$ot' }, _s_cat: '$_s_cat' } },
 			{ $sort: { _id: 1 } }
-		], { allowDiskUse: true }, cb)));
+		], { allowDiskUse: true }).toArray(cb)));
 	}
 
 
@@ -807,7 +807,7 @@ class Api {
 			{ $group: { _id: '$_s_name', c: { $sum: 1 }, tt: { $sum: '$_i_tt' } } },
 			{ $project: { value: { c: '$c', tt: '$tt' } } },
 			{ $sort: { _id: 1 } }
-		], { allowDiskUse: true }, cb)));
+		], { allowDiskUse: true }).toArray(cb)));
 	}
 
 	/**
@@ -839,7 +839,7 @@ class Api {
 				{ $group: { _id: { $trunc: { $divide: [{ $subtract: ['$_dt', _dt0] }, { $multiply: [Q, 60000] }] } }, mem: { $sum: '$_f_val' }, c: { $sum: '$_i_cnt' } } },
 				{ $project: { value: { mem: '$mem', c: '$c', mema: { $divide: ['$mem', '$c'] } } } },
 				{ $sort: { _id: 1 } }
-			], { allowDiskUse: true }, cb);
+			], { allowDiskUse: true }).toArray(cb);
 		}));
 	}
 
@@ -892,7 +892,7 @@ class Api {
 				{ $match: query },
 				{ $unwind: '$data' },
 				{ $facet: facet_obj }
-			], { allowDiskUse: true }, safe.sure(cb, (res) => cb(null, res[0])));
+			], { allowDiskUse: true }).toArray(safe.sure(cb, (res) => cb(null, res[0])));
 		}));
 	}
 
