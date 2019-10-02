@@ -84,7 +84,7 @@ module.exports.init = function (ctx, cb) {
 										}
 									};
 									q = queryfix(q);
-									serverErrors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, function (res) {
+									serverErrors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 										cb(null, res.length);
 									}));
 								},
@@ -97,7 +97,7 @@ module.exports.init = function (ctx, cb) {
 										}
 									};
 									q = queryfix(q);
-									serverErrors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, function (res) {
+									serverErrors.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 										cb(null, res.length);
 									}));
 								},
@@ -110,7 +110,7 @@ module.exports.init = function (ctx, cb) {
 										}
 									};
 									q = queryfix(q);
-									events.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, function (res) {
+									events.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 										cb(null, res.length);
 									}));
 								},
@@ -123,7 +123,7 @@ module.exports.init = function (ctx, cb) {
 										}
 									};
 									q = queryfix(q);
-									events.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }, safe.sure(cb, function (res) {
+									events.aggregate([{ $match: q }, { $group: { _id: '$ehash' } }], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 										cb(null, res.length);
 									}));
 								}
@@ -143,8 +143,7 @@ module.exports.init = function (ctx, cb) {
 							metrics.aggregate([
 								{ $match: query },
 								{ $group: { _id: '$_s_pid', mem1: { $sum: '$_f_val' }, c1: { $sum: '$_i_cnt' } } }
-							], { allowDiskUse: true },
-							safe.sure(cb, function (res) {
+							], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 								var memtt = 0;
 								_.forEach(res, function (r) {
 									memtt += r.mem1 / r.c1;
@@ -297,8 +296,7 @@ module.exports.init = function (ctx, cb) {
 											]
 										}
 									}
-								], { allowDiskUse: true },
-								safe.sure(cb, function (tmpData) {
+								], { allowDiskUse: true }).toArray(safe.sure(cb, function (tmpData) {
 									if (!tmpData[0]._id.length) {
 										return cb(null, { route: [], server: [], reporter: [], lang: [], count: 0 });
 									}
@@ -434,8 +432,7 @@ module.exports.init = function (ctx, cb) {
 											]
 										}
 									}
-								], { allowDiskUse: true },
-								safe.sure(cb, function (tmpData) {
+								], { allowDiskUse: true }).toArray(safe.sure(cb, function (tmpData) {
 									if (!tmpData[0]._id.length) {
 										return cb(null, { route: [], os: [], browser: [], count: 0, sessions: 0, views: 0 });
 									}
@@ -523,8 +520,7 @@ module.exports.init = function (ctx, cb) {
 										}
 									},
 									{ $sort: { _id: 1 } }
-								], { allowDiskUse: true },
-								safe.sure(cb, function (stats) {
+								], { allowDiskUse: true }).toArray(safe.sure(cb, function (stats) {
 									var ids = {};
 									_.each(stats, function (s) {
 										ids[s._id0] = {
@@ -590,7 +586,7 @@ module.exports.init = function (ctx, cb) {
 									},
 									{ $project: { value: { r: '$r', _dt: '$_dt' } } },
 									{ $sort: { _id: 1 } }
-								], { allowDiskUse: true }, cb);
+								], { allowDiskUse: true }).toArray(cb);
 							}));
 						}));
 					},
@@ -624,7 +620,7 @@ module.exports.init = function (ctx, cb) {
 										},
 										{ $project: { value: { r: '$r' } } },
 										{ $sort: { _id: 1 } }
-									], { allowDiskUse: true }, cb);
+									], { allowDiskUse: true }).toArray(cb);
 								}));
 							} else {
 								cb(null, '');
@@ -656,8 +652,7 @@ module.exports.init = function (ctx, cb) {
 								},
 								{ $project: { value: { _id: '$_id0', c: '$c', _dtmax: '$_dtmax', _dtmin: '$_dtmin' } } },
 								{ $sort: { _id: 1 } }
-							], { allowDiskUse: true },
-							safe.sure(cb, function (stats) {
+							], { allowDiskUse: true }).toArray(safe.sure(cb, function (stats) {
 								var ids = {};
 								_.each(stats, function (s) {
 									ids[s.value._id] = { stats: s.value, error: s._id };
@@ -691,7 +686,7 @@ module.exports.init = function (ctx, cb) {
 								{ $group: { _id: '$data._s_name', c: { $sum: '$data._i_cnt' }, tt: { $sum: '$data._i_tt' }, ot: { $sum: '$data._i_own' }, _s_cat: { $last: '$data._s_cat' } } },
 								{ $project: { value: { c: '$c', tt: '$tt', ot: '$ot' }, _s_cat: '$_s_cat' } },
 								{ $sort: { _id: 1 } }
-							], { allowDiskUse: true }, cb);
+							], { allowDiskUse: true }).toArray(cb);
 						}));
 					},
 
@@ -711,7 +706,7 @@ module.exports.init = function (ctx, cb) {
 								{ $group: { _id: '$_s_name', c: { $sum: 1 }, tt: { $sum: '$_i_tt' } } },
 								{ $project: { value: { c: '$c', tt: '$tt' } } },
 								{ $sort: { _id: 1 } }
-							], { allowDiskUse: true }, cb);
+							], { allowDiskUse: true }).toArray(cb);
 						}));
 					},
 
@@ -746,7 +741,7 @@ module.exports.init = function (ctx, cb) {
 								{ $group: { _id: { $trunc: { $divide: [{ $subtract: ['$_dt', _dt0] }, { $multiply: [Q, 60000] }] } }, mem: { $sum: '$_f_val' }, c: { $sum: '$_i_cnt' } } },
 								{ $project: { value: { mem: '$mem', c: '$c', mema: { $divide: ['$mem', '$c'] } } } },
 								{ $sort: { _id: 1 } }
-							], { allowDiskUse: true }, cb);
+							], { allowDiskUse: true }).toArray(cb);
 						}));
 					},
 
@@ -859,7 +854,7 @@ module.exports.init = function (ctx, cb) {
 						{ $match: query },
 						{ $unwind: '$data' },
 						{ $facet: facet_obj }
-					], { allowDiskUse: true }, safe.sure(cb, function (res) {
+					], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 						cb(null, res[0]);
 					}));
 				}));
@@ -927,7 +922,7 @@ module.exports.init = function (ctx, cb) {
 						{ $match: query },
 						{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 						{ $facet: facet_obj }
-					], { allowDiskUse: true }, safe.sure(cb, function (res) {
+					], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 						cb(null, res[0]);
 					}));
 				}));
@@ -995,7 +990,7 @@ module.exports.init = function (ctx, cb) {
 						{ $match: query },
 						{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 						{ $facet: facet_obj }
-					], { allowDiskUse: true }, safe.sure(cb, function (res) {
+					], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 						cb(null, res[0]);
 					}));
 				}));
@@ -1072,7 +1067,7 @@ module.exports.init = function (ctx, cb) {
 						{ $match: query },
 						{ $addFields: { 'ApdexT': { $arrayElemAt: [_arrApdex, { $indexOfArray: [_arrProjectIds, '$_idp'] }] } } },
 						{ $facet: facet_obj }
-					], { allowDiskUse: true }, safe.sure(cb, function (res) {
+					], { allowDiskUse: true }).toArray(safe.sure(cb, function (res) {
 						cb(null, res[0]);
 					}));
 				}));
