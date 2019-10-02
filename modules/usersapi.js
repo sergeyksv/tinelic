@@ -246,7 +246,7 @@ module.exports.init = function (ctx, cb) {
 							{ new: true, fields: { tokens: 1 } }, safe.sure(cb,
 								function (t) {
 									// remove expired tokens
-									usr.users.update({ 'token._dtexp': { $lt: dt } }, { $pull: { 'token._dtexp': { $lt: dt } } }, safe.sure(cb, function () {
+									usr.users.update({ 'tokens._dtexp': { $lt: dt } }, { $pull: { tokens: { '_dtexp': { $lt: dt } } } }, safe.sure(cb, function () {
 										if (t)
 											cb(null, token);
 										else
