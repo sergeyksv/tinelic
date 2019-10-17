@@ -103,8 +103,15 @@ module.exports.init = function (ctx, cb) {
 													ctx.api.assets.saveTeamProjects(ctx.locals.systoken, { _id: at, projects: tmpProj }, safe.sure(cb, function () { }));
 													cb(null, proj._id);
 												}));
-											} else
-												cb(null, project._id);
+											} else {
+												var isInTeam = _.find(team.projects, (t) => t._idp==project._id);
+												if (!isInTeam) {
+													var tmpProj = team.projects || [];
+													tmpProj.push({ _idp: project._id });
+													ctx.api.assets.saveTeamProjects(ctx.locals.systoken, { _id: at, projects: tmpProj }, safe.sure(cb, function () { }));
+													cb(null, project._id);
+												}
+											}
 										}));
 									}
 								}));
