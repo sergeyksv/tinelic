@@ -1,5 +1,5 @@
 'use strict';
-const node = '12.10.0';
+const node = '12.12.0';
 module.exports = {
 	'env': {
 		'es6': true,
@@ -41,8 +41,8 @@ module.exports = {
 		"require-atomic-updates": 0,
 		"node/no-unpublished-require": 0,
 		"node/no-extraneous-require": 0,
-		"node/no-unsupported-features/es-syntax": ["error", {"version": "12.10.0"}],
-		"node/no-unsupported-features/es-builtins": ["error", {"version": "12.10.0"}],
-		"node/no-unsupported-features/node-builtins": ["error", {"version": "12.10.0"}]
+		"node/no-unsupported-features/es-syntax": ["error", {"version": "12.12.0"}],
+		"node/no-unsupported-features/es-builtins": ["error", {"version": "12.12.0"}],
+		"node/no-unsupported-features/node-builtins": ["error", {"version": "12.12.0"}]
 	}
 };
