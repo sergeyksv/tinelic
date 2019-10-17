@@ -247,7 +247,7 @@ module.exports.init = function (ctx, cb) {
 								function (t) {
 									// remove expired tokens
 									usr.users.update({ 'tokens._dtexp': { $lt: dt } }, { $pull: { tokens: { '_dtexp': { $lt: dt } } } }, safe.sure(cb, function () {
-										if (t)
+										if (t.value)
 											cb(null, token);
 										else
 											cb(new CustomError('Log-in, password or both is not valid', 'Unauthorized'));

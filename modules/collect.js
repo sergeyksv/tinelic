@@ -1162,7 +1162,8 @@ module.exports.init = (ctx, cb) => {
 							if (data.stacktrace.frames.length > 1) {
 								data.stacktrace.frames.reverse();
 							}
-							collections.pages.findAndModify({ chash: data.chash, _dt: { $lte: data._dt } }, { _dt: -1 }, { $inc: { _i_err: 1 } }, { multi: false }, safe.sure(cb, page => {
+							collections.pages.findAndModify({ chash: data.chash, _dt: { $lte: data._dt } }, { _dt: -1 }, { $inc: { _i_err: 1 } }, { multi: false }, safe.sure(cb, famres => {
+								const page = famres.value;
 								if (page) {
 									data._idpv = page._id;
 									if (page._s_route) data.request._s_route = page._s_route;
@@ -1263,7 +1264,8 @@ module.exports.init = (ctx, cb) => {
 							if (te.stacktrace.frames.length > 1) {
 								te.stacktrace.frames.reverse();
 							}
-							collections.pages.findAndModify({ chash: te.chash, _dt: { $lte: te._dt } }, { _dt: -1 }, { $inc: { _i_err: 1 } }, { multi: false }, safe.sure(cb, page => {
+							collections.pages.findAndModify({ chash: te.chash, _dt: { $lte: te._dt } }, { _dt: -1 }, { $inc: { _i_err: 1 } }, { multi: false }, safe.sure(cb, famres => {
+								const page = famres.value;
 								if (page) {
 									te._idpv = page._id;
 									if (page._s_route) te.request._s_route = page._s_route;

@@ -267,7 +267,7 @@ module.exports.init = function (ctx, cb) {
 								if (data.name)
 									data.slug = data.name.toLowerCase().replace(' ', '-');
 								projects.findAndModify({ _id: id }, {}, { $set: data }, { upsert: true, new: true }, safe.sure(cb, function (obj) {
-									cb(null, obj);
+									cb(null, obj.value);
 								}));
 							}));
 						}));
@@ -320,7 +320,7 @@ module.exports.init = function (ctx, cb) {
 							var data = _.pick(team, ['name']); // for now we can only update name, how smart :)
 							ctx.api.validate.check('team', data, { isUpdate: true }, safe.sure(cb, function () {
 								tm.teams.findAndModify({ _id: id }, {}, { $set: data }, { upsert: true, new: true }, safe.sure(cb, function (obj) {
-									cb(null, obj);
+									cb(null, obj.value);
 								}));
 							}));
 						}));
