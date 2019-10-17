@@ -9,7 +9,7 @@
   "main": "app.js",
   "private": true,
   "engines": {
-    "node": ">= 12.10.0"
+    "node": ">= 12.12.0"
   },
   "dependencies": {
     "amdefine": "^1.0.1",
@@ -31,11 +31,11 @@
     "less-plugin-clean-css": "^1.5.1",
     "lodash": "^4.17.15",
     "lru-cache": "^5.1.1",
-    "lx-valid": "git://github.com/sergeyksv/lx-valid.git",
+    "lx-valid": "github:sergeyksv/lx-valid",
     "moment": "^2.24.0",
-    "mongodb": "^3.2.4",
+    "mongodb": "^3.3.3",
     "multer": "^1.4.2",
-    "newrelic": "^5.13.0",
+    "newrelic": "^5.13.1",
     "raven": "^0.12.3",
     "request": "^2.88.0",
     "requirejs": "^2.3.6",
@@ -46,10 +46,10 @@
     "tinybone": "./modules/tinybone",
     "tinyhook": "^0.4.1",
     "useragent": "^2.3.0",
-    "yargs": "^13.2.4"
+    "yargs": "^14.2.0"
   },
   "devDependencies": {
-    "eslint": "^6.4.0",
+    "eslint": "^6.5.1",
     "eslint-plugin-json": "^1.4.0",
     "eslint-plugin-no-inferred-method-name": "^1.0.2",
     "eslint-plugin-node": "^10.0.0",
@@ -60,10 +60,10 @@
     "grunt-git-describe": "^2.4.4",
     "grunt-nodemon": "~0.4.2",
     "load-grunt-tasks": "^5.1.0",
-    "mocha": "^6.1.4"
+    "mocha": "^6.2.1"
   },
   "optionalDependencies": {
-    "chromedriver": "^74.0.0",
+    "chromedriver": "^77.0.0",
     "selenium-webdriver": "^3.6.0"
   },
   "scripts": {
