@@ -383,7 +383,7 @@ class Api {
 							nrParseStackTrace_dotnet(ne[4].stack_trace, te);
 						}
 						this.ctx.api.validate.check('error', te, safe.sure(() => {
-							nrNonFatal.apply(this, arguments);
+							nrNonFatal.apply(this, arguments[0]);
 						}, () => {
 							safe.parallel([
 								cb => {
